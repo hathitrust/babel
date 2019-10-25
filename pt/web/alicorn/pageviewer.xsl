@@ -156,7 +156,10 @@
       HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
 
-    <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script>
+    <!-- <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script> -->
+    <xsl:call-template name="build-js-link">
+      <xsl:with-param name="href">/pt/alicorn/js/utils.js</xsl:with-param>
+    </xsl:call-template>
 
     <!-- <xsl:call-template name="load_js_and_css"/> -->
     <xsl:call-template name="include_local_javascript" />

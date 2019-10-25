@@ -21,7 +21,10 @@
   </xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
-    <link rel="stylesheet" href="/pt/alicorn/css/search.css{$timestamp}" />
+    <xsl:call-template name="build-css-link">
+      <xsl:with-param name="href" select="'/pt/alicorn/css/search.css'" />
+    </xsl:call-template>
+    <!-- <link rel="stylesheet" href="/pt/alicorn/css/search.css?_{//Timestamp}" /> -->
   </xsl:template>
 
   <xsl:template name="setup-body-class">

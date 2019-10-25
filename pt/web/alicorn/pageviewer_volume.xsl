@@ -107,7 +107,11 @@
   </xsl:variable>
 
   <xsl:template name="setup-extra-header-extra">
-    <link rel="stylesheet" href="/pt/alicorn/css/main.css{$timestamp}" />
+    <xsl:call-template name="build-css-link">
+      <xsl:with-param name="href" select="'/pt/alicorn/css/main.css'" />
+    </xsl:call-template>
+
+    <!-- <link rel="stylesheet" href="/pt/alicorn/css/main.css?_{$gTimestamp}" /> -->
     <!-- <link rel="stylesheet" href="/pt/css/print.css{$timestamp}" media="print" /> -->
 
     <xsl:if test="$gUsingPageImages = 'true'">
@@ -209,8 +213,19 @@
         <button class="btn" id="action-focus-current-page" aria-hidden="true" style="display: none" accesskey="9">Show Current Page</button>
       </form>
     </div>
-    <!-- <script type="text/javascript" src="/pt/alicorn/js/main.js"></script> -->
-    <script type="text/javascript">head.load('/pt/alicorn/js/main.js')</script>
+
+    <!-- FIXME: does main.js need to load after all the other scripts?? -->
+    <!-- <xsl:call-template name="build-js-link">
+      <xsl:with-param name="href">/pt/alicorn/js/main.js</xsl:with-param>
+    </xsl:call-template> -->
+
+    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/alicorn/js/main.js']/@modtime" />
+    <script type="text/javascript">
+      <xsl:text>head.load('/pt/alicorn/js/main.js?_</xsl:text>
+      <xsl:value-of select="$modtime" />
+      <xsl:text>')</xsl:text>
+    </script>
+
     <xsl:call-template name="load-extra-main-script" />
   </xsl:template>
 

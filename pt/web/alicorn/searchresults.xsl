@@ -43,7 +43,10 @@
   <xsl:variable name="gUsingBookReader" select="'false'"/>
 
   <xsl:template name="setup-extra-header-extra">
-    <link rel="stylesheet" href="/pt/alicorn/css/search.css" />
+    <!-- <link rel="stylesheet" href="/pt/alicorn/css/search.css" /> -->
+    <xsl:call-template name="build-css-link">
+      <xsl:with-param name="href">/pt/alicorn/css/search.css</xsl:with-param>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="get-page-title">
