@@ -142,7 +142,7 @@ var ListBrowser = function(argv, elem) {
     })
 
     controls.$paging_option.on('change', function() {
-      options.max_rows = parseInt($(this).val(), 10);
+      options.max_rows = options.sz = parseInt($(this).val(), 10);
       controls.paginator = null;
       root.render();
       root.track_pageview();
