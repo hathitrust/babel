@@ -370,15 +370,34 @@ var Reader = class {
       originalHeight =  parseInt($toolbar.dataset.originalHeight, 10);
     }
     var toolbarHeight = $toolbar.offsetHeight;
+    var toolbarHorizontalHeight = document.querySelector('#toolbar-horizontal').offsetHeight;
+
+    var mainStyles = getComputedStyle($root);
+    var mainPadding = parseInt(mainStyles.paddingTop, 10) + parseInt(mainStyles.paddingBottom, 10);
+
     var navigatorHeight = document.querySelector('.navigator').offsetHeight;
     var r = originalHeight / window.innerHeight;
-    console.log("AHOY CHECK TOOLBAR", originalHeight, window.innerHeight, r);
+    console.log("AHOY TOOLBAR TRIGGER", originalHeight, window.innerHeight, r);
     if ( r > 0.57 ) {
-      toolbarHeight = window.innerHeight - 
-        document.querySelector('header').offsetHeight - 
-        document.querySelector('#sidebar').offsetHeight - 
-        document.querySelector('.navigator').offsetHeight;
+
+      var values = [ window.innerHeight ];
+      values.push(-(document.querySelector('header').offsetHeight));
+      values.push(-(navigatorHeight));
+      values.push(-(toolbarHorizontalHeight));
+      values.push(-(mainPadding));
+
+
+      var $sidebar = document.querySelector('#sidebar');
+      if ( $sidebar.querySelector('button.sidebar-toggle-button').offsetHeight > 0 ) {
+        // toolbarHeight -= $sidebar.offsetHeight;
+        values.push(-($sidebar.offsetHeight));
+      }
+
+      toolbarHeight = values.reduce((a, b) => a + b, 0);
       toolbarHeight *= 0.8;
+
+      console.log("AHOY TOOLBAR MATH", originalHeight, values, toolbarHeight);
+
       $toolbar.style.height = `${toolbarHeight}px`;
       $toolbar.classList.add('toolbar--shrunken');
       $toolbar.style.overflowY = 'auto';
