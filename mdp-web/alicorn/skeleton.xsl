@@ -71,10 +71,10 @@
         <!-- <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.css?_{$gTimestamp}" /> -->
 
         <xsl:call-template name="build-js-link">
-          <xsl:with-param name="href">/common/alicorn/js/utils.js</xsl:with-param>
+          <xsl:with-param name="href">/common/alicorn/js/utils.201910.js</xsl:with-param>
         </xsl:call-template>
         <xsl:call-template name="build-css-link">
-          <xsl:with-param name="href">/common/alicorn/css/main.css</xsl:with-param>
+          <xsl:with-param name="href">/common/alicorn/css/main.201910.css</xsl:with-param>
         </xsl:call-template>
 
         <xsl:call-template name="setup-extra-header" />
