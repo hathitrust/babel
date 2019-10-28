@@ -232,6 +232,12 @@ html.ie, html.edge {
   }
 }
 
+html.edge {
+  .section-container .navigator form .control-navigator--wrap {
+    max-width: 70%;
+  }
+}
+
 // html.desktop.no-mobile
 // html.skin-default.no-mobile {
 // @media only screen and (max-width:62em) {
