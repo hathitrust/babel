@@ -200,6 +200,8 @@ var Reader = class {
       HT.params.seq = params.seq;
       HT.params.view = this.view.name;
 
+      this._currentLocation = params.seq;
+
       this._updateLinks(params.seq);
       this.emit('track');
     });
@@ -632,7 +634,7 @@ HT.utils.switch_view = function(target, event_detail) {
   $sidebar.find(".action-view.active").removeClass("active");
   $sidebar.find(`button[data-target="${target}"]`).addClass("active");
   var scale = 1.0; // reader._bestFitScale();
-  reader.restart({ view: target, clicked: event_detail == 1, scale: scale });
+  reader.restart({ view: target, clicked: event_detail == 1, scale: scale, seq: HT.reader._currentLocation });
   reader.emit('redraw', {});
 }
 
