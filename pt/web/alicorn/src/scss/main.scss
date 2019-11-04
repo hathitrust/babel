@@ -211,6 +211,11 @@ html.debugpolite div[role="status"] {
   height: calc(var(--vh, 1vh) * 100);
   min-height: 0;
 
+  display: block;
+  // height: 100%;
+  display:-ms-grid;
+  display: grid;
+
   width: 100vw;
   overflow: hidden;
 
@@ -237,6 +242,23 @@ html.edge {
     max-width: 70%;
   }
 }
+
+html.ios9 {
+
+  &[data-expanded="true"] {
+    main {
+      height: 96%;
+    }
+  }
+
+  &[data-expanded="false"] {
+    main {
+      height: 100%;
+    }
+  }
+
+}
+
 
 // html.desktop.no-mobile
 // html.skin-default.no-mobile {
