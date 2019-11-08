@@ -442,7 +442,7 @@
           <xsl:text> to </xsl:text>
           <xsl:value-of select="//LastRecordNumber" />
           <xsl:text> of </xsl:text>
-          <xsl:value-of select="//TotalCount" />
+          <xsl:value-of select="//TotalRecords" />
           <xsl:text> </xsl:text>
           <xsl:value-of select="$title" />
           <!-- <xsl:choose>
