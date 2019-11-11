@@ -525,7 +525,7 @@
 
   <xsl:template name="action-search-volume">
     <h3 class="offscreen">Search in this volume</h3>
-    <form class="form-inline" method="get" id="form-search-volume" role="search">
+    <form class="form-inline form-search-volume" method="get" id="form-search-volume" role="search">
       <xsl:attribute name="action">
         <xsl:choose>
           <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>

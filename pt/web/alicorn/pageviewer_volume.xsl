@@ -275,7 +275,7 @@
       <ul>
         <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
         <li style="margin-top: 1rem; margin-bottom: 1rem;">
-          <form action="/cgi/pt/search" id="form-search-volume" role="search" style="padding: 0.5rem; border: 1px solid #ddd">
+          <form action="/cgi/pt/search" id="form-search-volume-2" class="form-search-volume" role="search" style="padding: 0.5rem; border: 1px solid #ddd">
             <label style="text-align: center" for="input-search-text">Search in this text </label>
             <input id="input-search-text" name="q1" type="text" style="width: 100%; margin-bottom: 0.25rem; display: block">
               <xsl:if test="$gHasOcr!='YES'">

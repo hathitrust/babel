@@ -1,6 +1,7 @@
 head.ready(function() {
-  var $form = $("#form-search-volume");
+  var $form = $(".form-search-volume");
   $form.submit(function() {
+    HT.beforeUnloadTimeout = 15000;
     var $form_ = $(this);
     var $submit = $form_.find("button[type=submit]");
     if ( $submit.hasClass("btn-loading") ) {

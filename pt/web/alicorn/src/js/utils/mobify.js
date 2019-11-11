@@ -46,7 +46,7 @@ head.ready(function() {
       if ( $this.is("input[type='text'],select") ) {
         return;
       }
-      if ( $this.parents("#form-search-volume").length ) {
+      if ( $this.parents(".form-search-volume").length ) {
         return;
       }
       if ( $this.is("button,a") ) {

@@ -73,6 +73,7 @@
 
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
+      <xsl:call-template name="header" />
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
         <div class="sidebar-container" id="sidebar" tabindex="0">
           <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
