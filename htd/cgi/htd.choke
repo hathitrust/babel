@@ -10,6 +10,9 @@ BEGIN {
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors __FILE__;
 
+use Utils::Settings;
+my $settings = Utils::Settings::load('htd');
+
 use Data::Dumper;
 
 use Plack::Builder;
@@ -52,8 +55,7 @@ $app = builder {
 
     enable
         'Choke::Requests',
-                credit_rate    => [ 0.5, 'sec' ],
-                max_debt       => [ 50, '+30 sec' ]
+            %{ $$settings{choke}{'default'} }
         ;
 
     $app;
