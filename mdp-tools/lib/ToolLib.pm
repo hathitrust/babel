@@ -895,7 +895,6 @@ sub get_HTDE_roots {
     my $where;
     if ($stage) {
         $where = $stage;
-        delete $ENV{HTDE_REPOROOT};
         delete $ENV{HTDE_APPROOT};
     }
     else {
@@ -942,7 +941,7 @@ sub validate_existing_app {
         return 0;
     }
 
-    if (! -e "$repo_root/$app.git") {
+    if ( -d $repo_root && ! -e "$repo_root/$app.git") {
         PrintN(qq{\nERROR: '$app' is not a valid app: no central repo:\n\t$repo_root/$app.git does not exist\n});
         PrintN(qq{\nPerhaps you need to run clone-repo -s test $app.git\n});
         return 0;

@@ -111,7 +111,7 @@ sub __validate_clone_app {
 
     print qq{Validating application ($app) ... };
 
-    if (! -e "$repo_root/$app_repo") {
+    if (-d $repo_root && ! -e "$repo_root/$app_repo") {
         PrintN(qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n});
         return 0;
     }
