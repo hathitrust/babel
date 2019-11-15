@@ -14,6 +14,9 @@ BEGIN {
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use Vendors __FILE__;
 
+use Utils::Settings;
+my $settings = Utils::Settings::load('mb');
+
 use Attribute::Handlers;
 
 # Permit created directories at 777 and created files at 666.
@@ -50,8 +53,7 @@ $app = builder {
     # probably do some generous throttling
     enable
         'Choke::Requests',
-                credit_rate    => [ 0.5, 'sec' ],
-                max_debt       => [ 50, '+30 sec' ]
+            %{ $$settings{choke}{'default'} }
         ;
 
     $app;
