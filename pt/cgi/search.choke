@@ -11,6 +11,9 @@ use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use BadActors;
 use Vendors __FILE__;
 
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'search');
+
 use Attribute::Handlers;
 
 # Permit created directories at 777 and created files at 666.
@@ -46,8 +49,7 @@ $app = builder {
     enable
         match_if param('index'),
             'Choke::Requests::Indexer',
-                    key            => 'search-index',
-                    use_cache      => 'psgix.cache.shared',
+                    %{ $$settings{choke}{'search-index'} },
                     client_identifier_sub => sub {
                         my ( $request ) = @_;
                         if ( $request->param('id') ) {
@@ -55,10 +57,6 @@ $app = builder {
                             return ( "search-index-id", $id );
                         }
                     },
-                    # credit_rate    => [ 0.25, 'hour' ],
-                    # max_debt < 1 to allow the first (0) request
-                    # and then throttle after that
-                    max_debt       => [ 0.9, '+2 min' ],
                     response       => { filename => qq{$ENV{SDRROOT}/pt/web/503_index.html},
                                         content_type => 'text/html' }
             ;
@@ -67,9 +65,7 @@ $app = builder {
     enable
         match_if unchoked(),
             'Choke::Requests',
-                    key            => 'search',
-                    credit_rate    => [ 0.5, 'min' ],
-                    max_debt       => [ 50, '+30 sec' ]
+                %{ $$settings{choke}{'search'} },
             ;
 
     $app;

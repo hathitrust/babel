@@ -11,6 +11,8 @@ use lib "$ENV{SDRROOT}/mdp-lib/Utils";
 use BadActors;
 use Vendors __FILE__;
 
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'pt');
 
 use Attribute::Handlers;
 
@@ -49,17 +51,14 @@ $app = builder {
     enable
         match_if any( param('view', 'plaintext'), param('view', 'text') ),
             'Choke::Requests',
-                    key            => 'plaintext',
-                    credit_rate    => [ 0.5, 'sec' ],
-                    max_debt       => [ 50, '+30 sec' ],
+                %{ $$settings{choke}{plaintext} }
             ;
 
     # probably do some generous throttling
     enable
         match_if unchoked(),
             'Choke::Requests',
-                  credit_rate    => [ 0.5, 'sec' ],
-                  max_debt       => [ 50, '+30 sec' ],
+                %{ $$settings{choke}{default} }
             ;
 
     enable "SSO";
