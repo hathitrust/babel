@@ -28,6 +28,15 @@ export var Viewinator = class {
       var button = this.input.querySelector('[data-target="plaintext"]');
       button.disabled = true;
     }
+
+    if ( ! ( this.reader.service.manifest.totalSeq > 1 ) ) {
+      var button = this.input.querySelector('[data-target="2up"]');
+      button.disabled = true;
+      button.dataset.disabled = true;
+      button = this.input.querySelector('[data-target="thumb"]');
+      button.disabled = true;
+    }
+
   }
 
 }

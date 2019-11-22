@@ -159,7 +159,8 @@
   </xsl:template>
 
   <xsl:template name="main">
-    <xsl:variable name="totalSeq" select="count(//METS:div[@TYPE='volume']/METS:div[@ORDER])" />
+    <!-- <xsl:variable name="totalSeq" select="count(//METS:div[@TYPE='volume']/METS:div[@ORDER])" /> -->
+    <xsl:variable name="totalSeq" select="count(//METS:structMap[@TYPE='physical']/METS:div[@TYPE]/METS:div[@ORDER])" />
     <xsl:variable name="readingOrder" select="//Manifest/ReadingOrder" />
     <xsl:attribute name="data-has-ocr">
       <xsl:choose>

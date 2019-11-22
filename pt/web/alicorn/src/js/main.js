@@ -111,6 +111,7 @@ var Reader = class {
     var current = params.seq || this.view.currentLocation();
 
     if ( params.view == this.view.name && params.view == 'plaintext' && params.clicked ) { params.view = '1up'; }
+    if ( params.view == '2up' && this.service.manifest.totalSeq == 1 ) { params.view = '1up'; }
     if ( params.view == this.view.name ) { return ; }
 
     params.restarting = true;
@@ -640,7 +641,7 @@ HT.utils.switch_view = function(target, event_detail) {
 
 HT.utils.handleOrientationChange = function(ignore) {
   if ( window.innerWidth < 800 ) {
-    if ( Math.abs(window.orientation) == 90 ) {
+    if ( Math.abs(window.orientation) == 90 && HT.reader.service.manifest.totalSeq > 1 ) {
       // enable the 2up button
       // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
       $(`button[data-target="2up"]`).attr('disabled', false);
@@ -652,7 +653,7 @@ HT.utils.handleOrientationChange = function(ignore) {
         HT.utils.switch_view('1up');
       }
     }
-  } else {
+  } else if ( HT.reader.service.manifest.totalSeq > 1 ) {
     // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
     $(`button[data-target="2up"]`).attr('disabled', false);
   }
@@ -664,6 +665,11 @@ if ( HT.params.ui && HT.params.ui == 'embed' && HT.params.view == 'default' ) {
   }
 }
 if ( HT.params.view == 'default' ) { HT.params.view = '1up'; }
+if ( reader.service.manifest.totalSeq == 1 ) {
+  if ( HT.params.view == '2up' || HT.params.view == 'thumb' ) {
+    HT.params.view = '1up';
+  }
+}
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 $sidebar.find(`.action-view[data-target="${$main.dataset.view}"]`).addClass('active');
