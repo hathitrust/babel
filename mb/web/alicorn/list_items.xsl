@@ -433,7 +433,7 @@
     <xsl:param name="item-list-contents" />
 
     <xsl:call-template name="build-mondo-collection-header" />
-    <xsl:call-template name="build-operation-status-summary" />
+    <!-- <xsl:call-template name="build-operation-status-summary" /> -->
 
     <div class="results-container">
       <div class="results-summary-container">
@@ -481,6 +481,8 @@
       </div>
       <!-- <xsl:call-template name="build-nav-pagination" /> -->
       <xsl:call-template name="build-collections-toolbar" />
+      <xsl:call-template name="build-operation-status-summary" />
+      
       <xsl:call-template name="build-results-list">
         <xsl:with-param name="items" select="$items" />
       </xsl:call-template>

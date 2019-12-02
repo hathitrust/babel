@@ -101,10 +101,18 @@ sub handle_OPERATION_RESULTS_PI
     my $NumIds = scalar(@{$add_multiple_items_data_hashref->{'ids'}});
     my $NumAdded = scalar(@{$add_multiple_items_data_hashref->{'added_or_updated'}});
     my $NumFailed =scalar(@{$add_multiple_items_data_hashref->{'failed_ids'}});
+
+    # 'valid_ids'        => \@valid_ids,
+    # 'already_in_coll2' => \@already_in_coll2
+
+    my $NumAddedToCollection = scalar(@{$$copy_items_data_hashref{valid_ids}});
+    my $NumAlreadyInCollection = scalar(@{$$copy_items_data_hashref{already_in_coll2}});
     # we could return the actual lists of ids added or failed and then do something fancy in the UI.
     $s .= qq{|NumSubmitted=$NumIds};
     $s .= qq{|NumAdded=$NumAdded};
     $s .= qq{|NumFailed=$NumFailed};
+    $s .= qq{|NumAddedToCollection=$NumAddedToCollection};
+    $s .= qq{|NumAlreadyInCollection=$NumAlreadyInCollection};
 
 
 
