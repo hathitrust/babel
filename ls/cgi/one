@@ -50,9 +50,13 @@ if ( $referer =~ m,mrnibbs.umdl.umich.edu, ) {
     $LS_DOMAIN = qq{beta-3.babel.hathitrust.org};
     $CATALOG_DOMAIN = qq{beta-3.catalog.hathitrust.org};
 } elsif ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/xxbeta-3, ) {
-    # referer is a dev instance; update links
+    # referer is a test instance; update links
     $LS_DOMAIN = qq{test.$LS_DOMAIN};
     $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
+} elsif ( ( $referer =~ m,/preview\., && $referer !~ m,\.babel, ) ) {
+    # referer is a preview instance; update links
+    $LS_DOMAIN = qq{preview.$LS_DOMAIN};
+    $CATALOG_DOMAIN = qq{preview.$CATALOG_DOMAIN};
 } elsif ( $referer =~ m,/(.*)\.babel, ) {
     # referer is a babel dev instance
     my $babel_prefix = (split(/\./, $ENV{SERVER_NAME}))[0];
