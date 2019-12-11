@@ -89,7 +89,7 @@ export var Selectinator = class {
       // button.setAttribute('aria-pressed', _.indexOf(printable, parseInt(page.dataset.seq, 10)) > -1);
       button.setAttribute('aria-pressed', printable.indexOf(parseInt(page.dataset.seq, 10)) > -1);
       button.setAttribute('data-role', 'tooltip');
-      button.setAttribute('data-microtip-position', 'bottom');
+      button.setAttribute('data-microtip-position', 'left');
       button.setAttribute('data-microtip-size', 'small');
       button.setAttribute('tabindex', '-1');
 

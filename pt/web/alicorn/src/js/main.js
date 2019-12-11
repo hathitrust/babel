@@ -405,7 +405,7 @@ var Reader = class {
       $toolbar.classList.add('toolbar--shrunken');
       $toolbar.style.overflowY = 'auto';
     } else {
-      $toolbar.style.overflowY = 'hidden';
+      $toolbar.style.overflowY = 'unset';
       $toolbar.style.height = 'auto';
       $toolbar.classList.remove('toolbar--shrunken');
     }
