@@ -404,6 +404,12 @@
   <xsl:template name="action-view-button">
     <xsl:param name="view" />
     <xsl:param name="show-label" />
+    <xsl:variable name="role">
+      <xsl:choose>
+        <xsl:when test="$show-label = 'TRUE'">x-tooltip</xsl:when>
+        <xsl:otherwise>tooltip</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="options">
       <h:select>
         <h:option name="1up" value="icomoon icomoon-scroll">Scroll Page Scans</h:option>
@@ -423,7 +429,7 @@
       </xsl:choose>
     </xsl:variable>
 
-    <button href="{$href}" data-target="{$option/@name}" type="button" class="action-view btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}" aria-label="{$option}" data-microtip-position="left" data-microtip-size="small" data-role="tooltip">
+    <button href="{$href}" data-target="{$option/@name}" type="button" class="action-view btn square" data-toggle="tooltip tracking" data-tracking-action="PT {$option}" aria-label="{$option}" data-microtip-position="left" data-microtip-size="small" data-role="{$role}">
       <xsl:if test="$option/@accesskey">
         <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
       </xsl:if>
@@ -482,10 +488,10 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f" aria-label="Go to first page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-first"></i></button>
-    <button id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p" aria-label="Go to previous page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-go-previous"></i></button>
-    <button id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n" aria-label="Go to next page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-go-next"></i></button>
-    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l" aria-label="Go to last page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-last"></i></button>
+    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" accesskey="f" aria-label="Go to first page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-first"></i></button>
+    <button id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Previous Page" accesskey="p" aria-label="Go to previous page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-go-previous"></i></button>
+    <button id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" accesskey="n" aria-label="Go to next page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-go-next"></i></button>
+    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" accesskey="l" aria-label="Go to last page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-last"></i></button>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">
