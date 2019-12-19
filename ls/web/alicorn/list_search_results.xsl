@@ -380,7 +380,11 @@
         <div class="record-container record-medium-container">
           <div class="record-title-and-actions-container">
             <h3 class="record-title">
-              <xsl:value-of select="Title" />
+              <xsl:value-of select="Title" disable-output-escaping="yes" />
+              <xsl:if test="normalize-space(VernacularTitle)">
+                <xsl:text> </xsl:text>
+                <xsl:value-of select="VernacularTitle" disable-output-escaping="yes"/>
+              </xsl:if>
               <xsl:if test="normalize-space(VolEnumCron)">
                 <xsl:text> </xsl:text>
                 <xsl:value-of select="VolEnumCron" />
