@@ -99,9 +99,15 @@
     <script>
       <xsl:text disable-output-escaping="yes">
         head.ready(function() {
+          $("div[role='status']").attr('aria-live', 'assertive');
           var $alert = $(".alert-operation");
           if ( $alert.length ) {
-            HT.update_status($alert.text());
+            setTimeout(function() {
+              HT.update_status($alert.text());
+              setTimeout(function() {
+                $("div[role='status']").attr('aria-live', 'polite');
+              }, 1000);
+            }, 5000);
           }
         })
       </xsl:text>
