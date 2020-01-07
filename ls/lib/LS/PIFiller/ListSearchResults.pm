@@ -629,6 +629,7 @@ sub __get_coll_info
             $coll_info .= '<COLL_FEATURED>' . $coll_featured . '</COLL_FEATURED>' if ( $coll_featured );
             $coll_info .= '<COLL_BRANDING>' . $coll_branding . '</COLL_BRANDING>' if ( $coll_branding );
             $coll_info .= '<COLL_CONTACT_INFO>' . $coll_contact_info . '</COLL_CONTACT_INFO>' if ( $coll_contact_info );
+            $coll_info .= '<COLL_SHARED>' . $co->get_shared_status($coll_id) . '</COLL_SHARED>';
     	}
     }
     

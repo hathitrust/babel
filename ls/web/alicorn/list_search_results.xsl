@@ -772,12 +772,48 @@
   <xsl:template name="build-mondo-collection-header">
     <div class="collection-container">
       <div class="collection-header">
-        <h2 style="margin-top: 0"><xsl:value-of select="//COLL_INFO/COLL_NAME" /></h2>
+        <div style="display: flex; flex-grow: 1; flex-direction: row; position: relative">
+          <h2 style="margin-top: 0">
+            <xsl:if test="//COLL_INFO/COLL_STATUS = 'private'">
+              <span style="margin-right: .25rem">
+                <i class="icomoon-locked icomoon" aria-hidden="true"></i>
+              </span>
+            </xsl:if>
+            <xsl:value-of select="//COLL_INFO/COLL_NAME" />
+            <xsl:if test="//COLL_INFO/COLL_STATUS = 'private'">
+              <span class="offscreen">
+                <xsl:text> (Collection is private)</xsl:text>
+              </span>
+            </xsl:if>
+          </h2>
+          <xsl:call-template name="build-collection-manage-action" />
+        </div>
         <p><xsl:value-of select="//COLL_INFO/COLL_DESC" /></p>
+        <xsl:if test="normalize-space(//COLL_INFO/COLL_CONTACT_INFO)">
+          <p><strong>More Information: </strong>
+          <xsl:apply-templates select="//COLL_INFO/COLL_CONTACT_INFO" mode="copy-guts" /></p>
+        </xsl:if>
       </div>
       <xsl:call-template name="build-mondo-collection-status-update" />
       <xsl:call-template name="build-mondo-collection-search-form" />
     </div>
+  </xsl:template>
+
+  <xsl:template name="build-collection-manage-action">
+    <xsl:variable name="shrd">
+      <xsl:choose>
+        <xsl:when test="//COLL_INFO/COLL_STATUS = 'private'">0</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
+      <div style="display: flex; align-items: center; position: absolute; right: 0; top: 50%; transform: translateY(-50%)">
+        <a
+          class="btn btn-sm"
+          href="/cgi/mb?c={$coll_id};a=listis;adm=1"
+          >Manage Collection</a>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="build-mondo-collection-search-form">
