@@ -45,6 +45,9 @@ use JSON::XS;
 use URI::Escape;
 use YAML ();
 
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'reports');
+
 #---- MPD App
 {
     package App;
@@ -120,8 +123,8 @@ use YAML ();
 
     sub is_authorized {
         my $self = shift;
-        return Auth::ACL::a_Authorized({ usertype => 'staff' }) &&
-             Auth::ACL::a_Authorized({ access => 'total' });
+        my $remote_user = $self->auth->get_user_name($$self{C});
+        return grep(/^$remote_user$/, @{ $$settings{users}} ) ? 1 : 0;
     }
 
     sub redirect_to_url {
