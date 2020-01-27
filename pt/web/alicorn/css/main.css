@@ -253,7 +253,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile li.download-item--EPUB {
+html.mobile li.download-item--EPUB, html[data-epub-root] li.download-item--EPUB {
   display: list-item;
 }
 
@@ -1115,13 +1115,22 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-u16d80a6d 1s linear alternate infinite;
           animation: loader12-u16d80a6d 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u8251be40 1s linear alternate infinite;
+          animation: loader12-u8251be40 1s linear alternate infinite;
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u16d80a6d {
+=======
+@-webkit-keyframes loader12-u8251be40 {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1144,7 +1153,11 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-u16d80a6d {
+=======
+@keyframes loader12-u8251be40 {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1197,13 +1210,22 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-u7e6b9bc1 1s linear alternate infinite;
           animation: loader12-u7e6b9bc1 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u37ad235f 1s linear alternate infinite;
+          animation: loader12-u37ad235f 1s linear alternate infinite;
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u7e6b9bc1 {
+=======
+@-webkit-keyframes loader12-u37ad235f {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1226,7 +1248,11 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-u7e6b9bc1 {
+=======
+@keyframes loader12-u37ad235f {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1574,14 +1600,23 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-ube9bcc67 1s linear alternate infinite;
           animation: loader12-ube9bcc67 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-u553b45fe 1s linear alternate infinite;
+          animation: loader12-u553b45fe 1s linear alternate infinite;
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-ube9bcc67 {
+=======
+@-webkit-keyframes loader12-u553b45fe {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1604,7 +1639,11 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-ube9bcc67 {
+=======
+@keyframes loader12-u553b45fe {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1796,8 +1835,13 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
+<<<<<<< HEAD
   -webkit-animation: loader12-ubd5127ea 1s linear alternate infinite;
           animation: loader12-ubd5127ea 1s linear alternate infinite;
+=======
+  -webkit-animation: loader12-ud1106633 1s linear alternate infinite;
+          animation: loader12-ud1106633 1s linear alternate infinite;
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1806,7 +1850,11 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
+<<<<<<< HEAD
 @-webkit-keyframes loader12-ubd5127ea {
+=======
+@-webkit-keyframes loader12-ud1106633 {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1829,7 +1877,11 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
+<<<<<<< HEAD
 @keyframes loader12-ubd5127ea {
+=======
+@keyframes loader12-ud1106633 {
+>>>>>>> 76bf88a... integrate cozy-sun-bear
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

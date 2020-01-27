@@ -1074,6 +1074,19 @@
 
   <xsl:template name="download-links">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:if test="$pViewTypeList//ViewTypePdfLink">
+      <xsl:call-template name="download-links--pdf" />
+    </xsl:if>
+    <xsl:if test="$pViewTypeList//ViewTypeFullPdfLink">
+      <xsl:call-template name="download-links--full-pdf" />
+    </xsl:if>
+    <xsl:if test="$pViewTypeList//ViewTypeFullEpubLink">
+      <xsl:call-template name="download-links--full-epub" />
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--pdf">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
       <li data-view-target="1up image plaintext">
         <xsl:element name="a">
@@ -1124,6 +1137,10 @@
         </xsl:element>
       </li>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--full-pdf">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
     <xsl:if test="$gFullPdfAccessMessage='' and $gUsingSearch = 'false'">
       <!-- only show this link if we have access -->
@@ -1160,6 +1177,15 @@
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
       </xsl:call-template>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--full-epub">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:call-template name="download-full-book">
+      <xsl:with-param name="id" select="'fullEpubLink'" />
+      <xsl:with-param name="type" select="'EPUB'" />
+      <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="download-full-book">

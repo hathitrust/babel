@@ -26,6 +26,7 @@
     "@babel/polyfill": "^7.4.3",
     "babel-loader": "^7.1.5",
     "babel-polyfill": "^6.26.0",
+    "cozy-sun-bear": "git+https://github.com/mlibrary/cozy-sun-bear.git",
     "hammerjs": "^2.0.8",
     "intersection-observer": "^0.5.1",
     "lodash": "^4.17.11",
