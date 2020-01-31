@@ -568,6 +568,23 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="display-catalog-record-not-available">
+    <!-- <xsl:text>Catalog record not available</xsl:text> -->
+    <span>Catalog record not available</span>
+    <br />
+    <span>Rekord katalogu nie jest dostępny</span>
+    <br />
+    <span>Registro de catálogo no disponible</span>
+    <br />
+    <span>Katalogo įrašas nėra</span>
+    <br />
+    <span>カタログレコードが利用できません</span>
+    <br />
+    <span>目录记录不可用</span>
+    <br />
+    <span>Nid yw'r cofnod catalog ar gael</span>
+  </xsl:template>
+
   <xsl:template match="node()" mode="copy-guts">
     <xsl:apply-templates select="@*|*|text()" mode="copy" />
   </xsl:template>

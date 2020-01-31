@@ -20,6 +20,8 @@ export var Navigator = class {
     var self = this;
 
     this.input.addEventListener('change', (event) => {
+      if ( self._ignore ) { self._ignore = false; console.log("AHOY NAVIGATOR IGNORING CHANGE"); return ; }
+      console.log("AHOY NAVIGATOR change", event);
       this.output.classList.remove('updating');
       this._updateInputBackground();
       this.render('current-seq', this.input.value);
@@ -29,6 +31,7 @@ export var Navigator = class {
     })
 
     this.input.addEventListener('input', (event) => {
+      console.log("AHOY NAVIGATOR input", event);
       this.output.classList.add('updating');
       this.render('current-seq', this.input.value);
       this._renderCurrentPage(this.input.value);
@@ -152,8 +155,11 @@ export var Navigator = class {
 
       var value; var percentage;
       if ( ! self._initiated ) { return ; }
-      if ( self._ignore ) { self._ignore = false; console.log("AHOY IGNORING", self._ignore); return; }
+      if ( self._ignore ) { self._ignore = false; console.log("AHOY NAVIGATOR IGNORING relocated", self._ignore); return; }
       if ( ! ( location && location.start ) ) { return ; }
+
+      var check = self.reader.view.currentLocation();
+      console.log("AHOY NAVIGATOR check", check, location);
 
       var value;
       if ( location.start && location.end ) {
@@ -161,12 +167,14 @@ export var Navigator = class {
         value = parseInt(self.input.value, 10);
         var start = parseInt(location.start.location, 10);
         var end = parseInt(location.end.location, 10);
-        console.log("AHOY NAVIGATOR relocated", value, start, end, value < start, value > end);
+        console.log("AHOY NAVIGATOR relocated", value, start, end, value < start, value > end, location);
         if ( value < start || value > end ) {
           self._last_value = value;
           value = ( value < start ) ? start : end;
         }
       }
+
+      self._ignore = true;
 
       self.render('current-seq', value);
       self._renderCurrentPage(value);

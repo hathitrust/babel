@@ -5,7 +5,8 @@
 @import "download";
 @import "spinthatshit/src/loaders";
 
-@import "cozy-sun-bear/scss/cozy";
+// @import "cozy-sun-bear/scss/cozy";
+@import "cozy-sun-bear";
 
 %navigator-component {
 
@@ -940,3 +941,16 @@ li.toggle--500 {
   }
 }
 
+// HACKING
+
+iframe#search-results {
+  height: 100vh;
+  width: 100vw;
+  border: 8px solid $link-color;
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  display: none;
+}

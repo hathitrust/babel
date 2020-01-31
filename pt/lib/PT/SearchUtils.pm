@@ -429,8 +429,21 @@ sub Solr_search_item {
     my $start = max($cgi->param('start') - 1, 0);
     my $rows = $cgi->param('size');
 
+    use Digest::SHA;
+    use Storable();
+
+    my $rs_cache_key = Digest::SHA::sha1_hex(qq{$id.$processed_q1.$start.$rows});
+    my $rs_cache_filename = "$ENV{SDRROOT}/cache/$rs_cache_key.bin";
+
+    if ( -f $rs_cache_filename ) {
+        my $rs = Storable::retrieve($rs_cache_filename);
+        print STDERR "AHOY AHOY USING CACHED : " . ( Time::HiRes::time() - $start_0 ) . "\n";
+        return $rs;
+    }
+
     my $rs = new Search::Result::Page;
     $rs->set_auxillary_data('parsed_query_terms', $parsed_terms_arr_ref);
+    $$rs{__cache_filename__} = $rs_cache_filename;
 
     # If this is a CJK query containing Han characters and there is
     # only one string, we need to check to see if the string would be
@@ -484,6 +497,11 @@ sub Solr_search_item {
         my $Q = new PT::Query($C);
         $Q->log_query($C, $g_stats_ref, $Solr_url);
     }
+
+    # can we stash this somewhere?
+    Storable::nstore($rs, $rs_cache_filename); 
+    chmod(0666, $rs_cache_filename);
+    print STDERR "AHOY AHOY COMPUTING : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $rs;
 }

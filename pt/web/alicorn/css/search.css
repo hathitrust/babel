@@ -472,3 +472,29 @@ a.worldcat.inline {
   background: #0099cc;
   font-weight: bold;
 }
+
+span.visit {
+  text-decoration: underline;
+  color: #924a0b;
+}
+
+ul.results--list {
+  margin-left: 2rem;
+}
+
+ul.results--list a {
+  font-weight: normal;
+  font-style: normal;
+  color: #000;
+  text-decoration: none !important;
+}
+
+ul.results--list a:hover {
+  color: #924a0b !important;
+  text-decoration: underline !important;
+}
+
+a.hover span.visit {
+  text-decoration: none;
+  color: #d56d11;
+}

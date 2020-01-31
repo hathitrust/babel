@@ -80,6 +80,16 @@ var Reader = class {
 
   start(params, cb) {
     var epub_href = document.querySelector('html').dataset.epubRoot;
+
+    if ( location.href.indexOf('debug=local,epub') > 0 ) {
+      var tmp = epub_href.split('/');
+      tmp.pop(); // trailing slash
+      var epub_filename = tmp.pop()
+      epub_filename = epub_filename.replace('.epub_unpacked', '.epub');
+      tmp.push(epub_filename);
+      epub_href = tmp.join('/');
+    }
+
     var flow = params.view == '1up' ? 'scrolled-doc' : 'paginated';
 
     if ( params.view ) {
@@ -93,12 +103,19 @@ var Reader = class {
     this.view = cozy.reader(document.querySelector('.viewer-inner'), { href: epub_href, flow: flow, xxmobileMediaQuery: '(min-device-width : 100px) and (max-device-width : 150px)' });
     this.view.name = params.view;
 
+    this.emit('initialized');
+
     this.view.on('relocated', (location) => {
       this.emit('relocated', location);
     });
 
+    var perm_url = document.querySelector('#permURL').value;
     this.view.start(() => {
       this.emit('ready');
+
+      this.view.on('updateLocation', () => {
+        document.querySelector('#pageURL').value = `${perm_url}?urlappend=%23${window.location.hash}`;
+      })
     });
   }
 
@@ -134,6 +151,10 @@ var Reader = class {
     });
   }
 
+  display(target) {
+    this.view.gotoPage(target);
+  }
+
   prev() {
     this.view.prev();
   }
@@ -156,6 +177,23 @@ var Reader = class {
 
   emit(event, params={}) {
     this.emitter.emit(event, params);
+  }
+
+  _updateHistoryUrl(params) {
+    var href = window.location.pathname + location.search;
+    var argv = [];
+    argv.push(`id=${this.identifier}`);
+    argv.push(`view=${params.view || this.view.name}`);
+    // argv.push(`seq=${params.seq || HT.params.seq}`);
+    if ( HT.params.skin ) { argv.push(`skin=${HT.params.skin}`); }
+    if ( this.options.scale > 1.0 ) { argv.push(`size=${Math.floor(this.options.scale * 100)}`) };
+    if ( HT.params.debug ) { argv.push(`debug=${HT.params.debug}`); }
+    if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
+    if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
+    if ( HT.params.q1 ) { argv.push(`q1=${params.q1 || HT.params.q1}`); }
+    var new_href = location.pathname + '?' + argv.join('&');
+    new_href += location.hash;
+    window.history.replaceState(null, document.title, new_href);
   }
 
   _logAction(href, trigger) {
@@ -223,6 +261,15 @@ reader.controls.zoominator = new Control.Zoominator({
   input: document.querySelector('.action-zoom'),
   reader: reader
 })
+
+reader.controls.highlighter = new Control.Highlighter({
+  reader: reader
+})
+
+reader.controls.contentsnator = new Control.Contentsnator({
+  input: document.querySelector('.table-of-contents'),
+  reader: reader
+});
 
 var actionFullScreen = document.querySelector('.action-fullscreen');
 if ( actionFullScreen ) {

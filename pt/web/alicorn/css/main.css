@@ -1116,21 +1116,30 @@ section section .viewer-loader.viewer-loader::after {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u16d80a6d 1s linear alternate infinite;
           animation: loader12-u16d80a6d 1s linear alternate infinite;
 =======
   -webkit-animation: loader12-u8251be40 1s linear alternate infinite;
           animation: loader12-u8251be40 1s linear alternate infinite;
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+  -webkit-animation: loader12-uf61a7db0 1s linear alternate infinite;
+          animation: loader12-uf61a7db0 1s linear alternate infinite;
+>>>>>>> 35daf5b... controls
   top: 50%;
   margin: -50px auto 0;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u16d80a6d {
 =======
 @-webkit-keyframes loader12-u8251be40 {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@-webkit-keyframes loader12-uf61a7db0 {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1154,10 +1163,14 @@ section section .viewer-loader.viewer-loader::after {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u16d80a6d {
 =======
 @keyframes loader12-u8251be40 {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@keyframes loader12-uf61a7db0 {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1211,21 +1224,30 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u7e6b9bc1 1s linear alternate infinite;
           animation: loader12-u7e6b9bc1 1s linear alternate infinite;
 =======
   -webkit-animation: loader12-u37ad235f 1s linear alternate infinite;
           animation: loader12-u37ad235f 1s linear alternate infinite;
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+  -webkit-animation: loader12-u9b01f65e 1s linear alternate infinite;
+          animation: loader12-u9b01f65e 1s linear alternate infinite;
+>>>>>>> 35daf5b... controls
   top: 50%;
   margin: -50px auto 0;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-u7e6b9bc1 {
 =======
 @-webkit-keyframes loader12-u37ad235f {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@-webkit-keyframes loader12-u9b01f65e {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1249,10 +1271,14 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u7e6b9bc1 {
 =======
 @keyframes loader12-u37ad235f {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@keyframes loader12-u9b01f65e {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1601,22 +1627,31 @@ section.view--thumb section .page:not(.page--loaded)::before {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-ube9bcc67 1s linear alternate infinite;
           animation: loader12-ube9bcc67 1s linear alternate infinite;
 =======
   -webkit-animation: loader12-u553b45fe 1s linear alternate infinite;
           animation: loader12-u553b45fe 1s linear alternate infinite;
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+  -webkit-animation: loader12-u09e39355 1s linear alternate infinite;
+          animation: loader12-u09e39355 1s linear alternate infinite;
+>>>>>>> 35daf5b... controls
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-ube9bcc67 {
 =======
 @-webkit-keyframes loader12-u553b45fe {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@-webkit-keyframes loader12-u09e39355 {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1640,10 +1675,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-ube9bcc67 {
 =======
 @keyframes loader12-u553b45fe {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@keyframes loader12-u09e39355 {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1836,12 +1875,17 @@ section.view--plaintext button[data-target="plaintext"] {
   border-radius: 50%;
   position: relative;
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-ubd5127ea 1s linear alternate infinite;
           animation: loader12-ubd5127ea 1s linear alternate infinite;
 =======
   -webkit-animation: loader12-ud1106633 1s linear alternate infinite;
           animation: loader12-ud1106633 1s linear alternate infinite;
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+  -webkit-animation: loader12-u3a6333db 1s linear alternate infinite;
+          animation: loader12-u3a6333db 1s linear alternate infinite;
+>>>>>>> 35daf5b... controls
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1851,10 +1895,14 @@ section.view--plaintext button[data-target="plaintext"] {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-ubd5127ea {
 =======
 @-webkit-keyframes loader12-ud1106633 {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@-webkit-keyframes loader12-u3a6333db {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1878,10 +1926,14 @@ section.view--plaintext button[data-target="plaintext"] {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-ubd5127ea {
 =======
 @keyframes loader12-ud1106633 {
 >>>>>>> 76bf88a... integrate cozy-sun-bear
+=======
+@keyframes loader12-u3a6333db {
+>>>>>>> 35daf5b... controls
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

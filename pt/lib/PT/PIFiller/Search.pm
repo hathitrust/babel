@@ -389,11 +389,23 @@ sub WrapFragmentSearchResultsInXml {
     $tempCgi->delete('orient');
     $tempCgi->delete('u');
 
+    use Time::HiRes;
+    my $start_0 = Time::HiRes::time();
+
     my $XML_result = '';
 
     # Server/Query/Network error
     if (! $rs->http_status_ok()) {
         $XML_result = wrap_string_in_tag('true', 'SearchError');
+        return $XML_result;
+    }
+
+    my $cache_filename = $$rs{__cache_filename__};
+    my $xml_cache_filename = "$cache_filename.xml";
+    if ( -f $xml_cache_filename ) {
+        open my $fh, '<:encoding(UTF-8)', $xml_cache_filename or die "Can't open file $!";
+        $XML_result = do { local $/; <$fh> };
+        print STDERR "AHOY AHOY XML CACHED : " . ( Time::HiRes::time() - $start_0 ) . "\n";
         return $XML_result;
     }
 
@@ -502,7 +514,7 @@ sub WrapFragmentSearchResultsInXml {
             my $content = $node->textContent;
             if ( $content =~ m,$expr,i ) {
 
-                push @possibles, [ [ @$offset ], $content ];
+                push @possibles, [ [ @$offset ], $content, $node ];
 
                 my @children = ();
                 foreach my $child ( $node->nonBlankChildNodes() ) { # $xpc->findnodes("node()", $node);
@@ -521,10 +533,31 @@ sub WrapFragmentSearchResultsInXml {
 
         my $last_path;
         my $num_snippets = 0;
+
+        my $range_start = -1;
+        my $range_length = 0;
+        my $range_offset;
+
         while ( my $possible = pop @possibles ) {
-            my ( $offset, $content ) = @$possible;
+            my ( $offset, $content, $node ) = @$possible;
             my @words = split(/\s/, $content);
             my $path = join('/', @$offset);
+
+            ## need to find the range_start from *this* spot
+            if ( $range_start < 0 ) {
+                $range_offset = $offset;
+                foreach my $child ( $node->nonBlankChildNodes() ) {
+                    next unless ( $child->nodeType == 3 );
+                    $range_start += 2;
+                    my $value = $child->nodeValue;
+                    my @chunks = split(/($expr)/, $value);
+                    if ( scalar @chunks > 1 ) {
+                        my $idx = List::MoreUtils::firstidx { $_ =~ m,$expr, } @chunks;
+                        $range_length = length(join('', @chunks[0..$idx]));
+                        last;
+                    }
+                }
+            }
 
             next if ( scalar @possibles && scalar @words < 10 );
 
@@ -553,6 +586,9 @@ sub WrapFragmentSearchResultsInXml {
                 push @tmp, @words[$p0 .. $#words] if ( scalar @words );
                 push @tmp, qq{<strong class="solr_highlight_1">$chunks[$idx]</strong>&#160;};
                 @chunks = splice(@chunks, $idx + 1);
+
+
+
             }
             if ( scalar @chunks && scalar @tmp < $MAX_SNIPPET_WORDS  ) {
                 my $n = scalar @tmp;
@@ -567,7 +603,8 @@ sub WrapFragmentSearchResultsInXml {
             # $XML_result .= wrap_string_in_tag(join('|', @matched_words), 'Highlight');
             my $temperCgi = new CGI($tempCgi);
 
-            my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$offset) . "/1:0";
+            $range_start = 1 if ( $range_start < 0 );
+            my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$range_offset) . "/$range_start:$range_length";
             # $temperCgi->param('num', $cfi_path);
             # $temperCgi->param('h', join(':', @matched_words));
             my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
@@ -593,12 +630,22 @@ sub WrapFragmentSearchResultsInXml {
 
             $XML_result .= '</Result>';
 
+            $range_start = -1;
+            $range_length = 0;
+            $range_offset = undef;
+
             $num_snippets += 1;
             last if ( $num_snippets >= $MAX_SNIPPETS );
         }
 
         $XML_result .= '</Page>';
     }
+
+    open(my $fh, ">", $xml_cache_filename);
+    print $fh $XML_result;
+    close($fh);
+
+    print STDERR "AHOY AHOY XML BUILD : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $XML_result;
 }
