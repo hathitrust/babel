@@ -258,7 +258,6 @@ sub ValidityChecks {
     my $orient = $cgi->param( 'orient' );
     my $ui = defined $cgi->param('ui') ? $cgi->param('ui') : 'default';
 
-    print STDERR "AHOY HEY : $view :: $ui\n";
     unless ( $view || $ui eq 'embed'  ) {
         my $prefs = $cgi->cookie('HT.prefs');
         if ( $prefs ) {

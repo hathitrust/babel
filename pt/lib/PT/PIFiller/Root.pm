@@ -1010,7 +1010,6 @@ sub handle_BASE_IMAGE_DIMENSIONS
 
     my $info;
     $info = $cache->Get($mdpItem->GetId(), $cache_key) unless ( $ignore_existing_cache );
-    print STDERR "AHOY IMAGE CACHE " . ref($info) . "\n";
 
     unless ( ref($info) ) {
 
