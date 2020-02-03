@@ -1,89 +1,105 @@
 head.ready(function() {
   var $form = $(".form-search-volume");
+  HT.$search_form = null;
+
+  var $body = $("body");
+
+  var section_view = function(view) {
+    $body.get(0).dataset.sectionView = view;
+  }
 
   if ( $("#toolbar-vertical").length ) {
-    var $iframe = $("<iframe name='search-results' id='search-results'></iframe>").appendTo($("body"));
-    // $iframe.css({ width: '50vw', height: '50vh', border: '8px solid blue', position: 'fixed', bottom: 0 });
-    $iframe.on("load", function() {
-      $(window).trigger('undo-loading');
-      $iframe.show();
+    // $iframe.on("load", function() {
+    //   $(window).trigger('undo-loading');
+    //   $iframe.show();
 
-      var $check = $("#mdpBackToResults");
-      if ( ! $check.length ) {
-        var href = $iframe.get(0).contentWindow.location.href;
-        $check = $(`<div id="mdpBackToResults"></div>`);
-        $(".bibLinks").before($check);
-        $("#mdpBackToResults").append(`<p><a data-toggle="tracking" data-tracking-category="PT" data-tracking-action="PT Back to In Item Results" href="${href}">&#171; Back to "Search in this text" results</a></p>`);
-      }
+    //   var $check = $("#mdpBackToResults");
+    //   if ( ! $check.length ) {
+    //     var href = $iframe.get(0).contentWindow.location.href;
+    //     $check = $(`<div id="mdpBackToResults"></div>`);
+    //     $(".bibLinks").before($check);
+    //     $("#mdpBackToResults").append(`<p><a data-toggle="tracking" data-tracking-category="PT" data-tracking-action="PT Back to In Item Results" href="${href}">&#171; Back to "Search in this text" results</a></p>`);
+    //   }
 
-      // actually this *is* the current URL. Hmm.
-      HT.params.q1 = $iframe.get(0).contentWindow.HT.params.q1;
-      $("input[name=q1]").val(HT.params.q1);
+    //   // actually this *is* the current URL. Hmm.
+    //   HT.params.q1 = $iframe.get(0).contentWindow.HT.params.q1;
+    //   $("input[name=q1]").val(HT.params.q1);
 
-      $(this).contents().on('click', '.back-to-beginning-link a', function(event) {
-        // just close this iframe
-        event.preventDefault();
-        event.stopPropagation();
-        $iframe.hide();
-      })
+    //   $(this).contents().on('click', '.back-to-beginning-link a', function(event) {
+    //     // just close this iframe
+    //     event.preventDefault();
+    //     event.stopPropagation();
+    //     $iframe.hide();
+    //   })
 
-      $(this).contents().on('click', 'article.result a', function(event) {
-        event.preventDefault();
-        var $link = $(event.target).closest("a");
-        var href = $link.attr('href');
+    //   $(this).contents().on('click', 'article.result a', function(event) {
+    //     event.preventDefault();
+    //     var $link = $(event.target).closest("a");
+    //     var href = $link.attr('href');
 
-        var fragment = href.split('#');
-        var cfi = `epubcfi(${fragment.pop()})`;
+    //     var fragment = href.split('#');
+    //     var cfi = `epubcfi(${fragment.pop()})`;
+    //     setTimeout(() => {
+
+    //       $iframe.hide();
+    //       HT.reader.emit('updateHighlights');
+    //       HT.reader._updateHistoryUrl({});
+
+    //       HT.reader.view.rendition.display(cfi).then(() => {
+    //         console.log("AHOY gotoPage", cfi, HT.reader.view.currentLocation());
+    //       });
+    //     }, 100);
+    //   })
+    // })
+
+    $("body").on('click', '.back-to-beginning-link a', function(event) {
+      // just close this iframe
+      event.preventDefault();
+      event.stopPropagation();
+      section_view('search-results');
+    })
+
+    $("body").on('click', 'article.result a', function(event) {
+      event.preventDefault();
+      var $link = $(event.target).closest("a");
+      var href = $link.attr('href');
+
+      var fragment = href.split('#');
+      var cfi = `epubcfi(${fragment.pop()})`;
+      setTimeout(() => {
+
+        // HT.$search_form.hide();
+        // HT.$reader.show();
+        section_view('reader');
+
+        HT.reader.emit('updateHighlights');
+        HT.reader._updateHistoryUrl({});
+
         setTimeout(() => {
-
-          $iframe.hide();
-          HT.reader.emit('updateHighlights');
-          HT.reader._updateHistoryUrl({});
-          // setTimeout(() => {
-          //   HT.reader.display(cfi);
-          //   setTimeout(() => {
-          //     HT.reader.display(cfi);
-          //   }, 500);
-          // }, 100);
-
-          // HT.reader.view.gotoPage(cfi, () => {
-          //   // HT.reader.view.gotoPage(cfi);
-          //   console.log("AHOY gotoPage", cfi, HT.reader.view.currentLocation());
-          // })
-
-          // var index = HT.reader.view.locations.locationFromCfi(cfi);
-          // var new_cfi = HT.reader.view.locations.cfiFromLocation(index);
-          // HT.reader.view.rendition.display(new_cfi).then(() => {
-          //   console.log("AHOY gotoPage", cfi, index, new_cfi);
-          // });
-
+          console.log("AHOY RESULTS gotoPage CLICK", cfi);
           HT.reader.view.rendition.display(cfi).then(() => {
-            // setTimeout(() => {
-            //   HT.reader.view.rendition.display(cfi).then(() => {
-            //     console.log("AHOY gotoPage INNER", cfi, HT.reader.view.currentLocation());
-            //   }, 1000);
-            // })
-            console.log("AHOY gotoPage", cfi, HT.reader.view.currentLocation());
+            console.log("AHOY RESULTS gotoPage DONE", cfi, HT.reader.view.currentLocation());
           });
         }, 100);
-      })
+      }, 100);
     })
 
     $("body").on('click', '#mdpBackToResults a[data-tracking-action="PT Back to In Item Results"]', function(event) {
       event.preventDefault();
       event.stopPropagation();
-      $iframe.show();
+      
+      section_view('search-results');
+
       return false;
     })
-
-    $form.attr('target', 'search-results');
   }
 
   $(window).on('undo-loading', function() {
     $("button.btn-loading").removeAttr("disabled").removeClass("btn-loading");
   })
 
-  $form.submit(function(event) {
+  // $form.submit(function(event) {
+  $("body").on('submit', 'form.form-search-volume', function(event) {
     HT.beforeUnloadTimeout = 15000;
     var $form_ = $(this);
 
@@ -99,11 +115,13 @@ head.ready(function() {
     }
     $submit.addClass("btn-loading").attr("disabled", "disabled");
 
-    if ( $form_.data('q') == $.trim($input.val()) && $iframe.length ) {
+    if ( $form_.data('q') == $.trim($input.val()) && HT.$search_form ) {
       // same query, just show the dang iframe
-      $iframe.show();
       $(window).trigger('undo-loading');
       event.preventDefault();
+      section_view('search-results');
+      // HT.$reader.hide();
+      // HT.$search_form.show();
       return false;
     }
 
@@ -115,7 +133,29 @@ head.ready(function() {
       $(window).trigger('undo-loading');
     })
 
-    return true;
+    // return true;
+    event.preventDefault();
+
+    $.ajax({
+      url: '/cgi/pt/search',
+      method: 'GET',
+      data: $form_.serialize()
+    }).done(function (response) {
+      $(window).trigger('undo-loading');
+      var $response = $(response);
+      var $results = $response.find("section#section");
+      HT.$reader = $("section#section");
+      if ( HT.$search_form ) {
+        HT.$search_form.replaceWith($results);
+        HT.$search_form = $("section.search-results-container");
+      } else {
+        HT.$search_form = $results;
+        HT.$reader.after(HT.$search_form);
+      }
+      section_view('search-results');
+    })
+
+
   })
 
   $("#action-start-jump").on('change', function() {
@@ -129,8 +169,14 @@ head.ready(function() {
   })
 
   // handling EPUB-related links
-    $("[data-highlight]").on('click', function() {
-      var highlight = $(this).data('highlight');
-      sessionStorage.setItem('highlight', JSON.stringify(highlight));
-    })
+  $("body").on('click', "[data-highlight]", function() {
+    var highlight = $(this).data('highlight');
+    sessionStorage.setItem('highlight', JSON.stringify(highlight));
+  })
+
+  // setInterval(() => {
+  //   var main = document.querySelector('main');
+  //   console.log("AHOY MAIN", main.offsetHeight, main.scrollTop);
+  // }, 10);
+
 });

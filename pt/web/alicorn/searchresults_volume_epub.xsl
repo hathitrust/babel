@@ -84,7 +84,7 @@
           </button>
           <xsl:call-template name="sidebar" />
         </div>
-        <section class="section-container" id="section" tabindex="0">
+        <section class="section-container search-results-container" id="section" tabindex="0">
           <xsl:call-template name="build-results-container" />
         </section>
       </div>

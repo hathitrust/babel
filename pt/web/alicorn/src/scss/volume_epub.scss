@@ -943,6 +943,10 @@ li.toggle--500 {
 
 // HACKING
 
+.clipped {
+  clip-path: (0%) !important;
+}
+
 iframe#search-results {
   height: 100vh;
   width: 100vw;
@@ -953,4 +957,111 @@ iframe#search-results {
   left: 0;
 
   display: none;
+}
+
+// MORE HACKING
+article.result {
+  margin: 1rem 0 1.5rem;
+
+  h3 {
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  p.kwic {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+section.search-results-container {
+  flex-grow: 1;
+  max-width: 80ch;
+  padding-right: 2rem;
+  overflow: auto;
+
+  .results-search-form {
+    margin: 1rem 0;
+    border-bottom: 1px dotted #666;
+    padding-bottom: 1rem;
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type=text] {
+      width: 20rem;
+    }
+  }
+
+  /* SOLR HIGHLIGHTING */
+  .solr_highlight_1 {
+    background: #ffff00;
+    font-weight: bold;
+  }
+
+  .solr_highlight_2 {
+    background: #00ff00;
+    font-weight: bold;
+  }
+
+  .solr_highlight_3 {
+    background: #ff9900;
+    font-weight: bold;
+  }
+
+  .solr_highlight_4 {
+    background: #00ffcc;
+    font-weight: bold;
+  }
+
+  .solr_highlight_5 {
+    background: #00cccc;
+    font-weight: bold;
+  }
+
+  .solr_highlight_6 {
+    background: #0099cc;
+    font-weight: bold;
+  }
+
+  // EPUB
+  span.visit {
+    text-decoration: underline;
+    color: $link-color;
+  }
+
+  ul.results--list {
+    margin-left: 2rem;
+    a {
+      font-weight: normal;
+      font-style: normal; 
+      color: #000;
+      text-decoration: none !important;
+
+      &:hover {
+        color: $link-color !important;
+        text-decoration: underline !important;
+      }
+    }
+  }
+
+  a.hover span.visit {
+    text-decoration: none;
+    color: #d56d11;
+  }
+
+}
+
+section.search-results-container {
+  display: none;
+}
+
+body[data-section-view="search-results"] {
+  section[class*="view"] {
+    display: none !important;
+  }
+  section.search-results-container {
+    display: flex;    
+  }
 }

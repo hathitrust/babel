@@ -1117,6 +1117,7 @@ section section .viewer-loader.viewer-loader::after {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u16d80a6d 1s linear alternate infinite;
           animation: loader12-u16d80a6d 1s linear alternate infinite;
 =======
@@ -1127,10 +1128,15 @@ section section .viewer-loader.viewer-loader::after {
   -webkit-animation: loader12-uf61a7db0 1s linear alternate infinite;
           animation: loader12-uf61a7db0 1s linear alternate infinite;
 >>>>>>> 35daf5b... controls
+=======
+  -webkit-animation: loader12-ua4bedb67 1s linear alternate infinite;
+          animation: loader12-ua4bedb67 1s linear alternate infinite;
+>>>>>>> dc31f1d... tweaking + different search
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u16d80a6d {
@@ -1140,6 +1146,9 @@ section section .viewer-loader.viewer-loader::after {
 =======
 @-webkit-keyframes loader12-uf61a7db0 {
 >>>>>>> 35daf5b... controls
+=======
+@-webkit-keyframes loader12-ua4bedb67 {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1164,6 +1173,7 @@ section section .viewer-loader.viewer-loader::after {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u16d80a6d {
 =======
 @keyframes loader12-u8251be40 {
@@ -1171,6 +1181,9 @@ section section .viewer-loader.viewer-loader::after {
 =======
 @keyframes loader12-uf61a7db0 {
 >>>>>>> 35daf5b... controls
+=======
+@keyframes loader12-ua4bedb67 {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1225,6 +1238,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-u7e6b9bc1 1s linear alternate infinite;
           animation: loader12-u7e6b9bc1 1s linear alternate infinite;
 =======
@@ -1235,10 +1249,15 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   -webkit-animation: loader12-u9b01f65e 1s linear alternate infinite;
           animation: loader12-u9b01f65e 1s linear alternate infinite;
 >>>>>>> 35daf5b... controls
+=======
+  -webkit-animation: loader12-u84e822ab 1s linear alternate infinite;
+          animation: loader12-u84e822ab 1s linear alternate infinite;
+>>>>>>> dc31f1d... tweaking + different search
   top: 50%;
   margin: -50px auto 0;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-u7e6b9bc1 {
@@ -1248,6 +1267,9 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 =======
 @-webkit-keyframes loader12-u9b01f65e {
 >>>>>>> 35daf5b... controls
+=======
+@-webkit-keyframes loader12-u84e822ab {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1272,6 +1294,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-u7e6b9bc1 {
 =======
 @keyframes loader12-u37ad235f {
@@ -1279,6 +1302,9 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
 =======
 @keyframes loader12-u9b01f65e {
 >>>>>>> 35daf5b... controls
+=======
+@keyframes loader12-u84e822ab {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1628,6 +1654,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-ube9bcc67 1s linear alternate infinite;
           animation: loader12-ube9bcc67 1s linear alternate infinite;
 =======
@@ -1638,11 +1665,16 @@ section.view--thumb section .page:not(.page--loaded)::before {
   -webkit-animation: loader12-u09e39355 1s linear alternate infinite;
           animation: loader12-u09e39355 1s linear alternate infinite;
 >>>>>>> 35daf5b... controls
+=======
+  -webkit-animation: loader12-u2b1c3665 1s linear alternate infinite;
+          animation: loader12-u2b1c3665 1s linear alternate infinite;
+>>>>>>> dc31f1d... tweaking + different search
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 @-webkit-keyframes loader12-ube9bcc67 {
@@ -1652,6 +1684,9 @@ section.view--thumb section .page:not(.page--loaded)::before {
 =======
 @-webkit-keyframes loader12-u09e39355 {
 >>>>>>> 35daf5b... controls
+=======
+@-webkit-keyframes loader12-u2b1c3665 {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1676,6 +1711,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-ube9bcc67 {
 =======
 @keyframes loader12-u553b45fe {
@@ -1683,6 +1719,9 @@ section.view--thumb section .page:not(.page--loaded)::before {
 =======
 @keyframes loader12-u09e39355 {
 >>>>>>> 35daf5b... controls
+=======
+@keyframes loader12-u2b1c3665 {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1876,6 +1915,7 @@ section.view--plaintext button[data-target="plaintext"] {
   position: relative;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   -webkit-animation: loader12-ubd5127ea 1s linear alternate infinite;
           animation: loader12-ubd5127ea 1s linear alternate infinite;
 =======
@@ -1886,6 +1926,10 @@ section.view--plaintext button[data-target="plaintext"] {
   -webkit-animation: loader12-u3a6333db 1s linear alternate infinite;
           animation: loader12-u3a6333db 1s linear alternate infinite;
 >>>>>>> 35daf5b... controls
+=======
+  -webkit-animation: loader12-uea341a4c 1s linear alternate infinite;
+          animation: loader12-uea341a4c 1s linear alternate infinite;
+>>>>>>> dc31f1d... tweaking + different search
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1896,6 +1940,7 @@ section.view--plaintext button[data-target="plaintext"] {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @-webkit-keyframes loader12-ubd5127ea {
 =======
 @-webkit-keyframes loader12-ud1106633 {
@@ -1903,6 +1948,9 @@ section.view--plaintext button[data-target="plaintext"] {
 =======
 @-webkit-keyframes loader12-u3a6333db {
 >>>>>>> 35daf5b... controls
+=======
+@-webkit-keyframes loader12-uea341a4c {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1927,6 +1975,7 @@ section.view--plaintext button[data-target="plaintext"] {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 @keyframes loader12-ubd5127ea {
 =======
 @keyframes loader12-ud1106633 {
@@ -1934,6 +1983,9 @@ section.view--plaintext button[data-target="plaintext"] {
 =======
 @keyframes loader12-u3a6333db {
 >>>>>>> 35daf5b... controls
+=======
+@keyframes loader12-uea341a4c {
+>>>>>>> dc31f1d... tweaking + different search
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

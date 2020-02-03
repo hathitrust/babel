@@ -203,12 +203,36 @@ var Reader = class {
   }
 }
 
+// --- RANDOM JANK
+var _scrollCheckFn = function(what) {
+  return debounce(function(event) {
+    if ( what == window ) { window.scrollTo(0,0); }
+    else { what.scrollTop = 0; }
+  }, 50);
+}
 
+// var _scrollCheck = debounce(function(event) {
+//   window.scrollTo(0,0);
+// }, 50);
+// if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
+//   window.addEventListener('scroll', _scrollCheck);
+// }
+
+window.addEventListener('scroll', _scrollCheckFn(window));
+$root.addEventListener('scroll', _scrollCheckFn($root));
+
+// var _scrollCheck = debounce(function(event) {
+//   window.scrollTo(0,0);
+// }, 50);
+// if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
+//   window.addEventListener('scroll', _scrollCheck);
+// }
+
+
+
+// --- INITIALIZE READER
 var reader = new Reader({ identifier: HT.params.id });
 HT.reader = reader;
-
-// attach controls
-
 
 // initialize
 var scale = 1.0;
@@ -285,3 +309,9 @@ if ( $inner.offsetWidth < 800 ) {
 }
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+
+setTimeout(() => {
+    var event = document.createEvent('UIEvents');
+    event.initEvent('resize', true, false, window, 0);
+    window.dispatchEvent(event)
+}, 100);
