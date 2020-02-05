@@ -5,7 +5,10 @@ head.ready(function() {
   var $body = $("body");
 
   var section_view = function(view) {
-    $body.get(0).dataset.sectionView = view;
+    // $body.get(0).dataset.sectionView = view;
+    document.documentElement.dataset.sidebarExpanded = false;
+    document.documentElement.dataset.sectionView = view;
+    $(".sidebar-container").find("button[aria-expanded]").attr('aria-expanded', false);
   }
 
   if ( $("#toolbar-vertical").length ) {
@@ -56,7 +59,7 @@ head.ready(function() {
       // just close this iframe
       event.preventDefault();
       event.stopPropagation();
-      section_view('search-results');
+      section_view('reader');
     })
 
     $("body").on('click', 'article.result a', function(event) {
@@ -66,11 +69,31 @@ head.ready(function() {
 
       var fragment = href.split('#');
       var cfi = `epubcfi(${fragment.pop()})`;
+
+      var highlight = $link.data('highlight');
+      sessionStorage.setItem('highlight', JSON.stringify(highlight));
+
+      section_view('reader');
+
       setTimeout(() => {
 
         // HT.$search_form.hide();
         // HT.$reader.show();
-        section_view('reader');
+
+        var fn;
+        fn = function gotoPageFromResults(cfi) {
+          setTimeout(() => {
+            console.log("AHOY RESULTS gotoPage CLICK", cfi);
+            // HT.reader.view.rendition.off("resized", fn);
+            HT.reader.view.rendition.display(cfi).then(() => {
+              console.log("AHOY RESULTS gotoPage DONE", cfi, HT.reader.view.currentLocation());
+            });
+          }, 100);
+        };
+
+        HT.reader.view.rendition.once("resized", fn.bind(window, cfi));
+
+        HT.$search_form.scrollTop(0);
 
         HT.reader.emit('updateHighlights');
         HT.reader._updateHistoryUrl({});
@@ -127,6 +150,7 @@ head.ready(function() {
 
     $form_.data('q', $.trim($input.val()));
     HT.params.q1 = $form_.data('q');
+    $("input[name='q1']").val(HT.params.q1);
 
     $(window).on('unload', function() {
       // $submit.removeAttr('disabled');
@@ -143,16 +167,37 @@ head.ready(function() {
     }).done(function (response) {
       $(window).trigger('undo-loading');
       var $response = $(response);
-      var $results = $response.find("section#section");
-      HT.$reader = $("section#section");
+
+      var $results = $response.find("main");
+      $results.attr('id', 'search-results');
+      HT.$reader = $("main#main");
       if ( HT.$search_form ) {
         HT.$search_form.replaceWith($results);
-        HT.$search_form = $("section.search-results-container");
+        HT.$search_form = $("main#search-results");
       } else {
         HT.$search_form = $results;
         HT.$reader.after(HT.$search_form);
       }
+
+      // var $results = $response.find("section#section");
+      // HT.$reader = $("section#section");
+      // if ( HT.$search_form ) {
+      //   HT.$search_form.replaceWith($results);
+      //   HT.$search_form = $("section.search-results-container");
+      // } else {
+      //   HT.$search_form = $results;
+      //   HT.$reader.after(HT.$search_form);
+      // }
+
       section_view('search-results');
+
+      // this is why?
+      var $btn = HT.$search_form.find(".sidebar-toggle-button");
+      if ( $btn.height() == 0 && ( $("html").is(".ios") || $("html").is(".safari") ) ) {
+        $btn.addClass("stupid-hack");
+      }
+
+
     })
 
 
@@ -169,10 +214,11 @@ head.ready(function() {
   })
 
   // handling EPUB-related links
-  $("body").on('click', "[data-highlight]", function() {
-    var highlight = $(this).data('highlight');
-    sessionStorage.setItem('highlight', JSON.stringify(highlight));
-  })
+  // --- renable this
+  // $("body").on('click', "[data-highlight]", function() {
+  //   var highlight = $(this).data('highlight');
+  //   sessionStorage.setItem('highlight', JSON.stringify(highlight));
+  // })
 
   // setInterval(() => {
   //   var main = document.querySelector('main');

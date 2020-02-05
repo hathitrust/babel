@@ -700,6 +700,11 @@ section.view--2up {
     }
   }
 
+  #root #search-results .section-container {
+    justify-content: start; // normal;
+    padding: 1rem;
+  }
+
   html[data-expanded="false"] {
     header {
       display: none;
@@ -978,7 +983,7 @@ section.search-results-container {
   flex-grow: 1;
   max-width: 80ch;
   padding-right: 2rem;
-  overflow: auto;
+  overflow-y: auto;
 
   .results-search-form {
     margin: 1rem 0;
@@ -1053,15 +1058,65 @@ section.search-results-container {
 
 }
 
-section.search-results-container {
-  display: none;
+// section.search-results-container {
+//   display: none;
+// }
+
+// body[data-section-view="search-results"] {
+//   section[class*="view"] {
+//     display: none !important;
+//   }
+//   section.search-results-container {
+//     display: flex;    
+//   }
+// }
+
+main {
+  transition: visibility 0s linear 150ms, opacity 150ms;
+}
+main#search-results {
+  visibility: hidden;
+  opacity: 0;
+
+  .container.container-boxed {
+  }
+
+}
+html[data-section-view="search-results"] {
+  &, body {
+    overflow-y: auto;
+  }
+  main#main { visibility: hidden; opacity: 0; }
+  main#search-results { 
+    display: flex; visibility: visible; opacity: 1; overflow: auto;
+
+    .sidebar-container {
+      .sidebar-toggle-button.stupid-hack[aria-expanded="false"] {
+        height: 600px; // whyyy?
+      }
+    }
+  }
 }
 
-body[data-section-view="search-results"] {
-  section[class*="view"] {
-    display: none !important;
-  }
-  section.search-results-container {
-    display: flex;    
+html[data-expanded="true"] {
+  main#main {
+    max-height: 93vh;
   }
 }
+
+html[data-expanded="false"] {
+  main#main {
+    max-height: 100vh;
+  }
+}
+
+// html.ios13 {
+//   // why??
+//   main#search-results {
+//     .sidebar-container {
+//       .sidebar-toggle-button[aria-expanded="false"] {
+//         height: 600px !important; //????
+//       }
+//     }
+//   }
+// }

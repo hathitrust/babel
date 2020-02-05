@@ -1072,6 +1072,13 @@ main[data-view="plaintext"] li[data-view-target~="plaintext"] {
   bottom: 0;
 }
 
+@media (max-width: 28em) {
+  .cozy-module-book-epub {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .cozy-module-book[data-manager=default] .epub-container {
   padding: 1rem 0;
 }
@@ -1086,6 +1093,13 @@ main[data-view="plaintext"] li[data-view-target~="plaintext"] {
   padding: 2rem;
   padding-left: 5%;
   padding-right: 5%;
+}
+
+@media (max-width: 28em) {
+  .cozy-module-book[data-manager=continuous][data-layout=reflowable] .epub-container {
+    padding-left: 0.125rem;
+    padding-right: 0.125rem;
+  }
 }
 
 .cozy-module-book[data-manager=continuous][data-layout=reflowable] .epub-view {
@@ -2147,6 +2161,12 @@ section.view--2up button[data-target="2up"] {
   #root .section-container .navigator .action-expando .icomoon::before {
     content: "\43";
   }
+  #root #search-results .section-container {
+    -webkit-box-pack: start;
+        -ms-flex-pack: start;
+            justify-content: start;
+    padding: 1rem;
+  }
   html[data-expanded="false"] header {
     display: none;
   }
@@ -2360,7 +2380,7 @@ section.search-results-container {
           flex-grow: 1;
   max-width: 80ch;
   padding-right: 2rem;
-  overflow: auto;
+  overflow-y: auto;
   /* SOLR HIGHLIGHTING */
 }
 
@@ -2434,16 +2454,42 @@ section.search-results-container a.hover span.visit {
   color: #d56d11;
 }
 
-section.search-results-container {
-  display: none;
+main {
+  -webkit-transition: visibility 0s linear 150ms, opacity 150ms;
+  transition: visibility 0s linear 150ms, opacity 150ms;
 }
 
-body[data-section-view="search-results"] section[class*="view"] {
-  display: none !important;
+main#search-results {
+  visibility: hidden;
+  opacity: 0;
 }
 
-body[data-section-view="search-results"] section.search-results-container {
+html[data-section-view="search-results"], html[data-section-view="search-results"] body {
+  overflow-y: auto;
+}
+
+html[data-section-view="search-results"] main#main {
+  visibility: hidden;
+  opacity: 0;
+}
+
+html[data-section-view="search-results"] main#search-results {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  visibility: visible;
+  opacity: 1;
+  overflow: auto;
+}
+
+html[data-section-view="search-results"] main#search-results .sidebar-container .sidebar-toggle-button.stupid-hack[aria-expanded="false"] {
+  height: 600px;
+}
+
+html[data-expanded="true"] main#main {
+  max-height: 93vh;
+}
+
+html[data-expanded="false"] main#main {
+  max-height: 100vh;
 }

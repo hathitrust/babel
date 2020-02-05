@@ -327,6 +327,12 @@ $grid-padding:       1rem;
     right: 0;
     left: 0;
     bottom: 0;
+
+    @media(max-width: 28em) {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
 }
 
 .cozy-module-book[data-manager=default] {
@@ -348,6 +354,11 @@ $grid-padding:       1rem;
     padding: 2rem;
     padding-left: 5%;
     padding-right: 5%;
+
+    @media(max-width: 28em) {
+      padding-left: 0.125rem;
+      padding-right: 0.125rem;
+    }
   }
 
   .epub-view {

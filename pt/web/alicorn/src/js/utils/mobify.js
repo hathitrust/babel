@@ -29,10 +29,6 @@ head.ready(function() {
     var $sidebar = $("#sidebar");
 
     $trigger = $sidebar.find("button[aria-expanded]");
-    // $trigger.on('clicked', function(event) {
-    //   var active = $trigger.attr('aria-expanded') == 'true';
-    //   $("html").get(0).dataset.view = active ? 'options' : 'viewer';
-    // })
 
     $("#action-mobile-toggle-fullscreen").on('click', function() {
       document.documentElement.requestFullScreen();
@@ -40,7 +36,8 @@ head.ready(function() {
 
     HT.utils = HT.utils || {};
 
-    $sidebar.on('click', function(event) {
+    // $sidebar.on('click', function(event) {
+    $("body").on('click', '.sidebar-container', function(event) {
       // hide the sidebar
       var $this = $(event.target);
       if ( $this.is("input[type='text'],select") ) {
@@ -78,7 +75,8 @@ head.ready(function() {
 
   HT.toggle = function(state) {
 
-    $trigger.attr('aria-expanded', state);
+    // $trigger.attr('aria-expanded', state);
+    $(".sidebar-container").find("button[aria-expanded]").attr('aria-expanded', state);
     $("html").get(0).dataset.sidebarExpanded = state;
     $("html").get(0).dataset.view = state ? 'options' : 'viewer';
 

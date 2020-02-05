@@ -100,7 +100,12 @@ var Reader = class {
       }
     }
 
-    this.view = cozy.reader(document.querySelector('.viewer-inner'), { href: epub_href, flow: flow, xxmobileMediaQuery: '(min-device-width : 100px) and (max-device-width : 150px)' });
+    this.view = cozy.reader(document.querySelector('.viewer-inner'), { 
+      href: epub_href, 
+      flow: flow, 
+      minHeight: window.innerHeight,
+      xxmobileMediaQuery: '(min-device-width : 100px) and (max-device-width : 150px)' 
+    });
     this.view.name = params.view;
 
     this.emit('initialized');
