@@ -162,7 +162,7 @@ export var Base = class {
 
     var html_request;
     if ( this.embedHtml && html_url ) {
-      html_request = fetch(html_url, { credentials: 'include' });
+      html_request = fetch(html_url, { credentials: 'include' })
     }
 
     var img = new Image();
@@ -207,6 +207,9 @@ export var Base = class {
       if ( html_request ) {
         html_request
           .then(function(response) {
+            if ( ! response.ok ) {
+              return ""; 
+            }
             return response.text();
           })
           .then(function(text) {
