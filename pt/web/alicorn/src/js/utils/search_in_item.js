@@ -72,26 +72,9 @@ head.ready(function() {
 
       var highlight = $link.data('highlight');
       sessionStorage.setItem('highlight', JSON.stringify(highlight));
-
       section_view('reader');
 
       setTimeout(() => {
-
-        // HT.$search_form.hide();
-        // HT.$reader.show();
-
-        var fn;
-        fn = function gotoPageFromResults(cfi) {
-          setTimeout(() => {
-            console.log("AHOY RESULTS gotoPage CLICK", cfi);
-            // HT.reader.view.rendition.off("resized", fn);
-            HT.reader.view.rendition.display(cfi).then(() => {
-              console.log("AHOY RESULTS gotoPage DONE", cfi, HT.reader.view.currentLocation());
-            });
-          }, 100);
-        };
-
-        HT.reader.view.rendition.once("resized", fn.bind(window, cfi));
 
         HT.$search_form.scrollTop(0);
 
@@ -99,9 +82,9 @@ head.ready(function() {
         HT.reader._updateHistoryUrl({});
 
         setTimeout(() => {
-          console.log("AHOY RESULTS gotoPage CLICK", cfi);
+          console.log("AHOY RESULTS gotoPage CLICK X", cfi);
           HT.reader.view.rendition.display(cfi).then(() => {
-            console.log("AHOY RESULTS gotoPage DONE", cfi, HT.reader.view.currentLocation());
+            console.log("AHOY RESULTS gotoPage DONE X", cfi, HT.reader.view.currentLocation());
           });
         }, 100);
       }, 100);

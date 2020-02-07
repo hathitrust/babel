@@ -27,29 +27,20 @@ export var Highlighter = class {
 
     var highlights = this.highlights();
 
-    // sessionStorage.removeItem('highlight');
-
-    // if ( ! highlights.length ) { return; }
-
-    // this.reader.on('ready', () => {
-    //   this.annotate();
-    // });
-
-    // this.reader.on('updateHighlights', () => {
-    //   this.annotate();
-    // })
-
     this.reader.on('updateHighlights', () => {
-      this.reader.view.annotations.reset();
-      this.highlighted = {};
-      for(var contents of this.reader.view.rendition.manager.getContents()) {
-        this.annotate(contents);
+      self.reader.view.annotations.reset();
+      self.highlighted = {};
+      for(var contents of self.reader.view.rendition.manager.getContents()) {
+        self.annotate(contents);
       }
     })
 
-    this.reader.on('ready', () => {
-      this.reader.view.rendition.hooks.content.register(function(contents) {
-        self.annotate(contents);
+    this.reader.on('initialized', () => {
+      self.reader.view.on('renditionStarted', function(rendition) {
+        self.highlighted = {};
+        rendition.hooks.content.register(function cozyHighlightContents(contents) {
+          self.annotate(contents);
+        })
       })
     })
 
@@ -58,19 +49,10 @@ export var Highlighter = class {
   annotate(contents) {
     var self = this;
 
-    // var view = this.reader.view;
-    // view.annotations.reset();
-
     var annotations = this.reader.view.annotations;
 
     var highlights = this.highlights();
     if ( highlights.length == 0 ) { return ; }
-
-    // var section = view.section;
-    // if ( ! section ) { return ; }
-
-    // if ( this.highlighted[section.href] ) { return ; }
-    // this.highlighted[section.href] = true;
 
     var section = contents.cfiBase;
     if ( this.highlighted[section] ) { return ; }
@@ -89,29 +71,6 @@ export var Highlighter = class {
         }
       })
     }
-
-    // view.on('updateSection', function(location) {
-    //   var current = view.rendition.manager.current();
-    //   if ( ! current )  { return ; }
-    //   var section = current.section;
-    //   if ( ! self.highlighted[section.href] ) {
-    //     self.highlighted[section.href] = true;
-    //     if ( true && current.contents && highlights.length > 0) {
-    //       var contents = current.contents;
-    //       highlights.forEach(function(word) {
-    //         var s = contents.window.getSelection();
-    //         var e = contents.document.getElementsByTagName('body').item(0);
-    //         var hrefs = self._highlight(contents, s, e, word);
-    //         if ( hrefs.length ) {
-    //           hrefs.forEach(function(href) {
-    //             // console.log("AHOY HIGHLIGHTING", href, word);
-    //             view.annotations.highlight(href);
-    //           })
-    //         }
-    //       })
-    //     }
-    //   }
-    // });
   }
 
   _highlight(c, s, element, text){

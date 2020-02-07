@@ -6,7 +6,8 @@ export var Zoominator = class {
     this.scale = parseInt(options.scale || 1.0, 10);
     this.input = options.input;
     this.reader = options.reader;
-    this._possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
+    // this._possibles = [ 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0 ];
+    this._possibles = [ 0.5, 0.7, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 3.0, 4.0 ];
     // this.possibles = [ 0.75, 1.0, 1.25, 1.5 ];
     this.emitter = new NanoEvents();
     this.bindEvents();

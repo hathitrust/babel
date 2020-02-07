@@ -107,12 +107,15 @@ var Reader = class {
       xxmobileMediaQuery: '(min-device-width : 100px) and (max-device-width : 150px)' 
     });
     this.view.name = params.view;
+    this.scale = this.view.options.text_size / 100.0;
+    this.controls.zoominator.scale = this.scale;
 
     this.emit('initialized');
 
-    this.view.on('relocated', (location) => {
+    this.view.on('relocated', function(location) {
+      this._location = location;
       this.emit('relocated', location);
-    });
+    }.bind(this));
 
     var perm_url = document.querySelector('#permURL').value;
     this.view.start(() => {
@@ -150,8 +153,11 @@ var Reader = class {
 
         // var text_size = this.view.options.text_size;
         var text_size = 100.0 * params.scale;
-        console.log("AHOY REDRAW", params.scale, text_size);
-        this.view.reopen({ text_size: text_size });
+        this.view.options.text_size = text_size;
+        setTimeout(() => {
+          this.view.rendition.themes.fontSize(`${text_size}%`);
+        }, 50);
+        // this.view.reopen({ text_size: text_size });
       }
     });
   }
@@ -251,6 +257,10 @@ if ( HT.params.size  ) {
   // }
 }
 
+if ( ! HT.params.q1 ) {
+  sessionStorage.removeItem('highlight');
+}
+
 reader.controls.navigator = new Control.Navigator({
   input: document.querySelector('input[type="range"]'),
   output: document.querySelector('.navigator .output'),
@@ -306,6 +316,54 @@ if ( actionFullScreen ) {
     input: actionFullScreen,
     reader: reader
   });
+}
+
+reader.on('redraw', function() {
+  HT.toggle(false);
+});
+
+var $sidebar = $("#sidebar");
+$sidebar.on('click', '[data-trigger="contents"]', function(event) {
+  event.preventDefault();
+  HT.toggle(false);
+  $(".table-of-contents button").trigger('click');
+})
+
+$sidebar.on('click', '.action-view', function(event) {
+  var target = $(this).data('target');
+  if ( target == reader.view.name ) {
+    return;
+  }
+  HT.utils.switch_view(target, event.detail == 1);
+});
+
+HT.utils = HT.utils || {};
+HT.utils.switch_view = function(target, event_detail) {
+  $sidebar.find(".action-view.active").removeClass("active");
+  $sidebar.find(`button[data-target="${target}"]`).addClass("active");
+  var scale = 1.0; // reader._bestFitScale();
+  reader.restart({ view: target, clicked: event_detail == 1, scale: scale, seq: location.hash });
+  reader.emit('redraw', {});
+}
+
+HT.utils.handleOrientationChange = function(ignore) {
+  if ( window.innerWidth < 800 ) {
+    if ( Math.abs(window.orientation) == 90 ) {
+      // enable the 2up button
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+      $(`button[data-target="2up"]`).attr('disabled', false);
+    } else {
+      // disable the 2up and switch views
+      // $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
+      $(`button[data-target="2up"]`).attr('disabled', true);
+      if ( reader.view.name == '2up' && ignore !== true ) {
+        HT.utils.switch_view('1up');
+      }
+    }
+  } else if ( HT.reader.service.manifest.totalSeq > 1 ) {
+    // $sidebar.find(`button[data-target="2up"]`).attr('disabled', false);
+    $(`button[data-target="2up"]`).attr('disabled', false);
+  }
 }
 
 if ( HT.params.view == 'default' ) { HT.params.view = '1up'; }
