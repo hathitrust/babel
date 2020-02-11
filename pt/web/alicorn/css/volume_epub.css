@@ -253,7 +253,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile li.download-item--EPUB, html[data-epub-root] li.download-item--EPUB {
+html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.download-item--EPUB {
   display: list-item;
 }
 
@@ -2047,6 +2047,17 @@ section.view--2up button[data-target="2up"] {
     background: #fff;
     z-index: 15;
   }
+  main.main-container .container.container-boxed {
+    display: grid;
+    grid-template-areas: "overlapping";
+  }
+  .sidebar-container {
+    grid-area: overlapping;
+  }
+  #root .section-container {
+    grid-area: overlapping;
+    z-index: 10;
+  }
   #sidebar:not(.sidebar-container--right) {
     width: 100%;
   }
@@ -2056,9 +2067,23 @@ section.view--2up button[data-target="2up"] {
   html[data-expanded="false"] #sidebar {
     display: none;
   }
-  html[data-sidebar-expanded="true"] #sidebar {
-    -ms-flex-preferred-size: 100vh;
-        flex-basis: 100vh;
+  html[data-expanded="true"] main.main-container .container.container-boxed {
+    display: grid;
+    grid-template: "sidebar" auto "overlapping" 1fr;
+  }
+  html[data-expanded="true"] main.main-container .container.container-boxed .sidebar-container {
+    grid-area: sidebar;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed {
+    grid-template: overlapping 1fr;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed .sidebar-container {
+    grid-area: overlapping;
+    z-index: 50 !important;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed .section-container {
+    visibility: hidden;
+    opacity: 0;
   }
   html[data-sidebar-expanded="true"] #section {
     -ms-flex-preferred-size: 0;
@@ -2486,10 +2511,6 @@ html[data-section-view="search-results"] main#search-results .sidebar-container 
   height: 600px;
 }
 
-html[data-expanded="true"] main#main {
-  max-height: 93vh;
-}
-
-html[data-expanded="false"] main#main {
-  max-height: 100vh;
+#root .section-container {
+  max-height: calc(100vh - var(--navigator-height, 0));
 }

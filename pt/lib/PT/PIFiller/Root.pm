@@ -217,66 +217,6 @@ sub BuildImageServerImageUrl
 #
 # ---------------------------------------------------------------------
 
-=item handle_ITEM_TYPE_PI : PI_handler(ITEM_TYPE)
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub GetItemType
-{
-    my ( $C ) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $C->get_object('CGI')->param('id');
-
-    my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-
-    if ( $finalAccessStatus ne 'allow' )
-    {
-        return qq{restricted};
-    }
-
-    # pull from mdpItem
-    my $item_type = $mdpItem->GetItemType();
-    if ( my $item_sub_type = $mdpItem->GetItemSubType() ) {
-        $item_type .= "/" . lc $item_sub_type;
-    }
-
-    return $item_type;
-}
-
-sub GetItemSubType
-{
-    my ( $C ) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $C->get_object('CGI')->param('id');
-
-    my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-
-    if ( $finalAccessStatus ne 'allow' )
-    {
-        return undef;
-    }
-
-    # pull from mdpItem
-    my $item_type = $mdpItem->GetItemSubType() || '';
-
-    return lc $item_type;
-}
-
-sub handle_ITEM_TYPE_PI
-  : PI_handler(ITEM_TYPE)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    return GetItemType($C);
-}
-
 # ---------------------------------------------------------------------
 
 =item handle_ITEM_STYLESHEET_PI : PI_handler(ITEM_STYLESHEET)

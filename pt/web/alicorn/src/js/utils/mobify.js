@@ -11,10 +11,18 @@ head.ready(function() {
     $header = $("header");
     $navigator = $(".navigator");
     if ( $navigator.length ) {
+      document.documentElement.dataset.expanded = true;
       $navigator.get(0).style.setProperty('--height', `-${$navigator.outerHeight() * 0.90}px`);
+      $navigator.get(0).dataset.originalHeight = `{$navigator.outerHeight()}px`;
+      document.documentElement.style.setProperty('--navigator-height', `${$navigator.outerHeight()}px`);
       var $expando = $navigator.find(".action-expando");
       $expando.on('click', function() {
         document.documentElement.dataset.expanded = ! ( document.documentElement.dataset.expanded == 'true' );
+        var navigatorHeight = 0;
+        if ( document.documentElement.dataset.expanded == 'true' ) {
+          navigatorHeight = $navigator.get(0).dataset.originalHeight;
+        }
+        document.documentElement.style.setProperty('--navigator-height', navigatorHeight);
       })
 
       if ( HT.params.ui == 'embed' ) {

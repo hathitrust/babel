@@ -173,7 +173,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile, html[data-epub-root] {
+html.mobile, html[data-item-type="volume/epub"] {
   li.download-item--EPUB {
     display: list-item;
   }

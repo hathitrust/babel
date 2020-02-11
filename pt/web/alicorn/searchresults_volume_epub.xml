@@ -86,7 +86,7 @@
     </FeedbackForm>
 
     <ViewTypeLinks>
-      <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink>
+      <!-- <ViewTypeFullPdfLink><?VIEW_TYPE_FULL_PDF_LINK?></ViewTypeFullPdfLink> -->
       <ViewTypeFullEpubLink><?VIEW_TYPE_FULL_EPUB_LINK?></ViewTypeFullEpubLink>
     </ViewTypeLinks>
 

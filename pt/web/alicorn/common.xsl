@@ -91,6 +91,7 @@
         </xsl:for-each>
       </xsl:attribute>
     </xsl:if>
+    <xsl:attribute name="data-item-type"><xsl:value-of select="//MBooksGlobals/ItemType" /></xsl:attribute>
   </xsl:template>
 
   <!-- Navigation bar -->
@@ -1171,11 +1172,11 @@
         <xsl:with-param name="type" select="'PDF'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullPdfLink" />
       </xsl:call-template>
-      <xsl:call-template name="download-full-book">
+      <!-- <xsl:call-template name="download-full-book">
         <xsl:with-param name="id" select="'fullEpubLink'" />
         <xsl:with-param name="type" select="'EPUB'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
-      </xsl:call-template>
+      </xsl:call-template> -->
     </xsl:if>
   </xsl:template>
 

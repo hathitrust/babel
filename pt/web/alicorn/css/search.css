@@ -253,7 +253,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile li.download-item--EPUB, html[data-epub-root] li.download-item--EPUB {
+html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.download-item--EPUB {
   display: list-item;
 }
 
