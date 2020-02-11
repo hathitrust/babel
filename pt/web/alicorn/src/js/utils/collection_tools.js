@@ -223,7 +223,8 @@ head.ready(function() {
         }
     }
 
-    $("#PTaddItemBtn").click(function(e) {
+    // $("#PTaddItemBtn").click(function(e) {
+    $("body").on('click', '#PTaddItemBtn', function(e) {
         e.preventDefault();
         var action = 'addI'
 

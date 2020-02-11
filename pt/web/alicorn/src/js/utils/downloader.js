@@ -22,7 +22,9 @@ HT.Downloader = {
 
     bindEvents: function() {
         var self = this;
-        $("a[data-toggle*=download]").addClass("interactive").click(function(e) {
+        // $("a[data-toggle*=download]").addClass("interactive").click(function(e) {
+        $("a[data-toggle*=download]").addClass("interactive");
+        $("body").on("click", "a[data-toggle*=download]", function(e) {
             e.preventDefault();
             bootbox.hideAll();
             if ( $(this).attr("rel") == 'allow' ) {

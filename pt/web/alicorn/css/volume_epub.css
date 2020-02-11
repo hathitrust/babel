@@ -2489,26 +2489,26 @@ main#search-results {
   opacity: 0;
 }
 
-html[data-section-view="search-results"], html[data-section-view="search-results"] body {
-  overflow-y: auto;
-}
-
-html[data-section-view="search-results"] main#main {
+html[data-mode="search-results"] main#main {
   visibility: hidden;
   opacity: 0;
 }
 
-html[data-section-view="search-results"] main#search-results {
+html[data-mode="search-results"] main#search-results {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   visibility: visible;
   opacity: 1;
-  overflow: auto;
+  overflow: hidden;
 }
 
-html[data-section-view="search-results"] main#search-results .sidebar-container .sidebar-toggle-button.stupid-hack[aria-expanded="false"] {
+html[data-mode="search-results"] main#search-results .sidebar-container .sidebar-toggle-button.stupid-hack[aria-expanded="false"] {
   height: 600px;
+}
+
+html[data-mode="search-results"] main#search-results .container-boxed {
+  height: 100%;
 }
 
 #root .section-container {

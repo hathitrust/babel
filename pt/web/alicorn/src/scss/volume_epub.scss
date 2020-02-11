@@ -1083,18 +1083,22 @@ main#search-results {
   }
 
 }
-html[data-section-view="search-results"] {
-  &, body {
-    overflow-y: auto;
-  }
+html[data-mode="search-results"] {
+  // &, body {
+  //   overflow-y: auto;
+  // }
   main#main { visibility: hidden; opacity: 0; }
   main#search-results { 
-    display: flex; visibility: visible; opacity: 1; overflow: auto;
+    display: flex; visibility: visible; opacity: 1; overflow: hidden;
 
     .sidebar-container {
       .sidebar-toggle-button.stupid-hack[aria-expanded="false"] {
         height: 600px; // whyyy?
       }
+    }
+
+    .container-boxed {
+      height: 100%;
     }
   }
 }

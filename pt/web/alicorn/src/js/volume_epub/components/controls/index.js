@@ -8,6 +8,7 @@ import {Contentsnator} from './contentsnator'
 import {Expandinator} from '../../../components/controls/expandinator';
 import {Flexinator} from '../../../components/controls/flexinator';
 import {Highlighter} from './highlighter';
+import {Searchinator} from './searchinator';
 
 var Control = {};
 Control.Navigator = Navigator;
@@ -18,5 +19,6 @@ Control.Viewinator = Viewinator;
 Control.Zoominator = Zoominator;
 Control.Highlighter = Highlighter;
 Control.Contentsnator = Contentsnator;
+Control.Searchinator = Searchinator;
 
 export {Control};

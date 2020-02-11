@@ -310,6 +310,11 @@ reader.controls.contentsnator = new Control.Contentsnator({
   reader: reader
 });
 
+reader.controls.searchinator = new Control.Searchinator({
+  reader: reader,
+  inputs: document.querySelectorAll('form.form-search-volume')
+})
+
 var actionFullScreen = document.querySelector('.action-fullscreen');
 if ( actionFullScreen ) {
   reader.controls.expandinator = new Control.Expandinator({
