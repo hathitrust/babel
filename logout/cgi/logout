@@ -202,7 +202,7 @@ print "Content-Type: text/html" . $CGI::CRLF;
 
 # expire and nullify service cookie
 my $cookie_domain = Utils::get_cookie_domain();
-print( "Set-Cookie: MDPsid}=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+print( "Set-Cookie: MDPsid=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
 print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
 print( "Set-Cookie: _saml_idp=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
 print( "Set-Cookie: $shib_session_cookie_name=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF ) if ( $shib_session_cookie_name );
