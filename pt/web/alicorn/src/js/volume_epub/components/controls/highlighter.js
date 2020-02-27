@@ -1,5 +1,19 @@
 import NanoEvents from 'nanoevents';
 
+var escapeRE;
+var escapeText = function(text) {
+  if (!escapeRE) {
+    var specials = [
+      '/', '.', '*', '+', '?', '|',
+      '(', ')', '[', ']', '{', '}', '\\'
+    ];
+    escapeRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(escapeRE, '\\$1');
+}
+
 export var Highlighter = class {
   constructor(options={}) {
     // this.options = Object.assign({}, options);
@@ -60,9 +74,10 @@ export var Highlighter = class {
 
     if ( true && contents && highlights.length > 0) {
       highlights.forEach(function(word) {
+        var re = new RegExp('\\b' + escapeText(word) + '\\b', 'i');
         var s = contents.window.getSelection();
         var e = contents.document.getElementsByTagName('body').item(0);
-        var hrefs = self._highlight(contents, s, e, word);
+        var hrefs = self._highlight(contents, s, e, word, re);
         if ( hrefs.length ) {
           hrefs.forEach(function(href) {
             // console.log("AHOY HIGHLIGHTING", href, word);
@@ -73,10 +88,42 @@ export var Highlighter = class {
     }
   }
 
-  _highlight(c, s, element, text){
+  _highlight(c, s, element, text, re) {
     var hrefs = [];
-    var elements = element.querySelectorAll("p");
+    var elements = Array.from(element.children); // element.querySelectorAll("p");
     var start, end, range, pos;
+
+    while ( elements.length ) {
+      var element = elements.shift();
+      if ( element.innerText.search(re) > -1 ) {
+        for(var ii = 0; ii < element.childNodes.length; ii++) {
+          var check = element.childNodes[ii];
+          if ( check.nodeType == 1 && check.innerText.search(re) > -1 ) {
+            // push onto the stack
+            elements.push(check);
+          } else if ( check.nodeType == 3 && check.textContent.search(re) > -1 ) {
+            range = element.ownerDocument.createRange();
+            start = check.textContent.search(re);
+            end = start + text.length;
+            // console.log("AHOY AHOY NEW HIGHLIGHT", check.textContent, start, end);
+            range.setStart(check, start);
+            range.setEnd(check, end);
+            var cfi = c.cfiFromRange(range);
+            hrefs.push(cfi);
+          }
+        }
+      }
+    }
+
+    return hrefs;
+  }
+
+  _highlightXX(c, s, element, text, re){
+    var hrefs = [];
+    var elements = element.children; // element.querySelectorAll("p");
+    var start, end, range, pos;
+
+    // var re = new RegExp('\\b' + escapeText(text) + '\\b', 'i');
 
     function dig(el){
       // $(el).contents().each(function(i,e){
@@ -106,7 +153,8 @@ export var Highlighter = class {
 
     for(var i = 0; i < elements.length; i++) {
       var e = elements[i];
-      start = e.innerText.toLowerCase().indexOf(text.toLowerCase());
+      // start = e.innerText.toLowerCase().indexOf(text.toLowerCase());
+      start = e.innerText.search(re);
       if ( start > -1 ) {
         range = element.ownerDocument.createRange();
         end = start + text.length;
