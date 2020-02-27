@@ -179,8 +179,8 @@ export var Navigator = class {
               <ul class="bullets">
                 <li>Locations are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
                 <li>Use a location between #1-${self.reader.view.locations.total}</li>
-                <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
-                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li>
+                <!-- <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
+                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li> -->
               </ul>
               `;
         } else {
@@ -195,8 +195,8 @@ export var Navigator = class {
                 <li>Locations are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
                 <li>Use a location between #1-${self.reader.view.locations.total}</li>
                 <li>Use a page number between ${self._pageNumRange}</li>
-                <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
-                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li>
+                <!-- <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
+                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li> -->
               </ul>
               `;
         }
