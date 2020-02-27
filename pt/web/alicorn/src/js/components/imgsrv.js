@@ -171,12 +171,8 @@ export var Service = class {
     if ( params.width ) {
       retval.param = 'size';
       retval.value = possibles.find(function(possible) {
-        // var check = 680 * ( possible / 100.0 );
         var check = baseWidth * possible;
-        // if ( params.scale == 1.0 && possible < 1.0 ) { return false; }
-        // if ( params.scale == 1.0 && check < baseWidth ) { return true; }
         return ( params.width <= check );
-        // return ( params.width <= check || params.width == baseWidth && params.scale == 1.0 );
       })
       if ( retval.value === undefined ) {
         // out of bounds!
@@ -193,8 +189,6 @@ export var Service = class {
       var meta = this.manifest.meta(params.seq);
       var r = meta.height / meta.width;
       retval.value = possibles.find(function(possible) {
-        // var check = ( 680 * ( possible / 100.0 ) ) * r;
-        // var check = meta.height * possible * r;
         var check = ( baseWidth * possible ) / r;
         return params.height <= check;
       });
