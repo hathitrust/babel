@@ -68,8 +68,8 @@ export var Navigator = class {
       }
     }, false);
 
-    // var pageNumRange = this.reader.service.manifest.pageNumRange();
-    // this._hasPageNum = ( pageNumRange != null );
+    var promptHTML;
+    var pageNumRange;
 
     // var promptHTML = `
     // <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>
@@ -87,75 +87,61 @@ export var Navigator = class {
     // </ul>
     // `;
 
-    // if ( ! pageNumRange ) {
-    //   promptHTML = `
-    //       <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>
-    //       <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
-    //       <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
-    //       <h3>Hints</h3>
-    //       <ul class="bullets">
-    //         <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
-    //         <li>Use a page scan sequence between #1-#${this.reader.service.manifest.totalSeq}</li>
-    //         <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
-    //         <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
-    //       </ul>
-    //       `;
-    // }
-
-    // this.prompt.addEventListener('click', (event) => {
-    //   event.preventDefault();
-    //   var $dialog = bootbox.dialog(
-    //     // `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
-    //     promptHTML,
-    //     [
-    //       { label: "Close", class: 'btn-dismiss' },
-    //       {
-    //         label: "Jump",
-    //         class: 'btn-dismiss btn btn-primary',
-    //         callback: function(modal) {
-    //           var input = modal.modal.querySelector('input[name="seq"]');
-    //           var retval = this.handleValue(input.value);
-    //           if ( retval ) {
-    //             return true;
-    //           }
-    //           this.handleError($dialog);
-    //           return false;
-    //         }.bind(this)
-    //       }
-    //     ],
-    //     {
-    //       header: "Jump to page scan",
-    //       onShow: function(modal) {
-    //         modal.querySelector("input[name='seq']").focus();
-    //       }
-    //     }
-    //   );
-    //   var input_seq = $dialog.modal.querySelector('input[name="seq"]');
-    //   input_seq.addEventListener('keydown', function(event) {
-    //     if ( event.keyCode == 13 ) {
-    //       event.preventDefault();
-    //       var retval = this.handleValue(input_seq.value);
-    //       if ( retval ) {
-    //         $dialog.closeModal();
-    //         return;            
-    //       }
-    //       this.handleError($dialog);
-    //     }
-    //   }.bind(this));
-    // })
-
-    if ( this.form ) {
-      var input = this.form.querySelector('input[type="text"]');
-      this.form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        var value = (input.value || '').trim();
-        if ( ! value ) {
-          return;
+    this.prompt.addEventListener('click', (event) => {
+      event.preventDefault();
+      // promptHTML = promptHTML.replace('%%LOCATIONS%%', this.reader.view.locations.total + 1);
+      var $dialog = bootbox.dialog(
+        // `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
+        self._promptHTML,
+        [
+          { label: "Close", class: 'btn-dismiss' },
+          {
+            label: "Jump",
+            class: 'btn-dismiss btn btn-primary',
+            callback: function(modal) {
+              var input = modal.modal.querySelector('input[name="seq"]');
+              var retval = this.handleValue(input.value);
+              if ( retval ) {
+                return true;
+              }
+              this.handleError($dialog);
+              return false;
+            }.bind(this)
+          }
+        ],
+        {
+          header: "Jump to page scan",
+          onShow: function(modal) {
+            modal.querySelector("input[name='seq']").focus();
+          }
         }
-        this.handleValue(value);
-        return false;
-      })
-    }
+      );
+      var input_seq = $dialog.modal.querySelector('input[name="seq"]');
+      input_seq.addEventListener('keydown', function(event) {
+        if ( event.keyCode == 13 ) {
+          event.preventDefault();
+          var retval = this.handleValue(input_seq.value);
+          if ( retval ) {
+            $dialog.closeModal();
+            return;            
+          }
+          this.handleError($dialog);
+        }
+      }.bind(this));
+    })
+
+    // if ( this.form ) {
+    //   var input = this.form.querySelector('input[type="text"]');
+    //   this.form.addEventListener('submit', (event) => {
+    //     event.preventDefault();
+    //     var value = (input.value || '').trim();
+    //     if ( ! value ) {
+    //       return;
+    //     }
+    //     this.handleValue(value);
+    //     return false;
+    //   })
+    // }
 
     this.reader.on('ready', () => {
       this.reader.view.on('updateLocations', function(locations) {
@@ -174,6 +160,47 @@ export var Navigator = class {
         self.render('total-seq', self._total);
         self._update();
         self.input.closest('.navigator').dataset.initialized = true;
+
+        self._hasPageNum = ( self.reader.view.pageList != null );
+        if ( self._hasPageNum) {
+          var pageList = self.reader.view.pageList.pageList;
+          self._pageNumRange = [
+            pageList[0].pageLabel || pageList[0].page,
+            pageList[pageList.length - 1].pageLabel || pageList[pageList.length - 1].page
+          ].join('-');
+        }
+
+        if ( ! self._pageNumRange ) {
+          self._promptHTML = `
+              <p>Jump to a <strong>location</strong>.</p>
+              <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
+              <p><label for="navigator-jump" class="offscreen">Location: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
+              <h3>Hints</h3>
+              <ul class="bullets">
+                <li>Locations are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+                <li>Use a location between #1-${self.reader.view.locations.total}</li>
+                <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
+                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li>
+              </ul>
+              `;
+        } else {
+          self._promptHTML = `
+              <p>Jump to a location by <strong>page number</strong> or <strong>location</strong>.</p>
+              <div class="alert alert-error alert-block" role="alert" aria-atomic="true"></div>
+              <p><label for="navigator-jump" class="offscreen">Page number or location: </label><input id="navigator-jump" aria-describedby="navigator-hint-info" type="text" name="seq" class="input-medium" /></p>
+              <p class="offscreen" id="navigator-hint-info">Hints follow.</p>
+              <h3>Hints</h3>
+              <ul class="bullets">
+                <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
+                <li>Locations are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+                <li>Use a location between #1-${self.reader.view.locations.total}</li>
+                <li>Use a page number between ${self._pageNumRange}</li>
+                <li>Use <tt>+</tt> to jump ahead by a number of locations, e.g. <strong><tt>+10</tt></strong></li>
+                <li>Use <tt>-</tt> to jump back by a number of locations, e.g. <strong><tt>-10</tt></strong></li>
+              </ul>
+              `;
+        }
+
       })
     })
 
@@ -224,30 +251,42 @@ export var Navigator = class {
   }
 
   handleValue(value) {
-    var seq; var retval = true;
+    var seq; var retval = true; var cfi = -1; var page;
+    var pageList = this.reader.view.pageList;
     if ( value.substr(0, 1) == '+' || value.substr(0, 1) == '-' ) {
       var delta = value.substr(0, 1) == '+' ? +1 : -1;
       value = parseInt(value.substr(1), 10);
-      this.reader.jump(delta * value);
-      return;
-    }
-
-    if ( value.substr(0, 2) == 'p.' ) {
-      // sequence
-      seq = this.reader.service.manifest.seq(value.substr(2));
+      var current_location = parseInt(this.input.value, 10);
+      var new_location = current_location + ( delta * value);
+      cfi = this.reader.view.locations.cfiFromLocation(new_location);
+    } else if ( value.substr(0, 2) == 'p.' ) {
+      // assume this is a location
+      value = value.substr(2);
+      page = pageList.pageList.find((p) => { return ( p.pageLabel == value ) }) || false;
     } else if ( value.substr(0, 1) == 'p' ) {
-      seq = this.reader.service.manifest.seq(value.substr(1));
+      value = value.substr(1);
+      page = pageList.pageList.find((p) => { return ( p.pageLabel == value ) }) || false;
     } else if ( value.substr(0, 1) == '#' || value.substr(0, 1) == 'n' ) {
-      seq = parseInt(value.substr(1), 10);
+      value = parseInt(value.substr(1), 10);
     } else {
       // seq = parseInt(value, 10);
-      seq = this.reader.service.manifest.seq(value);
+      page = pageList.pageList.find((p) => { return ( p.pageLabel == value ) }) || false;
+      value = parseInt(value, 10);
     }
-    if ( seq && seq >= 1 && seq <= this.reader.service.manifest.totalSeq ) {
-      this.reader.trigger.push('action-prompt-seq');
-      this.reader.display(seq);
-    } else {
+
+    if ( page ) {
+      cfi = pageList.cfiFromPage(page.page);
+    }
+
+    if ( cfi == -1 && value && value >= 1 && value <= this.reader.view.locations.total ) {
+      cfi = this.reader.view.locations.cfiFromLocation(value - 1);
+    }
+
+    if ( cfi == -1 ) {
       retval = false;
+    } else {
+      this.reader.trigger.push('action-prompt-seq');
+      this.reader.display(cfi);
     }
     return retval;
   }
@@ -257,10 +296,17 @@ export var Navigator = class {
     var input = $dialog.modal.querySelector('input[name="seq"]');
     var value = input.value;
     var possible = '';
-    var pageNumRange = this.reader.service.manifest.pageNumRange();
+    var pageNumRange; // = this.reader.service.manifest.pageNumRange();
+    if ( this.reader.view.pageList ) {
+      var pageList = this.reader.view.pageList.pageList;
+      pageNumRange = [
+        pageList[0].pageLabel || pageList[0].page,
+        pageList[pageList.length - 1].pageLabel || pageList[pageList.length - 1].page
+      ].join('-');
+    }
     if ( pageNumRange ) { possible = `page number between ${pageNumRange} or `; }
-    possible += `a sequence between #1-#${this.reader.service.manifest.totalSeq}`;
-    div.innerHTML = `<p>Could not find a page scan that matched ${value}; enter a ${possible}.`;
+    possible += `a sequence between #1-#${this.reader.view.locations.total}`;
+    div.innerHTML = `<p>Could not find a location matched ${value}; enter a ${possible}.`;
     input.focus();
   }
 
