@@ -325,6 +325,10 @@ html.mobile, html[data-item-type="volume/epub"] {
   }
 }
 
+.inactive {
+  display: none;
+}
+
 // section[data-selected="0"] {
 //   #action-clear-selection {
 //     visibility: hidden;

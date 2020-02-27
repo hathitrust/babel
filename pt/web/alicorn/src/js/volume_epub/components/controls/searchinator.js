@@ -21,6 +21,20 @@ export var Searchinator = class {
     var self = this;
 
     self.$reader = document.querySelector('main#main');
+    self.reader_title = document.querySelector('title').innerText;
+
+    window.addEventListener('popstate', function(event) {
+      // console.log("AHOY POPSTATE", event.state);
+      // if ( event.state && event.state.mode ) {
+      //   self._setDisplay(event.state.mode);
+      // }
+      console.log("AHOY POPSTATE", event.state, location.href);
+      if ( location.href.indexOf('/pt/search') > -1 ) {
+        self._setDisplay('search-results');
+      } else {
+        self._setDisplay('reader');
+      }
+    });
 
     var body = document.body;
     body.addEventListener('click', function(event) {
@@ -59,7 +73,7 @@ export var Searchinator = class {
         return;
       }
 
-      if ( target.dataset.trackingAction == 'PT Back to In Item Results' ) {
+      if ( target.classList.contains('ptsearch--link') ) {
         event.preventDefault();
         event.stopPropagation();
         
@@ -87,7 +101,7 @@ export var Searchinator = class {
   submit(form) {
     var self = this;
     var input = form.querySelector('input[name="q1"]');
-    var button = form.querySelector('button[type="submit"]');
+    var button = form.querySelector('button[data-trigger="search"]');
 
     if ( input.value.trim() == this.q && this.$searchResults ) {
       this.enable(button);
@@ -127,9 +141,15 @@ export var Searchinator = class {
         self.$reader.after($searchResults);
       }
       self.$searchResults = document.querySelector('main#search-results');
+      self.search_url = search_url;
+      self.search_title = doc.querySelector('title').innerText;
+
       self.mode('search-results');
 
       if ( callback ) { callback(); }
+
+      // enable the pt/search link
+      self.$reader.querySelector('.ptsearch--wrapper').classList.remove('inactive');
 
       // this is why?
       var toggleButton = self.$searchResults.querySelector(".sidebar-toggle-button");
@@ -161,11 +181,37 @@ export var Searchinator = class {
   }
 
   mode(mode_) {
-    document.documentElement.dataset.sidebarExpanded = false;
-    document.documentElement.dataset.mode = mode_;
-    this._setVisibility(this.$reader, mode_ == 'reader');
-    this._setVisibility(this.$searchResults, mode_ == 'search-results');
+    var self = this;
+
+    this._setDisplay(mode_);
+
+    if ( mode_ == 'search-results' ) {
+      this.reader_url = location.href;
+      history.pushState({ mode: mode_ }, "", this.search_url);
+      document.querySelector('title').innerText = this.search_title
+      HT.update_status("Loaded " + this.search_title);
+      setTimeout(() => {
+        self.$searchResults.querySelector('section.section-container').focus();
+      }, 0);
+    } else {
+      history.pushState({ mode: mode_ }, "", this.reader_url);
+      document.querySelector('title').innerText = this.reader_title;
+      HT.update_status("Loaded " + this.reader_title);
+      setTimeout(() => {
+        self.$reader.querySelector('section.section-container').focus();
+      }, 0);
+    }
+
     HT.toggle(false);
+  }
+
+  _setDisplay(mode_) {
+    if ( true || mode_ != document.documentElement.dataset.mode ) {
+      document.documentElement.dataset.sidebarExpanded = false;
+      document.documentElement.dataset.mode = mode_;
+      this._setVisibility(this.$reader, mode_ == 'reader');
+      this._setVisibility(this.$searchResults, mode_ == 'search-results');
+    }
   }
 
   _setVisibility(main, visible) {
