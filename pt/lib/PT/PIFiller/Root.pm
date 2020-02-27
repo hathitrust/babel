@@ -246,7 +246,6 @@ sub handle_ITEM_CHUNK_PI
     my $item_sub_type = GetItemSubType($C);
     if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
     my $xml = qq{<?CHUNK filename="_pageviewer_${item_type}.xml"?>};
-    print STDERR "AHOY RETURNING $xml\n";
     return $xml;
 }
 
