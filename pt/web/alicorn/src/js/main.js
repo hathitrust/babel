@@ -25,36 +25,6 @@ var $toolbar = $main.querySelector('#toolbar-vertical');
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
 
-if (typeof Object.assign != 'function') {
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target == null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
-
 var Reader = class {
   constructor(options={}) {
     this.options = Object.assign({ scale: 1.0 }, options);
@@ -221,7 +191,10 @@ var Reader = class {
     })
 
     this._resizer = debounce(function() {
-      // this.handleOrientationChange(true)
+      // DO NOT emit resize events if we're pinch-zooming??
+      if ( window.visualViewport && window.visualViewport.scale > 1 ) { 
+        return ; 
+      }
       this.emit('resize');
       this._checkToolbar();
     }.bind(this), 100);
@@ -519,49 +492,13 @@ var _scrollCheck = debounce(function(event) {
   // if ( window.innerWidth != document.documentElement.clientWidth ) {
   //   x = window.scrollX;
   // }
-  window.scrollTo(0,0);
+  if ( window.visualViewport && window.visualViewport.scale == 1 ) {
+    window.scrollTo(0,0);
+  }
 }, 50);
 if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
   window.addEventListener('scroll', _scrollCheck);
 }
-
-// GESTURES
-var $gestureLogger = $(`<div id="gesture-logger" class="hidden"><span></span></div>`).appendTo("body");
-var gesture_scale;
-var gesture_checkTimeout;
-var _gestureCheck = function() {
-  // in case the gesturened doesn't fire
-  _gestureHandler({ scale: gesture_scale, preventDefault: function() { } });
-}
-var _gestureHandler = debounce(function(event) {
-  event.preventDefault();
-  clearTimeout(gesture_checkTimeout);
-  var scale = reader.options.scale * event.scale;
-  var possibles = HT.reader.view.possibles || HT.reader.controls.zoominator._possibles;
-  var nearest_scale = possibles.find(function(possible) {
-    // var check = 680 * ( possible / 100.0 );
-    return scale <= possible;
-  })
-  reader.emit('redraw', { scale: nearest_scale })
-  $gestureLogger.addClass("hidden");
-})
-
-var _gestureChangeHandler = function(event) {
-  gesture_scale = event.scale;
-  var scale = reader.options.scale * event.scale;
-  $gestureLogger.find("span").text(Math.floor(scale * 100.0) / 100.0);
-  clearTimeout(gesture_checkTimeout);
-  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
-}
-document.addEventListener('gesturestart', function(event) { 
-  event.preventDefault(); 
-  if ( $gestureLogger.is(".hidden") ) {
-    $gestureLogger.removeClass("hidden");
-  }
-  gesture_checkTimeout = setTimeout(_gestureCheck, 100);
-}, false);
-document.addEventListener('gestureend', _gestureHandler, false);
-document.addEventListener('gesturechange', _gestureChangeHandler, false);
 
 $main.dataset.selected = 0;
 
