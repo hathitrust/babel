@@ -35,9 +35,12 @@ use File::Basename qw();
 use List::MoreUtils;
 
 use JSON::XS;
+use Utils::Cache::Storable;
 
 # Number of allowed links for pagination. Set this so page links fit on one line.
 use constant MAX_PAGELABELS=>11;
+
+use constant RESULTS_VERSION => 1;
 
 # use feature qw(say);
 # our $DEBUG_LOGFILE;
@@ -400,14 +403,22 @@ sub WrapFragmentSearchResultsInXml {
         return $XML_result;
     }
 
-    my $cache_filename = $$rs{__cache_filename__};
-    my $xml_cache_filename = "$cache_filename.xml";
-    if ( -f $xml_cache_filename ) {
-        open my $fh, '<:encoding(UTF-8)', $xml_cache_filename or die "Can't open file $!";
-        $XML_result = do { local $/; <$fh> };
+    my $cache_max_age = 600;
+    my $cache_dir = Utils::get_true_cache_dir($C, 'search_cache_dir');
+    my $cache = Utils::Cache::Storable->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
+
+    my $cache_key = $$rs{cache_key};
+    my $cached_result = $cache->Get($mdpItem->GetId, "$cache_key.${ \RESULTS_VERSION }.xml");
+
+    if ( ref $cached_result ) {
+        # open my $fh, '<:encoding(UTF-8)', $xml_cache_filename or die "Can't open file $!";
+        # $XML_result = do { local $/; <$fh> };
+        $XML_result = $$cached_result{XML_result};
         print STDERR "AHOY AHOY XML CACHED : " . ( Time::HiRes::time() - $start_0 ) . "\n";
         return $XML_result;
     }
+
+    print STDERR "AHOY AHOY XML NOT CACHED :: $cache_key.xml :: " . $mdpItem->GetId . "\n";
 
     my $Q = $C->get_object('Query');
     my $valid_boolean = $Q->parse_was_valid_boolean_expression();
@@ -505,7 +516,8 @@ sub WrapFragmentSearchResultsInXml {
         $XML_result .= wrap_string_in_tag($href, 'Link');
         $XML_result .= wrap_string_in_tag(JSON::XS::encode_json(\@matched_words), 'Highlight');
 
-        my $expr = join('|', map { qr/\Q$_/i } @matched_words);
+        my $expr = join('|', map { qr/\Q$_/ } @matched_words);
+        # my $expr = join('|', map { qr/\b\Q$_\E\b/ } @matched_words);
         my @nodes = map { [ [4], $_ ] } $xpc->findnodes(".//xhtml:body", $chapter);
         my @possibles = ();
         while ( scalar @nodes ) {
@@ -641,9 +653,11 @@ sub WrapFragmentSearchResultsInXml {
         $XML_result .= '</Page>';
     }
 
-    open(my $fh, ">", $xml_cache_filename);
-    print $fh $XML_result;
-    close($fh);
+    # open(my $fh, ">", $xml_cache_filename);
+    # print $fh $XML_result;
+    # close($fh);
+
+    $cache->Set($mdpItem->GetId, "$cache_key.xml", { XML_result => $XML_result });
 
     print STDERR "AHOY AHOY XML BUILD : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 

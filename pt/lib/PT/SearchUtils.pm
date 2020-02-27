@@ -26,6 +26,7 @@ use URI::Escape;
 use Utils;
 use Utils::Time;
 use Utils::Logger;
+use Utils::Cache::Storable;
 use Debug::DUtils;
 use MdpConfig;
 
@@ -432,18 +433,20 @@ sub Solr_search_item {
     use Digest::SHA;
     use Storable();
 
-    my $rs_cache_key = Digest::SHA::sha1_hex(qq{$id.$processed_q1.$start.$rows});
-    my $rs_cache_filename = "$ENV{SDRROOT}/cache/$rs_cache_key.bin";
+    my $cache_max_age = 600;
+    my $cache_dir = Utils::get_true_cache_dir($C, 'search_cache_dir');
+    my $cache = Utils::Cache::Storable->new($cache_dir, $cache_max_age, $C->get_object('MdpItem')->get_modtime());
+    my $cache_key = Digest::SHA::sha1_hex(qq{$id.$processed_q1.$start.$rows});
 
-    if ( -f $rs_cache_filename ) {
-        my $rs = Storable::retrieve($rs_cache_filename);
-        print STDERR "AHOY AHOY USING CACHED : " . ( Time::HiRes::time() - $start_0 ) . "\n";
-        return $rs;
+    my $cached_results = $cache->Get($id, $cache_key);
+
+    if ( ref($cached_results) ) {
+        print STDERR "AHOY AHOY USING CACHED : $id :: " . ( Time::HiRes::time() - $start_0 ) . "\n";
+        return $cached_results;
     }
 
     my $rs = new Search::Result::Page;
     $rs->set_auxillary_data('parsed_query_terms', $parsed_terms_arr_ref);
-    $$rs{__cache_filename__} = $rs_cache_filename;
 
     # If this is a CJK query containing Han characters and there is
     # only one string, we need to check to see if the string would be
@@ -499,8 +502,11 @@ sub Solr_search_item {
     }
 
     # can we stash this somewhere?
-    Storable::nstore($rs, $rs_cache_filename); 
-    chmod(0666, $rs_cache_filename);
+    # Storable::nstore($rs, $rs_cache_filename); 
+    # chmod(0666, $rs_cache_filename);
+
+    $$rs{cache_key} = $cache_key;
+    $cache->Set($id, $cache_key, $rs);
     print STDERR "AHOY AHOY COMPUTING : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $rs;
