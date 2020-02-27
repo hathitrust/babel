@@ -173,12 +173,19 @@ export var Service = class {
       retval.value = possibles.find(function(possible) {
         // var check = 680 * ( possible / 100.0 );
         var check = baseWidth * possible;
-        return params.width <= check;
+        // if ( params.scale == 1.0 && possible < 1.0 ) { return false; }
+        // if ( params.scale == 1.0 && check < baseWidth ) { return true; }
+        return ( params.width <= check );
+        // return ( params.width <= check || params.width == baseWidth && params.scale == 1.0 );
       })
       if ( retval.value === undefined ) {
         // out of bounds!
         retval.value = 4.0;
       }
+      retval.value *= window.devicePixelRatio;
+      retval.value = possibles.find(function(possible) {
+        return ( retval.value <= possible );
+      });
     } else if ( params.height ) {
       // retval.param = 'height';
       // retval.value = params.height;
@@ -194,6 +201,10 @@ export var Service = class {
       if ( retval.value === undefined ) {
         retval.value = 4.0;
       }
+      retval.value *= window.devicePixelRatio;
+      retval.value = possibles.find(function(possible) {
+        return ( retval.value <= possible );
+      });
     }
     retval.value = Math.floor(retval.value * 100.0);
     return retval;
