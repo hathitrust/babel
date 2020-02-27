@@ -110,7 +110,7 @@ export var Navigator = class {
           }
         ],
         {
-          header: "Jump to page scan",
+          header: "Jump to location",
           onShow: function(modal) {
             modal.querySelector("input[name='seq']").focus();
           }
