@@ -368,6 +368,10 @@ html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.downlo
   font-size: 1rem !important;
 }
 
+.inactive {
+  display: none;
+}
+
 @media only screen and (max-width: 62em) {
   html[data-view="options"] #sidebar {
     background: #fff;

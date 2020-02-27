@@ -368,6 +368,10 @@ html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.downlo
   font-size: 1rem !important;
 }
 
+.inactive {
+  display: none;
+}
+
 @-webkit-keyframes progress-bar-stripes {
   from {
     background-position: 40px 0;
@@ -1524,7 +1528,13 @@ div.cozy-panel-footer {
           align-items: center;
 }
 
+.section-container .navigator[data-initialized="false"] form {
+  opacity: 0;
+}
+
 .section-container .navigator form {
+  -webkit-transition: opacity 150ms;
+  transition: opacity 150ms;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;

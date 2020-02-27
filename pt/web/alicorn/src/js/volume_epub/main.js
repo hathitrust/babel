@@ -26,36 +26,6 @@ var $toolbar = $main.querySelector('#toolbar-vertical');
 var min_height = $viewer.offsetHeight;
 var min_width = $viewer.offsetWidth * 0.80;
 
-if (typeof Object.assign != 'function') {
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target == null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
-
 var Reader = class {
   constructor(options={}) {
     this.options = Object.assign({ scale: 1.0 }, options);
@@ -217,6 +187,9 @@ var Reader = class {
 // --- RANDOM JANK
 var _scrollCheckFn = function(what) {
   return debounce(function(event) {
+    if ( window.visualViewport && window.visualViewport.scale != 1 ) {
+      return;
+    }
     if ( what == window ) { window.scrollTo(0,0); }
     else { what.scrollTop = 0; }
   }, 50);

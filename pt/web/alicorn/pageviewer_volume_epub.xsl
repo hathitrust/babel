@@ -186,7 +186,7 @@
         <xsl:call-template name="toolbar-vertical" />
       </div>
     </div>
-    <div class="navigator">
+    <div class="navigator" data-initialized="false">
       <button class="action-expando for-mobile" aria-label="Toggle Menu"><i class="icomoon" aria-hidden="true"></i></button>
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
