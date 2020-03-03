@@ -126,6 +126,7 @@ var Reader = class {
         this.view.options.text_size = text_size;
         setTimeout(() => {
           this.view.rendition.themes.fontSize(`${text_size}%`);
+          this.view.fire("resize");
         }, 50);
         // this.view.reopen({ text_size: text_size });
       }
