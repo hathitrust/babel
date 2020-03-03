@@ -105,30 +105,38 @@ var Reader = class {
     $main.dataset.view = params.view; $main.classList.add(`view--${params.view}`);
 
     var flow = params.view == '1up' ? 'scrolled-doc' : 'paginated';
+    HT.params.view = params.view;
     this.view.saveOptions({ flow: flow });
 
     params.restarting = true;
 
     this.view.reopen({ flow: flow }, current);
     this.view.name = params.view;
+    this._updateHistoryUrl(params);
   }
 
   bindEvents() {
     this.on('redraw', (params) => {
       if ( params.scale ) { // && ! this.is_mobile
         this.options.scale = params.scale;
+        var location = this.view.currentLocation();
         this.controls.flexinator.sidebar(params.scale <= 1.0);
+        this.view._manager.resize();
         this.trigger.push(`zoom:${params.scale}`); // triggers track
         // this._logAction(undefined, `zoom:${params.scale}`);
 
         // var text_size = this.view.options.text_size;
         var text_size = 100.0 * params.scale;
-        this.view.options.text_size = text_size;
+        // this.view.options.text_size = text_size;
+        // --- this reduces the jitter but then it has to 
+        // --- trigger a resize event which is tricky to track
+        // setTimeout(() => {
+        //   this.view.rendition.themes.fontSize(`${text_size}%`);
+        //   this.view.fire("resize");
+        // }, 50);
         setTimeout(() => {
-          this.view.rendition.themes.fontSize(`${text_size}%`);
-          this.view.fire("resize");
-        }, 50);
-        // this.view.reopen({ text_size: text_size });
+          this.view.reopen({ text_size: text_size }, location);
+        }, 100);
       }
     });
   }
