@@ -441,7 +441,7 @@ sub Solr_search_item {
     my $cached_results = $cache->Get($id, $cache_key);
 
     if ( ref($cached_results) ) {
-        print STDERR "AHOY AHOY USING CACHED : $id :: " . ( Time::HiRes::time() - $start_0 ) . "\n";
+        # print STDERR "AHOY AHOY USING CACHED : $id :: " . ( Time::HiRes::time() - $start_0 ) . "\n";
         return $cached_results;
     }
 
@@ -507,7 +507,7 @@ sub Solr_search_item {
 
     $$rs{cache_key} = $cache_key;
     $cache->Set($id, $cache_key, $rs);
-    print STDERR "AHOY AHOY COMPUTING : " . ( Time::HiRes::time() - $start_0 ) . "\n";
+    # print STDERR "AHOY AHOY COMPUTING : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $rs;
 }

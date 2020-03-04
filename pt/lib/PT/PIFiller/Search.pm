@@ -411,14 +411,9 @@ sub WrapFragmentSearchResultsInXml {
     my $cached_result = $cache->Get($mdpItem->GetId, "$cache_key.${ \RESULTS_VERSION }.xml");
 
     if ( ref $cached_result ) {
-        # open my $fh, '<:encoding(UTF-8)', $xml_cache_filename or die "Can't open file $!";
-        # $XML_result = do { local $/; <$fh> };
         $XML_result = $$cached_result{XML_result};
-        print STDERR "AHOY AHOY XML CACHED : " . ( Time::HiRes::time() - $start_0 ) . "\n";
         return $XML_result;
     }
-
-    print STDERR "AHOY AHOY XML NOT CACHED :: $cache_key.xml :: " . $mdpItem->GetId . "\n";
 
     my $Q = $C->get_object('Query');
     my $valid_boolean = $Q->parse_was_valid_boolean_expression();
@@ -474,7 +469,7 @@ sub WrapFragmentSearchResultsInXml {
 
         my $chapter_filename = $$map{$seq};
         my $chapter_index = $seq * 2 ; # ( $seq - 1 ) * 2;
-        print STDERR "AHOY PAGING $seq : $chapter_index : $chapter_filename\n";
+        # print STDERR "AHOY PAGING $seq : $chapter_index : $chapter_filename\n";
         my $chapter_title = $mdpItem->GetPageFeature($seq);
         my $chapter = XML::LibXML->load_xml(location => join("/", $epub_pathname, $chapter_filename));
         unless ( $chapter_title ) {
@@ -497,7 +492,7 @@ sub WrapFragmentSearchResultsInXml {
         }
 
         @matched_words = List::MoreUtils::distinct(@matched_words);
-        print STDERR "AHOY WRAP @matched_words\n";
+        # print STDERR "AHOY WRAP @matched_words\n";
 
         $XML_result .=
           qq{<Page>\n} .
@@ -659,7 +654,7 @@ sub WrapFragmentSearchResultsInXml {
 
     $cache->Set($mdpItem->GetId, "$cache_key.xml", { XML_result => $XML_result });
 
-    print STDERR "AHOY AHOY XML BUILD : " . ( Time::HiRes::time() - $start_0 ) . "\n";
+    # print STDERR "AHOY AHOY XML BUILD : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $XML_result;
 }

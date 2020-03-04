@@ -915,8 +915,6 @@ sub handle_EPUB_ROOT_PI
     my $fileid = $mdpItem->GetPackageId();
     my $epub_filename = $mdpItem->GetFilePathMaybeExtract($fileid, 'epubfile');
 
-    print STDERR "AHOY EPUB FILENAME $epub_filename\n";
-
     my $unpacked_epub = $epub_filename . "_unpacked";
     unless ( -d $unpacked_epub ) {
         my @unzip;
