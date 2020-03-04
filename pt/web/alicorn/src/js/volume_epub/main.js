@@ -139,6 +139,10 @@ var Reader = class {
         }, 100);
       }
     });
+
+    this.on('resize', () => {
+      this.view._manager.resize();
+    })
   }
 
   display(target) {
