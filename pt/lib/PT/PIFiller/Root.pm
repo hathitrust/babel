@@ -217,66 +217,6 @@ sub BuildImageServerImageUrl
 #
 # ---------------------------------------------------------------------
 
-=item handle_ITEM_TYPE_PI : PI_handler(ITEM_TYPE)
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub GetItemType
-{
-    my ( $C ) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $C->get_object('CGI')->param('id');
-
-    my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-
-    if ( $finalAccessStatus ne 'allow' )
-    {
-        return qq{restricted};
-    }
-
-    # pull from mdpItem
-    my $item_type = $mdpItem->GetItemType();
-    if ( my $item_sub_type = $mdpItem->GetItemSubType() ) {
-        $item_type .= "/" . lc $item_sub_type;
-    }
-
-    return $item_type;
-}
-
-sub GetItemSubType
-{
-    my ( $C ) = @_;
-
-    my $mdpItem = $C->get_object('MdpItem');
-    my $id = $C->get_object('CGI')->param('id');
-
-    my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
-
-    if ( $finalAccessStatus ne 'allow' )
-    {
-        return undef;
-    }
-
-    # pull from mdpItem
-    my $item_type = $mdpItem->GetItemSubType() || '';
-
-    return lc $item_type;
-}
-
-sub handle_ITEM_TYPE_PI
-  : PI_handler(ITEM_TYPE)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    return GetItemType($C);
-}
-
 # ---------------------------------------------------------------------
 
 =item handle_ITEM_STYLESHEET_PI : PI_handler(ITEM_STYLESHEET)
@@ -306,7 +246,6 @@ sub handle_ITEM_CHUNK_PI
     my $item_sub_type = GetItemSubType($C);
     if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
     my $xml = qq{<?CHUNK filename="_pageviewer_${item_type}.xml"?>};
-    print STDERR "AHOY RETURNING $xml\n";
     return $xml;
 }
 
@@ -975,8 +914,6 @@ sub handle_EPUB_ROOT_PI
 
     my $fileid = $mdpItem->GetPackageId();
     my $epub_filename = $mdpItem->GetFilePathMaybeExtract($fileid, 'epubfile');
-
-    print STDERR "AHOY EPUB FILENAME $epub_filename\n";
 
     my $unpacked_epub = $epub_filename . "_unpacked";
     unless ( -d $unpacked_epub ) {

@@ -91,6 +91,7 @@
         </xsl:for-each>
       </xsl:attribute>
     </xsl:if>
+    <xsl:attribute name="data-item-type"><xsl:value-of select="//MBooksGlobals/ItemType" /></xsl:attribute>
   </xsl:template>
 
   <!-- Navigation bar -->
@@ -1074,6 +1075,19 @@
 
   <xsl:template name="download-links">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:if test="$pViewTypeList//ViewTypePdfLink">
+      <xsl:call-template name="download-links--pdf" />
+    </xsl:if>
+    <xsl:if test="$pViewTypeList//ViewTypeFullPdfLink">
+      <xsl:call-template name="download-links--full-pdf" />
+    </xsl:if>
+    <xsl:if test="$pViewTypeList//ViewTypeFullEpubLink">
+      <xsl:call-template name="download-links--full-epub" />
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--pdf">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
       <li data-view-target="1up image plaintext">
         <xsl:element name="a">
@@ -1124,6 +1138,10 @@
         </xsl:element>
       </li>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--full-pdf">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
 
     <xsl:if test="$gFullPdfAccessMessage='' and $gUsingSearch = 'false'">
       <!-- only show this link if we have access -->
@@ -1154,12 +1172,21 @@
         <xsl:with-param name="type" select="'PDF'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullPdfLink" />
       </xsl:call-template>
-      <xsl:call-template name="download-full-book">
+      <!-- <xsl:call-template name="download-full-book">
         <xsl:with-param name="id" select="'fullEpubLink'" />
         <xsl:with-param name="type" select="'EPUB'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
-      </xsl:call-template>
+      </xsl:call-template> -->
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--full-epub">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:call-template name="download-full-book">
+      <xsl:with-param name="id" select="'fullEpubLink'" />
+      <xsl:with-param name="type" select="'EPUB'" />
+      <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template name="download-full-book">
@@ -1480,18 +1507,24 @@
   <xsl:template name="BuildBackToResultsLink">
     <xsl:variable name="search-results-link" select="normalize-space(//SearchForm/SearchResultsLink)" />
     <xsl:variable name="in-item-results-link" select="normalize-space(//InItemResultsLink)" />
-    <xsl:if test="$search-results-link or $in-item-results-link">
+    <!-- <xsl:if test="$search-results-link or $in-item-results-link"> -->
       <div id="mdpBackToResults">
-        <xsl:if test="normalize-space($in-item-results-link)">
+        <!-- <xsl:if test="normalize-space($in-item-results-link)"> -->
           <p>
-            <a href="{$in-item-results-link}">
+            <xsl:attribute name="class">
+              <xsl:text>ptsearch--wrapper</xsl:text>
+              <xsl:if test="normalize-space($in-item-results-link)=''">
+                <xsl:text> inactive</xsl:text>
+              </xsl:if>
+            </xsl:attribute>
+            <a href="{$in-item-results-link}" class="ptsearch--link">
               <xsl:attribute name="data-toggle">tracking</xsl:attribute>
               <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
               <xsl:attribute name="data-tracking-action">PT Back to In Item Results</xsl:attribute>
               <xsl:text>&#171; Back to "In this Item" results</xsl:text>
             </a>
           </p>
-        </xsl:if>
+        <!-- </xsl:if> -->
 
         <xsl:if test="$search-results-link">
           <p>
@@ -1508,7 +1541,7 @@
           </p>
         </xsl:if>
       </div>
-    </xsl:if>
+    <!-- </xsl:if> -->
   </xsl:template>
 
   <xsl:template match="SearchResultsLabel" mode="copy">

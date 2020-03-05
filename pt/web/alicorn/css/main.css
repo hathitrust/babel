@@ -253,7 +253,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile li.download-item--EPUB {
+html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.download-item--EPUB {
   display: list-item;
 }
 
@@ -366,6 +366,10 @@ html.mobile li.download-item--EPUB {
 
 #sidebar #input-search-text {
   font-size: 1rem !important;
+}
+
+.inactive {
+  display: none;
 }
 
 @-webkit-keyframes progress-bar-stripes {
@@ -1115,13 +1119,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u16d80a6d 1s linear alternate infinite;
-          animation: loader12-u16d80a6d 1s linear alternate infinite;
+  -webkit-animation: loader12-ub2f629db 1s linear alternate infinite;
+          animation: loader12-ub2f629db 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u16d80a6d {
+@-webkit-keyframes loader12-ub2f629db {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1144,7 +1148,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-u16d80a6d {
+@keyframes loader12-ub2f629db {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1197,13 +1201,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u7e6b9bc1 1s linear alternate infinite;
-          animation: loader12-u7e6b9bc1 1s linear alternate infinite;
+  -webkit-animation: loader12-udec40f8b 1s linear alternate infinite;
+          animation: loader12-udec40f8b 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-u7e6b9bc1 {
+@-webkit-keyframes loader12-udec40f8b {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1226,7 +1230,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-u7e6b9bc1 {
+@keyframes loader12-udec40f8b {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1574,14 +1578,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ube9bcc67 1s linear alternate infinite;
-          animation: loader12-ube9bcc67 1s linear alternate infinite;
+  -webkit-animation: loader12-u37e52bde 1s linear alternate infinite;
+          animation: loader12-u37e52bde 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-ube9bcc67 {
+@-webkit-keyframes loader12-u37e52bde {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1604,7 +1608,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-ube9bcc67 {
+@keyframes loader12-u37e52bde {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1796,8 +1800,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ubd5127ea 1s linear alternate infinite;
-          animation: loader12-ubd5127ea 1s linear alternate infinite;
+  -webkit-animation: loader12-uac6e02bd 1s linear alternate infinite;
+          animation: loader12-uac6e02bd 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1806,7 +1810,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-ubd5127ea {
+@-webkit-keyframes loader12-uac6e02bd {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1829,7 +1833,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-ubd5127ea {
+@keyframes loader12-uac6e02bd {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1933,6 +1937,17 @@ section.view--plaintext button[data-target="plaintext"] {
     background: #fff;
     z-index: 15;
   }
+  main.main-container .container.container-boxed {
+    display: grid;
+    grid-template-areas: "overlapping";
+  }
+  .sidebar-container {
+    grid-area: overlapping;
+  }
+  #root .section-container {
+    grid-area: overlapping;
+    z-index: 10;
+  }
   #sidebar:not(.sidebar-container--right) {
     width: 100%;
   }
@@ -1942,9 +1957,23 @@ section.view--plaintext button[data-target="plaintext"] {
   html[data-expanded="false"] #sidebar {
     display: none;
   }
-  html[data-sidebar-expanded="true"] #sidebar {
-    -ms-flex-preferred-size: 100vh;
-        flex-basis: 100vh;
+  html[data-expanded="true"] main.main-container .container.container-boxed {
+    display: grid;
+    grid-template: "sidebar" auto "overlapping" 1fr;
+  }
+  html[data-expanded="true"] main.main-container .container.container-boxed .sidebar-container {
+    grid-area: sidebar;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed {
+    grid-template: overlapping 1fr;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed .sidebar-container {
+    grid-area: overlapping;
+    z-index: 50 !important;
+  }
+  html[data-sidebar-expanded="true"] main.main-container .container.container-boxed .section-container {
+    visibility: hidden;
+    opacity: 0;
   }
   html[data-sidebar-expanded="true"] #section {
     -ms-flex-preferred-size: 0;

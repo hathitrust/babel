@@ -4,6 +4,7 @@
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
+  xmlns:xlink="https://www.w3.org/1999/xlink"
   >
 
   <!-- Global Variables -->

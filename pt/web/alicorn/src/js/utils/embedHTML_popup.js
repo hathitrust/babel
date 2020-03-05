@@ -35,7 +35,8 @@ head.ready(function() {
     );
 
 
-    $("#embedHtml").click(function(e) {
+    // $("#embedHtml").click(function(e) {
+    $("body").on('click', '#embedHtml', function(e) {
         e.preventDefault();
         bootbox.dialog($block, [
             {

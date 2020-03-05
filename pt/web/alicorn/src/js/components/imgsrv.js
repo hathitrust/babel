@@ -171,14 +171,17 @@ export var Service = class {
     if ( params.width ) {
       retval.param = 'size';
       retval.value = possibles.find(function(possible) {
-        // var check = 680 * ( possible / 100.0 );
         var check = baseWidth * possible;
-        return params.width <= check;
+        return ( params.width <= check );
       })
       if ( retval.value === undefined ) {
         // out of bounds!
         retval.value = 4.0;
       }
+      retval.value *= window.devicePixelRatio;
+      retval.value = possibles.find(function(possible) {
+        return ( retval.value <= possible );
+      });
     } else if ( params.height ) {
       // retval.param = 'height';
       // retval.value = params.height;
@@ -186,14 +189,16 @@ export var Service = class {
       var meta = this.manifest.meta(params.seq);
       var r = meta.height / meta.width;
       retval.value = possibles.find(function(possible) {
-        // var check = ( 680 * ( possible / 100.0 ) ) * r;
-        // var check = meta.height * possible * r;
         var check = ( baseWidth * possible ) / r;
         return params.height <= check;
       });
       if ( retval.value === undefined ) {
         retval.value = 4.0;
       }
+      retval.value *= window.devicePixelRatio;
+      retval.value = possibles.find(function(possible) {
+        return ( retval.value <= possible );
+      });
     }
     retval.value = Math.floor(retval.value * 100.0);
     return retval;

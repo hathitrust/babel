@@ -17,20 +17,54 @@ export var Navigator = class {
   }
 
   bindEvents() {
+    var isIE = window.navigator.userAgent.indexOf("Trident/") > -1;
+
     this.input.addEventListener('change', (event) => {
-      this.output.classList.remove('updating');
-      this._updateInputBackground();
-      this.render('current-seq', this.input.value);
-      this._renderCurrentPage(this.input.value);
-      this.reader.trigger.push('control-navigator');
-      this.emitter.emit('updateLocation', { seq: this.input.value, trigger: 'control-navigator' });
+      if ( self._mouseDown ) { 
+        if ( isIE ) { self._update(false); }
+        return;
+      }
+      this._change();
     })
 
     this.input.addEventListener('input', (event) => {
-      this.output.classList.add('updating');
-      this.render('current-seq', this.input.value);
-      this._renderCurrentPage(this.input.value);
+      if ( self._keyDown ) { self._keyDown = false; return; }
+      this._update();
     })
+
+    this.input.addEventListener("mousedown", function(event){
+        self._mouseDown = true;
+        self.output.classList.add('updating');
+    }, false);
+    this.input.addEventListener("mouseup", function(){
+        self._mouseDown = false;
+        self.output.classList.remove('updating');
+        if ( isIE ) { self._change(); return; }
+        self._update();
+    }, false);
+
+
+    var isTouchDevice = 'ontouchstart' in document.documentElement;
+    if ( isTouchDevice ) {
+      this.input.addEventListener('touchstart', (event) => {
+        self._mouseDown = true;
+        self.output.classList.add('updating');
+      })
+
+      this.input.addEventListener("touchend", function(event){
+        self._mouseDown = false;
+        self.output.classList.remove('updating');
+        if ( isIE ) { self._change(); return; }
+        self._update();
+      }, false);
+    }
+
+    this.input.addEventListener("keydown", function(event) {
+      if ( event.key == 'ArrowLeft' || event.key == 'ArrowRight' ) {
+        // do not fire input events if we're just keying around
+        self._keyDown = true;
+      }
+    }, false);
 
     var pageNumRange = this.reader.service.manifest.pageNumRange();
     this._hasPageNum = ( pageNumRange != null );
@@ -122,14 +156,17 @@ export var Navigator = class {
     }
 
     this.reader.on('relocated', (params) => {
-      this.render('current-seq', params.seq);
-      this._renderCurrentPage(params.seq);
       this.input.value = params.seq;
-      this._updateInputBackground();
-      this.input.setAttribute('aria-valuenow', params.seq);
+      this._update();
 
-      var percent = Math.ceil((parseInt(params.seq, 10) / parseInt(this.input.max, 10)) * 100.0);
-      this.input.setAttribute('aria-valuetext', `${percent}% • Page scan ${params.seq} of ${this.input.max}`);
+      // this.render('current-seq', params.seq);
+      // this._renderCurrentPage(params.seq);
+      // this.input.value = params.seq;
+      // this._updateInputBackground();
+      // this.input.setAttribute('aria-valuenow', params.seq);
+
+      // var percent = Math.ceil((parseInt(params.seq, 10) / parseInt(this.input.max, 10)) * 100.0);
+      // this.input.setAttribute('aria-valuetext', `${percent}% • Page scan ${params.seq} of ${this.input.max}`);
     })
 
     if ( this.form && this.reader.service.manifest.pageNumRange() ) {
@@ -184,6 +221,30 @@ export var Navigator = class {
   render(slot, value) {
     var span = this.output.querySelector(`[data-slot="${slot}"]`);
     span.innerText = value;
+  }
+
+  _update() {
+    // this.output.classList.add('updating');
+    this.render('current-seq', this.input.value);
+    this._updateInputBackground();
+    var value = parseFloat(this.input.value, 10);
+    var current_location = value;
+    var current_page = '';
+
+    var max = parseFloat(this.input.max, 10);
+    var percentage = (( value / max ) * 100.0)
+    this.input.setAttribute('aria-valuenow', value);
+    this.input.setAttribute('aria-valuetext', `${percentage}% • Location ${current_location} of ${this._total}${current_page}`);
+    this._renderCurrentPage(this.input.value);
+  }
+
+  _change() {
+    // this.output.classList.remove('updating');
+    // this._updateInputBackground();
+    // this.render('current-seq', this.input.value);
+    // this._renderCurrentPage(this.input.value);
+    this.reader.trigger.push('control-navigator');
+    this.emitter.emit('updateLocation', { seq: this.input.value, trigger: 'control-navigator' });
   }
 
   _renderCurrentPage(value) {

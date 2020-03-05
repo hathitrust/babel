@@ -34,7 +34,9 @@ export var Viewinator = class {
       button.disabled = true;
       button.dataset.disabled = true;
       button = this.input.querySelector('[data-target="thumb"]');
-      button.disabled = true;
+      if ( button ) {
+        button.disabled = true;
+      }
     }
 
   }

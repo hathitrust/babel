@@ -1,8 +1,16 @@
 head.ready(function() {
   var $form = $(".form-search-volume");
-  $form.submit(function() {
+
+  var $body = $("body");
+
+  $(window).on('undo-loading', function() {
+    $("button.btn-loading").removeAttr("disabled").removeClass("btn-loading");
+  })
+
+  $("body").on('submit', 'form.form-search-volume', function(event) {
     HT.beforeUnloadTimeout = 15000;
     var $form_ = $(this);
+
     var $submit = $form_.find("button[type=submit]");
     if ( $submit.hasClass("btn-loading") ) {
       alert("Your search query has been submitted and is currently being processed.");
@@ -16,10 +24,15 @@ head.ready(function() {
     $submit.addClass("btn-loading").attr("disabled", "disabled");
 
     $(window).on('unload', function() {
-      $submit.removeAttr('disabled');
+      $(window).trigger('undo-loading');
     })
 
-    return true;
+    if ( HT.reader && HT.reader.controls.searchinator ) {
+      event.preventDefault();
+      return HT.reader.controls.searchinator.submit($form_.get(0));
+    }
+
+    // default processing
   })
 
   $("#action-start-jump").on('change', function() {
@@ -31,4 +44,5 @@ head.ready(function() {
     $form_.append(`<input name='sz' type="hidden" value="${sz}" />`);
     $form_.submit();
   })
+
 });

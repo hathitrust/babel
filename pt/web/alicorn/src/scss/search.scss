@@ -1,6 +1,6 @@
 @import "variables";
 // @import "../../../common/web/unicorn/vendor/icomoon/style.scss";
-@import 'microtip/microtip';
+// @import 'microtip/microtip';
 @import "nav";
 @import "sidebar";
 @import "responsive";
@@ -88,3 +88,30 @@ a.worldcat.inline {
   background: #0099cc;
   font-weight: bold;
 }
+
+// EPUB
+span.visit {
+  text-decoration: underline;
+  color: $link-color;
+}
+
+ul.results--list {
+  margin-left: 2rem;
+  a {
+    font-weight: normal;
+    font-style: normal; 
+    color: #000;
+    text-decoration: none !important;
+
+    &:hover {
+      color: $link-color !important;
+      text-decoration: underline !important;
+    }
+  }
+}
+
+a.hover span.visit {
+  text-decoration: none;
+  color: #d56d11;
+}
+

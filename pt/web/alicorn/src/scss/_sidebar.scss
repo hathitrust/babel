@@ -173,7 +173,7 @@ li.download-item--EPUB {
   display: none;
 }
 
-html.mobile {
+html.mobile, html[data-item-type="volume/epub"] {
   li.download-item--EPUB {
     display: list-item;
   }
@@ -323,6 +323,10 @@ html.mobile {
   #input-search-text {
     font-size: 1rem !important;
   }
+}
+
+.inactive {
+  display: none;
 }
 
 // section[data-selected="0"] {

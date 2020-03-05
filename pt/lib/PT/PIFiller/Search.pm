@@ -35,9 +35,12 @@ use File::Basename qw();
 use List::MoreUtils;
 
 use JSON::XS;
+use Utils::Cache::Storable;
 
 # Number of allowed links for pagination. Set this so page links fit on one line.
 use constant MAX_PAGELABELS=>11;
+
+use constant RESULTS_VERSION => 1;
 
 # use feature qw(say);
 # our $DEBUG_LOGFILE;
@@ -389,11 +392,26 @@ sub WrapFragmentSearchResultsInXml {
     $tempCgi->delete('orient');
     $tempCgi->delete('u');
 
+    use Time::HiRes;
+    my $start_0 = Time::HiRes::time();
+
     my $XML_result = '';
 
     # Server/Query/Network error
     if (! $rs->http_status_ok()) {
         $XML_result = wrap_string_in_tag('true', 'SearchError');
+        return $XML_result;
+    }
+
+    my $cache_max_age = 600;
+    my $cache_dir = Utils::get_true_cache_dir($C, 'search_cache_dir');
+    my $cache = Utils::Cache::Storable->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
+
+    my $cache_key = $$rs{cache_key};
+    my $cached_result = $cache->Get($mdpItem->GetId, "$cache_key.${ \RESULTS_VERSION }.xml");
+
+    if ( ref $cached_result ) {
+        $XML_result = $$cached_result{XML_result};
         return $XML_result;
     }
 
@@ -451,7 +469,7 @@ sub WrapFragmentSearchResultsInXml {
 
         my $chapter_filename = $$map{$seq};
         my $chapter_index = $seq * 2 ; # ( $seq - 1 ) * 2;
-        print STDERR "AHOY PAGING $seq : $chapter_index : $chapter_filename\n";
+        # print STDERR "AHOY PAGING $seq : $chapter_index : $chapter_filename\n";
         my $chapter_title = $mdpItem->GetPageFeature($seq);
         my $chapter = XML::LibXML->load_xml(location => join("/", $epub_pathname, $chapter_filename));
         unless ( $chapter_title ) {
@@ -474,7 +492,7 @@ sub WrapFragmentSearchResultsInXml {
         }
 
         @matched_words = List::MoreUtils::distinct(@matched_words);
-        print STDERR "AHOY WRAP @matched_words\n";
+        # print STDERR "AHOY WRAP @matched_words\n";
 
         $XML_result .=
           qq{<Page>\n} .
@@ -493,7 +511,8 @@ sub WrapFragmentSearchResultsInXml {
         $XML_result .= wrap_string_in_tag($href, 'Link');
         $XML_result .= wrap_string_in_tag(JSON::XS::encode_json(\@matched_words), 'Highlight');
 
-        my $expr = join('|', map { qr/\Q$_/i } @matched_words);
+        my $expr = join('|', map { qr/\Q$_/ } @matched_words);
+        # my $expr = join('|', map { qr/\b\Q$_\E\b/ } @matched_words);
         my @nodes = map { [ [4], $_ ] } $xpc->findnodes(".//xhtml:body", $chapter);
         my @possibles = ();
         while ( scalar @nodes ) {
@@ -502,7 +521,7 @@ sub WrapFragmentSearchResultsInXml {
             my $content = $node->textContent;
             if ( $content =~ m,$expr,i ) {
 
-                push @possibles, [ [ @$offset ], $content ];
+                push @possibles, [ [ @$offset ], $content, $node ];
 
                 my @children = ();
                 foreach my $child ( $node->nonBlankChildNodes() ) { # $xpc->findnodes("node()", $node);
@@ -521,10 +540,31 @@ sub WrapFragmentSearchResultsInXml {
 
         my $last_path;
         my $num_snippets = 0;
+
+        my $range_start = -1;
+        my $range_length = 0;
+        my $range_offset;
+
         while ( my $possible = pop @possibles ) {
-            my ( $offset, $content ) = @$possible;
+            my ( $offset, $content, $node ) = @$possible;
             my @words = split(/\s/, $content);
             my $path = join('/', @$offset);
+
+            ## need to find the range_start from *this* spot
+            if ( $range_start < 0 ) {
+                $range_offset = $offset;
+                foreach my $child ( $node->nonBlankChildNodes() ) {
+                    next unless ( $child->nodeType == 3 );
+                    $range_start += 2;
+                    my $value = $child->nodeValue;
+                    my @chunks = split(/($expr)/, $value);
+                    if ( scalar @chunks > 1 ) {
+                        my $idx = List::MoreUtils::firstidx { $_ =~ m,$expr, } @chunks;
+                        $range_length = length(join('', @chunks[0..$idx]));
+                        last;
+                    }
+                }
+            }
 
             next if ( scalar @possibles && scalar @words < 10 );
 
@@ -553,6 +593,9 @@ sub WrapFragmentSearchResultsInXml {
                 push @tmp, @words[$p0 .. $#words] if ( scalar @words );
                 push @tmp, qq{<strong class="solr_highlight_1">$chunks[$idx]</strong>&#160;};
                 @chunks = splice(@chunks, $idx + 1);
+
+
+
             }
             if ( scalar @chunks && scalar @tmp < $MAX_SNIPPET_WORDS  ) {
                 my $n = scalar @tmp;
@@ -567,7 +610,8 @@ sub WrapFragmentSearchResultsInXml {
             # $XML_result .= wrap_string_in_tag(join('|', @matched_words), 'Highlight');
             my $temperCgi = new CGI($tempCgi);
 
-            my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$offset) . "/1:0";
+            $range_start = 1 if ( $range_start < 0 );
+            my $cfi_path = join("/", "", "6", "$chapter_index\[$idref\]") . "!/" . join("/", @$range_offset) . "/$range_start:$range_length";
             # $temperCgi->param('num', $cfi_path);
             # $temperCgi->param('h', join(':', @matched_words));
             my $href = Utils::url_to($temperCgi, $PTGlobals::gPageturnerCgiRoot);
@@ -593,12 +637,24 @@ sub WrapFragmentSearchResultsInXml {
 
             $XML_result .= '</Result>';
 
+            $range_start = -1;
+            $range_length = 0;
+            $range_offset = undef;
+
             $num_snippets += 1;
             last if ( $num_snippets >= $MAX_SNIPPETS );
         }
 
         $XML_result .= '</Page>';
     }
+
+    # open(my $fh, ">", $xml_cache_filename);
+    # print $fh $XML_result;
+    # close($fh);
+
+    $cache->Set($mdpItem->GetId, "$cache_key.xml", { XML_result => $XML_result });
+
+    # print STDERR "AHOY AHOY XML BUILD : " . ( Time::HiRes::time() - $start_0 ) . "\n";
 
     return $XML_result;
 }

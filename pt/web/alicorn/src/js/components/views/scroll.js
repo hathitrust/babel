@@ -24,6 +24,7 @@ export var Scroll = class extends Base {
   }
 
   display(seq) {
+    seq = parseInt(seq, 10);
     var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
     target.dataset.visible = true; target.classList.add('page--visible');
@@ -103,20 +104,23 @@ export var Scroll = class extends Base {
   }
 
   next() {
-    var scrollTop = this.container.scrollTop;
-    this.container.scrollTop += this.container.offsetHeight;
+    // var scrollTop = this.container.scrollTop;
+    // this.container.scrollTop += this.container.offsetHeight;
+    this.display(this.currentSeq + 1);
   }
 
   prev() {
-    if ( this.container.scrollTop == 0 ) { return ; }
-    this.container.scrollTop -= this.container.offsetHeight;
+    // if ( this.container.scrollTop == 0 ) { return ; }
+    // this.container.scrollTop -= this.container.offsetHeight;
+    this.display(this.currentSeq - 1);
   }
 
   _postResizePage(page, bounds, rect) {
     if ( rect.bottom <= bounds.bottom && rect.top < 0 ) {
+      var scrollTop = this.container.scrollTop;
       setTimeout(function() {
         var updated_rect = page.getBoundingClientRect();
-        delta = updated_rect.height - rect.height;
+        var delta = updated_rect.height - rect.height;
         if ( this.container.scrollTop == scrollTop ) {
           // delta /= this.settings.scale;
           // console.log("AHOY afterResized", view.index, this.container.scrollTop, view.element.getBoundingClientRect().height, rect.height, delta / this.settings.scale);
@@ -164,7 +168,7 @@ export var Scroll = class extends Base {
       if ( page != null && this.currentSeq != page.dataset.seq ) {
         var seq = page.dataset.seq;
         this.reader.emit('relocated', { seq: seq });
-        this.currentSeq = seq;
+        this.currentSeq = parseInt(seq, 10);
         if ( this._currentPage ) {
           this.unfocus(this._currentPage);
         }

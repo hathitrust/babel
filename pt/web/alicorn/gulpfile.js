@@ -29,9 +29,15 @@ javascripts.input.push(`${process.env.SDRROOT}/mdp-web/jquery/jQuery-URL-Parser/
 javascripts.input.push('./src/js/utils/**/*.js')
 javascripts.output = './js';
 
-var apps = {};
-apps.input = [];
-apps.input.push('./src/js/components/**/*.js', './src/js/main.js');
+var apps = {volume: {}, volume_epub: {}};
+apps.volume.input = [];
+apps.volume_epub.input = [];
+apps.volume.input.push(
+  './src/js/components/**/*.js', 
+  './src/js/main.js');
+apps.volume_epub.input.push(
+  './src/js/volume_epub/main.js',
+  './src/js/volume_epub/components/**/*.js');
 apps.output = "./js";
 
 stylesheets.options = {
@@ -102,23 +108,40 @@ gulp.task('app', function() {
             }
           }
         ]
-        // loaders: {
-        //   test: /\.js$/,
-        //   loader: "babel-loader",
-        //   presets: ['es2015'],
-        //   plugins: [
-        //     "add-module-exports",
-        //   ]
-        // }
       }
     }, compiler, function(err, stats) {
 
     }))
-    // .pipe(babel({
-    //   babelrc: false,
-    //   presets: presets_v6
-    //   // exclude: [ 'node_modules/**' ]
-    // }))
+    .pipe(gulp.dest(javascripts.output));
+});
+
+gulp.task('volume_epub', function() {
+  return gulp.src('./src/js/volume_epub/main.js')
+    .pipe(webpack({
+      watch: false,
+      devtool: 'inline-source-map',
+      mode: 'development',
+      entry: {
+        main: [ 'intersection-observer', 'babel-polyfill', 'whatwg-fetch', './src/js/volume_epub/main.js']
+      },
+      output: {
+        filename: 'volume_epub/main.js'
+      },
+      module: {
+        rules: [
+          { test: /\.js$/, 
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: [ 'env' ]
+              }
+            }
+          }
+        ]
+      }
+    }, compiler, function(err, stats) {
+
+    }))
     .pipe(gulp.dest(javascripts.output));
 });
 
@@ -131,8 +154,12 @@ gulp.task('scripts:watch', function () {
 });
 
 gulp.task('app:watch', function () {
-  gulp.watch(apps.input, gulp.parallel('app'));
+  gulp.watch(apps.volume.input, gulp.parallel('app'));
 });
 
-gulp.task('default', gulp.parallel('sass:watch', 'app:watch', 'scripts:watch'));
-gulp.task('run', gulp.series('sass', 'scripts', 'app'));
+gulp.task('volume_epub:watch', function () {
+  gulp.watch(apps.volume_epub.input, gulp.parallel('volume_epub'));
+});
+
+gulp.task('default', gulp.parallel('sass:watch', 'app:watch', 'volume_epub:watch', 'scripts:watch'));
+gulp.task('run', gulp.series('sass', 'scripts', 'app', 'volume_epub'));
