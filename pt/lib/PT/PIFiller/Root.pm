@@ -230,8 +230,8 @@ sub handle_ITEM_STYLESHEET_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $item_type = GetItemType($C);
-    my $item_sub_type = GetItemSubType($C);
+    my $item_type = PT::PIFiller::Common::GetItemType($C);
+    my $item_sub_type = PT::PIFiller::Common::GetItemSubType($C);
     if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
     my $xml = qq{<Filename>pageviewer_${item_type}.xsl</Filename>};
     return $xml;
@@ -242,8 +242,8 @@ sub handle_ITEM_CHUNK_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $item_type = GetItemType($C);
-    my $item_sub_type = GetItemSubType($C);
+    my $item_type = PT::PIFiller::Common::GetItemType($C);
+    my $item_sub_type = PT::PIFiller::Common::GetItemSubType($C);
     if ( $item_sub_type ) { $item_type .= "_$item_sub_type"; }
     my $xml = qq{<?CHUNK filename="_pageviewer_${item_type}.xml"?>};
     return $xml;
