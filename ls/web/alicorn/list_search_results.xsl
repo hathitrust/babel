@@ -80,9 +80,15 @@
   <xsl:variable name="gLimit">
     <xsl:value-of select="/MBooksTop/LimitToFullText/LimitType"/>
   </xsl:variable>
+  <xsl:variable name="inst_code">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionCode"/>
+  </xsl:variable>
+  <xsl:variable name="inst_name">
+    <xsl:value-of select="/MBooksTop/MBooksGlobals/InstitutionName"/>
+  </xsl:variable>
   <xsl:variable name="limitByInst">
     <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='heldby']">
-      <xsl:text>True</xsl:text>
+      <xsl:text>TRUE</xsl:text>
     </xsl:if>
   </xsl:variable>
   <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']"/>
@@ -469,6 +475,20 @@
               <xsl:call-template name="build-search-query-summary" />
             </xsl:otherwise>
           </xsl:choose>
+          <xsl:if test="$limitByInst = 'TRUE'">
+            <li class="active-filter-item">
+              <button class="active-filter-button" data-href="/cgi/{/MBooksTop/Heldby/unselectURL}">
+                <span class="flex-space-between flex-center">
+                  <span class="active-filter-button-text">
+                    <xsl:text>Held by: </xsl:text>
+                    <xsl:value-of select="$inst_name" />
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" version="1.1" class="icon"><use xlink:href="#action-remove"></use></svg>
+                  <span class="offpage">Remove</span>
+                </span>
+              </button>
+            </li>
+          </xsl:if>
           <xsl:for-each select="$current/multiselect/multiselectClause">
             <li class="active-filter-item">
               <button class="active-filter-button" data-href="/cgi/{unselectURL}">

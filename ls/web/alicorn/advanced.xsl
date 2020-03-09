@@ -222,6 +222,18 @@
         </input>
         <label for="filter-full-view-only">Full view only</label>
       </div>
+      <xsl:if test="$logged_in = 'YES'">
+        <div class="advanced-filter-inner-container">
+          <input type="checkbox" name="heldby" value="{$inst_code}" id="filter-heldby-only">
+            <xsl:if test="$limitByInst = 'TRUE'">
+              <xsl:attribute name="checked">
+                <xsl:text>checked</xsl:text>
+              </xsl:attribute>
+            </xsl:if>
+          </input>
+          <label for="filter-heldby-only">Held by <xsl:value-of select="$inst_name" /></label>
+        </div>        
+      </xsl:if>
     </div>
   </xsl:template>
 
