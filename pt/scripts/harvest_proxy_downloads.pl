@@ -94,7 +94,8 @@ my $inst_map = {};
 
 my $__i = 0;
 my $filename;
-while ( $filename = shift @filenames ) {
+while ( scalar @filenames ) {
+    $filename = shift @filenames;
     chomp $filename;
     print STDERR "== processing: $filename\n" if ( $VERBOSE );
     my $fh;
