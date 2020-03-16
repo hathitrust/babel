@@ -41,6 +41,9 @@ use Index_Module;
 
 use PT::Query;
 
+use utf8;
+use Encode;
+
 my $HOST = `hostname`; chomp($HOST); $HOST =~ s,\..*$,,;
 
 # ---------------------------------------------------------------------
@@ -244,7 +247,7 @@ Current cases below
 
  This may change when if we change settings on CJKFiltering
 
-Assumes that we have a string with no spaces!  
+Assumes that we have a string with no spaces!
 ###Consider using Analysis request handler which would always be correct
 
 1   2 or more Han or Hiragana characters
@@ -320,7 +323,7 @@ Current cases below
 
  This may change when if we change settings on CJKFiltering
 
-Assumes that we have a string with no spaces!  
+Assumes that we have a string with no spaces!
 ###Consider using Analysis request handler which would always be correct
 
 1   3 or more Han or Hiragana characters
@@ -436,7 +439,13 @@ sub Solr_search_item {
     my $cache_max_age = 600;
     my $cache_dir = Utils::get_true_cache_dir($C, 'search_cache_dir');
     my $cache = Utils::Cache::Storable->new($cache_dir, $cache_max_age, $C->get_object('MdpItem')->get_modtime());
-    my $cache_key = Digest::SHA::sha1_hex(qq{$id.$processed_q1.$start.$rows});
+    # my $cache_key = Digest::SHA::sha1_hex(qq{$id.$processed_q1.$start.$rows});
+    my $cache_key = Digest::SHA::sha1_hex(join('.',
+        $id,
+        utf8::is_utf8($processed_q1) ? Encode::encode_utf8($processed_q1) : $processed_q1,
+        $start,
+        $rows
+    ));
 
     my $cached_results = $cache->Get($id, $cache_key);
 
@@ -502,7 +511,7 @@ sub Solr_search_item {
     }
 
     # can we stash this somewhere?
-    # Storable::nstore($rs, $rs_cache_filename); 
+    # Storable::nstore($rs, $rs_cache_filename);
     # chmod(0666, $rs_cache_filename);
 
     $$rs{cache_key} = $cache_key;
