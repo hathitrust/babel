@@ -23,7 +23,7 @@
      'ui'       => 'reader|embed|fullscreen',
      'ptsop'    => 'AND|OR|and|or',
      'index'    => '1',
-     'a'        => '\w+',
+     'a'        => '\w+|\-',
      'h'        => '.*',
      'l11_tracking' => '.*',
      'l11_uid' => '.*',
@@ -56,7 +56,7 @@ $g_late_operations = [
                                       'filler'   => 'PT::PIFiller::Root',
                                       },
                         },
-     },     
+     },
 
      # ----- UI action -----
      'ACTION_SEARCH'  =>
@@ -69,7 +69,7 @@ $g_late_operations = [
                                        'filler'   => 'PT::PIFiller::Search',
                                       },
                         },
-     },     
+     },
 
     );
 
