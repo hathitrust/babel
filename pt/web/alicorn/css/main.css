@@ -179,6 +179,49 @@ button.control-search:hover, button.control-search:focus {
   margin-right: 0.5rem;
 }
 
+.alert--emergency-access {
+  border-radius: 0;
+  background-color: orange;
+  border: 1px solid darkorange;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  text-shadow: none;
+  margin-bottom: 0;
+}
+
+.alert--emergency-access[data-initialized="false"] > * {
+  opacity: 0;
+}
+
+.alert--emergency-access p {
+  font-weight: bold;
+  color: black;
+}
+
+.alert--emergency-access .alert--emergency-access--options {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link {
+  color: black;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link[disabled] {
+  display: none;
+}
+
 .sidebar-toggle {
   border-right: 1px solid #ddd;
   margin-right: 1rem;
@@ -1119,13 +1162,13 @@ section section .viewer-loader.viewer-loader::after {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ub2f629db 1s linear alternate infinite;
-          animation: loader12-ub2f629db 1s linear alternate infinite;
+  -webkit-animation: loader12-u17c036c8 1s linear alternate infinite;
+          animation: loader12-u17c036c8 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-ub2f629db {
+@-webkit-keyframes loader12-u17c036c8 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1148,7 +1191,7 @@ section section .viewer-loader.viewer-loader::after {
   }
 }
 
-@keyframes loader12-ub2f629db {
+@keyframes loader12-u17c036c8 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1201,13 +1244,13 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-udec40f8b 1s linear alternate infinite;
-          animation: loader12-udec40f8b 1s linear alternate infinite;
+  -webkit-animation: loader12-u7aa24122 1s linear alternate infinite;
+          animation: loader12-u7aa24122 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
 }
 
-@-webkit-keyframes loader12-udec40f8b {
+@-webkit-keyframes loader12-u7aa24122 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1230,7 +1273,7 @@ section section .page.page--loading:not(.page--loaded)::before, section section 
   }
 }
 
-@keyframes loader12-udec40f8b {
+@keyframes loader12-u7aa24122 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1578,14 +1621,14 @@ section.view--thumb section .page:not(.page--loaded)::before {
   height: 8px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u37e52bde 1s linear alternate infinite;
-          animation: loader12-u37e52bde 1s linear alternate infinite;
+  -webkit-animation: loader12-u26213a96 1s linear alternate infinite;
+          animation: loader12-u26213a96 1s linear alternate infinite;
   top: 50%;
   margin: -20px auto 0;
   top: 10%;
 }
 
-@-webkit-keyframes loader12-u37e52bde {
+@-webkit-keyframes loader12-u26213a96 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1608,7 +1651,7 @@ section.view--thumb section .page:not(.page--loaded)::before {
   }
 }
 
-@keyframes loader12-u37e52bde {
+@keyframes loader12-u26213a96 {
   0% {
     -webkit-box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -20px 16px 0 2px #EF7C22, -10px 16px 0 0 rgba(239, 124, 34, 0.2), 0 16px 0 0 rgba(239, 124, 34, 0.2), 10px 16px 0 0 rgba(239, 124, 34, 0.2), 20px 16px 0 0 rgba(239, 124, 34, 0.2);
@@ -1800,8 +1843,8 @@ section.view--plaintext button[data-target="plaintext"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-uac6e02bd 1s linear alternate infinite;
-          animation: loader12-uac6e02bd 1s linear alternate infinite;
+  -webkit-animation: loader12-ubf5abb24 1s linear alternate infinite;
+          animation: loader12-ubf5abb24 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1810,7 +1853,7 @@ section.view--plaintext button[data-target="plaintext"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-uac6e02bd {
+@-webkit-keyframes loader12-ubf5abb24 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1833,7 +1876,7 @@ section.view--plaintext button[data-target="plaintext"] {
   }
 }
 
-@keyframes loader12-uac6e02bd {
+@keyframes loader12-ubf5abb24 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

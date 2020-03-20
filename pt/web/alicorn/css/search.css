@@ -179,6 +179,49 @@ button.control-search:hover, button.control-search:focus {
   margin-right: 0.5rem;
 }
 
+.alert--emergency-access {
+  border-radius: 0;
+  background-color: orange;
+  border: 1px solid darkorange;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  text-shadow: none;
+  margin-bottom: 0;
+}
+
+.alert--emergency-access[data-initialized="false"] > * {
+  opacity: 0;
+}
+
+.alert--emergency-access p {
+  font-weight: bold;
+  color: black;
+}
+
+.alert--emergency-access .alert--emergency-access--options {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link {
+  color: black;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link[disabled] {
+  display: none;
+}
+
 .sidebar-toggle {
   border-right: 1px solid #ddd;
   margin-right: 1rem;
