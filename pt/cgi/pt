@@ -136,19 +136,83 @@ PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
 
 my $gId = $gCgi->param('id');
 
+if ( $gCgi->param('a') eq 'checkout' ) {
+    $C->get_object('Session')->set_transient_subkey('checkouts', $gId, 1);
+}
+
 Auth::Logging::log_access($C, 'pt');
 unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
     # Auth::Logging::log_failed_access($C, $gId, 'pt');
+    if ( $gCgi->param('a') && $gCgi->param('a') eq '-' ) {
+        my $cookie= $gCgi->cookie('HTexpiration') || '{}';
+        my $data = decode_json($cookie);
+        if ( $$data{$gId} ) {
+            # we had access, but no longer do
+            $$data{$gId} = -1;
+            my $cookie = new CGI::Cookie(
+                            -name    => 'HTexpiration',
+                            -value   => encode_json($data),
+                            -path    => '/',
+                            -domain  => Utils::get_cookie_domain($gCgi),
+                            -httponly => 0,
+                          );
+            Utils::add_header($C, 'Cookie' => $cookie);
+        }
+        View::P_output_data_HTTP($C, undef, undef, 204);
+        exit;
+    }
+
     if ( $C->get_object('Access::Rights')->suppressed($C, $gId ) ) {
         View::P_output_data_HTTP($C, undef, undef, 404);
         exit;
     }
 }
 else {
+    # return the volume
+    if ( $gCgi->param('a') eq 'release' ) {
+        Auth::Exclusive::release_exclusive_access($C, $gId);
+        # and now redirect away from the page
+        ## my $redirect_url = PT::PageTurnerUtils::HomeLink();
+        my $tempCgi = new CGI($gCgi);
+        $tempCgi->delete('a');
+        my $redirect_url = Utils::url_to($tempCgi);
+        print $gCgi->redirect($redirect_url);
+        exit;
+    }
+
+    # checkout the volume
+    if ( $gCgi->param('a') && $gCgi->param('a') eq 'checkout' ) {
+        # and now redirect away from the page
+        my $tempCgi = new CGI($gCgi);
+        $tempCgi->delete('a');
+        my $redirect_url = Utils::url_to($tempCgi);
+        print $gCgi->redirect($redirect_url);
+        exit;
+    }
+
     # Security logging
     if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
         Auth::ACL::a_Increment_accesscount($gId);
         # Auth::Logging::log_successful_access($C, $gId, 'pt');
+    }
+
+    if ( $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
+        # update an cookie so the reader can update itself
+        my $cookie= $gCgi->cookie('HTexpiration') || '{}';
+        my $data = decode_json($cookie);
+
+        my ( $granted, $owner, $expires ) = $C->get_object('Access::Rights')->get_exclusivity($C);
+
+        $$data{$gId} = Utils::Time::unix_Time($expires);
+
+        my $cookie = new CGI::Cookie(
+                        -name    => 'HTexpiration',
+                        -value   => encode_json($data),
+                        -path    => '/',
+                        -domain  => Utils::get_cookie_domain($gCgi),
+                        -httponly => 0,
+                      );
+        Utils::add_header($C, 'Cookie' => $cookie);
     }
 
     if ( $gCgi->param('a') ) {
