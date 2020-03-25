@@ -196,7 +196,9 @@ else {
         # Auth::Logging::log_successful_access($C, $gId, 'pt');
     }
 
-    if ( $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
+    if ( $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE
+          ||
+         $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::LIBRARY_IPADDR_USER ) {
         # update an cookie so the reader can update itself
         my $cookie= $gCgi->cookie('HTexpiration') || '{}';
         my $data = decode_json($cookie);

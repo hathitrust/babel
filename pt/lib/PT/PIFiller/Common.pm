@@ -1016,7 +1016,12 @@ sub handle_ACCESS_TYPE_PI
     my $initial_access_type =
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
-    if ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,allow_emergency_access, ) {
+    if ( 
+        ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,allow_emergency_access, ) 
+        ||
+        ( $access_type eq 'in_library_user' && $initial_access_type =~ m,allow_by_held, ) 
+    )
+        {
 
         $xml .= q{<Name>} . $access_type . q{</Name>};
 
@@ -1047,6 +1052,7 @@ sub handle_ACCESS_TYPE_PI
             $xml .= qq{<Action>$action_url</Action>};
         }
     }
+
     return $xml;
 }
 
