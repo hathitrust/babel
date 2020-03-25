@@ -76,6 +76,114 @@
 
   </xsl:template>
 
+  <!-- emergency access user -->
+  <xsl:template name="EmergencyAccessAffiliatePage">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:variable name="etas_href">https://www.hathitrust.org/help/etas</xsl:variable>
+    <xsl:choose>
+      <xsl:when test="//AccessType/Available = 'TRUE'">
+
+        <!-- item is available for checkout -->
+        <div class="alert alert-block alert--emergency-access">
+          <p style="margin-right: 1rem">
+            <xsl:text>Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+          <div class="alert--emergency-access--options">
+            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+          </div>
+        </div>
+
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="alert alert-block alert-block alert--emergency-access">      
+          <p style="margin-right: 1rem">
+            <xsl:text>All available copies are currently in use. Try again later. Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+
+          <!-- <p>Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p> -->
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+
+    <div style="margin-bottom: 2rem;">
+      <xsl:call-template name="action-search-volume" />
+    </div>
+
+    <div>
+      <p>
+        <xsl:choose>
+          <xsl:when test="//AccessType/Available = 'TRUE'">
+            <xsl:text>You can </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>In the meantime, you can </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <strong>search in this text</strong><xsl:text> to see if it contains what you are looking for.</xsl:text>
+      </p>
+      <p>Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+    </div>
+  </xsl:template>
+
+  <!-- in-library user -->
+  <xsl:template name="InLibraryUserPage">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:choose>
+      <xsl:when test="//AccessType/Available = 'TRUE'">
+
+        <!-- item is available for checkout -->
+        <div class="alert alert-block alert--emergency-access">
+          <div>
+            <p style="margin-right: 1rem;">This work may be in copyright.</p>
+            <p style="margin-right: 1rem">
+
+              <xsl:text>Access to this work is provided based on your affiliation or account privileges. </xsl:text>
+              <xsl:text>Information about use can be found in the </xsl:text>
+              <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>
+              <xsl:text>.</xsl:text>
+            </p>
+          </div>
+          <div class="alert--emergency-access--options">
+            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+          </div>
+        </div>
+
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="alert alert-block alert-info">      
+          <p><strong>This work is in copyright.</strong> Full view access is available for this item based on your affiliation or account privileges. Items made available under these special circumstances can only be accessed by one user at a time.</p>
+
+          <p>All available copies are currently in use. Try again later.</p>
+
+          <!-- <p>Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p> -->
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+
+    <div style="margin-bottom: 2rem;">
+      <xsl:call-template name="action-search-volume" />
+    </div>
+
+    <div>
+      <p>
+        <xsl:choose>
+          <xsl:when test="//AccessType/Available = 'TRUE'">
+            <xsl:text>You can </xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>In the meantime, you can </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <strong>search in this text</strong><xsl:text> to see if it contains what you are looking for.</xsl:text>
+      </p>
+      <p>Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic-access">HathiTrust Access and Use Policy</a>.</p>
+    </div>
+  </xsl:template>
+
   <!-- Brittle access -->
   <xsl:template name="BrittleAccessPage">
     <div class="alert alert-block alert-info">      
@@ -227,8 +335,16 @@
         </xsl:when>
 
         <!-- Brittle message about when current accessor's exclusive access expires -->
-        <xsl:when test="$gExclusiveAccessFail='YES'">
-          <xsl:call-template name="BrittleAccessPage"/>          
+        <xsl:when test="false() and $gExclusiveAccessFail='YES'">
+          <xsl:call-template name="BrittleAccessPage"/>
+        </xsl:when>
+
+        <xsl:when test="$gBrittleHeld = 'YES' and //AccessType/Name = 'in_library_user'">
+          <xsl:call-template name="InLibraryUserPage" />
+        </xsl:when>
+
+        <xsl:when test="$gHeld = 'YES' and //AccessType/Name = 'emergency_access_affiliate'">
+          <xsl:call-template name="EmergencyAccessAffiliatePage" />
         </xsl:when>
 
         <!-- orphan message -->
