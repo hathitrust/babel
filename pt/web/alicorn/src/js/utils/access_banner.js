@@ -20,12 +20,14 @@ head.ready(function() {
     var data = $.cookie('HTexpiration', undefined, { json: true });
     if ( ! data ) { return ; }
     var seconds = data[HT.params.id];
-    console.log("AHOY OBSERVE", seconds, last_seconds);
+    // console.log("AHOY OBSERVE", seconds, last_seconds);
     if ( seconds == -1 ) {
       var $link = $emergency_access.find("p a").clone();
-      $emergency_access.find("p").text("Your access has expired and cannot be renewed. Try again later. Access has been provided through the ");
+      $emergency_access.find("p").text("Your access has expired and cannot be renewed. Reload the page or try again later. Access has been provided through the ");
       $emergency_access.find("p").append($link);
-      $emergency_access.find(".alert--emergency-access--options a").hide();
+      var $action = $emergency_access.find(".alert--emergency-access--options a");
+      $action.attr('href', window.location.href);
+      $action.text('Reload');
       return;
     }
     if ( seconds > last_seconds ) {
@@ -40,7 +42,7 @@ head.ready(function() {
     var hours = date.getHours();
     var ampm = 'AM';
     if ( hours > 12 ) { hours -= 12; ampm = 'PM'; }
-    if ( hours == 12 ){ ampm == 'PM'; }
+    if ( hours == 12 ){ ampm = 'PM'; }
     var minutes = date.getMinutes();
     if ( minutes < 10 ) { minutes = `0${minutes}`; }
     var message = `${hours}:${minutes}${ampm} ${MONTHS[date.getMonth()]} ${date.getDate()}`;
@@ -63,7 +65,7 @@ head.ready(function() {
       setInterval(function() {
         // toggle_renew_link(date);
         observe_expiration_timestamp();
-      }, 1000);
+      }, 500);
     }
   }
 
