@@ -180,7 +180,6 @@ button.control-search:hover, button.control-search:focus {
 }
 
 .alert--emergency-access {
-  border-radius: 0;
   background-color: orange;
   border: 1px solid darkorange;
   display: -webkit-box;
@@ -205,6 +204,10 @@ button.control-search:hover, button.control-search:focus {
   color: black;
 }
 
+.alert--emergency-access p a {
+  color: #333;
+}
+
 .alert--emergency-access .alert--emergency-access--options {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -220,6 +223,24 @@ button.control-search:hover, button.control-search:focus {
 
 .alert--emergency-access .alert--emergency-access--options a.button-link[disabled] {
   display: none;
+}
+
+header .alert--emergency-access {
+  border-radius: 0;
+}
+
+.debug-messages {
+  position: fixed;
+  z-index: 90000;
+  opacity: 0.25;
+  background: orange;
+  max-height: 25vh;
+  max-width: 50vw;
+  overflow: auto;
+}
+
+.debug-messages:hover {
+  opacity: 1.0;
 }
 
 .sidebar-toggle {
