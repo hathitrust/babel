@@ -162,6 +162,9 @@ unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) 
         exit;
     }
 
+    # could we have had access?
+    Auth::Logging::log_possible_incopyright_access($C, $gId);
+
     if ( $C->get_object('Access::Rights')->suppressed($C, $gId ) ) {
         View::P_output_data_HTTP($C, undef, undef, 404);
         exit;
@@ -183,9 +186,14 @@ else {
     # checkout the volume
     if ( $gCgi->param('a') && $gCgi->param('a') eq 'checkout' ) {
         # and now redirect away from the page
-        my $tempCgi = new CGI($gCgi);
-        $tempCgi->delete('a');
-        my $redirect_url = Utils::url_to($tempCgi);
+        my $redirect_url;
+        if ( $gCgi->referer() =~ m,/cgi/pt/search, ) {
+            $redirect_url = $gCgi->referer();
+        } else {
+            my $tempCgi = new CGI($gCgi);
+            $tempCgi->delete('a');
+            $redirect_url = Utils::url_to($tempCgi);
+        }
         print $gCgi->redirect($redirect_url);
         exit;
     }
@@ -350,7 +358,6 @@ sub ValidityChecks {
         }
         elsif ( defined $ui && $ui eq 'embed' ) {
             $cgi->param('view', 'default');
-            print STDERR "AHOY AHOY AHOY $ui " . $cgi->param('view') . "\n";
         }
         else {
             $cgi->param( 'view', $PTGlobals::gDefaultView );
