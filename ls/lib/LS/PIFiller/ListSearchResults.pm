@@ -79,16 +79,16 @@ sub handle_HEADER_SEARCH_SELECT
              series => 'seriestitle',
              pdate_start => 'pubyear'
             };
-    
+
     if (defined($field1) && $field1 ne "")
     {
         my $selected=$map->{$field1};
         $out=wrap_string_in_tag($selected, 'Selected');
     }
-    
-    
+
+
     return $out;
-    
+
 }
 
 
@@ -122,7 +122,7 @@ sub handle_PAGING_PI
     {
 	$pager->total_entries($max_rows);
     }
-    
+
     my $temp_cgi = new CGI($cgi);
     $temp_cgi->param('a', 'srchls');
 
@@ -130,7 +130,7 @@ sub handle_PAGING_PI
 
     # spit out links for each page with the page range i.e href to
     # page2 label 11-20
-    my $pagelinks = "None";           # A small enough number of pages 
+    my $pagelinks = "None";           # A small enough number of pages
                                       # that they are all viewable in the pager
     # Else, they are broken down into three subsets:
     my $start_pagelinks = "None";
@@ -334,12 +334,12 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     #always remove the page number from any url that switches context
     # i.e. changing from lmt=x to lmt=y changes ordering/result set and therefore pages
     $temp_cgi->delete('pn');
-   
+
     my $limit_type = 'all'; #default
     if (defined $cgi->param('lmt'))
     {
         $limit_type = $cgi->param('lmt');
-    }  
+    }
     $temp_cgi->param('lmt', 'ft');
     my $full_text_href = $temp_cgi->self_url();
 
@@ -361,10 +361,10 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     {
         $num_total=$num_full_text;
     }
-    
+
     $num_total=commify($num_total);
-    
-    
+
+
     my $s;
 
     $s .= wrap_string_in_tag($limit_type, 'LimitType');
@@ -417,17 +417,17 @@ sub handle_SEARCH_RESULTS_PI
     my $limit = $cgi->param('lmt');
     my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
     my $user_query_string = $$search_result_data_hashref{'user_query_string'};
-    
+
     my $primary_rs = $$search_result_data_hashref{'primary_result_object'};
     my $secondary_rs = $$search_result_data_hashref{'secondary_result_object'};
     my $B_rs =$$search_result_data_hashref{'B_result_object'};
     my $i_rs =$$search_result_data_hashref{'interleaved_result_object'};
     my $i_debug_data= $$search_result_data_hashref{'il_debug_data'};
-    
+
     # get cgi url from cgi object and add logger to ls i.e SDRROOT/cgi/ls/logger
     my $base_url = $cgi->url();
     my $logger= $base_url . '/logger';
-    $output .= wrap_string_in_tag($logger, 'LoggerURL');   
+    $output .= wrap_string_in_tag($logger, 'LoggerURL');
     #
     #XXX Right now we only output primary rs explain.  Not B results
     my $explain_data;
@@ -435,12 +435,12 @@ sub handle_SEARCH_RESULTS_PI
     {
         $explain_data=$primary_rs->get_result_solr_debug();
 	my $p_explain_data =__process_explain_data($explain_data);
-	$output.= wrap_string_in_tag($p_explain_data, 'global_explain');   
+	$output.= wrap_string_in_tag($p_explain_data, 'global_explain');
     }
-   
-    
+
+
     # Was there a search?
-    if ($search_result_data_hashref->{'undefined_query_string'}) { 
+    if ($search_result_data_hashref->{'undefined_query_string'}) {
         $query_time = 0;
         $solr_error_msg = '';
     }
@@ -453,9 +453,9 @@ sub handle_SEARCH_RESULTS_PI
 	{
 	    $B_query_time = $B_rs->get_query_time();
 	}
-	
+
         $solr_error_msg = $act->get_transient_facade_member_data($C, 'solr_error');
-		
+
 	my $AB_config=$C->get_object('AB_test_config');
 
 	my $A_result_ref;
@@ -467,8 +467,8 @@ sub handle_SEARCH_RESULTS_PI
 	my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
 	#test for existence
 	my $use_B_query;
-	
-	if (exists($AB_config->{'_'}->{'use_B_query'}) && 
+
+	if (exists($AB_config->{'_'}->{'use_B_query'}) &&
 	    defined($AB_config->{'_'}->{'use_B_query'}))
 	{
 	    $use_B_query=$AB_config->{'_'}->{'use_B_query'};
@@ -477,21 +477,21 @@ sub handle_SEARCH_RESULTS_PI
 	my $B_description = $AB_config->{'_'}->{'B_description'};
 
 	my $global_click_data;
-	
-	
+
+
 	# XXX should we check if debug flag set and do logic here
 	if ($display_AB)
 	{
-	    $output .= wrap_string_in_tag('TRUE', 'DISPLAY_AB');   
+	    $output .= wrap_string_in_tag('TRUE', 'DISPLAY_AB');
 	}
-	
-   	#  side-by-side 
+
+   	#  side-by-side
 	if ($side_by_side)
 	{
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $primary_rs);
 	    $A_label = "Default";
 	    $output.=wrap_string_in_tag('TRUE','SideBySideDisplay');
-	    if ($use_interleave) 
+	    if ($use_interleave)
 	    {
 		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $i_rs);
 		$global_click_data=get_global_click_data($C, 'side_intl',  $primary_rs, $B_rs,$i_rs);
@@ -505,7 +505,7 @@ sub handle_SEARCH_RESULTS_PI
 	elsif($use_interleave && defined($i_rs))
 	{
 	    #interleave single column
-	    # if we are using interleave but not side by side just put interleave 	    
+	    # if we are using interleave but not side by side just put interleave
 	    #result in A and don't define B result ref
 	    $A_result_ref  = _ls_wrap_result_data($C, $user_query_string,  $i_rs );
     	    $A_label= $interleaver_class . ':' . $B_description;
@@ -522,10 +522,10 @@ sub handle_SEARCH_RESULTS_PI
 	    {
 		$B_result_ref = _ls_wrap_result_data($C, $user_query_string,  $B_rs);
 	    }
-	    
+
 	}
 	$output .= wrap_string_in_tag($global_click_data,'G_CLICK_DATA');
-	
+
 	if (DEBUG('AB')&& defined($i_debug_data))
 	{
 	    my $debug_out;
@@ -535,13 +535,13 @@ sub handle_SEARCH_RESULTS_PI
 	    }
 	    $A_label .= " DEBUG:  $debug_out";
 	}
-	   
+
 	$output .= wrap_string_in_tag($A_label,'A_LABEL');
-	
-	
+
+
         my $A_out = wrap_string_in_tag($$A_result_ref, 'A_RESULTS');
 	$output .= $A_out;
-	
+
 	if (defined($B_result_ref))
 	{
 	    my $B_out = wrap_string_in_tag($$B_result_ref, 'B_RESULTS');
@@ -549,7 +549,7 @@ sub handle_SEARCH_RESULTS_PI
 	    # change label to interleaved if we are displaying interleave
 	    # in B column
 	    my $B_label;
-	    
+
 	    if ($use_interleave)
 	    {
 		$B_label= $interleaver_class;
@@ -559,10 +559,10 @@ sub handle_SEARCH_RESULTS_PI
 	    }
 	    my $B_label_out = wrap_string_in_tag($B_label, 'B_LABEL');
 	    $output .= $B_label_out;
-	    
+
 	}
     }
-    
+
     #$output .= wrap_string_in_tag($query_time, 'QueryTime');
     $output .= wrap_string_in_tag($A_query_time, 'A_QueryTime');
     $output .= wrap_string_in_tag($B_query_time, 'B_QueryTime');
@@ -582,7 +582,7 @@ sub handle_SEARCH_RESULTS_PI
     my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[1];
     $output.= wrap_string_in_tag($unbalanced_quotes, 'UnBalancedQuotes');
     #need to fix any xml chars before output
-    
+
   #  $processed =clean_for_xml($processed);
     # add collection info
     my $coll_info = __get_coll_info($C,$act);
@@ -590,7 +590,7 @@ sub handle_SEARCH_RESULTS_PI
     {
 	    $output.= wrap_string_in_tag($coll_info, 'COLL_INFO');
     }
-    
+
     return $output;
 }
 # ---------------------------------------------------------------------
@@ -601,7 +601,7 @@ sub __get_coll_info
     my $act   = shift;
     my $cgi = $C->get_object('CGI');
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
-    
+
     my $coll_info;
     my $coll_desc;
     my $coll_name;
@@ -609,7 +609,7 @@ sub __get_coll_info
     my $coll_featured;
     my $coll_branding;
     my $coll_contact_info;
-    
+
     if(defined ($cgi->param('c')))  {
     	my $coll_id = $cgi->param('c');
     	#check for empty or space only param
@@ -632,10 +632,10 @@ sub __get_coll_info
             $coll_info .= '<COLL_SHARED>' . $co->get_shared_status($coll_id) . '</COLL_SHARED>';
     	}
     }
-    
+
     return($coll_info);
-	
-}	
+
+}
 # ---------------------------------------------------------------------
 
 =item handle_QUERY_STRING_PI
@@ -657,7 +657,7 @@ sub handle_QUERY_STRING_PI
 }
 # ---------------------------------------------------------------------
 sub handle_HELDBY_PI
-    : PI_handler(HELDBY) 
+    : PI_handler(HELDBY)
 {
     my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
@@ -665,8 +665,8 @@ sub handle_HELDBY_PI
     $temp_cgi->delete('pn');
     # change line below to delete either facet_lang or facet_format
     $temp_cgi->delete('heldby');
-    
-    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);
     my $xml = wrap_string_in_tag($url,'unselectURL') . "\n";
     return $xml;
 }
@@ -676,7 +676,7 @@ sub handle_HELDBY_PI
 
 # ---------------------------------------------------------------------
 sub handle_FACETS_PI
-    : PI_handler(FACETS) 
+    : PI_handler(FACETS)
 {
     my ($C, $act, $piParamHashRef) = @_;
     my $fconfig=$C->get_object('FacetConfig');
@@ -686,48 +686,48 @@ sub handle_FACETS_PI
 
     my $result_data = $act->get_transient_facade_member_data($C, 'search_result_data');
     my $facet_hash =$result_data->{'primary_result_object'}->{'facet_hash_ref'};
-    
+
     my $xml;
     my ($selected,$unselected)= get_selected_unselected($facet_hash,$cgi);
     # $selected= array ref of hashes
-    #        $hash->{'value'}      
-    #        $hash->{'count'}      
-    #        $hash->{'facet_name'} 
+    #        $hash->{'value'}
+    #        $hash->{'count'}
+    #        $hash->{'facet_name'}
     #        $hash->{'selected'}= "false"|"true";
     #        $hash->{'select_url'}   url for unselected facets on click will select it
     #        $hash->{'unselect_url'}   url for selected facets on click will unselect it
 
     # unselected= hash key= facet name, values = array of hashes as above
-    
-    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param  add the date_range facets pdate_start or end but one must be 
+
+    # output whether any facets are selected include the multivalued and the psuedo facet full-view/limited i.e. lmt param  add the date_range facets pdate_start or end but one must be
 
 
-             
-    if (defined ($cgi->param('facet')) || 
+
+    if (defined ($cgi->param('facet')) ||
         defined ($cgi->param('facet_lang'))
         ||defined ($cgi->param('facet_format'))
         || $cgi->param('lmt') ne "all"
         || pdate_selected($cgi)
        )
     {
-        $xml .= wrap_string_in_tag('true','facetsSelected') . "\n"; 
+        $xml .= wrap_string_in_tag('true','facetsSelected') . "\n";
     }
-    
+
     my $selected_facets_xml = make_selected_facets_xml($selected,$fconfig,$cgi);
     $xml .= $selected_facets_xml;
 
     my $unselected_facets_xml = make_unselected_facets_xml($unselected,$fconfig, $cgi);
     $xml .= $unselected_facets_xml;
-    
+
     return $xml
 }
-#----------------------------------------------------------------------    
+#----------------------------------------------------------------------
 sub pdate_selected
 {
     my $cgi = shift;
-    
+
     # if either pdate_start or pdate_end is defined and non-blank return ture
-    return ( 
+    return (
             (! __IsUndefOrBlank(scalar $cgi->param('pdate_start')))
             ||
             (! __IsUndefOrBlank(scalar $cgi->param('pdate_end')))
@@ -750,7 +750,7 @@ sub isFacetSelected
 	    if (doFacetValuesMatch($facet_value,$cgi_facet_value) eq "true")
 	    {
 		return ("true");
-	    }                    
+	    }
 	}
     }
 }
@@ -758,18 +758,18 @@ sub isFacetSelected
 
 
 # ---------------------------------------------------------------------
-sub get_selected_unselected 
+sub get_selected_unselected
 
 {
-    my $facet_hash = shift; # from JSON 
+    my $facet_hash = shift; # from JSON
     my $cgi = shift;
 
     my @selected;
     my $unselected={};
     my $EMPTY_FACETS="true";
     my @cgi_facets = $cgi->multi_param('facet');
-  
-    
+
+
     foreach my $facet_name (keys %{$facet_hash})
     {
 	my $ary_for_this_facet_name=[];
@@ -792,7 +792,7 @@ sub get_selected_unselected
 		    $hash->{'selected'} = "true";
 	     	}
 	    }
-	    
+
             if ($hash->{'selected'} eq "true")
             {
                 # add the unselect url to the hash
@@ -804,11 +804,11 @@ sub get_selected_unselected
                 # add the select url
                 $hash->{'select_url'}=__get_select_url($hash,$cgi);
             }
-            
+
             # unselected needs array of array of hashes
             # facet1->hashes for facet 1
             # facet2->hashes for facet 2
-            push (@{$ary_for_this_facet_name},$hash); 
+            push (@{$ary_for_this_facet_name},$hash);
         }
 	if (scalar(@{$facet_list_ref}) >0)
 	{
@@ -830,7 +830,7 @@ sub get_selected_from_cgi
     my $cgi_facets  = shift;
     my @selected;
 
-          
+
     foreach my $facet (@{$cgi_facets})
     {
 	my $hash={};
@@ -846,8 +846,8 @@ sub get_selected_from_cgi
 	push (@selected,$hash);
     }
     return (@selected);
-}	
-#----------------------------------------------------------------------    
+}
+#----------------------------------------------------------------------
 sub make_selected_facets_xml
 {
     my $selected = shift;
@@ -862,7 +862,7 @@ sub make_selected_facets_xml
 #   insert any advanced search multiselect OR facets on top of list
     my $multiselect_xml = __get_multiselect_xml($fconfig, $cgi);
     $xml .= $multiselect_xml;
-    
+
     my $daterange_xml;
     if ( __IsUndefOrBlank( scalar $cgi->param('pdate_start')) && __IsUndefOrBlank( scalar $cgi->param('pdate_end')) )
     {
@@ -873,19 +873,19 @@ sub make_selected_facets_xml
         $daterange_xml= __get_daterange_xml($fconfig, $cgi);
         $xml .=$daterange_xml;
     }
-    
+
     foreach my $facet (@{$selected})
     {
         $unselect_url=$facet->{'unselect_url'};
         my $facet_name=$facet->{facet_name};
         my $field_name=$facet2label->{$facet_name};
-        
-        $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";; 
-        $xml .= wrap_string_in_tag($field_name,'fieldName') . "\n"; 
-        $xml .= wrap_string_in_tag($unselect_url,'unselectURL') . "\n"; 
+
+        $xml .= '<facetValue name="' . $facet->{value} .'" class="selected">'  . "\n";;
+        $xml .= wrap_string_in_tag($field_name,'fieldName') . "\n";
+        $xml .= wrap_string_in_tag($unselect_url,'unselectURL') . "\n";
         $xml .='</facetValue>' ."\n";
     }
- 
+
     $xml .= '</SelectedFacets>' . "\n";
     return $xml;
 }
@@ -896,7 +896,7 @@ sub __get_daterange_xml
 {
     my $fconfig = shift;
     my  $cgi    = shift;
-   
+
     my $xml ="";
     my $start = $cgi->param('pdate_start');
     my $end = $cgi->param('pdate_end');
@@ -904,7 +904,7 @@ sub __get_daterange_xml
     # pdate already replaced with normal date facet so we only need to deal with start/end pdates
 
 
-   
+
     if (__IsUndefOrBlank($start))
     {
         $msg= "Before or during $end";
@@ -918,18 +918,18 @@ sub __get_daterange_xml
     {
         $msg =    "Between $start and $end";
     }
-    
-    my $facetXML = wrap_string_in_tag($msg,'facetString') . "\n"; 
+
+    my $facetXML = wrap_string_in_tag($msg,'facetString') . "\n";
 
     $xml .= $facetXML;
-    
+
     my $unselectURL = get_daterange_unselectURL($fconfig,$cgi);
-    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n";
     $xml .= $unselectURLXML;
-     
-    my    $daterange_xml .= wrap_string_in_tag($xml,'daterange') . "\n"; 
+
+    my    $daterange_xml .= wrap_string_in_tag($xml,'daterange') . "\n";
     return $daterange_xml;
-    
+
 }
 #----------------------------------------------------------------------
 sub get_daterange_unselectURL
@@ -940,7 +940,7 @@ sub get_daterange_unselectURL
     $temp_cgi->delete('pdate_start');
     $temp_cgi->delete('pdate_end');
     $temp_cgi->delete('pdate');
-    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);
     return $url;
 }
 # ---------------------------------------------------------------------
@@ -957,7 +957,7 @@ sub get_daterange_unselectURL
 # 7  'querystring'
 #
 #   This deals with the global explain data
-#   the explain data for each id is processed in _ls_wrap_result_data 
+#   the explain data for each id is processed in _ls_wrap_result_data
 
 sub __process_explain_data
 {
@@ -999,7 +999,7 @@ sub __get_multiselect_xml
     my $lang=get_multifacet_xml(\@lang,$cgi,$fconfig);
     my $format=get_multifacet_xml(\@format,$cgi,$fconfig);
     $multiselect= $lang . $format;
-    $xml .= wrap_string_in_tag($multiselect,'multiselect') . "\n"; 
+    $xml .= wrap_string_in_tag($multiselect,'multiselect') . "\n";
     return $xml
 }
 
@@ -1008,10 +1008,10 @@ sub get_multifacet_xml
     my $ary = shift;
     my $cgi = shift;
     my $fconfig = shift;
-    
+
     my $xml;
-    
-    
+
+
     if (! defined($ary)|| scalar(@{$ary})<1 )
     {
         # return blank
@@ -1020,7 +1020,7 @@ sub get_multifacet_xml
 
     my $clause;
     my $field;
-    
+
     foreach my $fquery (@{$ary})
     {
 
@@ -1033,21 +1033,21 @@ sub get_multifacet_xml
     # remove last OR and add &fq=field:
     $clause =~s/OR\s*$//g;
     $clause= '(' . $clause . ' )';
-    my $facetValueXML=wrap_string_in_tag($clause,'facetValue') . "\n"; 
+    my $facetValueXML=wrap_string_in_tag($clause,'facetValue') . "\n";
 
     #XXX need to map url param field name to dispay value
     # so language= Language  see regular facet code for this, is there a lookup?
-    
+
     my $facet2label=$fconfig->get_facet_mapping;
     my $field_label=$facet2label->{$field};
-    my $fieldnameXML= wrap_string_in_tag($field_label,'fieldName') . "\n"; 
+    my $fieldnameXML= wrap_string_in_tag($field_label,'fieldName') . "\n";
 
     my $unselectURL=getMultiUnselectURL($field,$cgi);
-    
-    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n"; 
+
+    my $unselectURLXML=wrap_string_in_tag($unselectURL,'unselectURL') . "\n";
     $clause.= $facetValueXML . $fieldnameXML . $unselectURLXML;
-    
-    $xml .= wrap_string_in_tag($clause,'multiselectClause') . "\n"; 
+
+    $xml .= wrap_string_in_tag($clause,'multiselectClause') . "\n";
     return $xml;
 }
 
@@ -1071,8 +1071,8 @@ sub getMultiUnselectURL{
     {
         $temp_cgi->delete('facet_format');
     }
-    
-    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);
     return $url;
 
 }
@@ -1084,12 +1084,12 @@ sub  make_unselected_facets_xml
     my $unselected = shift;
     my $fconfig = shift;
     my $cgi = shift;
-    
+
     my $facet2label=$fconfig->get_facet_mapping;
     my $facet_order=$fconfig->{'facet_order'};
     my $MINFACETS = $fconfig->get_facet_initial_show;
 
-    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    my $current_url = $cgi->url(-relative=>1,-query=>1);
     # remove page number since changing facets changes facet count
     $current_url =~s,[\;\&]pn=\d+,,g;
 
@@ -1101,15 +1101,15 @@ sub  make_unselected_facets_xml
         # normalize filed name by replacing spaces with underscores
         my $norm_field_name = $facet_label;
         $norm_field_name =~s,\s+,\_,g;
-        
+
         $xml .='<facetField name="' . $facet_label . '" '. 'normName='.'"'.  "$norm_field_name" . '" '   .     ' >' . "\n";
-        
+
         my ($xml_for_facet_field,$SHOW_MORE_LESS)= make_xml_for_unselected_facet_field ($facet_name,$norm_field_name,$unselected,$current_url,$MINFACETS);
         $xml .= $xml_for_facet_field;
- 
+
         $xml .="\n" .'<showmoreless>'. $SHOW_MORE_LESS . '</showmoreless>' ."\n";
         $xml.='</facetField>' . "\n";
-        
+
     }
     $xml .='</unselectedFacets>' . "\n";
     return $xml;
@@ -1117,18 +1117,18 @@ sub  make_unselected_facets_xml
 
 #----------------------------------------------------------------------
 # change name to for unselected facet field
-sub make_xml_for_unselected_facet_field 
+sub make_xml_for_unselected_facet_field
 {
     my $facet_name = shift;
     my $norm_field_name = shift;
     my $unselected = shift;
     my $current_url = shift;
     my $MINFACETS = shift;
-    
+
     my $SHOW_MORE_LESS = "false";
     my $xml;
-    
-    my $ary_ref=$unselected->{$facet_name};    
+
+    my $ary_ref=$unselected->{$facet_name};
     my $counter=0;
     foreach my $value_hash (@{$ary_ref})
     {
@@ -1137,25 +1137,25 @@ sub make_xml_for_unselected_facet_field
         my $value=$value_hash->{'value'};
         my $facet_url=$value_hash->{'select_url'};
         my $class=' class ="showfacet';
-        
+
         if ($counter >= $MINFACETS)
         {
             $class=' class ="hidefacet';
             $SHOW_MORE_LESS="true";
         }
-        
+
         # add normalized facet field to class
         $class .= ' ' . $norm_field_name . '" ';
 
         my $count=commify($value_hash->{'count'});
-        
+
         $xml .='<facetValue name="' . $value . '" '.$class . '> ' . "\n";
         $xml .='<facetCount>' . $count . '</facetCount>'. "\n";
         $xml .='<url>' . $facet_url . '</url>'  . "\n";
         $xml .='<selected>' . $value_hash->{'selected'} . '</selected>' . "\n";
         $xml .='</facetValue>' ."\n";
         $counter++;
-        
+
     }
     return ($xml,$SHOW_MORE_LESS);
 }
@@ -1164,9 +1164,9 @@ sub make_xml_for_unselected_facet_field
 # ---------------------------------------------------------------------
 
 
-# 
+#
 sub handle_ADVANCED_SEARCH_PI
-    : PI_handler(ADVANCED_SEARCH) 
+    : PI_handler(ADVANCED_SEARCH)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
@@ -1193,15 +1193,15 @@ sub handle_ADVANCED_SEARCH_PI
     {
         $output .=  wrap_string_in_tag($group_2, 'group');
     }
-    
 
-    
-# will have to do something like this in the xsl    
+
+
+# will have to do something like this in the xsl
 #    if ($query_group_1 =~/\S/ )
 #    {
 #        if  ($query_group_2 =~/\S/)
 #        {
-#            # if both have at least one non-blank character 
+#            # if both have at least one non-blank character
 #            $advanced = $paren_1 . $op_ary->[3] . $paren_2;
 #        }
 #        else
@@ -1214,9 +1214,9 @@ sub handle_ADVANCED_SEARCH_PI
 #        $advanced = ' ' . $query_group_2 .' ';
 #    }
 
-    
 
-    
+
+
     my $advURL=getAdvancedSearchURL($cgi);
     $output .= wrap_string_in_tag($advURL, 'AdvancedSearchURL');
     my $modURL=getModifyAdvancedSearchURL($cgi);
@@ -1298,14 +1298,14 @@ sub getGroup{
     my $C = shift;
     my $act = shift;
     my $start =shift;
-    
-    
+
+
     my $fconfig=$C->get_object('FacetConfig');
     my $cgi = $C->get_object('CGI');
 
 
     #XXX add result data so we can put well formed/processed string here instead of someplace else
-    my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');    
+    my $search_result_data_hashref= $act->get_transient_facade_member_data($C, 'search_result_data');
     my $wff_hashref = $search_result_data_hashref->{'well_formed'};
     my $well_formed_aryref = ($wff_hashref->{'primary'} );
     my $processed_aryref=$wff_hashref->{'processed_query_string'};
@@ -1318,10 +1318,10 @@ sub getGroup{
     my $output;
 
     my $isAdvanced =__isAdvanced($cgi);
-    
+
     my $op;
     my $GROUP_NOT_EMPTY;
-    
+
     for my $i ($start, $start+1)
     {
         #XXX hardcoded op logic
@@ -1330,18 +1330,18 @@ sub getGroup{
             $op    = $cgi->param('op' . $i);
             $output .=wrap_string_in_tag($op, 'OP');
         }
-        
+
         my $q     = $cgi->param('q' . $i);
 
         if (defined($q))
         {
             $GROUP_NOT_EMPTY="true";
         }
-            
+
         my $anyall = $cgi->param('anyall' . $i);
-        my $anyall_string= $anyall_2_display->{$anyall}; 
-        
-        
+        my $anyall_string= $anyall_2_display->{$anyall};
+
+
         my $field = $cgi->param('field' . $i);
         # XXX hack.  Should at least read default field from config file
         # special case for basic search where there is no field  param
@@ -1349,18 +1349,18 @@ sub getGroup{
         {
                  $field='ocr';
              }
-        
+
         my $user_field= $param2userMap->{$field} ;
-        
+
         # unselect url for this row
         my $unselectURL=getUnselectAdvancedClauseURL($cgi,$i);
-        
-        my $well_formed = $well_formed_aryref->[$i]; 
+
+        my $well_formed = $well_formed_aryref->[$i];
         my $processed_query = $processed_aryref->[$i];
 
         $processed_query = clean_for_xml($processed_query);
         my $unbalanced_quotes=$wff_hashref->{'unbalanced_quotes'}->[$i];
-        
+
         #  we need to pull op out of clauses and group clauses into groups
         #    my $query_group_1 = __make_group(1,$clause_ary,$op_ary); # q1 and q2
         my $clause;
@@ -1371,7 +1371,7 @@ sub getGroup{
             {
                 $clause .=wrap_string_in_tag('true', 'EveryThingQuery');
             }
-                        
+
             $clause .=wrap_string_in_tag($i, 'Qnum');
             $clause .=wrap_string_in_tag($q ,'Query');
             $clause .=wrap_string_in_tag($well_formed ,'WellFormed');
@@ -1383,7 +1383,7 @@ sub getGroup{
             $clause .=wrap_string_in_tag($unselectURL, 'unselectURL');
             $output .= wrap_string_in_tag($clause, 'Clause');
         }
-        
+
     }
     if (defined ($GROUP_NOT_EMPTY))
     {
@@ -1393,7 +1393,7 @@ sub getGroup{
     {
         return undef;
     }
-    
+
 
 }
 #----------------------------------------------------------------------
@@ -1402,7 +1402,7 @@ sub __isAdvanced{
     my $isAdvanced="false";
     my $qcount = 0;
     my $anyall;
-    
+
     for my $i (1..4)
     {
         my $q     = $cgi->param('q' . $i);
@@ -1447,7 +1447,7 @@ sub getAdvancedSearchURL
         {
             $url.='&amp;lmt='. $limit;
         }
-        
+
     }
     return $url;
 }
@@ -1456,8 +1456,8 @@ sub getModifyAdvancedSearchURL
 {
     my $cgi=shift;
     my $temp_cgi = new CGI($cgi);
-    my $LIMIT="2000"; #IE limit about 2048 chars 
-    
+    my $LIMIT="2000"; #IE limit about 2048 chars
+
     ## do we need to delete a and page params first?
     $temp_cgi->param('a','page');
     $temp_cgi->param('page','advanced');
@@ -1466,7 +1466,7 @@ sub getModifyAdvancedSearchURL
     my $tempurl=$temp_cgi->self_url();
     my $facet_lang_string = join(' ',$temp_cgi->multi_param('facet_lang'));
     my $facet_format_string = join(' ',$temp_cgi->multi_param('facet_format'));
-    
+
 
     if (length($tempurl ) > $LIMIT)
     {
@@ -1479,9 +1479,9 @@ sub getModifyAdvancedSearchURL
             $temp_cgi->delete('facet_format');
         }
     }
-    
+
     my $url=$temp_cgi->self_url();
-    
+
     return $url;
 }
 
@@ -1489,14 +1489,14 @@ sub getUnselectAdvancedClauseURL
 {
     my $cgi =    shift;
     my $row =      shift;
-    
+
     my $temp_cgi = new CGI($cgi);
     # delete this clause
     my $q ='q' . $row;
     my $op = 'op' . $row;
     my $anyall = 'anyall' .  $row;
     my $field = 'field' .  $row;
-    
+
     $temp_cgi->delete("$q");
     $temp_cgi->delete("$op");
     $temp_cgi->delete("$anyall");
@@ -1517,7 +1517,7 @@ sub getUnselectAdvancedClauseURL
 #XXX this should probably be moved to Utils, but I don't want to mess with submodule stuff now!
 sub commify
 {
-    my $text = reverse $_[0];       
+    my $text = reverse $_[0];
     $text =~s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
     return scalar reverse $text
 }
@@ -1529,9 +1529,9 @@ sub __get_unselect_url
     #add qoutes to the facet string
     my $quoted_facet_string=$facet_hash->{facet_name} . ':"' . $facet_hash->{'value'}. '"';
     my $facet_string = $facet_hash->{facet_name} . ':' . $facet_hash->{value};
-    # convert from xml friendly to url friendly 
+    # convert from xml friendly to url friendly
 
-    Utils::remap_cers_to_chars(\$facet_string);       
+    Utils::remap_cers_to_chars(\$facet_string);
 #        my $escaped_value= uri_escape_utf8($url_value);
 
     my $cgi= shift;
@@ -1543,12 +1543,12 @@ sub __get_unselect_url
 
     my @new_facets;
     my $debug;
-    
-    # get list of all facet params except the one we got as an argument    
+
+    # get list of all facet params except the one we got as an argument
 
     foreach my $f (@facets)
     {
-        Utils::remap_cers_to_chars(\$f);       
+        Utils::remap_cers_to_chars(\$f);
         if ($facet_string eq $f || $quoted_facet_string eq $f)
         {
             $debug=$1;
@@ -1557,7 +1557,7 @@ sub __get_unselect_url
         {
             #escape quotes
       #      $f=~s/\"/\&quot\;/g;
-            
+
             push (@new_facets,$f);
         }
     }
@@ -1566,7 +1566,7 @@ sub __get_unselect_url
     #$query->param(-name=>'foo',-values=>['an','array','of','values']);
 
     $temp_cgi->param(-name=>'facet',-values=>\@new_facets);
-    my $url = $temp_cgi->url(-relative=>1,-query=>1);  
+    my $url = $temp_cgi->url(-relative=>1,-query=>1);
     return $url;
 }
 
@@ -1577,18 +1577,18 @@ sub __get_select_url
     my $cgi = shift;
     my $facet_name=$hashref->{'facet_name'};
     my $value=$hashref->{'value'} || '';
-    
+
     # remove page number since changing facets changes facet count
-    my $current_url = $cgi->url(-relative=>1,-query=>1);    
+    my $current_url = $cgi->url(-relative=>1,-query=>1);
     $current_url =~s,[\;\&]pn=\d+,,g;
 
 
     my $url_value=$value;
-    Utils::remap_cers_to_chars(\$url_value);       
+    Utils::remap_cers_to_chars(\$url_value);
     my $escaped_value= uri_escape_utf8($url_value);
     my $facet_url= $current_url . '&amp;facet='  . $facet_name . ':&quot;' . $escaped_value . '&quot;';
     return $facet_url;
-    
+
 }
 
 
@@ -1614,7 +1614,7 @@ sub doFacetValuesMatch
     my $cgi_facet_value = shift;
 
     #XXX check why do we have quotes from cgi and not from json?
-    #remove leading and trailing quotes from cgi facet string 
+    #remove leading and trailing quotes from cgi facet string
     $cgi_facet_value=~s/^\"//;
     $cgi_facet_value=~s/\"$//;
 
@@ -1787,17 +1787,17 @@ sub _ls_wrap_result_data {
     my $query=shift;
     my $rs = shift;
     my $get_slice = shift;
-    
+
     my $cgi = $C->get_object('CGI');
 
     my $output;
     my $solr_debug;
-    
+
     if (DEBUG('explain'))
     {
         $solr_debug=$rs->get_result_solr_debug();
     }
-    
+
     # since json might contain unescaped xml entities i.e. "&" we need to filter
     # any strings.  Is there a better place to do this?
 
@@ -1806,13 +1806,13 @@ sub _ls_wrap_result_data {
     $result_docs_arr_ref = $rs->get_result_docs();
 
     my $doc_count=0;
-    
+
     foreach my $doc_data (@$result_docs_arr_ref) {
         my $s = '';
 	$doc_count++;
 	# unicorn add oclc, isbn and ? for google book covers
         my $book_ids_ary_ref=[];
-      
+
       my @vuFind_book_id_fields = ("oclc","isbn","lccn");
       foreach my $field (@vuFind_book_id_fields)
       {
@@ -1832,11 +1832,11 @@ sub _ls_wrap_result_data {
       }
 
         my $book_ids = join (',',@{$book_ids_ary_ref});
-        
+
         $s .= wrap_string_in_tag($book_ids,'bookID');
-        
+
         my ($display_titles_ary_ref) = $doc_data->{'title'};
-        #XXX WARNING  Second title in Solr title field is either 
+        #XXX WARNING  Second title in Solr title field is either
         #  a) title without the initial article
         #  b) title in the vernacular from a linked 880 field
         # Until we fix indexing and what fields we get from VuFind we will only use the first 245
@@ -1846,7 +1846,7 @@ sub _ls_wrap_result_data {
         # add 245c, assume only one!
         if (defined ($doc_data->{'title_c'})){
             $display_title.=" ". $doc_data->{'title_c'}->[0];
-        }    
+        }
 
         Utils::map_chars_to_cers(\$display_title);
 
@@ -1859,13 +1859,13 @@ sub _ls_wrap_result_data {
             #XXX we assume second 245c is a vernacular!
             if (defined ($doc_data->{'title_c'}->[1])){
                 $vtitle.= $doc_data->{'title_c'}->[1];
-            }    
+            }
 
             Utils::map_chars_to_cers(\$vtitle);
             $s .= wrap_string_in_tag($vtitle, 'VernacularTitle');
-        }   
+        }
         my $enum=$doc_data->{'volume_enumcron'}->[0];
-        
+
         if (defined ($enum))
         {
             Utils::map_chars_to_cers(\$enum);
@@ -1875,7 +1875,7 @@ sub _ls_wrap_result_data {
         # mainauthor changes
         my $main_author='';
         my $author;
-        
+
         my ($main_author_ary_ref) = $doc_data->{'mainauthor'};
         if (defined ($main_author_ary_ref))
         {
@@ -1883,14 +1883,14 @@ sub _ls_wrap_result_data {
             $author =$main_author;
         }
         if (defined($author))
-        {       
+        {
             Utils::map_chars_to_cers(\$author);
             $s .= wrap_string_in_tag($author, 'Author');
         }
-        
+
         #DATES
 	# XXX usedate = (both|date) check config/debug?
-	
+
 	# XXX get date_type (should this be a subroutine?
 	my $facet_config=$C->get_object('FacetConfig');
 	my $date_type = $facet_config->{date_type};
@@ -1928,13 +1928,13 @@ sub _ls_wrap_result_data {
 	{
 	   $AB = $doc_data->{'AB'};
 	}
-	
-	
+
+
 	if ($AB=~/A|B|Rank/)
 	{
 	    $s.= wrap_string_in_tag($AB, 'ABLabel');
 	}
-	
+
 	# Local Click Data
 	# id, AB label, count
 	my $item_click_data= {
@@ -1942,7 +1942,7 @@ sub _ls_wrap_result_data {
 			      'rank_on_page'=>$doc_count,
 			      'AB_label'=>$AB,
 			     };
-	
+
 	my $item_click_data_json  = encode_json $item_click_data;
 	$s.= wrap_string_in_tag($item_click_data_json, 'ItemClickData');
 
@@ -1955,7 +1955,7 @@ sub _ls_wrap_result_data {
             ASSERT(defined($explain),qq{no explain data for id $id});
             $s .= wrap_string_in_tag($explain, 'explain');
         }
-        
+
         my $rights = $doc_data->{'rights'};
         $s .= wrap_string_in_tag($rights, 'rights');
 
@@ -1967,10 +1967,10 @@ sub _ls_wrap_result_data {
         my $pt_search_URL = PT_HREF_helper($C, $id, 'pt_search');
         my $pt_URL = PT_HREF_helper($C, $id, 'pt');
         my $isAdvanced = __isAdvanced($cgi);
-        
+
         #XXX tbw for Roger's suggestion instead of q1= blank
         # call subroutine which checks to see if it should be blank or should be
-        # a boolean of any searches where the field is ocr or ocronly 
+        # a boolean of any searches where the field is ocr or ocronly
         # $pt_search_URL = get_advanced_PT_url($cgi, $pt_search_URL)
         if ($isAdvanced eq "true")
         {
@@ -1986,16 +1986,27 @@ sub _ls_wrap_result_data {
             my $ar = new Access::Rights($C, $id);
             $access_status = $ar->check_final_access_status_by_attribute($C, $rights, $id);
         };
-        $access_status = 'deny'         
+        $access_status = 'deny'
             if ($@);
 
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
-	
+        my $emergency_flag = 0;
+        my $initial_access_status;
+
+        if ( $access_status eq 'allow' ) {
+            my $initial_access_status;
+            eval {
+                my $ar = new Access::Rights($C, $id);
+                $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights, $id);
+                $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+            };
+        }
+
 	#----------------------------------------------------------------------
         #XXX new years hack
 	# check if item is in 1923 coll and if so overide
 
-	my $config = $C->get_object('MdpConfig');	
+	my $config = $C->get_object('MdpConfig');
 	# get CO
 	my $co = $C->get_object('Collection');
 	my $new_years_pd_coll_id = $config->get('new_years_pd_coll_id');
@@ -2006,22 +2017,23 @@ sub _ls_wrap_result_data {
 		$fulltext_flag ='1';
 	    }
 	}
-	
+
 	#----------------------------------------------------------------------
 
 
 
 
 	$s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
+    $s .= wrap_string_in_tag($emergency_flag, 'emergency');
 
         my $record_no = $doc_data->{'record_no'};
-        
+
         $s .= wrap_string_in_tag($record_no, 'record');
 	# add for debugging original number in result list
 	my $result_number = $doc_data->{'result_number'};
 	$s .=wrap_string_in_tag($result_number, 'result_number');
-	
-	
+
+
         $output .= wrap_string_in_tag($s, 'Item');
     }
 
@@ -2034,7 +2046,7 @@ sub add_book_id_prefix_and_filter
     my $prefix = shift;
     my $ary_ref=shift;
     my $out=[];
-    
+
     foreach my $el (@{$ary_ref})
     {
     #skip ids with ampersands (found some in bad lccns)
@@ -2057,35 +2069,35 @@ sub get_advanced_PT_url
     # actually if the ops are a boolean AND and we have a non ocr field then do we skip it
     # or ignore the non-ocr field
     return $pt_search_URL;
-    
+
 }
 
 #----------------------------------------------------------------------
 #
 #  get_global_click)data
 #
-#   XXX how much do we want to repeat stuff already in regular ls logs? 
+#   XXX how much do we want to repeat stuff already in regular ls logs?
 
-# Do we want numbered arrays? 
+# Do we want numbered arrays?
 sub get_global_click_data
 {
     my $C = shift;
     my $test_type=shift;  # this is type of test  (normal|intl|side_intl'|side_AB) intl=interleaved
-    
+
     my $A_rs= shift;
     my $B_rs = shift;
     my $I_rs = shift;
     my $config = $C->get_object('MdpConfig');
 
     my $g_hashref={};
-    
+
     my $rs_hashref={ 'A'=>$A_rs,
 		  'B'=>$B_rs,
 		  'I'=>$I_rs,
 		};
-    
-    
-    # Repeat stuff that is in normal logs here.  Consider later whether to 
+
+
+    # Repeat stuff that is in normal logs here.  Consider later whether to
     # remove it as it duplicates regular query logs
 
     my $ipaddr = ($ENV{REMOTE_ADDR} ? $ENV{REMOTE_ADDR} : '0.0.0.0');
@@ -2115,36 +2127,36 @@ sub get_global_click_data
     {
 	$page_number = $config->get('pn');
     }
-    my $starting_result_number = (($entries_per_page * ($page_number-1) ))+1; 
+    my $starting_result_number = (($entries_per_page * ($page_number-1) ))+1;
     # XXXdo we need to indicate whether this is an advanced search
     # get starting result id
     my $query_string = $cgi->param('q1') .
     ' ' . $cgi->param('q2') .
-    ' ' . $cgi->param('q3') . 
+    ' ' . $cgi->param('q3') .
     ' '. $cgi->param('q4');
     #remove trailing spaces
     $query_string=~s/(\s+)$//g;
     #escape quotes before we urlencode them for json
     $query_string=~s/\"/\\"/g;
-    
+
     #NOTE: we should probably detect advanced search by seeing if more than one qN param is used.
     my $session_id = $C->get_object('Session')->get_session_id();
     my $pid = $$;
     my $referer = $ENV{REFERER} ||$cgi->referer();
-    
+
     my $auth = $C->get_object('Auth');
     my $is_logged_in = $auth->is_logged_in($C) ? 'YES':'NO';
-    
+
     #fingerprinting stuff
     my $user_agent=$cgi->user_agent() || '';
     $user_agent = URI::Escape::uri_escape_utf8($user_agent);
-    
+
     # accept headers for fingerprinting
     # could do md5sum or murmurhash of all 3 to save log space but keep for now
     my $http_accept= $cgi->http('HTTP_ACCEPT')||$cgi->https('HTTP_ACCEPT');
     my $http_accept_language = $cgi->http('HTTP_ACCEPT_LANGUAGE')||$cgi->https('HTTP_ACCEPT_LANGUAGE');
     my $http_accept_encoding = $cgi->http('HTTP_ACCEPT_ENCODING')||$cgi->https('HTTP_ACCEPT_ENCODING');
-    
+
     $g_hashref->{'user_agent'}        = $user_agent;
     $g_hashref->{'accept'}    = clean_string($http_accept);
     $g_hashref->{'accept_language'}    = clean_string($http_accept_language);
@@ -2164,7 +2176,7 @@ sub get_global_click_data
     $g_hashref->{'starting_result_no'}  = $starting_result_number;
     $g_hashref->{'entries_per_page'}  = $entries_per_page ;
     $g_hashref->{'referer'} = escape_for_json($referer);
-    $g_hashref->{'logged_in'}     = $is_logged_in;   
+    $g_hashref->{'logged_in'}     = $is_logged_in;
     $g_hashref->{'cgi'}          =  escape_for_json($appURL);
     #   $g_hashref->{''}          = ;
 
@@ -2177,10 +2189,10 @@ sub get_global_click_data
 	$g_hashref->{'B_qtime'}     = $B_Qtime;
 	$g_hashref->{'B_num_found'}  = $B_num_found;
     }
-    
+
     #   $g_hashref->{''}          = ;
     #   $g_hashref->{''}          = ;
-    
+
     # arrays of result ids in relevance order for each applicable A, B, I(interleaved)
     my $AB_config=$C->get_object('AB_test_config');
     my $use_interleave=$AB_config->{'_'}->{'use_interleave'};
@@ -2194,15 +2206,15 @@ sub get_global_click_data
     # Check that we found some results and then
     # limit the number of A and B results depending on last row seen or
     # config limit
-    # 
+    #
     if ($g_hashref->{'num_found'} >0){
 	$g_hashref = add_result_arrays($rs_hashref,$g_hashref,$use_interleave,$AB_result_log_limit);
     }
-    
-    my    $utf8_encoded_json_text = encode_json $g_hashref;
-    return($utf8_encoded_json_text);    
 
-}    
+    my    $utf8_encoded_json_text = encode_json $g_hashref;
+    return($utf8_encoded_json_text);
+
+}
 #----------------------------------------------------------------------
 sub escape_for_json
 {
@@ -2215,9 +2227,9 @@ sub escape_for_json
     $s=~s/\t/ /g;
     # remove escapes if the next character is a space
     $s=~s/\\\s+/ /g;
-    
+
     my $out = URI::Escape::uri_escape_utf8($s);
-    
+
 }
 #----------------------------------------------------------------------
 sub clean_string
@@ -2236,7 +2248,7 @@ sub add_result_arrays
     my $g_hashref      = shift;
     my $use_interleave = shift;
     my $num_AB_results = shift;
-    
+
     foreach my $key (qw(A B I))
     {
 	if (exists($rs_hashref->{$key}) && defined($rs_hashref->{$key}))
@@ -2255,7 +2267,7 @@ sub add_result_arrays
 	    my $hash_key=$key . '_rs';
 	    $g_hashref->{$hash_key} = $ary_ref;
 	}
-	
+
     }
     return $g_hashref
 }
@@ -2493,17 +2505,17 @@ sub __now_in_date_range_new_years
 
     # $t? param true= use gmt, no param = local??
     #XXX fix bug in slip-lib/Result/Query!!!
-    
+
     my @now_date   = Date::Calc::Today_and_Now();
     my $pd_start_time = Date::Calc::Date_to_Time(@{$start_ary});
     my $pd_end_time   = Date::Calc::Date_to_Time(@{$end_ary});
     my $now_time   =  Date::Calc::Date_to_Time(@now_date);
-					      
+
     if ($now_time >=$pd_start_time && $now_time < $pd_end_time)
-    {				      					      
+    {
    	return (1);
     }
-    return (0);				      
+    return (0);
 }
 # ---------------------------------------------------------------------
 

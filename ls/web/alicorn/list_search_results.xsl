@@ -424,6 +424,9 @@
                   </xsl:attribute>
                   <xsl:attribute name="data-clicktype">pt</xsl:attribute>
                   <xsl:choose>
+                    <xsl:when test="emergency=1">
+                      <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
+                    </xsl:when>
                     <xsl:when test="fulltext=1">
                       <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Full View</xsl:text>
                     </xsl:when>
@@ -578,6 +581,34 @@
             </li>
           </ul>
         </li>
+
+        <!-- <xsl:if test="$inst_code != ''">
+          <li class="filter-group filter-group-checkbox">
+            <button role="checkbox" class="checkbox-label" data-href="/cgi/{/MBooksTop/Heldby/unselectURL}">
+              <div class="checkbox">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon">
+                  <use>
+                    <xsl:choose>
+                      <xsl:when test="false()">
+                        <xsl:attribute name="xlink:href">#checkbox-checked</xsl:attribute>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:attribute name="xlink:href">#checkbox-empty</xsl:attribute>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </use>
+                </svg>
+              </div>
+              <span class="flex-space-between flex-center" id="held-by">
+                <span class="filter-name">
+                  <xsl:text>Held by </xsl:text>
+                  <xsl:value-of select="$inst_name" />
+                </span>
+              </span>
+            </button>
+          </li>
+        </xsl:if> -->
+
         </xsl:if>
 
         <xsl:for-each select="//Facets/unselectedFacets/facetField[.//facetValue]">
