@@ -16,12 +16,12 @@ export var Base = class {
 
   attachTo(element, cb) {
     this.container = element;
-    var t0 = performance.now();
+    // var t0 = performance.now();
     this.bindEvents();
-    var t1 = performance.now();
+    // var t1 = performance.now();
     this.render(cb);
-    var t2 = performance.now();
-    console.log(`BENCHMARK view.attachTo: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
+    // var t2 = performance.now();
+    // console.log(`BENCHMARK view.attachTo: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
   }
 
   render(cb) {
@@ -220,7 +220,7 @@ export var Base = class {
       if ( html_request ) {
         html_request
           .then(function(response) {
-            console.log("AHOY html_request", response);
+            // console.log("AHOY html_request", response);
             if ( ! response.ok ) {
               return ""; 
             }
@@ -241,7 +241,6 @@ export var Base = class {
       }
     }.bind(this), true)
 
-console.log("AHOY loadImage img.src", image_url);
     img.src = image_url;
 
     if ( ! page.dataset.preloaded && options.preload ) {
@@ -387,7 +386,7 @@ console.log("AHOY loadImage img.src", image_url);
         return response.blob();
       })
       .then(blob => {
-        if ( img.dataset.restricted == 'true' ) {
+        if ( img.dataset.restricted == 'true' && blob.text ) {
           blob.text().then((text) => {
             text = text.replace('RESTRICTED', 'ACCESS EXPIRED');
             blob = new Blob([text], { type: 'image/svg+xml'});
