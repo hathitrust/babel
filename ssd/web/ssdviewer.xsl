@@ -118,7 +118,11 @@
         </title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="/ssd/web/ssdstyles.css" type="text/css" />
+        <link rel="stylesheet" href="/common/alicorn/css/main.201910.css" type="text/css" />
+        <link rel="stylesheet" href="/ssd/ssdstyles.css" type="text/css" />
+
+        <script src="/common/alicorn/js/utils.201910.js"></script>
+        <script src="/ssd/access_banner.js"></script>
       </head>
 
       <body>
@@ -195,6 +199,8 @@
             View this item in the fully-styled HathiTrust interface.
           </a>
         </p>
+
+        <xsl:call-template name="build-extra-header" />
 
         <xsl:if test="$gFinalAccessStatus='allow'">
           <p>Use of this online version is subject to all U.S. copyright laws. Please do not save or redistribute this file.</p>
@@ -651,6 +657,71 @@
     <div class="Seq">Page Scan <xsl:apply-templates/> </div>
   </xsl:template>
 
+  <xsl:template name="build-extra-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+      <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
+        <xsl:call-template name="build-emergency-access-affiliate-header" />
+      </xsl:if>
+      <xsl:if test="$access-type/Name = 'in_library_user'">
+        <xsl:call-template name="build-in-library-user-header" />
+      </xsl:if>
+      <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
+        <xsl:call-template name="build-ssd-session-header" />
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="build-emergency-access-affiliate-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:variable name="etas_href">https://www.hathitrust.org/help/etas</xsl:variable>
+    <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="$access-type/Granted = 'TRUE'">
+          <xsl:attribute name="data-access-granted">true</xsl:attribute>
+
+          <p style="margin-right: 1rem">
+            <xsl:text>This work is checked out to you until </xsl:text>
+            <span class="expires-display"></span>
+            <xsl:text>. You may be able to renew the book. </xsl:text>
+            <xsl:text>Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+
+          <div class="alert--emergency-access--options">
+            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
+          </div>
+        </xsl:when>
+        <xsl:when test="false() and $access-type/Available = 'FALSE'">
+          <!-- checked out by someone else -->
+          <xsl:attribute name="data-access-granted">false</xsl:attribute>
+
+          <p style="margin-right: 1rem">
+            <xsl:text>All available copies are currently in use. Try again later. Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:if test="false()">
+            <xsl:attribute name="data-access-granted">false</xsl:attribute>
+            <p style="margin-right: 1rem">
+              <xsl:text>Access to this work is provided through the </xsl:text>
+              <a href="{$etas_href}">Emergency Temporary Access Service</a>
+              <xsl:text>.</xsl:text>
+            </p>
+            <div class="alert--emergency-access--options">
+              <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+            </div>
+          </xsl:if>
+        </xsl:otherwise>
+      </xsl:choose>
+    </div>
+  </xsl:template>
+  
   <!-- -->
   <xsl:template match="Text">
     <p class="Text">

@@ -1,3 +1,8 @@
+body {
+  background: #fff;
+  padding: 1rem;
+}
+
 .PageNum {
   font-weight:bold;
 }
@@ -17,6 +22,10 @@ p.Image {
   padding: 8px;
   margin: 8px;
   border: 1px solid #999;
+}
+
+#mdpPageHeader > div {
+  margin-bottom: 1rem;
 }
 
 
@@ -54,5 +63,43 @@ img {
   padding: 0;
   margin: 0;
   font-size: 0.1em;
+}
+
+.alert--emergency-access {
+  background-color: orange;
+  border: 1px solid darkorange;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: none;
+  margin-bottom: 0;
+  margin: 1rem;
+}
+
+.alert--emergency-access[data-initialized="false"] > * {
+  opacity: 0;
+}
+
+.alert--emergency-access p {
+  font-weight: bold;
+  color: black;
+}
+
+.alert--emergency-access p a {
+  color: #333;
+}
+
+
+.alert--emergency-access .alert--emergency-access--options {
+  display: flex;
+  align-items: center;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link {
+  color: black;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.button-link[disabled] {
+  display: none;
 }
 
