@@ -64,7 +64,7 @@ use Auth::Logging;
 
 {
     package App;
-    
+
     sub new {
         my $class = shift;
 
@@ -72,23 +72,24 @@ use Auth::Logging;
         bless $self, $class;
         return $self;
     }
-    
+
     sub get_app_name {
         my $self = shift;
         return "ping";
     }
-    
+
 }
 
 my $app = sub {
     my $env = shift;
     my $request = Plack::Request->new($env);
     my $response;
-    
+
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $msg, $idp_list, $expired ) = @_;
+        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $emergency_access, $msg, $idp_list, $expired ) = @_;
         $print_disabled = $print_disabled ? 'true' : 'false';
+        $emergency_access = $emergency_access ? 'true' : 'false';
         $expired = $expired ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
         $displayName = $displayName || '';
@@ -107,7 +108,7 @@ my $app = sub {
         my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
 
         $auth_type = qq{"$auth_type"} unless ( $auth_type eq 'null' );
-        
+
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
 HT.login_status = {};
@@ -123,10 +124,11 @@ HT.login_status.expired = $expired;
 HT.login_status.authType = $auth_type;
 HT.login_status.message = "$msg";
 HT.login_status.u = $print_disabled;
+HT.login_status.x = $emergency_access;
 HT.login_status.idp_list = $idp_list_json;
 HT.is_cosign_active = $is_cosign_active;
 JAVASCRIPT
-        
+
         $retval .= <<JAVASCRIPT;
 HT.shibboleth_alert = function() {
     alert("Please quit your browser to log out of Shibboleth.");
@@ -162,23 +164,23 @@ HT.login_link = function() {
     } else {
         link = '<a href="' + href + '">Login</a>';
     }
-    
+
     return link;
 }
 JAVASCRIPT
-        
+
         if ( $callback ) {
             $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
         }
     }
-    
+
     my $C = new Context;
     $C->set_object('App', new App);
 
     my $original_request = $request->referer || '';
 
     my $callback = $request->param('callback') || qq{ping_handler};
-    
+
     # configuration; do we need our own config?
     my $config = new MdpConfig(
                                Utils::get_uber_config_path('ping'),
@@ -212,8 +214,8 @@ JAVASCRIPT
         my $original_referer = $request->param('ref');
         my ( $original_host, $original_request_uri ) = ( $original_request =~ m{https://([^/]+)(/.*)});
         my $app_name = (grep defined && /\w+/,@tmp)[0];
-        Auth::Logging::log_access($C, $app_name, undef, { 
-            HTTP_REFERER => $original_referer, 
+        Auth::Logging::log_access($C, $app_name, undef, {
+            HTTP_REFERER => $original_referer,
             REQUEST_URI => $original_request_uri,
             HTTP_HOST   => $original_host,
         });
@@ -238,8 +240,8 @@ JAVASCRIPT
         $response = Plack::Response->new(200);
         $response->content_type('application/javascript');
         if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! exists($request->cookies->{HT_AUTHTYPE}) ) {
-            $response->cookies->{HT_AUTHTYPE} = { 
-                'value' => 'shibboleth', 
+            $response->cookies->{HT_AUTHTYPE} = {
+                'value' => 'shibboleth',
                 'path' => '/',
                 'domain' => '.hathitrust.org',
                 'secure' => 1,
@@ -264,9 +266,9 @@ JAVASCRIPT
         my $mapped_institution_name = uri_escape($$info{mapped_institution_name});
         my $mapped_institution_code = uri_escape($$info{mapped_institution_code});
         my $providerName = uri_escape($$info{providerName});
-        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN", undef, 0));
+        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, $$info{x}, "LOGGED IN", undef, 0));
         return $response->finalize;
-    }    
+    }
 
     # get the institutions
     my $idp_list = Institutions::get_idp_list($C);
@@ -277,8 +279,8 @@ JAVASCRIPT
     $response->content_type('application/javascript');
 
     my $cookie_name = $config->get('cookie_name');
-    $response->cookies->{$cookie_name} = { 
-        'value' => $ses->get_session_id(), 
+    $response->cookies->{$cookie_name} = {
+        'value' => $ses->get_session_id(),
         'path' => '/',
         'domain' => Utils::get_cookie_domain(),
         'httponly' => 1
@@ -296,9 +298,9 @@ JAVASCRIPT
     };
 
     # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
-    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         "NOT LOGGED IN", $idp_list, $logged_out));
+    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
     return $response->finalize;
-    
+
 };
 
 Plack::Runner->new->run($app);

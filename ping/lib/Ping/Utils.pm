@@ -13,13 +13,13 @@ sub identify_user {
     my $auth_type;
     if ( $auth->auth_sys_is_SHIBBOLETH($C) ) {
         $auth_type = 'shibboleth';
-    } 
+    }
     elsif ( $auth->auth_sys_is_COSIGN($C) ) {
         $auth_type = 'cosign';
-    } 
+    }
     else {
         $auth_type = '';
-    } 
+    }
 
     my $retval = {authType => $auth_type, auth_type => $auth_type};
 
@@ -35,11 +35,12 @@ sub identify_user {
     }
     $$retval{affiliation} = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
     $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
+    $$retval{x} = $auth->affiliation_has_emergency_access($C);
 
     $$retval{providerName} = $auth->get_institution_name($C, undef, 1);
 
     return $retval;
-    
+
 }
 
 1;
