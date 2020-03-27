@@ -184,8 +184,11 @@
           <xsl:call-template name="navbar-user-links" />
         </ul>
       </nav>
+      <xsl:call-template name="build-extra-header" />
     </header>
   </xsl:template>
+
+  <xsl:template name="build-extra-header" />
 
   <xsl:template name="config-include-logo">FALSE</xsl:template>
 
