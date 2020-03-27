@@ -555,6 +555,9 @@
               <li>
                 <a href="https://babel.hathitrust.org/cgi/pt?id={ItemID}">
                   <xsl:choose>
+                    <xsl:when test="emergency=1">
+                      <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
+                    </xsl:when>
                     <xsl:when test="fulltext=1">
                       <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Full View</xsl:text>
                     </xsl:when>

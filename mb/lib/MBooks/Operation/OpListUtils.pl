@@ -182,6 +182,26 @@ sub is_full_text
     return grep(/^$rights_attr$/, @$rights_ref);
 }
 
+sub is_emergency_access
+{
+    my $self = shift;
+    my $C = shift;
+    my $id = shift;
+    my $rights_ref = shift;
+    my $rights_attr = shift;
+
+    my $emergency_flag = 0;
+    if ( $self->is_full_text($rights_ref, $rights_attr) ) {
+        my $ar = new Access::Rights($C, $id);
+        $access_status = $ar->check_final_access_status_by_attribute($C, $rights_attr, $id);
+        if ( $access_status eq 'allow' ) {
+            my $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights_attr, $id);
+            $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+        }
+    }
+    return $emergency_flag;
+}
+
 
 # ---------------------------------------------------------------------
 
@@ -214,6 +234,13 @@ sub get_final_item_arr_ref {
         }
         else {
             $item_hashref->{'fulltext'} = '0';
+        }
+
+        if ( $self->is_emergency_access($C, $$item_hashref{extern_item_id}, $rights_ref, $item_rights_attr)) {
+            $item_hashref->{'emergency_flag'} = '1';
+        }
+        else {
+            $item_hashref->{'emergency_flag'} = '0';
         }
 
         # add array_of hashrefs of collection info for collections
