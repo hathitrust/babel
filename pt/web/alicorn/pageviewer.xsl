@@ -27,6 +27,8 @@
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
   <xsl:variable name="gSuppressAccessBanner" select="/MBooksTop/MBooksGlobals/SuppressAccessBanner"/>
 
+  <xsl:variable name="etas_href">https://www.hathitrust.org/ETAS-User-Information</xsl:variable>
+
   <xsl:variable name="gIsCRMS">
     <xsl:choose>
       <xsl:when test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='skin'], 'crms')">true</xsl:when>
@@ -248,7 +250,6 @@
 
   <xsl:template name="build-emergency-access-affiliate-header">
     <xsl:variable name="access-type" select="//AccessType" />
-    <xsl:variable name="etas_href">https://www.hathitrust.org/help/etas</xsl:variable>
     <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
       <xsl:attribute name="id">access-emergency-access</xsl:attribute>
       <xsl:attribute name="data-access-granted">true</xsl:attribute>
@@ -256,7 +257,7 @@
       <p style="margin-right: 1rem">
         <xsl:text>This work is checked out to you until </xsl:text>
         <span class="expires-display"></span>
-        <xsl:text>. You may be able to renew the book. </xsl:text>
+        <xsl:text> and may automatically renew. </xsl:text>
         <xsl:text>Access to this work is provided through the </xsl:text>
         <a href="{$etas_href}">Emergency Temporary Access Service</a>
         <xsl:text>.</xsl:text>
