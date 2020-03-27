@@ -1473,6 +1473,26 @@ sub handle_SETUP_APPLICATION_PARAMS_PI
     return $xml;
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_IN_COPYRIGHT_PI
+  : PI_handler(IN_COPYRIGHT)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    if ($C->get_object('Access::Rights')->in_copyright($C, $id)) {
+        return 'true';
+    }
+    return 'false';
+}
 
 sub ExtractLSParams {
     my ( $referer ) = @_;
