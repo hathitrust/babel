@@ -46,6 +46,7 @@
   <CustomXml><?CHUNK filename="pageviewer_extra.xml" optional="1"?></CustomXml>
   <MBooksGlobals>
     <?CHUNK filename="ptglobals.xml"?>
+    <InCopyright><?IN_COPYRIGHT?></InCopyright>
     <ItemType><?ITEM_TYPE?></ItemType>
   </MBooksGlobals>
 

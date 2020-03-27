@@ -75,6 +75,7 @@
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <xsl:call-template name="header" />
+
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
         <div class="sidebar-container" id="sidebar" tabindex="0">
           <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
@@ -94,6 +95,10 @@
 
   <!-- Results -->
   <xsl:template name="build-results-container">
+    <xsl:if test="$gFinalAccessStatus = 'deny'">
+      <xsl:call-template name="build-checkout-notice" />
+    </xsl:if>
+
     <div class="results-container">
       <xsl:call-template name="back-to-beginning-link" />
       <xsl:call-template name="embed-search-form" />
@@ -118,6 +123,50 @@
         <a href="{$gBeginningLink}">Go to the beginning of the item</a>
       </div>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="build-checkout-notice">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:if test="normalize-space($access-type/Name)">
+        <xsl:choose>
+          <xsl:when test="$access-type/Name = 'emergency_access_affiliate'">
+            <xsl:call-template name="build-checkout-emergency-access" />
+          </xsl:when>
+          <xsl:otherwise />
+        </xsl:choose>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="build-checkout-emergency-access">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:choose>
+      <xsl:when test="//AccessType/Available = 'TRUE'">
+
+        <!-- item is available for checkout -->
+        <div class="alert alert-block alert--emergency-access">
+          <p style="margin-right: 1rem">
+            <xsl:text>Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+          <div class="alert--emergency-access--options">
+            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+          </div>
+        </div>
+
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="alert alert-block alert-block alert--emergency-access">      
+          <p style="margin-right: 1rem">
+            <xsl:text>All available copies are currently in use. Try again later. Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+
+          <!-- <p>Another user is currently viewing this item. It will be available for viewing again: <strong><xsl:value-of select="/MBooksTop/MdpApp/Section108/Expires"/></strong></p> -->
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="msg-access-info">
@@ -307,7 +356,14 @@
       </xsl:variable>
       <article class="result">
         <h3 class="results-header">
-          <a href="{Link}" data-seq="{Sequence}"><xsl:value-of select="$page_label" /></a>
+          <xsl:choose>
+            <xsl:when test="$gFinalAccessStatus = 'allow'">
+              <a href="{Link}" data-seq="{Sequence}"><xsl:value-of select="$page_label" /></a>
+            </xsl:when>
+            <xsl:otherwise>
+              <span><xsl:value-of select="$page_label" /></span>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:text>&#xa0;-&#xa0;</xsl:text>
           <xsl:value-of select="Hits" />
           <xsl:choose>
