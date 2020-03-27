@@ -79,7 +79,6 @@
   <!-- emergency access user -->
   <xsl:template name="EmergencyAccessAffiliatePage">
     <xsl:variable name="access-type" select="//AccessType" />
-    <xsl:variable name="etas_href">https://www.hathitrust.org/help/etas</xsl:variable>
     <xsl:choose>
       <xsl:when test="//AccessType/Available = 'TRUE'">
 
