@@ -27,6 +27,8 @@
   <xsl:variable name="gHTDEV" select="/MBooksTop/MBooksGlobals/EnvHT_DEV"/>
   <xsl:variable name="gSuppressAccessBanner" select="/MBooksTop/MBooksGlobals/SuppressAccessBanner"/>
 
+  <xsl:variable name="etas_href">https://www.hathitrust.org/ETAS-User-Information</xsl:variable>
+
   <xsl:variable name="gIsCRMS">
     <xsl:choose>
       <xsl:when test="contains(/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='skin'], 'crms')">true</xsl:when>
@@ -231,92 +233,78 @@
 
   <!-- <xsl:template name="header" /> -->
 
-  <xsl:template name="navbar-xxx">
-    <header class="site-navigation" role="banner">
-      <nav aria-label="about the site">
-        <xsl:if test="$gIsCRMS = 'false'">
-          <xsl:call-template name="navbar-site-links" />
-        </xsl:if>
-        <xsl:choose>
-          <xsl:when test="$gIsCRMS = 'true'">
-            <ul id="person-nav" class="nav pull-right">
-              <xsl:if test="$gLoggedIn = 'YES'">
-                <li><span>Hi <xsl:value-of select="//Header/UserName" />!</span></li>
-              </xsl:if>
-              <li class="help"><a href="http://www.hathitrust.org/help">Help</a></li>
-              <xsl:call-template name="li-feedback" />
-            </ul>
-          </xsl:when>
-          <xsl:otherwise>
-            <ul id="person-nav" class="nav pull-right">
-              <xsl:call-template name="navbar-user-links" />
-            </ul>
-          </xsl:otherwise>
-        </xsl:choose>
-      </nav>
-    </header>
+  <xsl:template name="build-extra-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+      <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
+        <xsl:call-template name="build-emergency-access-affiliate-header" />
+      </xsl:if>
+      <xsl:if test="$access-type/Name = 'in_library_user'">
+        <xsl:call-template name="build-in-library-user-header" />
+      </xsl:if>
+      <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
+        <xsl:call-template name="build-ssd-session-header" />
+      </xsl:if>
+    </xsl:if>
   </xsl:template>
 
-  <xsl:template name="navbar-site-links-xxx">
-    <ul id="nav" class="nav">
-      <!-- <li><a class="home-link" href="https://www.hathitrust.org" aria-hidden="true"><span class="offscreen">Home</span></a></li> -->
-      <!-- <li><a href="https://www.hathitrust.org">Home</a></li> -->
+  <xsl:template name="build-emergency-access-affiliate-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
 
-      <li>
-        <a class="home-link always-branded include-branding" href="https://www.hathitrust.org">
-          <span class="offscreen">Home</span>
-        </a>
-      </li>
+      <p style="margin-right: 1rem">
+        <xsl:text>This work is checked out to you until </xsl:text>
+        <span class="expires-display"></span>
+        <xsl:text> and may automatically renew. </xsl:text>
+        <xsl:text>Access to this work is provided through the </xsl:text>
+        <a href="{$etas_href}">Emergency Temporary Access Service</a>
+        <xsl:text>.</xsl:text>
+      </p>
 
-
-      <li class="nav-menu">
-        <!-- <a href="https://www.hathitrust.org/about">About</a> -->
-        <a href="#" aria-haspopup="true" id="about-menu">About <i class="icomoon icomoon-triangle" aria-hidden="true" style="position: absolute; top: 35%"></i></a>
-        <ul class="navbar-menu-children" role="menu" aria-labelledby="about-menu" aria-hidden="true">
-          <li><a href="https://www.hathitrust.org/about">Welcome to HathiTrust</a></li>
-          <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
-          <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-          <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
-          <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
-        </ul>
-      </li>
-      <li><a href="/cgi/mb">Collections</a></li>
-      <!-- <li class="divider-vertical"></li> -->
-      <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
-      <xsl:call-template name="li-feedback" />
-      <xsl:call-template name="li-search-action" />
-    </ul>
+      <div class="alert--emergency-access--options">
+        <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
+      </div>
+    </div>
   </xsl:template>
 
-  <xsl:template name="li-search-action">
-    <li>
-      <button class="btn btn-primary" id="action-search-hathitrust"><i class="icomoon icomoon-search" aria-hidden="true"></i> Search HathiTrust</button>
-    </li>
+  <xsl:template name="build-in-library-user-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
+
+      <p style="margin-right: 1rem">
+        <xsl:text>This work is checked out to you until </xsl:text>
+        <span class="expires-display"></span>
+        <xsl:text>. You may be able to renew the book. </xsl:text>
+        <br />
+        <xsl:text>This work may be in copyright. You have full view access to this item based on your affiliation or account privileges. </xsl:text>
+        <br />
+        <xsl:text>Information about use can be found in the </xsl:text>
+        <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>
+        <xsl:text>.</xsl:text>
+      </p>
+
+      <div class="alert--emergency-access--options">
+        <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
+      </div>
+    </div>
   </xsl:template>
 
-  <xsl:template name="navbar-user-links-xx">
-    <xsl:choose>
-      <xsl:when test="$gLoggedIn = 'YES'">
-        <li>
-          <span>
-            <xsl:value-of select="//Header/UserAffiliation" />
-            <!-- ProviderName causes collisions with search navbar -->
-            <!--
-            <xsl:if test="//Header/ProviderName">
-              <xsl:text> (</xsl:text>
-              <xsl:value-of select="//Header/ProviderName" />
-              <xsl:text>)</xsl:text>
-            </xsl:if>
-            -->
-          </span>
-        </li>
-        <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
-        <li><a id="logout-link" href="{//Header/LoginLink}">Logout</a></li>
-      </xsl:when>
-      <xsl:otherwise>
-        <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Log in</a></li>
-      </xsl:otherwise>
-    </xsl:choose>
+  <xsl:template name="build-ssd-session-header">
+    <div class="alert alert--emergency-access" data-initialized="true">
+      <!-- <xsl:attribute name="id">access-emergency-access</xsl:attribute> -->
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
+      <div>
+        <p>This work may be in copyright. You have full view access to this item based on your account privileges. 
+        Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.
+        <!-- <br />
+        A <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only version</xsl:element> is also available. More information is available at <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility.</a> -->
+        </p>
+      </div>
+    </div>
   </xsl:template>
 
   <xsl:template name="setup-body-tail">
@@ -570,12 +558,14 @@
 
   <xsl:template name="get-access-statements">
     <!-- access banners are hidden and exposed by access_banner.js -->
-    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+    <xsl:if test="false() and $gFinalAccessStatus='allow' and $gInCopyright='true'">
       <xsl:choose>
         <xsl:when test="$gLoggedIn='YES'">
           <xsl:choose>
             <xsl:when test="$gSSD_Session='true'">
               <xsl:call-template name="access_banner_ssd"/>
+            </xsl:when>
+            <xsl:when test="//AccessType/Name = 'emergency_access_affiliate'">
             </xsl:when>
             <xsl:otherwise>
               <xsl:call-template name="access_banner"/>

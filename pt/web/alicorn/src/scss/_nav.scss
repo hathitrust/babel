@@ -150,3 +150,61 @@ button.control-search {
     }
   }
 }
+
+.alert--emergency-access {
+  // border-radius: 0;
+  background-color: orange;
+  border: 1px solid darkorange;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: none;
+  margin-bottom: 0;
+
+  &[data-initialized="false"] {
+    & > * {
+      opacity: 0;
+    }
+  }
+
+  p {
+    font-weight: bold;
+    color: black;
+
+    a {
+      color: #333;
+    }
+  }
+
+  .alert--emergency-access--options {
+    display: flex;
+    align-items: center;
+
+    a.button-link {
+      color: black;
+
+      &[disabled] {
+        display: none;
+      }
+    }
+  }
+}
+
+header .alert--emergency-access {
+  border-radius: 0;
+}
+
+.debug-messages {
+  position: fixed;
+  z-index: 90000;
+  opacity: 0.25;
+  background: orange;
+
+  max-height: 25vh;
+  max-width: 50vw;
+  overflow: auto;
+
+  &:hover {
+    opacity: 1.0;
+  }
+}

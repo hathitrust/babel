@@ -103,6 +103,7 @@ export var Service = class {
     this.q1 = options.q1;
     this.debug = options.debug;
     this.hasOcr = options.hasOcr;
+    this.expiration = options.expiration;
     this.emitter = new NanoEvents();
     this.bindEvents();
   }
@@ -136,6 +137,9 @@ export var Service = class {
     if ( this.debug ) {
       params.push(`debug=${this.debug}`);
     }
+    if ( options.expiration ) {
+      params.push(`_=${options.expiration}`);
+    }
     return `/cgi/imgsrv/${action}?${params.join(';')}`;
   }
 
@@ -147,6 +151,9 @@ export var Service = class {
     }
     if ( this.debug ) {
       url += `;debug=${this.debug}`;
+    }
+    if ( options.expiration ) {
+      url += `;_=${options.expiration}`;
     }
     return url;
   }

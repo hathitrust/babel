@@ -17,6 +17,7 @@ export var Navigator = class {
   }
 
   bindEvents() {
+    var self = this;
     var isIE = window.navigator.userAgent.indexOf("Trident/") > -1;
 
     this.input.addEventListener('change', (event) => {

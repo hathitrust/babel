@@ -151,8 +151,6 @@ sub GetItemType
     # pull from mdpItem
     my $item_type = $mdpItem->GetItemType();
 
-    print STDERR "AHOY AHOY $item_type\n";
-
     if ( my $item_sub_type = $mdpItem->GetItemSubType() ) {
         $item_type .= "/" . lc $item_sub_type;
     }
@@ -1005,6 +1003,59 @@ sub handle_SSD_SESSION_PI
     return $ssd_authenticated ? 'true' : 'false';
 }
 
+sub handle_ACCESS_TYPE_PI
+    : PI_handler(ACCESS_TYPE)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $rights = $C->get_object('Access::Rights');
+    my $mdpItem = $C->get_object('MdpItem');
+    my $id = $mdpItem->GetId();
+    my $xml = '';
+    my $access_type = $rights->get_access_type($C, 1);
+    my $rights_attribute = $rights->get_rights_attribute($C, $id);
+    my $initial_access_type =
+        $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
+
+    if ( 
+        ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,allow_emergency_access, ) 
+        ||
+        ( $access_type eq 'in_library_user' && $initial_access_type =~ m,allow_by_held, ) 
+    )
+        {
+
+        $xml .= q{<Name>} . $access_type . q{</Name>};
+
+        my ( $granted, $owner, $expires ) = $rights->get_exclusivity($C);
+        $granted = $granted ? 'TRUE' : 'FALSE';
+
+        $xml .= qq{<Granted>$granted</Granted>};
+
+        my $action_url;
+        if ( $granted eq 'FALSE' ) {
+            my $available = Auth::Exclusive::check_available_grants($C, $id);
+
+            if ( $available ) {
+                my $tempCgi = new CGI();
+                $tempCgi->param('a', 'checkout');
+                $action_url = Utils::url_to($tempCgi, "/cgi/pt");
+                $xml .= qq{<Action>$action_url</Action>};
+            }
+            $available = $available ? 'TRUE' : 'FALSE';
+            $xml .= qq{<Available>$available</Available>};
+        } else {
+            my $expires_seconds = Utils::Time::unix_Time($expires);
+            $xml .= qq{<Expires>$expires_seconds</Expires>};
+
+            my $tempCgi = new CGI();
+            $tempCgi->param('a', 'release');
+            $action_url = Utils::url_to($tempCgi, "/cgi/pt");
+            $xml .= qq{<Action>$action_url</Action>};
+        }
+    }
+
+    return $xml;
+}
+
 # ---------------------------------------------------------------------
 
 =item BuildContentsItemLink
@@ -1422,6 +1473,26 @@ sub handle_SETUP_APPLICATION_PARAMS_PI
     return $xml;
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_IN_COPYRIGHT_PI : PI_handler(IN_COPYRIGHT)
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_IN_COPYRIGHT_PI
+  : PI_handler(IN_COPYRIGHT)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $id = $C->get_object('CGI')->param('id');
+    if ($C->get_object('Access::Rights')->in_copyright($C, $id)) {
+        return 'true';
+    }
+    return 'false';
+}
 
 sub ExtractLSParams {
     my ( $referer ) = @_;

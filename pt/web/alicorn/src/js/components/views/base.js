@@ -16,12 +16,12 @@ export var Base = class {
 
   attachTo(element, cb) {
     this.container = element;
-    var t0 = performance.now();
+    // var t0 = performance.now();
     this.bindEvents();
-    var t1 = performance.now();
+    // var t1 = performance.now();
     this.render(cb);
-    var t2 = performance.now();
-    console.log(`BENCHMARK view.attachTo: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
+    // var t2 = performance.now();
+    // console.log(`BENCHMARK view.attachTo: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
   }
 
   render(cb) {
@@ -97,6 +97,8 @@ export var Base = class {
       return;
     }
 
+    if ( canvas.dataset.restricted == 'true' ) { return ; }
+
     var bounds = this.container.getBoundingClientRect();
     var rect = page.getBoundingClientRect();
 
@@ -141,14 +143,18 @@ export var Base = class {
 
   }
 
-  loadImage(page, options={}) {
+  loadImageX(page, options={}) {
     if ( ! this.is_active ) { return ; }
     options = Object.assign({ check_scroll: false, preload: true }, options);
     var seq = page.dataset.seq;
     var rect = page.getBoundingClientRect();
 
-    var image_url = this.imageUrl(page);
-    var html_url = this.service.html({ seq: seq });
+    var buster;
+    if ( page.querySelector('img') && page.querySelector('img').dataset.restricted == 'true' ) {
+      var img = page.querySelector('img');
+      page.removeChild(img);
+      buster = Date.now();
+    }
 
     if ( page.querySelector('img') ) {
       // preloadImages(page);
@@ -159,6 +165,9 @@ export var Base = class {
     if ( page.dataset.loading == "true" ) {
       return;
     }
+
+    var image_url = this.imageUrl(page, buster);
+    var html_url = this.service.html({ seq: seq });
 
     var html_request;
     if ( this.embedHtml && html_url ) {
@@ -171,6 +180,8 @@ export var Base = class {
     page.dataset.loading = true;
     page.classList.add('page--loading');
     img.addEventListener('load', function _imgHandler() {
+      if ( img.src.indexOf('data') > -1 ) { return ; }
+
       var page_height = page.offsetHeight;
       var page_width = page.offsetWidth;
 
@@ -187,8 +198,10 @@ export var Base = class {
       // img.style.height = `${page_width / imageAspectRatio}px`;
 
       var adjusted_img_height = page_width / imageAspectRatio;
+      var is_restricted = false;
 
-      if ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) {
+      if ( img.src && img.src.indexOf('data') > -1 ) { is_restricted = true; }
+      if ( ! is_restricted && ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) ) {
         img.classList.add('foldout');
         img.dataset.width = img.width;
         img.dataset.height = img.height;
@@ -207,6 +220,7 @@ export var Base = class {
       if ( html_request ) {
         html_request
           .then(function(response) {
+            // console.log("AHOY html_request", response);
             if ( ! response.ok ) {
               return ""; 
             }
@@ -253,6 +267,143 @@ export var Base = class {
     new_img.src = image_url;
   }
 
+  loadImage(page, options={}) {
+    if ( ! this.is_active ) { return ; }
+    options = Object.assign({ check_scroll: false, preload: true }, options);
+    var seq = page.dataset.seq;
+    var rect = page.getBoundingClientRect();
+
+    var buster;
+    if ( page.querySelector('img') && page.querySelector('img').dataset.restricted == 'true' ) {
+      var img = page.querySelector('img');
+      page.removeChild(img);
+      buster = Date.now();
+    }
+
+    if ( page.querySelector('img') ) {
+      // preloadImages(page);
+      // console.log(`AHOY loadImage ${seq} PRELOADED`);
+      return;
+    }
+
+    if ( page.dataset.loading == "true" ) {
+      return;
+    }
+
+    var image_url = this.imageUrl(page, buster);
+    var html_url = this.service.html({ seq: seq });
+
+    var html_request;
+    if ( this.embedHtml && html_url ) {
+      html_request = fetch(html_url, { credentials: 'include' })
+    }
+
+    var img = new Image();
+    img.alt = `Page scan of sequence ${seq}`;
+
+    page.dataset.loading = true;
+    page.classList.add('page--loading');
+
+    img.addEventListener('load', function _imgHandler() {
+      // if ( img.dataset.restricted == 'true' ) { 
+      //   console.log("AHOY loadImage load skip", seq, " > rechecking"); 
+      //   img.dataset.restricted = false;
+      //   img.src = img.dataset.src;
+      //   return ; 
+      // }
+
+      if ( img.src.indexOf('data') > -1 ) { return ; }
+
+      var page_height = page.offsetHeight;
+      var page_width = page.offsetWidth;
+
+      page.dataset.loading = false;
+      page.classList.remove('page--loading');
+
+      this.emitter.emit('loaded', page);
+
+      this.service.manifest.update(seq, { width: img.width, height: img.height });
+
+      var imageAspectRatio = img.width / img.height;
+      // console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
+      // img.style.width = `${page_width}px`;
+      // img.style.height = `${page_width / imageAspectRatio}px`;
+
+      var adjusted_img_height = page_width / imageAspectRatio;
+      var is_restricted = false;
+
+      if ( img.src && img.src.indexOf('data') > -1 ) { is_restricted = true; }
+      if ( ! is_restricted && ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) ) {
+        console.log("AHOY AHOY WHY AM I HERE?", seq, img.dataset.restricted, img.width, img.height, adjusted_img_height, page_height, is_restricted);
+        img.classList.add('foldout');
+        img.dataset.width = img.width;
+        img.dataset.height = img.height;
+        img.dataset.adjustedHeight = adjusted_img_height;
+      }
+
+      img.width = `${page_width}`;
+      img.height = `${adjusted_img_height}`;
+
+      // console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
+
+      page.appendChild(img);
+      page.dataset.loaded = true;
+      page.classList.add('page--loaded');
+
+      if ( html_request ) {
+        html_request
+          .then(function(response) {
+            console.log("AHOY html_request", response);
+            if ( ! response.ok ) {
+              return ""; 
+            }
+            return response.text();
+          })
+          .then(function(text) {
+            var page_text = page.querySelector('.page-text');
+            page_text.innerHTML = text;
+          });
+      }
+
+      if ( options.check_scroll || this.mode == 'thumbnail' ) {
+        this.resizePage(page);
+      }
+      img.removeEventListener('load', _imgHandler, true);
+      URL.revokeObjectURL(img.src);
+      if ( options.callback ) {
+        options.callback(img);
+      }
+    }.bind(this), true)
+
+    fetch(image_url, { credentials: 'include' })
+      .then(response => {
+        // for (var pair of response.headers.entries()) {
+        //     console.log(image_url, "::", pair[0]+ ': '+ pair[1]);
+        // }
+        if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
+          img.dataset.restricted = true;
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        if ( img.dataset.restricted == 'true' && blob.text ) {
+          blob.text().then((text) => {
+            text = text.replace('RESTRICTED', 'ACCESS EXPIRED');
+            blob = new Blob([text], { type: 'image/svg+xml'});
+            var objectUrl = URL.createObjectURL(blob);
+            img.src = objectUrl;
+          })
+        } else {
+          var objectUrl = URL.createObjectURL(blob);
+          img.src = objectUrl;
+
+        }
+      })
+
+    if ( ! page.dataset.preloaded && options.preload ) {
+      this.preloadImages(page);
+    }
+  }
   redrawPageImages() {
     var images = this.container.querySelectorAll('.page img');
     for(var i = 0; i < images.length; i++) {
@@ -298,7 +449,7 @@ export var Base = class {
     }
   }
 
-  imageUrl(params) {
+  imageUrl(params, buster) {
     var oprams =  params;
     if ( params instanceof HTMLElement ) {
       var element = params; params = {};
@@ -312,6 +463,8 @@ export var Base = class {
     if ( ! params.width && ! params.height ) {
       console.log("AHOY IMAGEURL PROBLEM", params, oprams);
     }
+
+    if ( buster ) { params.expiration = buster; }
 
     return this.service.image(params);
   }
@@ -437,7 +590,6 @@ export var Base = class {
 
       dirty = dirty || ( page.style.height != `${h}px` );
 
-      page.style.height = `${h}px`;
       page.style.width = `${w}px`;
       page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
       if ( scale <= 1 ) {
