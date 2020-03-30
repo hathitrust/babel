@@ -261,10 +261,42 @@ export var Base = class {
         page.replaceChild(new_img, img);
         this.resizePage(page);
         new_img.removeEventListener('load', _redrawHandler, true);
+        URL.revokeObjectURL(new_img.src);
       }
       delete page.dataset.reloading;
     }.bind(this), true);
-    new_img.src = image_url;
+    
+    // new_img.src = image_url;
+
+    fetch(image_url, { credentials: 'include' })
+      .then(response => {
+        // for (var pair of response.headers.entries()) {
+        //     console.log(image_url, "::", pair[0]+ ': '+ pair[1]);
+        // }
+        if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
+          new_img.dataset.restricted = true;
+        }
+        var download_filename = response.headers.get('content-disposition');
+        download_filename = (download_filename.split('filename=')).pop();
+        if ( download_filename ) {
+          new_img.download = download_filename;
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        if ( img.dataset.restricted == 'true' && blob.text ) {
+          blob.text().then((text) => {
+            text = text.replace('RESTRICTED', 'ACCESS EXPIRED');
+            blob = new Blob([text], { type: 'image/svg+xml'});
+            var objectUrl = URL.createObjectURL(blob);
+            new_img.src = objectUrl;
+          })
+        } else {
+          var objectUrl = URL.createObjectURL(blob);
+          new_img.src = objectUrl;
+
+        }
+      })
   }
 
   loadImage(page, options={}) {
@@ -382,6 +414,12 @@ export var Base = class {
         // }
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           img.dataset.restricted = true;
+        } else {
+          var download_filename = response.headers.get('content-disposition');
+          download_filename = (download_filename.split('filename=')).pop();
+          if ( download_filename ) {
+            img.download = download_filename;
+          }
         }
         return response.blob();
       })
@@ -396,7 +434,6 @@ export var Base = class {
         } else {
           var objectUrl = URL.createObjectURL(blob);
           img.src = objectUrl;
-
         }
       })
 
