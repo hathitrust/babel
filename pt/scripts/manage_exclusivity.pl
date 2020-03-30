@@ -16,7 +16,7 @@ my $dbh = $db->get_DBH();
 $dbh->{RaiseError} = 1;
 
 my $manage_sql = <<SQL;
-DELETE FROM $TABLE_NAME WHERE expired < NOW() - INTERVAL 12 HOUR
+DELETE FROM $TABLE_NAME WHERE expires < NOW() - INTERVAL 12 HOUR
 SQL
 
 $dbh->{AutoCommit} = 0;
