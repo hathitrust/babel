@@ -140,6 +140,7 @@
   <xsl:template name="build-checkout-emergency-access">
     <xsl:variable name="access-type" select="//AccessType" />
     <xsl:choose>
+      <xsl:when test="//Holdings/Held = 'NO'"></xsl:when>
       <xsl:when test="//AccessType/Available = 'TRUE'">
 
         <!-- item is available for checkout -->
