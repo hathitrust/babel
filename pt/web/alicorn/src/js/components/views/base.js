@@ -261,7 +261,9 @@ export var Base = class {
         page.replaceChild(new_img, img);
         this.resizePage(page);
         new_img.removeEventListener('load', _redrawHandler, true);
-        URL.revokeObjectURL(new_img.src);
+        if ( new_img.dataset.usedBlob == 'true' ) {
+          URL.revokeObjectURL(new_img.src);
+        }
       }
       delete page.dataset.reloading;
     }.bind(this), true);
@@ -281,12 +283,13 @@ export var Base = class {
             text = text.replace('RESTRICTED', 'ACCESS EXPIRED');
             blob = new Blob([text], { type: 'image/svg+xml'});
             var objectUrl = URL.createObjectURL(blob);
+            new_img.dataset.usedBlob = true;
             new_img.src = objectUrl;
           })
         } else {
-          var objectUrl = URL.createObjectURL(blob);
-          new_img.src = objectUrl;
-
+          // var objectUrl = URL.createObjectURL(blob);
+          // new_img.src = objectUrl;
+          new_img.src = image_url;
         }
       })
   }
@@ -393,7 +396,9 @@ export var Base = class {
         this.resizePage(page);
       }
       img.removeEventListener('load', _imgHandler, true);
-      URL.revokeObjectURL(img.src);
+      if ( img.dataset.usedBlob == 'true' ) {
+        URL.revokeObjectURL(img.src);
+      }
       if ( options.callback ) {
         options.callback(img);
       }
@@ -413,10 +418,12 @@ export var Base = class {
             blob = new Blob([text], { type: 'image/svg+xml'});
             var objectUrl = URL.createObjectURL(blob);
             img.src = objectUrl;
+            img.dataset.usedBlob = true;
           })
         } else {
-          var objectUrl = URL.createObjectURL(blob);
-          img.src = objectUrl;
+          // var objectUrl = URL.createObjectURL(blob);
+          // img.src = objectUrl;
+          img.src = image_url;
         }
       })
 
