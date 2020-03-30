@@ -270,16 +270,8 @@ export var Base = class {
 
     fetch(image_url, { credentials: 'include' })
       .then(response => {
-        // for (var pair of response.headers.entries()) {
-        //     console.log(image_url, "::", pair[0]+ ': '+ pair[1]);
-        // }
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           new_img.dataset.restricted = true;
-        }
-        var download_filename = response.headers.get('content-disposition');
-        download_filename = (download_filename.split('filename=')).pop();
-        if ( download_filename ) {
-          new_img.download = download_filename;
         }
         return response.blob();
       })
@@ -409,17 +401,8 @@ export var Base = class {
 
     fetch(image_url, { credentials: 'include' })
       .then(response => {
-        // for (var pair of response.headers.entries()) {
-        //     console.log(image_url, "::", pair[0]+ ': '+ pair[1]);
-        // }
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           img.dataset.restricted = true;
-        } else {
-          var download_filename = response.headers.get('content-disposition');
-          download_filename = (download_filename.split('filename=')).pop();
-          if ( download_filename ) {
-            img.download = download_filename;
-          }
         }
         return response.blob();
       })
