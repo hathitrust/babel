@@ -37,6 +37,8 @@ $app = builder {
 
     enable "PopulateENV", app_name => 'ls';
 
+    enable "SSO";
+
     enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
     enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
