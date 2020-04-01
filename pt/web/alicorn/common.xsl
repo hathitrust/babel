@@ -1614,6 +1614,9 @@
       <xsl:when test="$gRightsAttribute='8'">
         <xsl:text> - Item Not Available </xsl:text>
       </xsl:when>
+      <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow' and //AccessType/Name = 'emergency_access_affiliate'">
+        <xsl:text> - Temporary Access </xsl:text>
+      </xsl:when>
       <xsl:when test="/MBooksTop/MBooksGlobals/FinalAccessStatus='allow'">
         <xsl:text> - Full View </xsl:text>
       </xsl:when>
