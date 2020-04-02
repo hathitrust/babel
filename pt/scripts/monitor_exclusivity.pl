@@ -81,26 +81,86 @@ if ( $is_reporting ) {
       \$body, \$err;
 
     if ( $body ) {
-        # mail this file out
+        # and store the logdata for reference
+        $fh = IO::File->new($filename, ">");
+        print $fh $body, "\n";
+        $fh->close;
+
+        # summarize the data by institution
+
+        my @columns = ("inst_id", "unique", "renewals", "items", "yesterday?");
+        my $inst_map = {};
+        my $todays_grants = {};
+        my @lines = split(/\n/, $body);
+
+        foreach my $line ( @lines ) {
+            chomp $line;
+            next unless ( $line );
+            my ( $lock_id, $item_id, $owner, $inst_id, $timestamp, $renewals ) = split(/\t/, $line);
+            $$inst_map{$inst_id} = { unique => 0, renewals => 0, items => {}, flagged => 0 } unless ( ref($$inst_map{$inst_id}) );
+
+            if ( $renewals > 0 && ! $$todays_grants{$lock_id,$owner} ) {
+                $$inst_map{$inst_id}{flagged} += 1;
+            }
+
+            $$inst_map{$inst_id}{unique} += 1 if ( $renewals == 0 );
+            $$todays_grants{$lock_id,$owner} = 1 if ( $renewals == 0 );
+            $$inst_map{$inst_id}{renewals} += 1 if ( $renewals > 0 );
+            $$inst_map{$inst_id}{items}{$lock_id} += 1;
+        }
+
+        my $boundary = "====" . time() . "====";
         my $mailer = new Mail::Mailer('sendmail');
         $mailer->open(
                       {
                        'To'       => q{hathitrust-exclusivity-report@umich.edu},
                        # 'Bcc'      => $bccAddrArrRef,
                        'From'     => q{roger@umich.edu},
-                       'Subject'  => "HathiTrust Exclusivity Report: $timestamp"
+                       'Subject'  => "HathiTrust Exclusivity Report: $timestamp",
+                       'Content-Type' => qq{multipart/alternative; boundary="$boundary"}
                       }
                     );
 
-        print $mailer(join("\t", "lock_id", "item_id", "owner", "affiliation", "expires", "renewals"), "\n");
-        print $mailer("\n");
-        print $mailer($body);
-        $mailer->close;
+        $boundary = '--'. $boundary;
+        print $mailer $boundary . "\n";
+        # print $mailer qq{Content-Type: 'multipart/alternative; boundary="boundary-string"\n};
 
-        # and store the logdata for reference
-        $fh = IO::File->new($filename, ">");
-        print $fh $body, "\n";
-        $fh->close;
+        # print $mailer "\n--boundary-string\n";
+        print $mailer "Content-Type: text/plain; charset='utf-8'\n";
+        print $mailer "Content-Transfer-Encoding: quoted-pritable\n";
+        print $mailer "Content-Disposition: inline\n\n";
+
+        print $mailer(join("\t", @columns), "\n");
+        print $mailer("\n");
+
+        my @output = ( '<table><tr>');
+        push @output, '<th>' . join('</th><th>', @columns) . '</th>';
+        push @output, '</tr>';
+
+        foreach my $inst_id ( sort { $$inst_map{$b}{unique} <=> $$inst_map{$a}{unique} } keys %$inst_map ) {
+            my $datum = $$inst_map{$inst_id};
+            my @row = ( $inst_id, $$datum{unique}, 
+                $$datum{renewals}, 
+                scalar keys %{$$datum{items}},
+                $$datum{flagged} > 0 ? '*' : ''
+            );
+            push @output, qq{<tr><td>} . join('</td><td>', @row) . qq{</td></tr>};
+            print $mailer(join("\t", @row) . "\n");
+        }
+
+        print $mailer "\n\n$boundary\n";
+        print $mailer "Content-Type: text/html; charset='utf-8'\n";
+        print $mailer "Content-Transfer-Encoding: quoted-pritable\n";
+        print $mailer "Content-Disposition: inline\n\n";
+
+
+        push @output, qq{</table>};
+        print $mailer(join("\n", @output));
+        print $mailer "\n";
+
+        print $mailer "\n$boundary--\n";
+
+        $mailer->close;
     }
     unlink($TMPFILE) unless ( $is_debugging );
 }
