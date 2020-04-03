@@ -20,6 +20,8 @@ export var Navigator = class {
     var self = this;
     var isIE = window.navigator.userAgent.indexOf("Trident/") > -1;
 
+    this.isRTL = this.input.getAttribute('dir') == 'rtl';
+
     this.input.addEventListener('change', (event) => {
       if ( self._mouseDown ) { 
         if ( isIE ) { self._update(false); }
@@ -265,6 +267,7 @@ export var Navigator = class {
     var p = Math.ceil(( ( val - 1 ) / ( total - 1 ) ) * 100);
     var fill = '#ff9f1a';
     var end = '#444';
-    this.input.style.background = `linear-gradient(to right, ${fill} 0%, ${fill} ${p}%, ${end} ${p}%, ${end} 100%)`;
+    var dir = this.isRTL ? 'left' : 'right';
+    this.input.style.background = `linear-gradient(to ${dir}, ${fill} 0%, ${fill} ${p}%, ${end} ${p}%, ${end} 100%)`;
   }
 }
