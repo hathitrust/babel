@@ -1182,11 +1182,13 @@
 
   <xsl:template name="download-links--full-epub">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-    <xsl:call-template name="download-full-book">
-      <xsl:with-param name="id" select="'fullEpubLink'" />
-      <xsl:with-param name="type" select="'EPUB'" />
-      <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
-    </xsl:call-template>
+    <xsl:if test="$gFullPdfAccessMessage=''">
+      <xsl:call-template name="download-full-book">
+        <xsl:with-param name="id" select="'fullEpubLink'" />
+        <xsl:with-param name="type" select="'EPUB'" />
+        <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
+      </xsl:call-template>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="download-full-book">
