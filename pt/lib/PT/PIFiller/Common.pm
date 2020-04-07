@@ -1017,7 +1017,7 @@ sub handle_ACCESS_TYPE_PI
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
     if ( 
-        ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,allow_emergency_access, ) 
+        ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,emergency_access, ) 
         ||
         ( $access_type eq 'in_library_user' && $initial_access_type =~ m,allow_by_held, ) 
     )
