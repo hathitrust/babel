@@ -275,6 +275,9 @@ export var Base = class {
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           new_img.dataset.restricted = true;
         }
+        if ( response.headers.get('x-hathitrust-renew') ) {
+          HT.renew_auth(response.headers.get('x-hathitrust-renew'));
+        }
         return response.blob();
       })
       .then(blob => {
@@ -380,7 +383,6 @@ export var Base = class {
       if ( html_request ) {
         html_request
           .then(function(response) {
-            console.log("AHOY html_request", response);
             if ( ! response.ok ) {
               return ""; 
             }
@@ -408,6 +410,9 @@ export var Base = class {
       .then(response => {
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           img.dataset.restricted = true;
+        }
+        if ( response.headers.get('x-hathitrust-renew') ) {
+          HT.renew_auth(response.headers.get('x-hathitrust-renew'));
         }
         return response.blob();
       })
