@@ -25,8 +25,10 @@ head.ready(function() {
     HT.__renewing = true;
     setTimeout(() => {
       var reauth_url = `https://${HT.service_domain}/Shibboleth.sso/Login?entityID=${entityID}&target=${encodeURIComponent(window.location.href)}`;
-      alert(`OH NO! YOU HAVE BEEN LOGGED OUT! (${source})`);
-      window.location.href = reauth_url;
+      var retval = window.confirm(`We've detected a problem with your session; press OK to log in again.`);
+      if ( retval ) {
+        window.location.href = reauth_url;
+      }
     }, 100);
   }
 
