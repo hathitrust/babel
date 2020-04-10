@@ -25,7 +25,7 @@ head.ready(function() {
     HT.__renewing = true;
     setTimeout(() => {
       var reauth_url = `https://${HT.service_domain}/Shibboleth.sso/Login?entityID=${entityID}&target=${encodeURIComponent(window.location.href)}`;
-      var retval = window.confirm(`We've detected a problem with your session; press OK to log in again.`);
+      var retval = window.confirm(`We're having a problem with your session; select OK to log in again.`);
       if ( retval ) {
         window.location.href = reauth_url;
       }
