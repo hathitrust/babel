@@ -674,7 +674,7 @@
 
   <xsl:template name="build-emergency-access-affiliate-header">
     <xsl:variable name="access-type" select="//AccessType" />
-    <xsl:variable name="etas_href">https://www.hathitrust.org/help/etas</xsl:variable>
+    <xsl:variable name="etas_href">https://www.hathitrust.org/ETAS-User-Information</xsl:variable>
     <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
       <xsl:attribute name="id">access-emergency-access</xsl:attribute>
       <xsl:choose>
@@ -722,6 +722,38 @@
     </div>
   </xsl:template>
   
+  <xsl:template name="build-in-library-user-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
+
+      <p style="margin-right: 1rem">
+        <xsl:text>This work is checked out to you until </xsl:text>
+        <span class="expires-display"></span>
+        <xsl:text>. You may be able to renew the book. </xsl:text>
+        <br />
+        <xsl:text>This work may be in copyright. You have full view access to this item based on your affiliation or account privileges. </xsl:text>
+        <br />
+        <xsl:text>Information about use can be found in the </xsl:text>
+        <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>
+        <xsl:text>.</xsl:text>
+      </p>
+
+      <div class="alert--emergency-access--options">
+        <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="build-ssd-session-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <div class="alert alert--emergency-access" data-initialized="true">
+      <p>This work may be in copyright. You have full view access to this item based on your account privileges. 
+      Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.
+    </div>
+  </xsl:template>
+
   <!-- -->
   <xsl:template match="Text">
     <p class="Text">
