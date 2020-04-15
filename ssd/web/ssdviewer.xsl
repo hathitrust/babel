@@ -751,6 +751,7 @@
     <div class="alert alert--emergency-access" data-initialized="true">
       <p>This work may be in copyright. You have full view access to this item based on your account privileges. 
       Information about use can be found in the <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>.
+      </p>
     </div>
   </xsl:template>
 
