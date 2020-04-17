@@ -61,7 +61,7 @@ export var PlainText = class extends Single {
     }
 
     var html_request;
-    html_request = fetch(html_url);
+    html_request = fetch(html_url, { credentials: 'include' });
 
     page.dataset.loading = true; page.classList.add('page--loading');
     html_request
