@@ -1814,12 +1814,17 @@ sub _ls_wrap_result_data {
         my $book_ids_ary_ref=[];
 
       my @vuFind_book_id_fields = ("oclc","isbn","lccn");
+
       foreach my $field (@vuFind_book_id_fields)
       {
           if (defined ($doc_data->{$field}))
           {
               my $temp_ref = $doc_data->{$field};
-              my    $tmp_ary_ref = add_book_id_prefix_and_filter(uc($field),$temp_ref);
+	      foreach my $val (@$temp_ref) {
+                  Utils::map_chars_to_cers(\$val);
+	      }
+              my $tmp_ary_ref = add_book_id_prefix_and_filter(uc($field),$temp_ref);
+
               push(@{$book_ids_ary_ref},  @{$tmp_ary_ref});
           }
       }
