@@ -47,6 +47,24 @@ BEGIN {
 # Set up paths for local libraries -- must come first
 # ----------------------------------------------------------------------
 use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+
+BEGIN {
+
+    my $use_fakes = 0;
+    my $fake_domain = 'ucop.edu';
+    my $fake_entity_id = 'urn:mace:incommon:ucop.edu';
+    my $fake_affiliation = 'member';
+
+    if ($use_fakes) {
+      $ENV{AUTH_TYPE} = q{shibboleth};
+      $ENV{REMOTE_USER} = qq{test\@$fake_domain};
+      $ENV{affiliation} = qq{$fake_affiliation\@$fake_domain;employee\@ucop.edu};
+      $ENV{eppn} = qq{test\@$fake_domain};
+      $ENV{displayName} = q{Test User};
+      $ENV{Shib_Identity_Provider} = qq{$fake_entity_id};
+    }
+}
+
 use Vendors;
 
 BEGIN {
