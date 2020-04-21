@@ -504,6 +504,7 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
 	# cannot be a clause qualified by institution holdings at all.
 	my $holdings_qualified_string;
 	my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+
 	if ($inst)
 	{
 	    $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
@@ -579,17 +580,67 @@ sub __get_holdings_qualified_string
 	}
     }
 
+    # etas
+    if ($self->is_california($inst)) {
+	push(@qualified_OR_clauses, $self->etas_CA_holdings_filter());
+    }
+
     my $holdings_qualified_string = '';
     if (scalar @qualified_OR_clauses > 0)
     {
 	$holdings_qualified_string = '(' . join('+OR+', @qualified_OR_clauses) . ')';
     }
-    
+
+
     return $holdings_qualified_string;
 }
 #----------------------------------------------------------------------
 # END REFACTOR tbw foobar
 #======================================================================
+
+
+our $UNIVERSITY_OF_CALIFORNIA = {
+     berkeley => 1,
+     ucdavis => 1, 
+     uci => 1,
+     ucla => 1, 
+     ucmerced => 1,
+     ucop => 1,
+     ucr => 1,
+     ucsb => 1,
+     ucsc => 1,
+     ucsd => 1,
+     ucsf => 1,
+     universityofcalifornia => 1,
+  };
+
+
+sub is_california {
+    my $self = shift;
+    my $inst = shift;
+    return $UNIVERSITY_OF_CALIFORNIA->{$inst};
+}
+
+sub etas_CA_inst_ids {
+    my $self = shift;
+  return [keys(%$UNIVERSITY_OF_CALIFORNIA)];
+}
+
+sub etas_CA_multi_inst_query {
+    my $self = shift;
+    my $inst_ids = $self->etas_CA_inst_ids();
+    return "(" . join("+OR+", @$inst_ids) . ")";
+}
+
+sub etas_CA_holdings_filter {
+    my $self = shift;
+    my $inst_ids = $self->etas_CA_inst_ids();
+    return "ht_heldby:(" . join("+OR+", @$inst_ids) . ")";
+}
+
+
+
+
 #----------------------------------------------------------------------
 #
 #  If javascript does not remove the "All" value from facet_lang or facet_format
