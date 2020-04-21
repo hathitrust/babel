@@ -84,6 +84,7 @@ sub __Log_string {
     my $logfile = 'ls_clicks___DATE___';
     my $date = Utils::Time::iso_Time('date');
     $logfile =~ s,___DATE___,-$date,;
+    $logfile .= ".$ENV{SERVER_ADDR}";
     
     Utils::mkdir_path($logdir);
 
