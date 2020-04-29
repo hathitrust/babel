@@ -30,6 +30,7 @@ use Utils::Cache::Storable;
 use Debug::DUtils;
 use MdpConfig;
 
+use DbUtils;
 use Db;
 use Search::Query;
 use Search::Constants;
@@ -59,8 +60,33 @@ sub __enable_indexing {
     my ($C, $run) = @_;
 
     my $dbh = $C->get_object('Database')->get_DBH($C);
-    Db::update_host_enabled($C, $dbh, $run, $HOST, 1);
-    Db::update_shard_enabled($C, $dbh, $run, 1, 1);
+
+    my ( $host_enabled ) = $dbh->selectrow_array(
+            qq{SELECT enabled FROM slip_host_control WHERE run = ? AND host = ?},
+            undef,
+            $run, $HOST);
+
+    my ( $shard_enabled ) = $dbh->selectrow_array(
+            qq{SELECT enabled FROM slip_shard_control WHERE run = ? AND shard = 1},
+            undef,
+            $run);
+
+    unless ( $host_enabled && $shard_enabled ) {
+        # print STDERR "AHOY WORK $host_enabled x $shard_enabled\n";
+        DbUtils::begin_work($dbh);
+        eval {
+            Db::update_host_enabled($C, $dbh, $run, $HOST, 1);
+            Db::update_shard_enabled($C, $dbh, $run, 1, 1);
+            DbUtils::commit($dbh);
+        };
+        if ( my $err = $@ ) {
+            eval { $dbh->rollback; };
+            ASSERT(0, qq{Problem with __enable_indexing: $err});
+        }
+    } else {
+        # print STDERR "AHOY NOP $host_enabled x $shard_enabled\n";
+    }
+
 }
 
 # ---------------------------------------------------------------------
