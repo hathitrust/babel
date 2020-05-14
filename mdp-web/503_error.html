@@ -1,38 +1,127 @@
-<html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"
+  data-app="pt">
   <head> 
     <meta http-equiv="Pragma" content="no-cache">
+    <meta charset="utf-8" />
+
     <title>Hathi Trust Digital Library - Resource Unavailable</title>
-    <link rel="stylesheet" href="./faq.css" type="text/css" />
-    <link rel="stylesheet" href="./MBooksCol.css" type="text/css" /> 
+
+    <script type="text/javascript" src="/common/alicorn/js/utils.201910.js"></script>
+    <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
+
     <style>
       #masthead { height: 86px; }
     </style>
   </head>
   
   <body class="staticPage"> 
-    
-    <div id="masthead">
-      <div class="branding">
-        <div class="brandingLogo">
-          <a href="http://www.hathitrust.org">
-            <img src="/common/unicorn/img/HT-logo.png" aria-hidden="true" alt="" />
-            <span class="offscreen">HathiTrust Digital Library</span>
-          </a>
-        </div>
-      </div>
-    </div>
 
+    <div id="root">
     
-    <div class="outmessage">
-      <h1>Resource Temporarily Unavailable</h1>
-    </div>
-    <div class="message_error">
+      <header class="site-navigation" role="banner">
+        <nav aria-label="about the site">
+        <ul id="nav" class="nav">
+        <li>
+          <a class="home-link" href="https://www.hathitrust.org"><span class="offscreen-for-narrowest">Home</span></a>
+        </li>
+        <li class="menu nav-links">
+          <a aria-expanded="false" class="menu" href="#" id="burger-menu"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
+          <ul>
+            <li class="menu">
+              <a href="#" class="menu" aria-expanded="false" aria-haspopup="true" id="about-menu" aria-hidden="false">About <span class="caret" aria-hidden="true"></span></a>
+              <ul role="menu" aria-labelledby="about-menu" aria-hidden="true">
+                <li>
+                  <a href="https://www.hathitrust.org/about" aria-role="menuitem">Welcome to HathiTrust</a>
+                </li>
+                <li>
+                  <a href="https://www.hathitrust.org/partnership" aria-role="menuitem">Our Partnership</a>
+                </li>
+                <li>
+                  <a href="https://www.hathitrust.org/digital_library" aria-role="menuitem">Our Digital Library</a>
+                </li>
+                <li>
+                  <a href="https://www.hathitrust.org/collaborative-programs" aria-role="menuitem">Our Collaborative Programs</a>
+                </li>
+                <li>
+                  <a href="https://www.hathitrust.org/htrc" aria-role="menuitem">Our Research Center</a>
+                </li>
+                <li>
+                  <a href="https://www.hathitrust.org/news_publications" aria-role="menuitem">News &amp; Publications</a>
+                </li>
+              </ul>
+            </li>
+                  <li>
+              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
+            </li>
+            <li class="help">
+              <a href="https://www.hathitrust.org/help">Help</a>
+            </li>
+            <li>
+              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
+            </li>
+          </ul>
+        </li>
+        </ul>
+        </nav>
+      </header>
       
-      <img src="./graphics/librarian.jpg" alt="photograph of ye olden days at the library"/>
-        <p>You have temporarily exceeded viewing limits. ___CHOKED_UNTIL___</p>
-        <p>Viewing limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>
-        
-        <p><strong><a href="__REQUEST_URL__">Try your request again.</a></strong></p>
+      <main id="main" class="main-container">
+
+        <div class="container container-medium flex-container" style="margin-top: 1.75rem">
+          <div>
+            <img src="./graphics/librarian.jpg" alt="photograph of ye olden days at the library"/> 
+          </div>
+          <div style="flex-grow: 1; margin-left: 1rem">
+            <h1>Resource Temporarily Unavailable</h1>
+
+            <div class="message_error">
+              
+              
+                <p>You have temporarily exceeded viewing limits. ___CHOKED_UNTIL___</p>
+                <p>Viewing limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>
+
+                <!-- PHOTOCOPIER_USAGE -->
+                
+                <p><strong><a href="__REQUEST_URL__">Try your request again.</a></strong></p>
+
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      <footer class="site-navigation" role="contentinfo">
+        <nav>
+          <ul class="nav pull-right">
+            <li>
+              <a href="https://www.hathitrust.org/">Home</a>
+            </li>
+            <li>
+              <a href="https://www.hathitrust.org/about">About</a>
+            </li>
+            <li>
+              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
+            </li>
+            <li>
+              <a href="https://www.hathitrust.org/help">Help</a>
+            </li>
+            <li>
+              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
+            </li>
+            <li><a href="https://www.hathitrust.org/accessibility">Accessibility</a></li>
+            <li>
+              <a href="https://www.hathitrust.org/take_down_policy">Take-Down Policy</a>
+            </li>
+            <li>
+              <a href="https://www.hathitrust.org/privacy">Privacy</a>
+            </li>
+            <li>
+              <a href="https://www.hathitrust.org/contact">Contact</a>
+            </li>
+          </ul>
+        </nav>
+      </footer>
 
     </div>
   </body>
