@@ -194,7 +194,7 @@ sub is_emergency_access
     if ( $self->is_full_text($rights_ref, $rights_attr) ) {
         my $ar = new Access::Rights($C, $id);
         $access_status = $ar->check_final_access_status_by_attribute($C, $rights_attr, $id);
-        if ( $access_status eq 'allow' ) {
+        if ( $access_status eq 'allow' && $ar->in_copyright($C, $id) ) {
             my $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights_attr, $id);
             $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
         }
