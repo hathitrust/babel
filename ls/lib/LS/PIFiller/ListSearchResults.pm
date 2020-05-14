@@ -2002,8 +2002,10 @@ sub _ls_wrap_result_data {
             my $initial_access_status;
             eval {
                 my $ar = new Access::Rights($C, $id);
-                $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights, $id);
-                $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+                if ( $ar->in_copyright($C, $id) ) {
+                    $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights, $id);
+                    $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+                }
             };
         }
 
