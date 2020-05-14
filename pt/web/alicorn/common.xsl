@@ -1102,6 +1102,7 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
+          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
           <xsl:text>Download this page (PDF)</xsl:text>
         </xsl:element>
       </li>
@@ -1118,6 +1119,7 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
+          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
           <xsl:text>Download left page (PDF)</xsl:text>
         </xsl:element>
       </li>
@@ -1134,6 +1136,7 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
+          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
           <xsl:text>Download right page (PDF)</xsl:text>
         </xsl:element>
       </li>
