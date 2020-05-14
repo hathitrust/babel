@@ -419,14 +419,16 @@ head.ready(function() {
     var num_page_downloads = 0;
     var photocopier_message = 'The copyright law of the United States (Title 17, U.S. Code) governs the making of reproductions of copyrighted material. Under certain conditions specified in the law, libraries and archives are authorized to furnish a reproduction. One of these specific conditions is that the reproduction is not to be “used for any purpose other than private study, scholarship, or research.” If a user makes a request for, or later uses, a reproduction for purposes in excess of “fair use,” that user may be liable for copyright infringement.';
     $("a[data-photocopier]").on('click', function(e) {
-        if ( num_page_downloads == 0 || ( false && num_page_downloads % 5 == 0 ) ) {
-            if ( ! window.confirm(photocopier_message) ) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
+        if ( this.dataset.photocopier == 'true' ) {
+            if ( num_page_downloads == 0 || ( false && num_page_downloads % 5 == 0 ) ) {
+                if ( ! window.confirm(photocopier_message) ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
             }
+            num_page_downloads += 1;
         }
-        num_page_downloads += 1;
     })
 
     // and do this here
