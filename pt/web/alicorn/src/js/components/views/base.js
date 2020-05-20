@@ -143,111 +143,6 @@ export var Base = class {
 
   }
 
-  loadImageX(page, options={}) {
-    if ( ! this.is_active ) { return ; }
-    options = Object.assign({ check_scroll: false, preload: true }, options);
-    var seq = page.dataset.seq;
-    var rect = page.getBoundingClientRect();
-
-    var buster;
-    if ( page.querySelector('img') && page.querySelector('img').dataset.restricted == 'true' ) {
-      var img = page.querySelector('img');
-      page.removeChild(img);
-      buster = Date.now();
-    }
-
-    if ( page.querySelector('img') ) {
-      // preloadImages(page);
-      // console.log(`AHOY loadImage ${seq} PRELOADED`);
-      return;
-    }
-
-    if ( page.dataset.loading == "true" ) {
-      return;
-    }
-
-    var image_url = this.imageUrl(page, buster);
-    var html_url = this.service.html({ seq: seq });
-
-    var html_request;
-    if ( this.embedHtml && html_url ) {
-      html_request = fetch(html_url, { credentials: 'include' })
-    }
-
-    var img = new Image();
-    img.alt = `Page scan of sequence ${seq}`;
-
-    page.dataset.loading = true;
-    page.classList.add('page--loading');
-    img.addEventListener('load', function _imgHandler() {
-      if ( img.src.indexOf('data') > -1 ) { return ; }
-
-      var page_height = page.offsetHeight;
-      var page_width = page.offsetWidth;
-
-      page.dataset.loading = false;
-      page.classList.remove('page--loading');
-
-      this.emitter.emit('loaded', page);
-
-      this.service.manifest.update(seq, { width: img.width, height: img.height });
-
-      var imageAspectRatio = img.width / img.height;
-      // console.log(`AHOY LOAD ${seq} : ${img.width} x ${img.height} : ${page_width}`);
-      // img.style.width = `${page_width}px`;
-      // img.style.height = `${page_width / imageAspectRatio}px`;
-
-      var adjusted_img_height = page_width / imageAspectRatio;
-      var is_restricted = false;
-
-      if ( img.src && img.src.indexOf('data') > -1 ) { is_restricted = true; }
-      if ( ! is_restricted && ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) ) {
-        img.classList.add('foldout');
-        img.dataset.width = img.width;
-        img.dataset.height = img.height;
-        img.dataset.adjustedHeight = adjusted_img_height;
-      }
-
-      img.width = `${page_width}`;
-      img.height = `${adjusted_img_height}`;
-
-      // console.log(`AHOY LOAD ${seq} REDUX : ${img.width} x ${img.height} : ${img.style.width} x ${img.style.height} : ${page_width}`);
-
-      page.appendChild(img);
-      page.dataset.loaded = true;
-      page.classList.add('page--loaded');
-
-      if ( html_request ) {
-        html_request
-          .then(function(response) {
-            // console.log("AHOY html_request", response);
-            if ( ! response.ok ) {
-              return ""; 
-            }
-            return response.text();
-          })
-          .then(function(text) {
-            var page_text = page.querySelector('.page-text');
-            page_text.innerHTML = text;
-          });
-      }
-
-      if ( options.check_scroll || this.mode == 'thumbnail' ) {
-        this.resizePage(page);
-      }
-      img.removeEventListener('load', _imgHandler, true);
-      if ( options.callback ) {
-        options.callback(img);
-      }
-    }.bind(this), true)
-
-    img.src = image_url;
-
-    if ( ! page.dataset.preloaded && options.preload ) {
-      this.preloadImages(page);
-    }
-  }
-
   redrawPage(page) {
     if ( typeof(page) == "number" || typeof(page) == "string" ) {
       page = this.container.querySelector(`[data-seq="${page}"]`);
@@ -391,6 +286,98 @@ export var Base = class {
           .then(function(text) {
             var page_text = page.querySelector('.page-text');
             page_text.innerHTML = text;
+
+            // OK --- does this have a highlight?
+            function parseCoords(value) {
+              // var values = value.split(';')[0].split(' ');
+              // values.shift(); // box
+              var values = value.split(' ')
+              return values.map((v) => parseInt(v, 10));
+            }
+
+            var page_div = page_text.children[0];
+            var words = page_div.dataset.words;
+
+            if ( words !== undefined ) { words = JSON.parse(words); }
+            if ( ! words || ! words.length ) { return }
+
+            var page_coords = parseCoords(page_div.dataset.coords);
+
+            var scaling = {};
+            scaling.width = parseInt(img.getAttribute('width'), 10); // img.naturalWidth; // offsetWidth;
+            scaling.height = parseInt(img.getAttribute('height'), 10); // img.naturalHeight; // offsetHeight;
+            scaling.ratio = scaling.width / page_coords[2];
+            scaling.ratioY = scaling.height / page_coords[3];
+            scaling.padding = parseInt(window.getComputedStyle(page).marginTop) / 2;
+
+            // scaling.ratio = Math.min(scaling.ratio, scaling.ratioY);
+
+            scaling.ratioA = img.offsetHeight / parseInt(img.getAttribute('height'), 10);
+            scaling.ratioB = img.offsetWidth / parseInt(img.getAttribute('width'), 10);
+            scaling.ratioZ = ( scaling.ratioA < scaling.ratioB ) ? scaling.ratioA : scaling.ratioB;
+
+            scaling.ratio *= scaling.ratioZ;
+
+            function textNodesUnder(el){
+              var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false);
+              while(n=walk.nextNode()) a.push(n);
+              return a;
+            }
+
+            var textNodes = textNodesUnder(page_div);
+            textNodes.forEach(function(text) {
+              var innerHTML = text.nodeValue.trim();
+              if ( ! innerHTML ) { return; }
+
+              var matched = false;
+              words.forEach(function(word) {
+                var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
+                if ( innerHTML.match(pattern) ) {
+                  matched = true;
+                }
+              })
+              if ( ! matched ) { return ; }
+              var span = text.parentElement;
+              // var coords = parseCoords(span.dataset.coords).map((v) => v * scaling.ratio);
+              var coords = parseCoords(span.dataset.coords);
+              coords[0] *= scaling.ratio;
+              coords[2] *= scaling.ratio;
+              coords[1] *= scaling.ratio;
+              coords[3] *= scaling.ratio;
+              var highlight;
+
+              // var highlight = document.createElement('span');
+              // highlight.style.position = 'absolute';
+              // highlight.style.width = `${coords[2] - coords[0]}px`;
+              // highlight.style.height = `${coords[3] - coords[1]}px`;
+              // highlight.dataset.top = coords[1];
+              // highlight.dataset.padding = scaling.padding;
+              // highlight.style.top = `${coords[1] - scaling.padding}px`;
+              // highlight.style.left = `${coords[0]}px`;
+              // highlight.style.backgroundColor = 'yellow';
+              // highlight.style.opacity = '0.4';
+              // page.appendChild(highlight);
+
+              var highlight_w0 = ( coords[2] - coords[0] );
+              var highlight_h0 = ( coords[3] - coords[1] );
+              var highlight_w = highlight_w0 * 1.25;
+              var highlight_h = highlight_h0 * 1.25;
+
+              var highlight = document.createElement('span');
+              highlight.classList.add('highlight');
+              highlight.style.position = 'absolute';
+              highlight.style.width = `${highlight_w}px`;
+              highlight.style.height = `${highlight_h}px`;
+              highlight.dataset.top = coords[1];
+              highlight.dataset.padding = scaling.padding;
+              highlight.style.top = `${coords[1] - ( ( highlight_h - highlight_h0 ) / 2 )}px`;
+              highlight.style.left = `${coords[0] - ( ( highlight_w - highlight_w0 ) / 2 )}px`;
+              highlight.style.backgroundColor = 'greenyellow';
+              highlight.style.opacity = '0.4';
+              page.appendChild(highlight);
+
+              console.log("AHOY MATCH", innerHTML, coords, scaling.ratio, scaling.ratioY, scaling);
+            })
           });
       }
 
@@ -457,6 +444,11 @@ export var Base = class {
     page_text.innerHTML = '';
     page.dataset.preloaded = false;
     page.dataset.loaded = false; page.classList.remove('page--loaded');
+
+    var highlights = page.querySelectorAll('.highlight');
+    for(var i = 0; i < highlights.length; i++) {
+      page.removeChild(highlights[i]);
+    }
   }
 
   preloadImages(page) {
