@@ -1,6 +1,7 @@
 // downloader
 
 var HT = HT || {};
+var photocopier_message = 'The copyright law of the United States (Title 17, U.S. Code) governs the making of reproductions of copyrighted material. Under certain conditions specified in the law, libraries and archives are authorized to furnish a reproduction. One of these specific conditions is that the reproduction is not to be “used for any purpose other than private study, scholarship, or research.” If a user makes a request for, or later uses, a reproduction for purposes in excess of “fair use,” that user may be liable for copyright infringement.';
 
 HT.Downloader = {
 
@@ -24,10 +25,20 @@ HT.Downloader = {
         var self = this;
         // $("a[data-toggle*=download]").addClass("interactive").click(function(e) {
         $("a[data-toggle*=download]").addClass("interactive");
-        $("body").on("click", "a[data-toggle*=download]", function(e) {
+        $("body").on("click", "a[data-toggle*=download]", function(e) {            
             e.preventDefault();
             bootbox.hideAll();
             if ( $(this).attr("rel") == 'allow' ) {
+
+                if ( this.dataset.photocopier == 'true' && ! this.dataset.confirmed ) {
+                    if ( ! window.confirm(photocopier_message) ) {
+                        e.stopPropagation();
+                        return false;
+                    }
+                    this.dataset.confirmed = 'true';
+                }
+
+
                 if ( self.options.params.download_progress_base == null ) {
                     return true;
                 }
@@ -417,7 +428,6 @@ head.ready(function() {
     HT.downloader.start();
 
     var num_page_downloads = 0;
-    var photocopier_message = 'The copyright law of the United States (Title 17, U.S. Code) governs the making of reproductions of copyrighted material. Under certain conditions specified in the law, libraries and archives are authorized to furnish a reproduction. One of these specific conditions is that the reproduction is not to be “used for any purpose other than private study, scholarship, or research.” If a user makes a request for, or later uses, a reproduction for purposes in excess of “fair use,” that user may be liable for copyright infringement.';
     $("a[data-photocopier]").on('click', function(e) {
         if ( this.dataset.photocopier == 'true' ) {
             if ( num_page_downloads == 0 || ( false && num_page_downloads % 5 == 0 ) ) {
