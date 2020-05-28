@@ -1088,9 +1088,11 @@
 
   <xsl:template name="download-links--pdf">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
-    <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess != 'allow'">
+    <xsl:variable name="access-type" select="//AccessType" />
+
+    <xsl:if test="$access-type/Name = 'emergency_access_affiliate' and $gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess != 'allow'">
       <li>
-        <a href="https://www.hathitrust.org/ETAS-User-Information#download">Why isn't download available?</a>
+        <a data-toggle="tracking" data-tracking-category="outLinks" data-tracking-action="PT ETAS-User-Information#download" data-tracking-label="ETAS-User-Information#download" href="https://www.hathitrust.org/ETAS-User-Information#download">Why isn't download available?</a>
       </li>
     </xsl:if>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
