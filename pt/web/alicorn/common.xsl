@@ -1088,6 +1088,11 @@
 
   <xsl:template name="download-links--pdf">
     <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess != 'allow'">
+      <li>
+        <a href="https://www.hathitrust.org/ETAS-User-Information#download">Why isn't download available?</a>
+      </li>
+    </xsl:if>
     <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false' and $gSinglePagePdfAccess = 'allow'">
       <li data-view-target="1up image plaintext">
         <xsl:element name="a">
