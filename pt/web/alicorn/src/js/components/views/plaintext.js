@@ -45,6 +45,8 @@ export var PlainText = class extends Single {
   }
 
   loadImage(page, options={}) {
+    var self = this;
+
     if ( ! this.is_active ) { return ; }
     options = Object.assign({ check_scroll: false, preload: true }, options);
     var seq = page.dataset.seq;
@@ -58,6 +60,11 @@ export var PlainText = class extends Single {
 
     if ( page.dataset.loading == "true" ) {
       return;
+    }
+
+    if ( ! this._highlightIndexMap ) {
+      this._highlightIndexMap = {};
+      this._highlightIndex = 0;
     }
 
     var html_request;
@@ -102,11 +109,24 @@ export var PlainText = class extends Single {
 
           var textNodes = textNodesUnder(page_div);
           var spanClass = 'solr_highlight_1';
+          var highlight_idx = 0;
+
           textNodes.forEach(function(text) {
             var innerHTML = text.nodeValue.trim();
             if ( ! innerHTML ) { return; }
             words.forEach(function(word) {
               var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
+
+              var matchedWord = word.toLowerCase();
+              var highlight_idx = self._highlightIndexMap[matchedWord];
+              if ( ! highlight_idx ) {
+                self._highlightIndex += 1;
+                if ( self._highlightIndex > 6 ) { self._highlightIndex = 1; }
+                self._highlightIndexMap[matchedWord] = self._highlightIndex;
+                highlight_idx = self._highlightIndexMap[matchedWord];
+              }
+              spanClass = `solr_highlight_${highlight_idx}`;
+
               var replaceWith = '<span' + ( spanClass ? ' class="' + spanClass + '"' : '' ) + '>$1</span>';
               innerHTML = innerHTML.replace(pattern, replaceWith);
             })

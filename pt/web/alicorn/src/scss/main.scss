@@ -1161,6 +1161,22 @@ section.view--plaintext {
           margin-bottom: 1rem;
           line-height: 1.5;
         }
+
+        .ocr_page[data-force-breaks="true"] {
+          .ocr_line {
+            display: block;
+          }
+        }
+
+        [data-line-break] + [data-line-break] {
+          display: block;
+        }
+
+        [data-end-paragraph]::after {
+          content: "";
+          display: table;
+          margin-bottom: 1rem;
+        }
       }
     }
   }
@@ -1674,6 +1690,37 @@ li.toggle--500 {
       display: none !important;
     }
   }  
+}
+
+// SEARCH HIGHLIGHTS
+.highlight {
+  position: absolute;
+  background: greenyellow;
+  opacity: 0.4;
+}
+
+.highlight_1 {
+  background: #ffff00;
+}
+
+.highlight_2 {
+  background: #00ff00;
+}
+
+.highlight_3 {
+  background: #ff9900;
+}
+
+.highlight_4 {
+  background: #00ffcc;
+}
+
+.highlight_5 {
+  background: #00cccc;
+}
+
+.highlight_6 {
+  background: #0099cc;
 }
 
 #gesture-logger {

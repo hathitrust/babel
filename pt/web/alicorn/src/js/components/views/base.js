@@ -147,9 +147,19 @@ export var Base = class {
     if ( typeof(page) == "number" || typeof(page) == "string" ) {
       page = this.container.querySelector(`[data-seq="${page}"]`);
     }
+
+    // var redraw_highlights = this._removeHighlights(page);
+
     var image_url = this.imageUrl(page);
     var img = page.querySelector('img');
-    if ( ! img || img.getAttribute('src') == image_url ) { return ; }
+    if ( ! img || img.getAttribute('src') == image_url ) { 
+      this._removeHighlights(page);
+      setTimeout(() => {
+        console.log("AHOY REDRAW HIGHLIGHTS NOP");
+        this._drawHighlights(page);
+      })
+      return ; 
+    }
     var new_img = new Image();
     new_img.addEventListener('load', function _redrawHandler() {
       if ( img && img.parentElement && img.parentElement == page ) {
@@ -189,6 +199,9 @@ export var Base = class {
           // new_img.src = objectUrl;
           new_img.src = image_url;
         }
+        // setTimeout(() => {
+        //   this._drawHighlights(page);
+        // }, 0);
       })
   }
 
@@ -287,98 +300,9 @@ export var Base = class {
             var page_text = page.querySelector('.page-text');
             page_text.innerHTML = text;
 
-            // OK --- does this have a highlight?
-            function parseCoords(value) {
-              // var values = value.split(';')[0].split(' ');
-              // values.shift(); // box
-              var values = value.split(' ')
-              return values.map((v) => parseInt(v, 10));
-            }
+            this._drawHighlights(page);
 
-            var page_div = page_text.children[0];
-            var words = page_div.dataset.words;
-
-            if ( words !== undefined ) { words = JSON.parse(words); }
-            if ( ! words || ! words.length ) { return }
-
-            var page_coords = parseCoords(page_div.dataset.coords);
-
-            var scaling = {};
-            scaling.width = parseInt(img.getAttribute('width'), 10); // img.naturalWidth; // offsetWidth;
-            scaling.height = parseInt(img.getAttribute('height'), 10); // img.naturalHeight; // offsetHeight;
-            scaling.ratio = scaling.width / page_coords[2];
-            scaling.ratioY = scaling.height / page_coords[3];
-            scaling.padding = parseInt(window.getComputedStyle(page).marginTop) / 2;
-
-            // scaling.ratio = Math.min(scaling.ratio, scaling.ratioY);
-
-            scaling.ratioA = img.offsetHeight / parseInt(img.getAttribute('height'), 10);
-            scaling.ratioB = img.offsetWidth / parseInt(img.getAttribute('width'), 10);
-            scaling.ratioZ = ( scaling.ratioA < scaling.ratioB ) ? scaling.ratioA : scaling.ratioB;
-
-            scaling.ratio *= scaling.ratioZ;
-
-            function textNodesUnder(el){
-              var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false);
-              while(n=walk.nextNode()) a.push(n);
-              return a;
-            }
-
-            var textNodes = textNodesUnder(page_div);
-            textNodes.forEach(function(text) {
-              var innerHTML = text.nodeValue.trim();
-              if ( ! innerHTML ) { return; }
-
-              var matched = false;
-              words.forEach(function(word) {
-                var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
-                if ( innerHTML.match(pattern) ) {
-                  matched = true;
-                }
-              })
-              if ( ! matched ) { return ; }
-              var span = text.parentElement;
-              // var coords = parseCoords(span.dataset.coords).map((v) => v * scaling.ratio);
-              var coords = parseCoords(span.dataset.coords);
-              coords[0] *= scaling.ratio;
-              coords[2] *= scaling.ratio;
-              coords[1] *= scaling.ratio;
-              coords[3] *= scaling.ratio;
-              var highlight;
-
-              // var highlight = document.createElement('span');
-              // highlight.style.position = 'absolute';
-              // highlight.style.width = `${coords[2] - coords[0]}px`;
-              // highlight.style.height = `${coords[3] - coords[1]}px`;
-              // highlight.dataset.top = coords[1];
-              // highlight.dataset.padding = scaling.padding;
-              // highlight.style.top = `${coords[1] - scaling.padding}px`;
-              // highlight.style.left = `${coords[0]}px`;
-              // highlight.style.backgroundColor = 'yellow';
-              // highlight.style.opacity = '0.4';
-              // page.appendChild(highlight);
-
-              var highlight_w0 = ( coords[2] - coords[0] );
-              var highlight_h0 = ( coords[3] - coords[1] );
-              var highlight_w = highlight_w0 * 1.25;
-              var highlight_h = highlight_h0 * 1.25;
-
-              var highlight = document.createElement('span');
-              highlight.classList.add('highlight');
-              highlight.style.position = 'absolute';
-              highlight.style.width = `${highlight_w}px`;
-              highlight.style.height = `${highlight_h}px`;
-              highlight.dataset.top = coords[1];
-              highlight.dataset.padding = scaling.padding;
-              highlight.style.top = `${coords[1] - ( ( highlight_h - highlight_h0 ) / 2 )}px`;
-              highlight.style.left = `${coords[0] - ( ( highlight_w - highlight_w0 ) / 2 )}px`;
-              highlight.style.backgroundColor = 'greenyellow';
-              highlight.style.opacity = '0.4';
-              page.appendChild(highlight);
-
-              console.log("AHOY MATCH", innerHTML, coords, scaling.ratio, scaling.ratioY, scaling);
-            })
-          });
+          }.bind(this));
       }
 
       if ( options.check_scroll || this.mode == 'thumbnail' ) {
@@ -392,6 +316,8 @@ export var Base = class {
         options.callback(img);
       }
     }.bind(this), true)
+
+    page.dataset.rotated = ( image_url.match(/rotation=[1-9]\d+/) ) ? true : false;
 
     fetch(image_url, { credentials: 'include' })
       .then(response => {
@@ -429,6 +355,7 @@ export var Base = class {
       var img = images[i];
       var page = img.parentElement;
       this.redrawPage(page);
+      console.log("AHOY REDRAW PAGE", page);
     }
     this._redrawPageImagesTimer = null;
   }
@@ -445,10 +372,7 @@ export var Base = class {
     page.dataset.preloaded = false;
     page.dataset.loaded = false; page.classList.remove('page--loaded');
 
-    var highlights = page.querySelectorAll('.highlight');
-    for(var i = 0; i < highlights.length; i++) {
-      page.removeChild(highlights[i]);
-    }
+    this._removeHighlights(page);
   }
 
   preloadImages(page) {
@@ -615,10 +539,12 @@ export var Base = class {
       dirty = dirty || ( page.style.height != `${h}px` );
 
       page.style.width = `${w}px`;
+      page.style.height = `${h}px`;
       page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
       if ( scale <= 1 ) {
         page.classList.add('page--best-fit');
       }
+
       this._resizePageByPages(page);
     })
 
@@ -631,6 +557,142 @@ export var Base = class {
 
     this.display(currentSeq);
     this._scrollPause = false;
+  }
+
+  _drawHighlights(page) {
+    var self = this;
+
+    if ( page.dataset.rotated == 'true' ) { console.log("AHOY HIGHLIGHTS ROTATED"); return ; }
+
+    // OK --- does this have a highlight?
+    var img = page.querySelector('img');
+    var page_text = page.querySelector('.page-text');
+
+    function parseCoords(value) {
+      // var values = value.split(';')[0].split(' ');
+      // values.shift(); // box
+      var values = value.split(' ')
+      return values.map((v) => parseInt(v, 10));
+    }
+
+    var page_div = page_text.children[0];
+    if ( ! page_div ) { return ; }
+
+    var words = page_div.dataset.words;
+
+    if ( words !== undefined ) { words = JSON.parse(words); }
+    if ( ! words || ! words.length ) { return }
+
+    var page_coords = parseCoords(page_div.dataset.coords);
+
+    if ( ! this._highlightIndexMap ) {
+      this._highlightIndexMap = {};
+      this._highlightIndex = 0;
+    }
+
+    var scaling = {};
+    if ( img.hasAttribute('width') ) {
+      scaling.width = parseInt(img.getAttribute('width'), 10); // img.naturalWidth; // offsetWidth;
+      scaling.height = parseInt(img.getAttribute('height'), 10); // img.naturalHeight; // offsetHeight;
+    } else {
+      scaling.width = img.offsetWidth;
+      scaling.height = img.offsetHeight;
+    }
+    scaling.ratio = scaling.width / page_coords[2];
+    scaling.ratioY = scaling.height / page_coords[3];
+    scaling.padding = parseInt(window.getComputedStyle(page).marginTop) / 2;
+
+    // scaling.ratio = Math.min(scaling.ratio, scaling.ratioY);
+
+    if ( img.hasAttribute('height') ) {
+      scaling.ratioA = img.offsetHeight / parseInt(img.getAttribute('height'), 10);
+      scaling.ratioB = img.offsetWidth / parseInt(img.getAttribute('width'), 10);
+      scaling.ratioZ = ( scaling.ratioA < scaling.ratioB ) ? scaling.ratioA : scaling.ratioB;
+    } else {
+      scaling.ratioZ = 1.0;
+    }
+
+    scaling.ratio *= scaling.ratioZ;
+
+    function textNodesUnder(el){
+      var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false);
+      while(n=walk.nextNode()) a.push(n);
+      return a;
+    }
+
+    var textNodes = textNodesUnder(page_div);
+    textNodes.forEach(function(text) {
+      var innerHTML = text.nodeValue.trim();
+      if ( ! innerHTML ) { return; }
+
+      var matched = false; var matchedWord = null;
+      words.forEach(function(word) {
+        var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
+        if ( innerHTML.match(pattern) ) {
+          matched = true;
+          matchedWord = word.toLowerCase();
+        }
+      })
+      if ( ! matched ) { return ; }
+      var span = text.parentElement;
+      // var coords = parseCoords(span.dataset.coords).map((v) => v * scaling.ratio);
+      var coords = parseCoords(span.dataset.coords);
+      coords[0] *= scaling.ratio;
+      coords[2] *= scaling.ratio;
+      coords[1] *= scaling.ratio;
+      coords[3] *= scaling.ratio;
+      var highlight;
+
+      var highlight_idx = self._highlightIndexMap[matchedWord];
+      if ( ! highlight_idx ) {
+        self._highlightIndex += 1;
+        if ( self._highlightIndex > 6 ) { self._highlightIndex = 1; }
+        self._highlightIndexMap[matchedWord] = self._highlightIndex;
+        highlight_idx = self._highlightIndexMap[matchedWord];
+      }
+
+      // var highlight = document.createElement('span');
+      // highlight.style.position = 'absolute';
+      // highlight.style.width = `${coords[2] - coords[0]}px`;
+      // highlight.style.height = `${coords[3] - coords[1]}px`;
+      // highlight.dataset.top = coords[1];
+      // highlight.dataset.padding = scaling.padding;
+      // highlight.style.top = `${coords[1] - scaling.padding}px`;
+      // highlight.style.left = `${coords[0]}px`;
+      // highlight.style.backgroundColor = 'yellow';
+      // highlight.style.opacity = '0.4';
+      // page.appendChild(highlight);
+
+      var highlight_w0 = ( coords[2] - coords[0] );
+      var highlight_h0 = ( coords[3] - coords[1] );
+      var highlight_w = highlight_w0 * 1.25;
+      var highlight_h = highlight_h0 * 1.25;
+
+      var highlight = document.createElement('span');
+      highlight.classList.add('highlight');
+      highlight.classList.add(`highlight_${highlight_idx}`);
+      // highlight.style.position = 'absolute';
+      // highlight.style.backgroundColor = 'greenyellow';
+      // highlight.style.opacity = '0.4';
+      highlight.dataset.top = coords[1];
+      highlight.dataset.padding = scaling.padding;
+      highlight.style.width = `${highlight_w / scaling.width * 100.0}%`;
+      highlight.style.height = `${highlight_h / scaling.height * 100.0}%`;
+      highlight.style.top = `${( coords[1] - ( ( highlight_h - highlight_h0 ) / 2 ) ) / scaling.height * 100.0}%`;
+      highlight.style.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;
+      page.appendChild(highlight);
+
+      console.log("AHOY MATCH", innerHTML, coords, scaling.ratio, scaling.ratioY, scaling);
+    })
+  }
+
+  _removeHighlights(page) {
+    var highlights = page.querySelectorAll('.highlight');
+    var n = highlights.length;
+    for(var i = 0; i < n; i++) {
+      page.removeChild(highlights[i]);
+    }
+    return n;
   }
 
   _resizePageByPages() {
