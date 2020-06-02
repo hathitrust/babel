@@ -538,8 +538,26 @@ export var Flip = class extends Base {
   }
 
   checkForFoldouts(img) {
-    if ( img.classList.contains('foldout') ) {
-      var page = img.parentElement;
+
+    var page = img.parentElement;
+    var slice = page.parentElement;
+    var seq = page.dataset.seq;
+
+    var manifest = this.service.manifest;
+
+    var is_unusual = ( 
+      ( manifest.checkFeatures(seq, "FOLDOUT") && ! manifest.checkFeatures(seq, "BLANK") )
+        || 
+      ( ( page.offsetHeight / slice.offsetHeight ) < 0.75 )
+    );
+    if ( is_unusual ) {
+      console.log("AHOY AHOY FOLDOUT?", seq, img.width, img.height, is_unusual);
+      img.classList.add('foldout');
+      img.dataset.width = img.width;
+      img.dataset.height = img.height;
+      // img.dataset.adjustedHeight = adjusted_img_height;
+
+      // var page = img.parentElement;
       var button = document.createElement('button');
       button.classList.add('btn', 'btn-mini', 'action-view-foldout');
       button.innerText = 'View Foldout';

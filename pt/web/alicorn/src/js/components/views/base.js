@@ -271,13 +271,6 @@ export var Base = class {
       var is_restricted = false;
 
       if ( img.src && img.src.indexOf('data') > -1 ) { is_restricted = true; }
-      if ( ! is_restricted && ( img.width > img.height || adjusted_img_height / page_height > 1.2 ) ) {
-        console.log("AHOY AHOY WHY AM I HERE?", seq, img.dataset.restricted, img.width, img.height, adjusted_img_height, page_height, is_restricted);
-        img.classList.add('foldout');
-        img.dataset.width = img.width;
-        img.dataset.height = img.height;
-        img.dataset.adjustedHeight = adjusted_img_height;
-      }
 
       img.width = `${page_width}`;
       img.height = `${adjusted_img_height}`;
