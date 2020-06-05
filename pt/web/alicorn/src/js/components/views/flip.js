@@ -92,7 +92,7 @@ export var Flip = class extends Base {
     // this.container.style.display = 'block';
 
     this.is_active = true;
-    this.loadSlice(this.container.querySelector('.slice'));
+    // this.loadSlice(this.container.querySelector('.slice'));
     if ( cb ) {
       cb();
     }
@@ -247,11 +247,17 @@ export var Flip = class extends Base {
   }
 
   imageUrl(params) {
+    var oprams = params;
     if ( params instanceof HTMLElement ) {
       var element = params; params = {};
       params.seq = element.dataset.seq;
       params.height = element.offsetHeight;
     }
+
+    if ( ! params.width && ! params.height ) {
+      console.log("AHOY IMAGEURL PROBLEM", params, oprams);
+    }
+
     return this.service.image(params);
   }
 
