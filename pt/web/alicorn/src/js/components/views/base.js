@@ -153,11 +153,11 @@ export var Base = class {
     var image_url = this.imageUrl(page);
     var img = page.querySelector('img');
     if ( ! img || img.getAttribute('src') == image_url ) { 
-      this._removeHighlights(page);
-      setTimeout(() => {
-        console.log("AHOY REDRAW HIGHLIGHTS NOP");
-        this._drawHighlights(page);
-      })
+      // this._removeHighlights(page);
+      // setTimeout(() => {
+      //   console.log("AHOY REDRAW HIGHLIGHTS NOP");
+      //   this._drawHighlights(page);
+      // })
       return ; 
     }
     var new_img = new Image();
@@ -348,7 +348,6 @@ export var Base = class {
       var img = images[i];
       var page = img.parentElement;
       this.redrawPage(page);
-      console.log("AHOY REDRAW PAGE", page);
     }
     this._redrawPageImagesTimer = null;
   }
