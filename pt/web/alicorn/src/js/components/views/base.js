@@ -119,18 +119,21 @@ export var Base = class {
       }
     }
 
-    if ( canvas.height < parseInt(page.style.height, 10) ) {
-      // console.log("AHOY shrinking", page.dataset.seq, page.style.height, canvas.height);
-    }
+    var seq = parseInt(page.dataset.seq, 10);
+    var minWidth = this.minWidth();
 
-    var pageHeight = canvas.height;
+    var meta = this.service.manifest.meta(seq);
+    var ratio = meta.height / meta.width;
+    var scale = this.scale;
 
-    // if ( page.dataset.scale ) {
-    //   var scale = parseFloat(page.dataset.scale);
-    //   pageHeight *= scale;
-    // }
+    var pageHeight = Math.ceil(minWidth * ratio * scale);
+    var pageWidth = Math.ceil(minWidth * scale);
+
+    // var option = 'A';
+    // console.log("AHOY base.resizePage - rotated", option, meta.rotation, pageHeight, pageWidth, "::", canvas.height, canvas.width, canvas.naturalHeight, canvas.naturalWidth);
 
     page.style.height = `${pageHeight}px`;
+    page.style.width = `${pageWidth}px`;
     // page.style.setProperty('--width', `${canvas.naturalWidth}px`);
 
     var updated_rect = page.getBoundingClientRect();
@@ -151,6 +154,8 @@ export var Base = class {
     // var redraw_highlights = this._removeHighlights(page);
 
     var image_url = this.imageUrl(page);
+    page.dataset.rotated = ( image_url.match(/rotation=[1-9]\d+/) ) ? true : false;
+
     var img = page.querySelector('img');
     if ( ! img || img.getAttribute('src') == image_url ) { 
       // this._removeHighlights(page);
@@ -554,8 +559,6 @@ export var Base = class {
   _drawHighlights(page) {
     var self = this;
 
-    if ( page.dataset.rotated == 'true' ) { console.log("AHOY HIGHLIGHTS ROTATED"); return ; }
-
     // OK --- does this have a highlight?
     var img = page.querySelector('img');
     var page_text = page.querySelector('.page-text');
@@ -590,11 +593,16 @@ export var Base = class {
       scaling.width = img.offsetWidth;
       scaling.height = img.offsetHeight;
     }
+
+    // if we're rotated then shift these
+    var meta = this.service.manifest.meta(page.dataset.seq);
+    if ( meta.rotation == 90 || meta.rotation == 270 ) {
+      [ scaling.width, scaling.height ] = [ scaling.height, scaling.width ];
+    }
+
     scaling.ratio = scaling.width / page_coords[2];
     scaling.ratioY = scaling.height / page_coords[3];
     scaling.padding = parseInt(window.getComputedStyle(page).marginTop) / 2;
-
-    // scaling.ratio = Math.min(scaling.ratio, scaling.ratioY);
 
     if ( img.hasAttribute('height') ) {
       scaling.ratioA = img.offsetHeight / parseInt(img.getAttribute('height'), 10);
@@ -619,14 +627,14 @@ export var Base = class {
 
       var matched = false; var matchedWord = null;
       words.forEach(function(word) {
-        var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
+        var pattern = new RegExp(`\\b(${word})\\b`, 'gi');
         if ( innerHTML.match(pattern) ) {
           matched = true;
           matchedWord = word.toLowerCase();
         }
       })
       if ( ! matched ) { return ; }
-      var span = text.parentElement;
+      var span = text.parentNode;
       // var coords = parseCoords(span.dataset.coords).map((v) => v * scaling.ratio);
       var coords = parseCoords(span.dataset.coords);
       coords[0] *= scaling.ratio;
@@ -668,6 +676,8 @@ export var Base = class {
       // highlight.style.opacity = '0.4';
       highlight.dataset.top = coords[1];
       highlight.dataset.padding = scaling.padding;
+      console.log("AHOY highlight.dataset");
+
       highlight.style.width = `${highlight_w / scaling.width * 100.0}%`;
       highlight.style.height = `${highlight_h / scaling.height * 100.0}%`;
       highlight.style.top = `${( coords[1] - ( ( highlight_h - highlight_h0 ) / 2 ) ) / scaling.height * 100.0}%`;

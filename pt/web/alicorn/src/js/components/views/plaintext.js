@@ -115,7 +115,7 @@ export var PlainText = class extends Single {
             var innerHTML = text.nodeValue.trim();
             if ( ! innerHTML ) { return; }
             words.forEach(function(word) {
-              var pattern = new RegExp(`\\b(${word})\\b`, 'gis');
+              var pattern = new RegExp(`\\b(${word})\\b`, 'gi');
 
               var matchedWord = word.toLowerCase();
               var highlight_idx = self._highlightIndexMap[matchedWord];
@@ -131,7 +131,7 @@ export var PlainText = class extends Single {
               innerHTML = innerHTML.replace(pattern, replaceWith);
             })
             if ( innerHTML == text.nodeValue.trim() ) { return; }
-            text.parentElement.innerHTML = innerHTML;
+            text.parentNode.innerHTML = innerHTML;
           })
         }
       });

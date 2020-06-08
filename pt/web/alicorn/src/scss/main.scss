@@ -674,6 +674,12 @@ section section {
       }
     }
 
+    &[data-rotated="true"] {
+      .highlight {
+        display: none;
+      }
+    }
+
     .info {
       display: block;
       padding: 1rem;
