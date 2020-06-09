@@ -120,7 +120,7 @@ export var Base = class {
     }
 
     var seq = parseInt(page.dataset.seq, 10);
-    var minWidth = this.minWidth();
+    var minWidth = this.minPageWidth();
 
     var meta = this.service.manifest.meta(seq);
     var ratio = meta.height / meta.width;
@@ -412,6 +412,10 @@ export var Base = class {
     if ( buster ) { params.expiration = buster; }
 
     return this.service.image(params);
+  }
+
+  minPageWidth() {
+    return this.minWidth();
   }
 
   minWidth() {

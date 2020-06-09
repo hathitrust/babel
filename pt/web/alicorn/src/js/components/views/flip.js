@@ -98,6 +98,10 @@ export var Flip = class extends Base {
     }
   }
 
+  minPageWidth() {
+    return this._layout.minWidth();
+  }
+
   _updateLayout() {
     this._layout.minWidth = ( this.minWidth() / 2 ) * this.scale;
     this._layout.maxHeight = this.container.parentNode.offsetHeight * 0.95 * this.scale;
