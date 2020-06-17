@@ -1,6 +1,7 @@
 package Ping::Utils;
 
 use Auth::Auth;
+use Auth::ACL;
 use Institutions;
 use Utils;
 
@@ -36,6 +37,14 @@ sub identify_user {
     $$retval{affiliation} = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
     $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
     $$retval{x} = $auth->affiliation_has_emergency_access($C);
+
+    $$retval{r} = {};
+    my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
+    if ( $check ) {
+        $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) || 0;
+    }
+
+    # $$retval{activated} = $auth->user_is_print_disabled_proxy($C) ? 'enhancedTextProxy' : undef;
 
     $$retval{providerName} = $auth->get_institution_name($C, undef, 1);
 

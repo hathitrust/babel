@@ -1,0 +1,219 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Plack::Runner;
+
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use Time::HiRes qw(time);
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ping/cgi');
+    }
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+use Identifier;
+
+use MdpConfig;
+use Auth::Auth;
+use Auth::ACL;
+use Utils;
+use Database;
+use Session;
+
+use Plack::Request;
+use Plack::Response;
+
+use URI::Escape;
+
+use CGI::PSGI;
+
+{
+    package App;
+
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+
+    sub get_app_name {
+        my $self = shift;
+        return "ping";
+    }
+
+}
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    unless ( $$env{REMOTE_USER} ) {
+        # punt and run; not even worth doing
+    }
+
+    my $role = $request->param('role');
+
+    my $C = new Context;
+    $C->set_object('App', new App);
+
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('ping'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
+                              );
+
+    $C->set_object('MdpConfig', $config);
+
+    my $cgi;
+    my $other = { %$env };
+    $$other{METHOD} = q{GET};
+    $cgi = CGI::PSGI->new($other);
+    $C->set_object('CGI', $cgi);
+
+    # Database connection
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    # get an Auth object to trigger cgi/shcgi redirection
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+
+    # Session
+    # by putting this here, we are saying that EVERYONE will get a session
+    # even just by browsing www and catalog
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    if ( $role ) {
+
+        my $check = ( $role eq 'default') || Auth::ACL::a_Authorized( {role => $role} );
+
+        if ( $request->param('debug') eq 'status' ) {
+            $response = Plack::Response->new(200);
+            $response->content_type('text/plain');
+            my $value = $ses->get_persistent('activated_role');
+            $response->body(qq{$$env{REMOTE_USER} switched role = $value});
+        } else {
+
+            if ( $check ) {
+                $ses->set_persistent('activated_role', $role);
+            }
+
+            $response = Plack::Response->new(302);
+            # my $referer = $ses->get_persistent('activated_redirect');
+            # $ses->set_persistent('activated_redirect', undef);
+            # $response->redirect($referer);
+            $response->redirect($request->param("referer"));
+        }
+
+
+    } else {
+        # put up a list of options. :yay:
+        my $html = Utils::read_file("../web/switch.html");
+
+        my $roles_list = [];
+        my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
+
+        if ( $check ) {
+            # push @$roles_list, qq{<p><a class="btn btn-default" href="/cgi/ping/toggle/default">Member</a></p>};
+            # push @$roles_list, qq{<p><a class="btn btn-primary" href="/cgi/ping/toggle/ssdproxy">Accessible Text Request Service (ATRS) Provider</a></p>};
+
+            # push @$roles_list, qq{<ul>};
+            # push @$roles_list, qq{<li><label><input type="radio" name="role" value="default" /> Member</label></li>};
+            # push @$roles_list, qq{<li><label><input type="radio" name="role" value="ssdproxy" /> Accessible Text Request Service (ATRS) Provider</label></li>};
+            # push @$roles_list, qq{</ul>};
+
+            my $activated_role = $ses->get_persistent('activated_role') || 'default';
+            my $checked = ( $activated_role eq 'default' ) ? 'checked="checked"' : '';
+            push @$roles_list, <<DIV;
+<div class="control">
+    <input type="radio" name="role" value="default" id="role--default" $checked />
+    <label class="radio" for="role--default">Member</label>
+    <div class="control--help" style="marign-left: 0.25rem; font-size: 90%">
+        <p style="margin-bottom: 1rem">
+            Read and download public domain and open access books.
+        </p>
+    </div>
+</div>
+DIV
+
+            $checked = ( $activated_role eq 'ssdproxy' ) ? 'checked="checked"' : '';
+            push @$roles_list, <<DIV;
+<div class="control">
+    <input type="radio" name="role" value="ssdproxy" id="role--ssdproxy" $checked />
+    <label class="radio" for="role--ssdproxy">Accessible Text Request Service (ATRS) Provider</label>
+    <div class="control--help" style="margin-left: 0.25rem; font-size: 90%">
+        <p style="margin-bottom: 1rem">
+            Download copyrighted books, in order to provide them to eligible patrons with print disabilities.
+        </p>        
+        <p style="margin-bottom: 1rem">
+            The following terms of use apply when accessing books as an ATRS provider. Per the agreement you signed to become an ATRS provider, you must confirm with eligible patrons that they understand:
+        </p>
+        <ul>
+            <li>The copyrighted nature of the content</li>
+            <li>Why they are being granted special access to the work</li>
+            <li>That the cover sheet indicating the copyright status and terms of use must remain with the work at all times</li>
+            <li>That the accessible copies are for personal use only and may not be reproduced, distributed, or made available to anyone else other than to facilitate the Eligible Patron’s personal use</li>
+            <li>That if the Eligible Patrons have any questions about proper use of the material or suspect unauthorized access to the material, they should contact the DSP immediately</li>
+        </ul>
+    </div>
+</div>
+DIV
+
+        }
+
+        my $roles_list_html = join("\n", @$roles_list);
+        $$html =~ s,\<\!\-\- ROLES_LIST \-\-\>,$roles_list_html,;
+
+        my $referer = $request->referer;
+        $$html =~ s,%REFERER%,$referer,;
+
+        if ( $request->param('debug') ) {
+            $$html =~ s,\<\!\-\- DEBUG_FLAG \-\-\>,<input type="hidden" name="debug" value="ssdproxy" />,;
+        }
+
+        # $ses->set_persistent('activated_redirect', $request->referer);
+
+        $response = Plack::Response->new(200);
+        $response->content_type('text/html');
+        $response->body($$html);
+
+    }
+
+
+    $ses->close();
+
+
+    return $response->finalize;
+};
+
+Plack::Runner->new->run($app);

@@ -87,25 +87,47 @@ my $app = sub {
 
     sub _body {
         # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $emergency_access, $msg, $idp_list, $expired ) = @_;
-        $print_disabled = $print_disabled ? 'true' : 'false';
-        $emergency_access = $emergency_access ? 'true' : 'false';
+        # my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $emergency_access, $msg, $idp_list, $expired ) = @_;
+        my ( $callback, $logged_in, $info, $msg, $idp_list, $expired ) = @_;
+
+        # $print_disabled = $print_disabled ? 'true' : 'false';
+        # $emergency_access = $emergency_access ? 'true' : 'false';
+        # $expired = $expired ? 'true' : 'false';
+        # my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
+        # $displayName = $displayName || '';
+        # $institution_name = $institution_name || '';
+        # $institution_code = $institution_code || '';
+        # $mapped_institution_name = $mapped_institution_name || '';
+        # $mapped_institution_code = $mapped_institution_code || '';
+        # $providerName = $providerName || '';
+        # $affiliation = $affiliation || '';
+        # unless ( $affiliation ) {
+        #     if ( $providerName ) {
+        #         $affiliation = 'Guest';
+        #     }
+        # }
+
+        my $print_disabled = $$info{u} ? 'true' : 'false';
+        my $emergency_access = $$info{x} ? 'true' : 'false';
         $expired = $expired ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
-        $displayName = $displayName || '';
-        $institution_name = $institution_name || '';
-        $institution_code = $institution_code || '';
-        $mapped_institution_name = $mapped_institution_name || '';
-        $mapped_institution_code = $mapped_institution_code || '';
-        $providerName = $providerName || '';
-        $affiliation = $affiliation || '';
+        my $displayName = uri_escape($$info{displayName} || '');
+        my $institution_name = uri_escape($$info{institution_name} || '');
+        my $institution_code = uri_escape($$info{institution_code} || '');
+        my $mapped_institution_name = uri_escape($$info{mapped_institution_name} || '');
+        my $mapped_institution_code = uri_escape($$info{mapped_institution_code} || '');
+        my $providerName = uri_escape($$info{providerName} || '');
+        my $affiliation = $$info{affiliation} || '';
         unless ( $affiliation ) {
             if ( $providerName ) {
                 $affiliation = 'Guest';
             }
         }
 
-        my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
+        my $auth_type = $$info{auth_type};
+        my $r = ref($$info{r}) ? q{JSON.parse('} . encode_json($$info{r}) . q{')} : 'null';
+
+        # my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
 
         $auth_type = qq{"$auth_type"} unless ( $auth_type eq 'null' );
 
@@ -126,7 +148,7 @@ HT.login_status.message = "$msg";
 HT.login_status.u = $print_disabled;
 HT.login_status.x = $emergency_access;
 HT.login_status.idp_list = $idp_list_json;
-HT.is_cosign_active = $is_cosign_active;
+HT.login_status.r = $r;
 JAVASCRIPT
 
         $retval .= <<JAVASCRIPT;
@@ -259,14 +281,15 @@ JAVASCRIPT
             'domain' => Utils::get_cookie_domain()
         }; #  unless ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} eq $$info{providerName} );;
 
-        my $displayName = uri_escape($$info{displayName});
-        my $affiliation = uri_escape($$info{affiliation});
-        my $institution_name = uri_escape($$info{institution_name});
-        my $institution_code = uri_escape($$info{institution_code});
-        my $mapped_institution_name = uri_escape($$info{mapped_institution_name});
-        my $mapped_institution_code = uri_escape($$info{mapped_institution_code});
-        my $providerName = uri_escape($$info{providerName});
-        $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, $$info{x}, "LOGGED IN", undef, 0));
+        # my $displayName = uri_escape($$info{displayName});
+        # my $affiliation = uri_escape($$info{affiliation});
+        # my $institution_name = uri_escape($$info{institution_name});
+        # my $institution_code = uri_escape($$info{institution_code});
+        # my $mapped_institution_name = uri_escape($$info{mapped_institution_name});
+        # my $mapped_institution_code = uri_escape($$info{mapped_institution_code});
+        # my $providerName = uri_escape($$info{providerName});
+        # $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, $$info{x}, "LOGGED IN", undef, 0));
+        $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
         return $response->finalize;
     }
 
@@ -297,8 +320,23 @@ JAVASCRIPT
         expires => 'Thu, 01-Jan-1970 00:00:00 GMT'
     };
 
+    my $info = {
+        displayName => '',
+        institution_name => '',
+        institution_code => '',
+        mapped_institution_code => '',
+        mapped_institution_name => '',
+        affiliation => '',
+        providerName => '',
+        authType => undef,
+        u => 0,
+        x => 0,
+        r => undef,
+    };
+
     # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
-    $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
+    # $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
+    $response->body(_body($callback, 'false', $info, "NOT LOGGED IN", $idp_list, $logged_out));
     return $response->finalize;
 
 };
