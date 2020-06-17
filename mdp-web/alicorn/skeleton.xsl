@@ -49,6 +49,9 @@
       </xsl:attribute>
       <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
       <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
+      <xsl:if test="//UserHasRoleToggles/@activated != ''">
+        <xsl:attribute name="data-activated"><xsl:value-of select="//UserHasRoleToggles/@activated" /></xsl:attribute>
+      </xsl:if>
       <xsl:call-template name="setup-html-data-attributes" />
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
@@ -86,6 +89,17 @@
         </title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- <style>
+          html[data-activated="ssdproxy"] body {
+            filter: invert(1);
+          }
+
+          html[data-activated="ssdproxy"] a.action-switch-role {
+            filter: invert(1);
+            background: orange;
+          }
+        </style> -->
 
       </head>
 
@@ -234,19 +248,35 @@
     </li>
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
-        <li class="item-vanishing">
-          <span>
-            <xsl:value-of select="//Header/UserAffiliation" />
-            <!-- ProviderName causes collisions with search navbar -->
-            <!--
-            <xsl:if test="//Header/ProviderName">
-              <xsl:text> (</xsl:text>
-              <xsl:value-of select="//Header/ProviderName" />
-              <xsl:text>)</xsl:text>
-            </xsl:if>
-            -->
-          </span>
-        </li>
+        <xsl:choose>
+          <xsl:when test="//Header/UserHasRoleToggles='TRUE'">
+            <li class="x--off-for-narrowest">
+              <xsl:variable name="debug">
+                <xsl:if test="//Param[@name='debug']">?debug=<xsl:value-of select="//Param[@name='debug']" /></xsl:if>
+              </xsl:variable>
+              <a href="/cgi/ping/switch{$debug}" class="action-switch-role">
+                <xsl:value-of select="//Header/UserAffiliation" />
+                <xsl:text> </xsl:text>
+                <xsl:text>⚡</xsl:text>
+              </a>
+            </li>
+          </xsl:when>
+          <xsl:otherwise>
+            <li class="item-vanishing">
+              <span>
+                <xsl:value-of select="//Header/UserAffiliation" />
+                <!-- ProviderName causes collisions with search navbar -->
+                <!--
+                <xsl:if test="//Header/ProviderName">
+                  <xsl:text> (</xsl:text>
+                  <xsl:value-of select="//Header/ProviderName" />
+                  <xsl:text>)</xsl:text>
+                </xsl:if>
+                -->
+              </span>
+            </li>
+          </xsl:otherwise>
+        </xsl:choose>
         <li class="x--off-for-narrowest"><a class="logout-link" href="{//Header/LoginLink}">Log out</a></li>
       </xsl:when>
       <xsl:otherwise>
