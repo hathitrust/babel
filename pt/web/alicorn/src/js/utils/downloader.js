@@ -30,13 +30,14 @@ HT.Downloader = {
             bootbox.hideAll();
             if ( $(this).attr("rel") == 'allow' ) {
 
-                if ( this.dataset.photocopier == 'true' && ! this.dataset.confirmed ) {
-                    if ( ! window.confirm(photocopier_message) ) {
-                        e.stopPropagation();
-                        return false;
-                    }
-                    this.dataset.confirmed = 'true';
-                }
+                // --- THE MODE IS TOGGLED
+                // if ( this.dataset.photocopier == 'true' && ! sessionStorage.getItem('photocopier.confirmed') ) {
+                //     if ( ! window.confirm(photocopier_message) ) {
+                //         e.stopPropagation();
+                //         return false;
+                //     }
+                //     sessionStorage.setItem('photocopier.confirmed', true);
+                // }
 
 
                 if ( self.options.params.download_progress_base == null ) {

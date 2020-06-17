@@ -1109,7 +1109,12 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
-          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:text>Download this page (PDF)</xsl:text>
         </xsl:element>
       </li>
@@ -1126,7 +1131,12 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
-          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:text>Download left page (PDF)</xsl:text>
         </xsl:element>
       </li>
@@ -1143,7 +1153,12 @@
           <xsl:attribute name="target">
             <xsl:text>pdf</xsl:text>
           </xsl:attribute>
-          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:text>Download right page (PDF)</xsl:text>
         </xsl:element>
       </li>
@@ -1167,7 +1182,12 @@
           <xsl:attribute name="data-seq"></xsl:attribute>
           <xsl:attribute name="data-total">0</xsl:attribute>
           <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-          <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:attribute name="href">
             <xsl:value-of select="$pViewTypeList/ViewTypeFullPdfLink"/>
           </xsl:attribute>
@@ -1222,8 +1242,12 @@
             <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
             <xsl:attribute name="data-tracking-action"><xsl:text>PT Download </xsl:text><xsl:value-of select="$type" /><xsl:text> - whole book</xsl:text></xsl:attribute>
             <xsl:attribute name="rel"><xsl:value-of select="$gFullPdfAccess" /></xsl:attribute>
-            <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
-
+            <xsl:choose>
+              <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
+              <xsl:otherwise>
+                <xsl:attribute name="data-photocopier"><xsl:value-of select="//InCopyright" /></xsl:attribute>
+              </xsl:otherwise>
+            </xsl:choose>
             <xsl:attribute name="href">
               <xsl:choose>
                 <xsl:when test="$gLoggedIn = 'NO' or $gFullPdfAccessMessage = ''">
