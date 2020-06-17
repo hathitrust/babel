@@ -80,6 +80,7 @@ my $app = sub {
     }
 
     my $role = $request->param('role');
+    my $action = $request->param('action');
 
     my $C = new Context;
     $C->set_object('App', new App);
@@ -124,7 +125,7 @@ my $app = sub {
             $response->body(qq{$$env{REMOTE_USER} switched role = $value});
         } else {
 
-            if ( $check ) {
+            if ( $action ne 'cancel' && $check ) {
                 $ses->set_persistent('activated_role', $role);
             }
 
