@@ -38,9 +38,10 @@ sub identify_user {
     $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
     $$retval{x} = $auth->affiliation_has_emergency_access($C);
 
-    $$retval{r} = {};
+    $$retval{r} = undef;
     my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
     if ( $check ) {
+        $$retval{r} = {};
         $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) || 0;
     }
 
