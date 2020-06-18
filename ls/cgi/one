@@ -107,9 +107,9 @@ if ( $target eq 'ls' ) {
 
 }
 
-my @filters = $cgi->param('filter[]');
+my @filters = $cgi->multi_param('filter[]');
 if ( scalar @filters ) {
-    $dest_cgi->param('filter[]', @filters);
+    $dest_cgi->multi_param('filter[]', @filters);
 }
 
 my $dest_url = $dest_cgi->url(-full=>1, -query=>1);
