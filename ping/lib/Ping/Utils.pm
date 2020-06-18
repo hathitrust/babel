@@ -48,6 +48,11 @@ sub identify_user {
     # $$retval{activated} = $auth->user_is_print_disabled_proxy($C) ? 'enhancedTextProxy' : undef;
 
     $$retval{providerName} = $auth->get_institution_name($C, undef, 1);
+    unless ( $$retval{affiliation} ) {
+        if ( $$retval{providerName} ) {
+            $$retval{affiliation} = 'Guest';
+        }
+    }
 
     return $retval;
 
