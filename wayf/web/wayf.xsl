@@ -174,8 +174,8 @@
             <h4>Log in with:</h4>
 
             <div class="alert alert-warning alert-block">
-              <h5 style="margin-top: 0">Login to HathiTrust via Yahoo is currently unavailable.</h5>
-              <p style="margin-top: 1rem">Yahoo is working on the problem, and there is no estimate for when service will be restored.</p>
+              <h5 style="margin-top: 0">Yahoo login will be removed on June 30, 2020.</h5>
+              <p style="margin-top: 1rem"><a href="https://www.hathitrust.org/yahoo-login">Find out how</a> to access collections previously created with your Yahoo email.</p>
             </div>
 
             <ul class="unstyled">
