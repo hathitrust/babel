@@ -211,18 +211,29 @@ else {
         my $cookie= $gCgi->cookie('HTexpiration') || '{}';
         my $data = decode_json($cookie);
 
+        # clean up useless expiration=0 values
+        my $did_modify = 0;
+        foreach my $key ( keys %$data ) {
+            if ( $$data{$key} eq '0' ) {
+                delete $$data{$key};
+                $did_modify = 1;
+            }
+        }
+
         my ( $granted, $owner, $expires ) = $C->get_object('Access::Rights')->get_exclusivity($C);
 
-        $$data{$gId} = Utils::Time::unix_Time($expires);
+        if ( $expires ne '0000-00-00 00:00:00' || $did_modify ) {
+            $$data{$gId} = Utils::Time::unix_Time($expires) if ( $expires ne '0000-00-00 00:00:00' );
 
-        my $cookie = new CGI::Cookie(
-                        -name    => 'HTexpiration',
-                        -value   => encode_json($data),
-                        -path    => '/',
-                        -domain  => Utils::get_cookie_domain($gCgi),
-                        -httponly => 0,
-                      );
-        Utils::add_header($C, 'Cookie' => $cookie);
+            my $cookie = new CGI::Cookie(
+                            -name    => 'HTexpiration',
+                            -value   => encode_json($data),
+                            -path    => '/',
+                            -domain  => Utils::get_cookie_domain($gCgi),
+                            -httponly => 0,
+                          );
+            Utils::add_header($C, 'Cookie' => $cookie);
+        }
     }
 
     if ( $gCgi->param('a') ) {
