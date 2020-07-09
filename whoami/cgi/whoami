@@ -19,6 +19,8 @@ use MdpConfig;
 use Session;
 use Auth::Auth;
 
+use Text::Wrap;
+
 
 
 my $C = new Context;
@@ -98,8 +100,10 @@ if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
                    <li>SDRLIB = "$ENV{SDRLIB}"</li>};
 
         if ($auth_type eq 'shibboleth') {
-            print qq{<li>eduPersonScopedAffiliation = "$ENV{affiliation}"</li>
-                     <li>eduPersonPrincipalName = "$ENV{eppn}"</li>
+            my $affiliation = $ENV{affiliation} || '';
+            $affiliation =~ s,;,; ,g;
+            print qq{<li>eduPersonScopedAffiliation = $affiliation</li>};
+            print qq{<li>eduPersonPrincipalName = "$ENV{eppn}"</li>
                      <li>displayName = "$ENV{displayName}"</li>
                      <li>entityID = "$ENV{Shib_Identity_Provider}"</li>
                      <li>authenticationMethod = "$ENV{Shib_Authentication_Method}"</li>
@@ -109,8 +113,12 @@ if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
 
         print qq{<p>HTTP_COOKIE:</p>};
         my $cookie_value = $ENV{HTTP_COOKIE};
-        $cookie_value =~ s,;\s+,\n,gsm;
-        print qq{<pre>$cookie_value</pre>};
+        # $cookie_value =~ s,;\s+,\n,gsm;
+        my @values = split(/;\s+/, $cookie_value);
+        foreach my $value ( @values ) {
+          print q{<pre>} . wrap("", "", $value) . q{</pre>};
+        }
+        # print qq{<pre>$cookie_value</pre>};
     }
 
     print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
