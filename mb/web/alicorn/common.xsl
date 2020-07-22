@@ -29,4 +29,6 @@
   <xsl:template name="get-feedback-id">Collection Builder</xsl:template>
   <xsl:template name="get-feedback-m">cb</xsl:template>
 
+  <xsl:template name="build-container-title" />
+
 </xsl:stylesheet>

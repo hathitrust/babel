@@ -57,8 +57,21 @@
     <xsl:call-template name="build-results-container" />
   </xsl:template>
 
+  <xsl:template name="build-container-title">
+    <div>
+      <h1 class="listcs-intro" style="margin-left: 0; font-weight: normal; margin-bottom: 1rem">
+          Collections are a way to group items for public or private use.
+      </h1>
+    </div>
+  </xsl:template>
+
   <xsl:template name="build-results-container">
     <div class="results-container" data-colltype="{//Param[@name='colltype']}">
+
+      <h1 class="listcs-intro" style="margin-left: 0; font-weight: normal; margin-bottom: 1rem">
+          Collections are a way to group items for public or private use.
+      </h1>
+
       <div class="results-summary-container">
         <h2 class="results-summary">
           <span class="pagination-summary">
@@ -115,12 +128,19 @@
       </div>
       <div class="listcs-intro">
         <p>
-          Collections are a way to group items for public or private use.
           The full-text of items within a collection can be searched
           independently of the full library.
           <a href="https://www.hathitrust.org/help_digital_library#CBBuild">Learn more about collections</a>
         </p>
       </div>
+      <!-- <div class="listcs-intro">
+        <p>
+          Collections are a way to group items for public or private use.
+          The full-text of items within a collection can be searched
+          independently of the full library.
+          <a href="https://www.hathitrust.org/help_digital_library#CBBuild">Learn more about collections</a>
+        </p>
+      </div> -->
       <xsl:call-template name="build-results-template" />
       <xsl:call-template name="build-results-data" />
       <div class="results-container--list">
@@ -350,11 +370,12 @@
         </span>
       </button>
 
-      <h2 class="active-filters-heading">Current Filters</h2>
+      <h2 class="filters-heading">Filter collections</h2>
+
+      <h3 class="active-filters-heading">Current Filters</h3>
       <ul class="active-filters-list">
       </ul>
 
-      <h2 class="filters-heading">Filter collections</h2>
       <ul class="filter-group-list">
         <li>
           <xsl:call-template name="build-collection-filter" />
@@ -367,7 +388,8 @@
   </xsl:template>
 
   <xsl:template name="build-collection-filter">
-    <ul class="filter-list" role="radiogroup" aria-label="Collection Filter">
+    <h3 class="filters-heading" id="collection-filter-desc">Collection Filter</h3>
+    <ul class="filter-list" role="radiogroup" aria-labelledby="collection-filter-desc">
       <li class="filter-group filter-group-checkbox">
         <xsl:call-template name="filter-view-option">
           <xsl:with-param name="name">All Collections</xsl:with-param>

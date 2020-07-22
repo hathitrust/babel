@@ -120,7 +120,7 @@
     <div class="sidebar-container" id="sidebar">
       <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
         <span class="flex-space-between flex-center">
-          <h3 class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></h3>
+          <span class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></span>
           <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
           <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
         </span>
@@ -128,10 +128,12 @@
 
       <xsl:call-template name="list-surveys" />
       <xsl:call-template name="build-collection-branding" />
-      <xsl:call-template name="sidebar-filter" />
       <!-- <xsl:call-template name="sidebar-about-this-collection" /> -->
+
+      <h2 class="filters-heading">Collection Tools</h2>
       <xsl:call-template name="share-this-collection" />
       <xsl:call-template name="download-metadata-form" />
+      <xsl:call-template name="sidebar-filter" />
     </div>
   </xsl:template>
 
@@ -145,11 +147,13 @@
           <xsl:call-template name="build-search-query-summary" />
         </ul>
       </xsl:if>
-      <h2 class="filters-heading">Filter items</h2>
+      <!-- <h2 class="filters-heading">Filter items</h2> -->
+      <h2 class="filters-heading" style="font-size: 1.125rem; padding-bottom: 0">Filter your search</h2>
+      <h3 class="filters-heading" id="filter-item-viewability-desc">Item Viewability</h3>
       <ul class="filter-group-list">
         <xsl:if test="//AllItemsCount > 0">
         <li>
-          <ul class="filter-list" role="radiogroup" aria-label="Item Viewability">
+          <ul class="filter-list" role="radiogroup" aria-labelledby="filter-item-viewability-desc">
             <li class="filter-group filter-group-checkbox">
               <xsl:call-template name="filter-view-option">
                 <xsl:with-param name="name">All Items</xsl:with-param>
@@ -340,7 +344,7 @@
   </xsl:template>
 
   <xsl:template name="download-metadata-form">
-    <div class="downloadLinks panel">
+    <div class="downloadLinks panel" style="padding-bottom: 1rem; margin-bottom: 0; border-bottom: 8px double #ddd;">
       <h3>Download Metadata</h3>
       <xsl:choose>
         <xsl:when test="//TotalRecords = 0">
@@ -729,7 +733,7 @@
     <div class="collection-container">
       <div class="collection-header">
         <div style="display: flex; flex-grow: 1; flex-direction: row; position: relative">
-          <h2 style="margin-top: 0; position: relative">
+          <h1 style="margin-top: 0; position: relative">
             <xsl:if test="//EditCollectionWidget/Status = 'private'">
               <span style="margin-right: .25rem">
                 <i class="icomoon-locked icomoon" aria-hidden="true"></i>
@@ -741,7 +745,7 @@
                 <xsl:text> (Collection is private)</xsl:text>
               </span>
             </xsl:if>
-          </h2>
+          </h1>
           <xsl:call-template name="build-collection-edit-action" />
         </div>
         <xsl:if test="normalize-space(//EditCollectionWidget/CollDesc)">
@@ -764,8 +768,8 @@
 
   <xsl:template name="build-collection-branding">
     <xsl:if test="normalize-space(//CollectionBranding)">
-      <p class="collection-branding not-mobile">
-        <img src="{//CollectionBranding}" style="max-width: 100%" aria-hidden="true" alt="" />
+      <p class="collection-branding not-mobile" style="margin-bottom: 1rem">
+        <img src="{//CollectionBranding}" style="max-width: 100%; min-width: 100px; min-height: 100px" aria-hidden="true" alt="" />
       </p>
     </xsl:if>
   </xsl:template>
