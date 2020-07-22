@@ -171,9 +171,16 @@
 
   <xsl:template name="build-results-container">
 
-    <xsl:if test="$gCollSearch">
-      <xsl:call-template name="build-mondo-collection-header" />
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="$gCollSearch">
+        <xsl:call-template name="build-mondo-collection-header" />
+      </xsl:when>
+      <xsl:otherwise>
+        <h1 class="listcs-intro">
+            Search results from the full-text of all works in HathiTrust.
+        </h1>
+      </xsl:otherwise>
+    </xsl:choose>
 
     <xsl:call-template name="check-processing-errors" />
 
@@ -460,15 +467,18 @@
     <div class="sidebar-container" id="sidebar">
       <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
         <span class="flex-space-between flex-center">
-          <h3 class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></h3>
+          <span class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></span>
           <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
           <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
         </span>
       </button>
 
       <xsl:call-template name="build-collection-panels" />
+
+      <h2 class="filters-heading" style="font-size: 1.125rem; padding-bottom: 0">Filter your search</h2>
+
       <xsl:if test="(normalize-space($q) and $q != '*') or count($current) > 0">
-        <h2 class="active-filters-heading">Current Filters</h2>
+        <h3 class="active-filters-heading">Current Filters</h3>
         <ul class="active-filters-list">
           <xsl:choose>
             <xsl:when test="/MBooksTop/AdvancedSearch/isAdvanced = 'true'">
@@ -554,11 +564,12 @@
         </ul>
       </xsl:if>
 
-      <h2 class="filters-heading">Filter your search</h2>
       <ul class="filter-group-list">
         <xsl:if test="//AllItemsCount > 0">
         <li>
-          <ul class="filter-list" role="radiogroup" aria-label="Item Viewability">
+          <h3 class="active-filters-heading" id="filter-item-viewability-desc">Item Viewability</h3>
+
+          <ul class="filter-list" role="radiogroup" aria-labelledby="filter-item-viewability-desc" style="margin-bottom: 0.5rem">
             <li class="filter-group filter-group-checkbox">
               <xsl:call-template name="filter-view-option">
                 <xsl:with-param name="name">All Items</xsl:with-param>
@@ -824,7 +835,7 @@
     <div class="collection-container">
       <div class="collection-header">
         <div style="display: flex; flex-grow: 1; flex-direction: row; position: relative">
-          <h2 style="margin-top: 0">
+          <h1 style="margin-top: 0">
             <xsl:if test="//COLL_INFO/COLL_STATUS = 'private'">
               <span style="margin-right: .25rem">
                 <i class="icomoon-locked icomoon" aria-hidden="true"></i>
@@ -836,7 +847,7 @@
                 <xsl:text> (Collection is private)</xsl:text>
               </span>
             </xsl:if>
-          </h2>
+          </h1>
           <xsl:call-template name="build-collection-manage-action" />
         </div>
         <p><xsl:value-of select="//COLL_INFO/COLL_DESC" /></p>
@@ -987,6 +998,7 @@
   <xsl:template name="build-collection-panels">
     <xsl:if test="$gIsCollSearch = 'TRUE'">
       <xsl:call-template name="build-collection-branding" />
+      <h2 class="filters-heading" style="padding-bottom: 0.75rem">Collection Tools</h2>
       <xsl:call-template name="share-this-collection" />
       <xsl:call-template name="download-metadata-form" />
     </xsl:if>
@@ -995,7 +1007,7 @@
   <xsl:template name="build-collection-branding">
     <xsl:if test="//COLL_INFO/COLL_BRANDING">
       <p class="collection-branding">
-        <img src="{//COLL_INFO/COLL_BRANDING}" style="max-width: 100%" aria-hide="true" alt="" />
+        <img src="{//COLL_INFO/COLL_BRANDING}" style="max-width: 100%; min-height: 100px; min-width: 100px" aria-hide="true" alt="" />
       </p>
     </xsl:if>
   </xsl:template>

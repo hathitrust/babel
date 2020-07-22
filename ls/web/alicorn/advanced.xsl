@@ -140,7 +140,7 @@
 
   <xsl:template name="main">
     <form method="GET" action="/cgi/ls" name="searchcoll" class="advanced-search-form">
-      <h2>
+      <h1>
         <xsl:text>Advanced Full-text Search</xsl:text>
         <xsl:if test="$isCollSearch = 'TRUE'">
           <xsl:text>: </xsl:text>
@@ -148,13 +148,14 @@
             <xsl:value-of select="/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME"/>
           </a>
         </xsl:if>
-      </h2>
+      </h1>
 
 
       <p>Search information <em>within</em> the item (<a target="_blank" href="http://www.hathitrust.org/help_digital_library#SearchTips">Search Tips</a>).</p>
-      <p>Prefer to search <em>about</em> the item in an <a href="//catalog.hathitrust.org/Search/Advanced">Advanced Catalog search</a>?</p>
+      <p style="margin-bottom: 1rem">Prefer to search <em>about</em> the item in an <a href="//catalog.hathitrust.org/Search/Advanced">Advanced Catalog search</a>?</p>
 
-      <h3 class="offscreen">Search by field</h3>
+      <!-- <h3 class="offscreen">Search by field</h3> -->
+      <h2>Search by field</h2>
 
       <xsl:for-each select="//AdvancedSearch/groups/group">
         <xsl:if test="position() > 1">
@@ -182,7 +183,7 @@
 
       <button kind="primary" class="button btn btn-primary"><i class="icomoon icomoon-search" aria-hidden="true"></i> Advanced Search</button>
 
-      <h3>Additional search options</h3>
+      <h2>Additional search options</h2>
       <div class="advanced-filters-inner-container">
         <xsl:call-template name="build-view-option" />
         <xsl:call-template name="build-date-range-option" />
@@ -211,7 +212,7 @@
 
   <xsl:template name="build-view-option">
     <div class="advanced-search-filter-container">
-      <h4 class="advanced-filter-label-text">View Options</h4>
+      <h3 class="advanced-filter-label-text">View Options</h3>
       <div class="advanced-filter-inner-container">
         <input type="checkbox" name="lmt" value="ft" id="filter-full-view-only">
           <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='lmt']='ft'">
@@ -239,12 +240,12 @@
 
   <xsl:template name="build-date-range-option">
     <div class="advanced-search-filter-container">
-      <h4 class="advanced-filter-label-text">Date of Publication</h4>
+      <h3 class="advanced-filter-label-text">Date of Publication</h3>
       <div class="advanced-filter-inner-container">
         <div class="alert alert-error alert-block" role="alert" aria-atomic="true" aria-live="assertive"></div>
         <div class="date-range-input">
-          <fieldset class="no-margin choice-container">
-            <legend class="offscreen">Select the type of date range to search on</legend>
+          <fieldset class="no-margin choice-container" aria-role="radiogroup">
+            <legend class="offscreen">Date range</legend>
             <xsl:for-each select="//yop/yopOptions/option">
               <div>
                 <input type="radio" id="date-range-input-radio-{position()}" name="yop" value="{@value}">
@@ -275,13 +276,14 @@
 
   <xsl:template name="build-language-option">
     <div class="advanced-search-filter-container">
-      <h4 class="advanced-filter-label-text">Language</h4>
+      <h3 class="advanced-filter-label-text">Language</h3>
       <div class="advanced-filter-inner-container">
         <div class="multiselect">
           <p>Select one or more checkboxes to narrow your results to items that match all of your language selections.</p>
-          <input name=".language-filter" type="text" class="multiselect-search" aria-label="Filter options" aria-describedby="language" placeholder="Filter" value="" />
-          <p id="language" class="offscreen">Below this edit box is a list of check boxes that allow you to filter down your options. As you type in this edit box, the list of check boxes is updated to reflect only those that match the query typed in this box.</p>
+          <input name=".language-filter" type="text" class="multiselect-search" aria-label="Filter options" aria-describedby="language" placeholder="Filter by language" value="" />
+          <p id="language" style="font-size: 0.75rem">Below this edit box is a list of check boxes that allow you to filter down your options. As you type in this edit box, the list of check boxes is updated to reflect only those that match the query typed in this box.</p>
           <fieldset class="multiselect-options">
+            <legend class="offscreen">Language</legend>
             <ul class="multiselect-options-list">
               <xsl:for-each select="//facets/language_list/option[@value != 'language008_full:All'][normalize-space(.)]">
                 <li class="multiselect-options-list-item">
@@ -311,13 +313,14 @@
 
   <xsl:template name="build-format-option">
     <div class="advanced-search-filter-container">
-      <h4 class="advanced-filter-label-text">Original Format</h4>
+      <h3 class="advanced-filter-label-text">Original Format</h3>
       <div class="advanced-filter-inner-container">
         <div class="multiselect">
           <p>Select one or more checkboxes to narrow your results to items that match all of your format selections.</p>
-          <input name=".format-filter" type="text" class="multiselect-search" aria-label="Filter options" aria-describedby="language" placeholder="Filter" value="" />
-          <p id="language" class="offscreen">Below this edit box is a list of check boxes that allow you to filter down your options. As you type in this edit box, the list of check boxes is updated to reflect only those that match the query typed in this box.</p>
+          <input name=".format-filter" type="text" class="multiselect-search" aria-label="Filter options" aria-describedby="format" placeholder="Filter by format" value="" />
+          <p id="format" style="font-size: 0.75rem">Below this edit box is a list of check boxes that allow you to filter down your options. As you type in this edit box, the list of check boxes is updated to reflect only those that match the query typed in this box.</p>
           <fieldset class="multiselect-options">
+            <legend class="offscreen">Format</legend>
             <ul class="multiselect-options-list">
               <xsl:for-each select="//facets/formats_list/option[@value != 'format:All'][normalize-space(.)]">
                 <li class="multiselect-options-list-item">
@@ -341,7 +344,7 @@
                       </xsl:otherwise>
                     </xsl:choose>
                   </input>
-                  <label role="checkbox" for="format-{position()}">
+                  <label for="format-{position()}">
                     <span class="filter-name"><xsl:value-of select="." /></span>
                   </label>
                 </li>
