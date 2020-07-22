@@ -20,6 +20,11 @@ export var Viewinator = class {
       var button = buttons[i];
       button.addEventListener('click', function(event) {
         var target = this.dataset.target;
+        var pressed;
+        if ( pressed = self.input.querySelector('[aria-pressed="true"]') ) {
+          pressed.removeAttribute('aria-pressed');
+        }
+        this.setAttribute('aria-pressed', 'true');
         self.reader.restart({ view: target, clicked: event.detail == 1 });
       })
     }
