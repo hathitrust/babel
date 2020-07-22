@@ -235,9 +235,10 @@ export var Navigator = class {
     var current_page = '';
 
     var max = parseFloat(this.input.max, 10);
-    var percentage = (( value / max ) * 100.0)
+    var percentage = Math.floor((( value / max ) * 100.0))
     this.input.setAttribute('aria-valuenow', value);
-    this.input.setAttribute('aria-valuetext', `${percentage}% • Location ${current_location} of ${this._total}${current_page}`);
+    this.input.setAttribute('aria-valuetext', `${current_location}/${this.input.max}`);
+    // this.input.setAttribute('aria-valuetext', `${percentage}% • Location ${current_location} of ${this._total}${current_page}`);
     this._renderCurrentPage(this.input.value);
   }
 
