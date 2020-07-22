@@ -55,12 +55,12 @@
         font-size: 0;
       }
 
-      h4 {
+      h3 {
         font-weight: bold;
         margin: 1rem 0;
       }
 
-      h5 {
+      h4 {
         font-weight: bold;
         font-size: 1rem;
       }
@@ -70,7 +70,7 @@
     <div class="container flex-container container-boxed container-narrow">
       <section class="section-container" id="section" tabindex="0">
 
-        <h2 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h2>
+        <h1 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h1>
         <xsl:if test="normalize-space(//BackToRefererLink)">
           <div class="back-to-referer">
             <a class="btn" href="{//BackToRefererLink}"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
@@ -82,7 +82,7 @@
     <div class="row versus">
       <div>
         <div>
-          <h3 class="partner-cell-title">Members of partner institutions</h3>
+          <h2 class="partner-cell-title">Members of partner institutions</h2>
           <p class="partner-cell-text">Members of partner institutions get access to the largest number of volumes and features by logging in through their institution.</p>
 
           <div class="can-do-list {//Param[@name='debug']}">
@@ -120,7 +120,7 @@
 
 
           <div style="margin-top: 16px" class="login-wayf">
-            <h4>Find your partner institution:</h4>
+            <h3>Find your partner institution:</h3>
             
             <xsl:call-template name="build-idp-list" />
             
@@ -133,7 +133,7 @@
 
       <div>
         <div>
-          <h3 class="partner-cell-title">Guests</h3>
+          <h2 class="partner-cell-title">Guests</h2>
           <p class="partner-cell-text">
             Guests have the ability to create and share their own collections when logged in.
           </p>
@@ -171,10 +171,10 @@
           </xsl:if>
 
           <div style="margin-top: 16px; position: relative">
-            <h4>Log in with:</h4>
+            <h3>Log in with:</h3>
 
             <div class="alert alert-warning alert-block">
-              <h5 style="margin-top: 0">Yahoo login has been removed as of June 30, 2020.</h5>
+              <h4 style="margin-top: 0; font-size: 1rem; color: #000">Yahoo login has been removed as of June 30, 2020.</h4>
               <p style="margin-top: 1rem"><a href="https://www.hathitrust.org/yahoo-login">Find out how</a> to access collections previously created with your Yahoo email.</p>
             </div>
 
