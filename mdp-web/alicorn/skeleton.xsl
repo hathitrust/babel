@@ -108,8 +108,6 @@
           <xsl:call-template name="setup-body-class" />
         </xsl:attribute>
 
-        <h1 class="offscreen"><xsl:call-template name="setup-page-title" /></h1>
-
         <xsl:call-template name="insert-svg-icons" />
 
         <xsl:call-template name="debug-messages" />
@@ -244,7 +242,7 @@
   <xsl:template name="navbar-user-links">
     <li class="on-for-pt on-for-narrow">
       <button class="btn action-search-hathitrust control-search">
-        <i class="icomoon icomoon-search"></i><span class="off-for-narrowest"> Search</span> HathiTrust</button>
+        <i class="icomoon icomoon-search" aria-hidden="true"></i><span class="offscreen-for-narrowest"> Search</span> HathiTrust</button>
     </li>
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
