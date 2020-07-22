@@ -99,7 +99,7 @@ export var Flip = class extends Base {
   }
 
   minPageWidth() {
-    return this._layout.minWidth();
+    return this._layout.minWidth;
   }
 
   _updateLayout() {
