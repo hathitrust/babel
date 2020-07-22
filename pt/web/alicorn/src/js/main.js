@@ -59,7 +59,8 @@ var Reader = class {
     $viewer.classList.add('viewer--setup');
 
     if ( params.view ) {
-      $main.dataset.view = params.view; $main.classList.add(`view--${params.view}`);
+      $main.dataset.view = params.view; 
+      $main.classList.add(`view--${params.view}`);
 
       if ( params.restarting ) {
         this.emit('status', `Switching to ${params.view} view`);
@@ -86,7 +87,11 @@ var Reader = class {
 
     params.restarting = true;
 
-    if ( this.view ) { $main.classList.remove(`view--${this.view.name}`); this.view.destroy(); this.view = null; }
+    if ( this.view ) { 
+      $main.classList.remove(`view--${this.view.name}`);
+      this.view.destroy(); 
+      this.view = null; 
+    }
     this.start(params, function() {
       console.log("AHOY TRYING TO GO TO", current);
       this.view.display(current);
@@ -570,8 +575,8 @@ $sidebar.on('click', '.action-view', function(event) {
 
 HT.utils = HT.utils || {};
 HT.utils.switch_view = function(target, event_detail) {
-  $sidebar.find(".action-view.active").removeClass("active");
-  $sidebar.find(`button[data-target="${target}"]`).addClass("active");
+  $sidebar.find(".action-view.active").removeClass("active").attr("aria-pressed", null);
+  $sidebar.find(`button[data-target="${target}"]`).addClass("active").attr("aria-pressed", "true");
   var scale = 1.0; // reader._bestFitScale();
   reader.restart({ view: target, clicked: event_detail == 1, scale: scale, seq: HT.reader._currentLocation });
   reader.emit('redraw', {});
