@@ -1016,6 +1016,10 @@ sub handle_ACCESS_TYPE_PI
     my $initial_access_type =
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
+    if ( $access_type eq 'enhanced_text_user' ) {
+        $xml .= qq{<Name>$access_type</Name>};
+    }
+
     if ( 
         ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,emergency_access, ) 
         ||
