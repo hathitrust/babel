@@ -160,6 +160,7 @@
 
   <xsl:template name="main">
     <!-- <xsl:variable name="totalSeq" select="count(//METS:div[@TYPE='volume']/METS:div[@ORDER])" /> -->
+    <xsl:variable name="currentSeq" select="//Param[@name='seq']" />
     <xsl:variable name="totalSeq" select="count(//METS:structMap[@TYPE='physical']/METS:div[@TYPE]/METS:div[@ORDER])" />
     <xsl:variable name="readingOrder" select="//Manifest/ReadingOrder" />
     <xsl:attribute name="data-has-ocr">
@@ -178,18 +179,18 @@
 
     <h2 class="offscreen">
       <xsl:call-template name="get-view-title" />
-      <xsl:if test="$gHasOcr = 'YES'">
+      <!-- <xsl:if test="$gHasOcr = 'YES'">
         <xsl:text> (use access key 5 to view full text / OCR mode)</xsl:text>
-      </xsl:if>
+      </xsl:if> -->
     </h2>
     <div class="outer main" style="display: flex; flex-direction: column; flex-grow: 1">
       <xsl:call-template name="toolbar-horizontal" />
       <div class="inner main" style="flex-grow: 1">
+        <xsl:call-template name="toolbar-vertical" />
         <section class="viewer viewer--setup">
           <div class="viewer-loader"></div>
           <div class="viewer-inner"></div>
         </section>
-        <xsl:call-template name="toolbar-vertical" />
       </div>
     </div>
     <div class="navigator">
@@ -197,7 +198,7 @@
       <form>
         <label class="offscreen" for="control-navigator">Location: </label>
         <div class="control-navigator--wrap">
-          <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="1" aria-valuetext="0% • Page scan 1 of {$totalSeq}" value="1" data-background-position="0">
+          <input id="control-navigator" type="range" name="locations-range-value" min="1" max="{$totalSeq}" aria-valuemin="1" aria-valuemax="{$totalSeq}" aria-valuenow="{$currentSeq}" aria-valuetext="{$currentSeq}/{$totalSeq}" value="1" data-background-position="0">
             <xsl:if test="$readingOrder = 'right-to-left'">
               <xsl:attribute name="dir">rtl</xsl:attribute>
             </xsl:if>
@@ -205,7 +206,7 @@
         </div>
         <xsl:text> </xsl:text>
         <xsl:if test="false()">
-          <div class="output">Page Scan <span data-slot="current-seq">1</span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span><span data-slot="current-page-number"></span></div>
+          <div class="output">Page Scan <span data-slot="current-seq"><xsl:value-of select="$currentSeq" /></span> of <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span><span data-slot="current-page-number"></span></div>
         </xsl:if>
         <div class="output"><span class="offscreen">Page Scan </span><span data-slot="current-seq">1</span> / <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span></div>
         <xsl:text> </xsl:text>
@@ -272,7 +273,7 @@
 
   <xsl:template name="build-pre-sidebar-panels">
     <div class="panel options for-mobile">
-      <h3 class="offscreen">View Options</h3>
+      <!-- <h3 class="for-mobile">View Options</h3> -->
       <ul>
         <li><button class="btn" data-trigger="contents"><span><i class="icomoon icomoon-list" aria-hidden="true"></i> Contents</span></button></li>
         <li style="margin-top: 1rem; margin-bottom: 1rem;">
@@ -433,6 +434,9 @@
       <xsl:if test="$option/@accesskey">
         <xsl:attribute name="accesskey"><xsl:value-of select="$option/@accesskey" /></xsl:attribute>
       </xsl:if>
+      <xsl:if test="$view = $gCurrentView">
+        <xsl:attribute name="aria-pressed">true</xsl:attribute>
+      </xsl:if>
       <i class="{$option/@value}"></i>
       <xsl:if test="$show-label = 'TRUE'">
         <span aria-hidden="true"><xsl:value-of select="$option" /></span>
@@ -442,6 +446,10 @@
 
   <xsl:template name="toolbar-horizontal">
     <div id="toolbar-horizontal" class="toolbar toolbar-horizontal" role="toolbar" aria-label="Volume Navigation">
+
+      <h2 class="offscreen" id="view-heading">
+        <xsl:text>View: Scroll Page Scans</xsl:text>
+      </h2>
 
       <xsl:call-template name="action-go-page" />
 

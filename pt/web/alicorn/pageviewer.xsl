@@ -245,6 +245,9 @@
       <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
         <xsl:call-template name="build-ssd-session-header" />
       </xsl:if>
+      <xsl:if test="$access-type/Name = 'enhanced_text_user'">
+        <xsl:call-template name="build-ssd-session-header" />
+      </xsl:if>
     </xsl:if>
   </xsl:template>
 
@@ -453,7 +456,7 @@
         <div class="sidebar-container" id="sidebar" tabindex="0">
           <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
-              <h3 class="filter-group-heading">Options</h3>
+              <span class="filter-group-heading">Options</span>
               <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
               <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
             </span>
@@ -512,7 +515,7 @@
   </xsl:template>
 
   <xsl:template name="action-search-volume">
-    <h3 class="offscreen">Search in this volume</h3>
+    <!-- <h3 class="offscreen">Search in this volume</h3> -->
     <form class="form-inline form-search-volume" method="get" id="form-search-volume" role="search">
       <xsl:attribute name="action">
         <xsl:choose>

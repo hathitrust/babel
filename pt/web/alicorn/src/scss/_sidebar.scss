@@ -316,6 +316,8 @@ html.mobile, html[data-item-type="volume/epub"] {
 }
 
 #sidebar {
+  margin-top: 0;
+
   input[type=text], select {
     font-size: 1rem;
   }

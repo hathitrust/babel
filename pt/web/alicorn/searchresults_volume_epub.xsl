@@ -79,7 +79,7 @@
         <div class="sidebar-container" id="sidebar" tabindex="0">
           <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
-              <h3 class="filter-group-heading">Options</h3>
+              <span class="filter-group-heading">Options</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>
             </span>
           </button>
