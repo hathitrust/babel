@@ -424,6 +424,10 @@ html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.downlo
   visibility: hidden;
 }
 
+#sidebar {
+  margin-top: 0;
+}
+
 #sidebar input[type=text], #sidebar select {
   font-size: 1rem;
 }
