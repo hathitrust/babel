@@ -8,7 +8,7 @@ export var Scroll = class extends Base {
     super(options);
     this.mode = 'scroll';
     this.name = '1up';
-    this.displayLabel = 'scrolling';
+    this.displayLabel = 'scroll page scans';
     this.pageOptions = {};
     this.embedHtml = true;
     this._debugLog = [];

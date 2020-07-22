@@ -108,6 +108,7 @@ var Reader = class {
     this._updateViews(params.view);
 
     HT.update_status(`Viewing book in ${this.view.displayLabel} view.`);
+    document.querySelector('#view-heading').innerText = `View: ${this.view.displayLabel}`;
 
     HT.prefs.set({ pt : { view : params.view } })
     console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);

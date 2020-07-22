@@ -6,7 +6,7 @@ export var Single = class extends Base {
     super(options);
     this.mode = 'image';
     this.name = 'image';
-    this.displayLabel = 'single page by page';
+    this.displayLabel = 'page by page';
     this.embedHtml = true;
   }
 

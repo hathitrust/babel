@@ -8,7 +8,7 @@ export var Flip = class extends Base {
     super(options);
     this.mode = 'image';
     this.name = '2up';
-    this.displayLabel = 'two-page side-by-side';
+    this.displayLabel = 'flip page scans'; // 'two-page side-by-side';
     this.embedHtml = true;
     this.is_active = false;
     this.isRTL = this.service.manifest.options.readingOrder  == 'right-to-left';
