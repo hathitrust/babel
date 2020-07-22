@@ -947,14 +947,19 @@
 
     <div class="bibLinks panel">
 
-      <h2>About this Book</h2>
-      <h3 class="offscreen">Catalog Record Details</h3>
-      <p>
+      <!-- <h3>About this Book</h3> -->
+      <!-- <h3 class="offscreen">Catalog Record Details</h3> -->
+      <h1 style="font-size: 1.2rem">
         <xsl:call-template name="BuildRDFaWrappedTitle">
           <xsl:with-param name="visible_title_string" select="$gTruncTitleString"/>
           <xsl:with-param name="hidden_title_string" select="$gFullTitleString"/>
         </xsl:call-template>
-        <xsl:text> </xsl:text>
+      </h1>
+
+      <h2 style="margin-top: 1rem">About this Book</h2>
+
+      <p class="offscreen">
+        <!-- <xsl:text> </xsl:text> -->
 
         <!-- not visible -->
         <xsl:call-template name="BuildRDFaWrappedAuthor"/>
@@ -988,8 +993,9 @@
           </xsl:otherwise>
         </xsl:choose>
       </p>
-      <p class="smaller">
-        <strong>Rights: </strong><xsl:call-template name="BuildRDFaCCLicenseMarkup" />
+      <h3 style="border-bottom: none; font-size: 0.9rem; padding-bottom: 0; margin-top: 1rem; margin-bottom: 0">Rights</h3>
+      <p class="smaller" style="margin-top: 0.25rem">
+        <xsl:call-template name="BuildRDFaCCLicenseMarkup" />
       </p>
     </div>
   </xsl:template>
