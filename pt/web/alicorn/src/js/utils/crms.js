@@ -14,6 +14,10 @@ head.ready(function() {
 
   // define CRMS state
   HT.crms_state = 'CRMS-US';
+
+  // force CRMS users to a fixed image size
+  // HT.force_size = 350;
+
   var i = window.location.href.indexOf('skin=crmsworld');
   if ( i + 1 != 0 ) {
       HT.crms_state = 'CRMS-World';

@@ -210,6 +210,7 @@ export var Service = class {
       }) || max_possible;
     }
     retval.value = Math.floor(retval.value * 100.0);
+    if ( HT.force_size ) { retval.value = HT.force_size; }
     return retval;
   }
 
