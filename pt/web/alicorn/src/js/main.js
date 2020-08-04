@@ -214,6 +214,17 @@ var Reader = class {
       return false;
     })
 
+    var proxies = document.querySelectorAll('.action-proxy-navigation');
+    for(var i = 0; i < proxies.length; i++) {
+      var proxy = proxies[i];
+      proxy.addEventListener('click', (event) => {
+        event.preventDefault();
+        console.log("AHOY PROXY CLICK", event.target, event.target.dataset.target);
+        var btn = document.querySelector(`#${event.target.dataset.target}`);
+        btn.click();
+      })
+    }
+
     window.addEventListener('resize', this._resizer);
   }
 
@@ -517,6 +528,7 @@ reader.on('track', () => {
 })
 
 document.body.addEventListener('keydown', function(event) {
+  return;
   var IGNORE_TARGETS = [ 'input', 'textarea' ];
   if ( IGNORE_TARGETS.indexOf(event.target.localName) >= 0 ) {
     return;

@@ -1449,12 +1449,12 @@
   <!-- Collection Widget -->
   <xsl:template name="CollectionWidgetContainer">
 
-    <xsl:variable name="collection_list_label">
+    <!-- <xsl:variable name="collection_list_label">
       <xsl:choose>
         <xsl:when test="$gLoggedIn='YES'">
           <xsl:choose>
             <xsl:when test="$gCollectionList/Coll">
-              <h3 class="offscreen">Collections with this Item</h3>
+              <h4 class="offscreen">Collections with this Item</h4>
               <xsl:text>This item is in your collection(s):</xsl:text>
             </xsl:when>
             <xsl:otherwise>
@@ -1475,27 +1475,35 @@
       </xsl:choose>
     </xsl:variable>
 
-    <span class="collection-membership-summary">
+    <div class="collection-membership-summary">
       <xsl:copy-of select="$collection_list_label"/>
-    </span>
+    </div> -->
 
-    <ul class="collection-membership">
-      <xsl:choose>
-        <xsl:when test="$gCollectionList/Coll">
-          <xsl:for-each select="$gCollectionList/Coll">
-            <li>
-              <xsl:element name="a">
-                <xsl:attribute name="href">
-                  <xsl:value-of select="Url"/>
-                </xsl:attribute>
-                <xsl:value-of select="CollName"/>
-              </xsl:element>
-            </li>
-          </xsl:for-each>
-        </xsl:when>
-        <xsl:otherwise></xsl:otherwise>
-      </xsl:choose>
-    </ul>
+    <xsl:if test="$gLoggedIn!='YES'">
+      <p>
+        <a class="PTloginLinkText trigger-login" href="{/MBooksTop/MdpApp/LoginLink}">Login</a>
+        <xsl:text> to make your personal collections permanent.</xsl:text>
+      </p>
+    </xsl:if>
+
+    <div>
+      <xsl:if test="count($gCollectionList/Coll) = 0">
+        <xsl:attribute name="class">hide</xsl:attribute>
+      </xsl:if>
+      <h4 style="margin-bottom: 0.5rem">This item is in these collections:</h4>
+      <ul class="collection-membership" style="margin-bottom: 1rem">
+        <xsl:for-each select="$gCollectionList/Coll">
+          <li>
+            <xsl:element name="a">
+              <xsl:attribute name="href">
+                <xsl:value-of select="Url"/>
+              </xsl:attribute>
+              <xsl:value-of select="CollName"/>
+            </xsl:element>
+          </li>
+        </xsl:for-each>
+      </ul>
+    </div>
 
     <xsl:call-template name="BuildAddToCollectionControl"/>
 
@@ -1509,14 +1517,20 @@
   <!-- FORM: Add To Collection Form -->
   <xsl:template name="BuildAddToCollectionControl">
     <div class="select-collection">
-      <label for="PTaddItemSelect" class="SkipLink"><xsl:text>Add to your collection:</xsl:text></label>
+      <label for="PTaddItemSelect"><xsl:text>Choose collection:</xsl:text></label>
+      <select id="PTaddItemSelect" class="mdpColSelectMenu">
+        <option value="__NEW__">New collection…</option>
+        <xsl:for-each select="$gCollectionForm/CollectionSelect/Option">
+          <option value="{Value}"><xsl:value-of select="Label" /></option>
+        </xsl:for-each>
+      </select>
       <!-- for-each just for context: there's only one -->
-      <xsl:for-each select="$gCollectionForm/CollectionSelect">
+      <!-- <xsl:for-each select="$gCollectionForm/CollectionSelect">
         <xsl:call-template name="BuildHtmlSelect">
           <xsl:with-param name="id" select="'PTaddItemSelect'"/>
           <xsl:with-param name="class" select="'mdpColSelectMenu'"/>
         </xsl:call-template>
-      </xsl:for-each>
+      </xsl:for-each> -->
       <!-- <br /> -->
       <button id="PTaddItemBtn" class="btn btn-small">Add</button>
     </div>

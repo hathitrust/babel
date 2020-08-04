@@ -1,7 +1,7 @@
 head.ready(function() {
 
     var DEFAULT_COLL_MENU_OPTION = "a";
-    var NEW_COLL_MENU_OPTION = "b";
+    var NEW_COLL_MENU_OPTION = '__NEW__'; // "b";
 
     var IN_YOUR_COLLS_LABEL = 'This item is in your collection(s):';
 
@@ -190,8 +190,9 @@ head.ready(function() {
         var coll_href = get_url() + "?a=listis;c=" + params.coll_id;
         var $a = $("<a>").attr("href", coll_href).text(params.coll_name);
         $("<li></li>").appendTo($ul).append($a);
+        $ul.parents("div").removeClass("hide");
 
-        $(".collection-membership-summary").text(IN_YOUR_COLLS_LABEL);
+        // $(".collection-membership-summary").text(IN_YOUR_COLLS_LABEL);
 
         // and then filter out the list from the select
         var $option = $toolbar.find("option[value='" + params.coll_id + "']");

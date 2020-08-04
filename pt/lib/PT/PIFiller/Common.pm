@@ -884,10 +884,10 @@ sub handle_COLLECTION_SELECT_PI
     my (%coll_names, @coll_vals);
 
     # Put default items into the list
-    push(@coll_vals, 'a');
-    $coll_names{'a'} = 'Select Collection';
-    push(@coll_vals, 'b');
-    $coll_names{'b'} = '[CREATE NEW COLLECTION]';
+    # push(@coll_vals, 'a');
+    # $coll_names{'a'} = 'Select Collection';
+    # push(@coll_vals, 'b');
+    # $coll_names{'b'} = '[CREATE NEW COLLECTION]';
 
     # Get list of collections owned by user
     my $auth = $C->get_object('Auth');
