@@ -296,14 +296,17 @@
   </xsl:template>
 
   <xsl:template name="build-collections-toolbar">
-    <div class="collections-action-container">
-      <button id="action-select-all" role="checkbox" class="checkbox-label" tabindex="0" aria-label="Select all on page"><div class="checkbox"><svg version="1.1" class="icon"><use xlink:href="#checkbox-empty"></use></svg></div><span style="margin-left: .5rem"> Select all on page</span></button>
+    <div class="collections-action-container" data-owned-by-user="no">
+      <div class="collections-select-all-container">
+        <button id="action-select-all" role="checkbox" class="checkbox-label" tabindex="0" aria-label="Select all on page"><div class="checkbox"><svg version="1.1" class="icon"><use xlink:href="#checkbox-empty"></use></svg></div><span style="margin-left: .5rem"> Select all on page</span></button>
+      </div>
 
-      <div>
-        <label class="offscreen" for="collection-chooser">Choose a collection</label>
+      <div class="collections-bulk-container">
+        <label for="collection-chooser">Choose collection</label>
         <select size="1" id="collection-chooser">
-          <option value="0" selected="selected">Select Collection</option>
-          <option value="__NEW__">[CREATE NEW COLLECTION]</option>
+          <!-- <option value="0" selected="selected">Select Collection</option>
+          <option value="__NEW__">[CREATE NEW COLLECTION]</option> -->
+          <option value="__NEW__">New collection…</option>
           <xsl:for-each select="SelectCollectionWidget/Coll">
             <xsl:element name="option">
               <xsl:attribute name="value">
@@ -313,7 +316,7 @@
             </xsl:element>
           </xsl:for-each>
         </select>
-        <button class="button btn btn-primary" id="addits">Add Selected</button>
+        <button class="button btn btn-primary" id="addits">Add</button>
       </div>
     </div>
   </xsl:template>
