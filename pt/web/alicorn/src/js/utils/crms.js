@@ -16,7 +16,9 @@ head.ready(function() {
   HT.crms_state = 'CRMS-US';
 
   // force CRMS users to a fixed image size
-  // HT.force_size = 200;
+  if ( HT.is_dev ) {
+    HT.force_size = 200;
+  }
 
   var i = window.location.href.indexOf('skin=crmsworld');
   if ( i + 1 != 0 ) {
