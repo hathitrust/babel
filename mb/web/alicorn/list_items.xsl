@@ -648,13 +648,19 @@
 
   <xsl:template name="build-collections-toolbar">
     <div class="collections-action-container">
-      <button id="action-select-all" role="checkbox" class="checkbox-label" tabindex="0" aria-label="Select all on page"><div class="checkbox"><svg version="1.1" class="icon"><use xlink:href="#checkbox-empty"></use></svg></div><span style="margin-left: .5rem"> Select all on page</span></button>
+      <xsl:attribute name="data-owned-by-user">
+        <xsl:value-of select="/MBooksTop/EditCollectionWidget/OwnedByUser" />
+      </xsl:attribute>
+      <div class="collections-select-all-container">
+        <button id="action-select-all" role="checkbox" class="checkbox-label" tabindex="0" aria-labelledby="label-select-all"><div class="checkbox"><svg version="1.1" class="icon"><use xlink:href="#checkbox-empty"></use></svg></div><span id="label-select-all" style="margin-left: .5rem"> Select all on page</span></button>
+      </div>
 
-      <div>
-        <label class="offscreen" for="collections-chooser">Choose a collection</label>
+      <div class="collections-bulk-container">
+        <label for="collections-chooser" style="">Choose collection:</label>
         <select size="1" id="collections-chooser">
-          <option value="0" selected="selected">Select Collection</option>
-          <option value="__NEW__">[CREATE NEW COLLECTION]</option>
+          <!-- <option value="0" selected="selected">Select Collection</option>
+          <option value="__NEW__">[CREATE NEW COLLECTION]</option> -->
+          <option value="__NEW__">New collection…</option>
           <xsl:for-each select="SelectCollectionWidget/Coll">
             <xsl:element name="option">
               <xsl:attribute name="value">
@@ -664,7 +670,7 @@
             </xsl:element>
           </xsl:for-each>
         </select>
-        <button class="button btn" id="addits">Add Selected</button>
+        <button class="button btn" id="addits">Add</button>
         <xsl:if test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
           <xsl:call-template name="build-item-selected-owner-actions"/>
         </xsl:if>
@@ -674,6 +680,7 @@
 
   <xsl:template name="build-item-selected-owner-actions">
     <button class="button btn" id="movit">Move</button>
+    <hr role="separator" aria-orientation="vertical" />
     <button class="button btn" id="delit">Remove</button>
   </xsl:template>
 
