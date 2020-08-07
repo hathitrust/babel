@@ -42,7 +42,16 @@ sub identify_user {
     my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
     if ( $check ) {
         $$retval{r} = {};
-        $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) || 0;
+        # $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) || 0;
+        $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) ? 
+            $Types::Serialiser::true: 
+            $Types::Serialiser::false;
+    }
+
+    $check = $auth->affiliation_is_enhanced_text_user($C);
+    if ( $check ) {
+        $$retval{r} = {} unless ( ref($$retval{r}) );
+        $$retval{r}{enhancedTextUser} = $Types::Serialiser::true;
     }
 
     # $$retval{activated} = $auth->user_is_print_disabled_proxy($C) ? 'enhancedTextProxy' : undef;
