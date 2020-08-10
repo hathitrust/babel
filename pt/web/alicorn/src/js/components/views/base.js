@@ -496,7 +496,7 @@ export var Base = class {
     var page_controls = page.querySelectorAll('[tabindex="0"]');
     for(var i = 0; i < page_controls.length; i++) {
       page_controls[i].setAttribute('tabindex', '-1');
-      if ( page_controls[i] == document.activeElement ) { page_controls[i].blur(); }
+      // if ( page_controls[i] == document.activeElement ) { page_controls[i].blur(); }
     }
   }
 

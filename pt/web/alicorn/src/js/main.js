@@ -214,14 +214,29 @@ var Reader = class {
       return false;
     })
 
-    var proxies = document.querySelectorAll('.action-proxy-navigation');
-    for(var i = 0; i < proxies.length; i++) {
-      var proxy = proxies[i];
-      proxy.addEventListener('click', (event) => {
+    var IGNORE_FOCUS = [ 'input', 'textarea', 'a', 'button' ];
+    var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target');
+    for(var i = 0; i < accesskey_triggers.length; i++) {
+      var btn = accesskey_triggers[i];
+      btn.addEventListener('click', (event) => {
         event.preventDefault();
-        console.log("AHOY PROXY CLICK", event.target, event.target.dataset.target);
         var btn = document.querySelector(`#${event.target.dataset.target}`);
         btn.click();
+        if ( document.activeElement && 
+             IGNORE_FOCUS.indexOf(document.activeElement.localName) >= 0 && 
+             document.activeElement.getAttribute('aria-hidden') != 'hidden'
+        ) {
+          return;
+        }
+        setTimeout(() => { 
+          this.view.container.focus(); 
+          // /console.log("AHOY CONTAINER FOCUS", document.activeElement, document.querySelectorAll('.page[tabindex="0"]'));;
+          if ( reader.debug_focus ) {
+            setTimeout(() => {
+              console.log("AHOY CONTAINER AFTER", document.activeElement, document.querySelectorAll('.page[tabindex="0"]'));
+            }, 500);
+          }
+        }, 500);
       })
     }
 
@@ -528,7 +543,17 @@ reader.on('track', () => {
 })
 
 document.body.addEventListener('keydown', function(event) {
+  
+  if ( event.key == 'Tab' && 
+    ! event.shiftKey && 
+    reader.view && 
+    document.activeElement == reader.view.container ) {
+    event.preventDefault();
+    reader.view.focus(true);
+  }
+
   return;
+
   var IGNORE_TARGETS = [ 'input', 'textarea' ];
   if ( IGNORE_TARGETS.indexOf(event.target.localName) >= 0 ) {
     return;
