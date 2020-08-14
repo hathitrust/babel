@@ -215,7 +215,7 @@ var Reader = class {
     })
 
     var IGNORE_FOCUS = [ 'input', 'textarea', 'a', 'button' ];
-    var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target');
+    var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target]');
     for(var i = 0; i < accesskey_triggers.length; i++) {
       var btn = accesskey_triggers[i];
       btn.addEventListener('click', (event) => {
