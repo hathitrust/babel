@@ -62,8 +62,8 @@ print qq{
         <div>
           <div>
             <div>
-              <a id="htlogo" href="http://www.hathitrust.org">
-                <img src="/register/graphics/HathiTrustDL_logo.png" alt="Hathi Trust Logo" /></a>
+              <a id="htlogo" href="https://www.hathitrust.org">
+                <img src="/register/graphics/HathiTrustDL_logo.png" alt="HathiTrust Digital Library" /></a>
             </div>
           </div>
         </div>
@@ -183,10 +183,12 @@ else {
     my $ticket = $cgi->path_info;
 
     print q{<p>You then have the option to email those credentials to HathiTrust for purposes such as:
- <li>Recovering access to personal collections if you change institutional affiliation</li>
-<li>Supporting our staff in setting up your access to materials</li></p>};
+<ul>        
+<li>Recovering access to personal collections if you change institutional affiliation</li>
+<li>Supporting our staff in setting up your access to materials</li>
+</ul></p>};
 
-    print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami$ticket" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
+    print qq{<p>Please <a href="https://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami$ticket" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
 
     print q{<p>Questions?  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> };
 }
