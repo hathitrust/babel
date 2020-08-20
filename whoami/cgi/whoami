@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use feature qw(say);
+
 BEGIN {
     ## $ENV{DEBUG_LOCAL} = 1;
 }
@@ -18,8 +20,13 @@ use Database;
 use MdpConfig;
 use Session;
 use Auth::Auth;
+use Utils::Date;
+
+use Auth::Logging;
 
 use Text::Wrap;
+
+use Mail::Mailer;
 
 
 
@@ -43,9 +50,6 @@ Debug::DUtils::setup_debug_environment();
 my $auth = new Auth::Auth($C);
 $C->set_object('Auth', $auth);
 
-my $developement = 1 if ($ENV{HT_DEV} || (Auth::ACL::a_Authorized( {role => 'superuser'} ) && DEBUG('super')));
-$developement = 0; # if ( DEBUG('ord') );
-
 # --- App ---
 #
 print CGI::header();
@@ -67,76 +71,127 @@ print qq{
     </div> };
 
 if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
-    if ($developement) {
-        print Debug::DUtils::print_env($ENV{TERM} ? '' : 'html');
-    }
-    else {
-        my $remote_addr = $ENV{REMOTE_ADDR};
-        my $country = get_geoip($remote_addr);
-        my $client_host = `host $remote_addr`;
-        chomp($client_host);
 
-        my $auth_type = lc $ENV{AUTH_TYPE};
+    my $auth_type = lc $ENV{AUTH_TYPE};
 
-        my $remote_user = $ENV{REMOTE_USER};
-        my $li;
-
-        if ( $auth_type eq 'shibboleth' && ! Utils::is_cosign_active() && $ENV{Shib_Identity_Provider} eq $Utils::UMICH_ENTITY_ID ) {
-          my $shibboleth_remote_user = $remote_user;
-          $remote_user = Utils::Get_Legacy_Remote_User();
-          $li = qq{<li>SHIBBOLETH IDENTITY = "$shibboleth_remote_user" (for University of Michigan)</li>};
-        }
-
-        print qq{<p>Here are your credentials as we see them from your login.</p>};
-        print qq{<ul>
-                   <li>REMOTE_USER = "$remote_user" or possibly forwarded for: "$ENV{HTTP_X_FORWARDED_FOR}"</li>
-                   $li
-                   <li>REMOTE_ADDR = "$remote_addr" <br/>&nbsp;&nbsp;country = "$country" <br/>&nbsp;&nbsp;USER AGENT host="$client_host"</li>
-                   <li>REMOTE_REALM = "$ENV{REMOTE_REALM}"</li>
-                   <li>AUTH_TYPE = "$ENV{AUTH_TYPE}"</li>
-                   <li>HTTP_USER_AGENT = "$ENV{HTTP_USER_AGENT}"</li>
-                   <li>HTTP_HOST = "$ENV{HTTP_HOST}"</li>
-                   <li>SDRINST = "$ENV{SDRINST}"</li>
-                   <li>SDRLIB = "$ENV{SDRLIB}"</li>};
-
-        if ($auth_type eq 'shibboleth') {
-            my $affiliation = $ENV{affiliation} || '';
-            $affiliation =~ s,;,; ,g;
-            print qq{<li>eduPersonScopedAffiliation = $affiliation</li>};
-            print qq{<li>eduPersonPrincipalName = "$ENV{eppn}"</li>
-                     <li>displayName = "$ENV{displayName}"</li>
-                     <li>entityID = "$ENV{Shib_Identity_Provider}"</li>
-                     <li>authenticationMethod = "$ENV{Shib_Authentication_Method}"</li>
-                     <li>authnContextClass = "$ENV{Shib_AuthnContext_Class}"</li>};
-        }
-        print qq{</ul>};
-
-        print qq{<p>HTTP_COOKIE:</p>};
-        my $cookie_value = $ENV{HTTP_COOKIE};
-        # $cookie_value =~ s,;\s+,\n,gsm;
-        my @values = split(/;\s+/, $cookie_value);
-        foreach my $value ( @values ) {
-          print q{<pre>} . wrap("", "", $value) . q{</pre>};
-        }
-        # print qq{<pre>$cookie_value</pre>};
+    my $ticket = $cgi->path_info();
+    my $tuples = [];
+    if ( $ticket ) {
+      $ticket = substr($ticket, 1);
+      push @$tuples, [ 'ticket', $ticket ];
     }
 
-    print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
+    my $properties = get_properties();
+    my $cookie_values = get_cookie_values();
 
-    print qq{<p>Thank you.</p>};
+    print qq{<p>Here are your credentials as we see them from your login.</p>};
+
+    if ( $ticket ) {
+        print <<HTML;
+<div style="padding: 1rem; background: orange; color: #000">
+<p>This information has been forwarded to your support ticket (<strong>$ticket</strong>).</p>
+</div>
+HTML
+    }
+
+    say qq{<h2>Credentials</h2>};
+    say qq{<ul>};
+
+    foreach my $tuple ( @$properties ) {
+        my ( $key, $value ) = @$tuple;
+
+        if (ref($value) ) {
+            say qq{<li>$key = <ul>};
+            foreach ( @$value ) {
+                say qq{<li>$_</li>};
+            }
+            say qq{</ul></li>};
+        } elsif ( $value ) {
+            say qq{<li>$key = $value</li>};
+        }
+    }
+
+    say qq{</ul>};
+
+    say qq{<h2>HTTP_COOKIE</h2>};
+    foreach ( @$cookie_values ) {
+        say q{<pre>} . wrap("", "", $_) . q{</pre>};
+    }
+
+    if ( $ticket ) {
+
+        # once more with feeling
+
+        my $buffer = [];
+        push @$buffer, qq{*Submitted: } . Utils::Time::iso_Time('date') . qq{*\n};
+        push @$buffer, qq{h2. Credentials\n};
+
+        foreach my $tuple ( @$properties ) {
+          my ( $key, $value ) = @$tuple;
+          if ( ref($value) ) {
+              push @$buffer, qq{* $key = };
+              foreach ( @$value ) {
+                  push @$buffer, qq{** $_};
+              }
+          } elsif ( $value ) {
+              push @$buffer, qq{* $key = $value};
+          }
+        }
+
+        push @$buffer, qq{\n\nh2. HTTP_COOKIE\n};
+        foreach my $value ( @$cookie_values ) {
+            push @$buffer, qq/* {{/ . $value . qq/}}/;
+        }
+        push @$buffer, "\n";
+
+        my $mailer = new Mail::Mailer('sendmail');
+        my $toAddr = q{feedback@issues.hathitrust.org};
+        if ( $cgi->param('debug') eq 'email' ) {
+            $toAddr = q{hathitrust-feedback-dev@umich.edu};
+        }
+        
+        my $suffix = int(rand(1000));
+        $mailer->open(
+                      {
+                       'To'       => [$toAddr],
+                       'From'     => qq{"HT Whoami ($suffix)" <hathitrust.help+$suffix\@gmail.com>},
+                       'Subject'  => $ticket,
+                      }
+                    );
+
+        if ( defined $cgi->param('debug') && $cgi->param('debug') eq 'scramble' ) {
+            foreach ( @$buffer ) {
+              $_ .= " --- " . int(rand(5000));
+            }
+        }
+
+        print $mailer(join("\n", @$buffer));
+        $mailer->close;
+
+    } else {
+        print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
+
+        print qq{<p>Thank you.</p>};
+    }
+
+    Auth::Logging::log_access($C, 'whoami', $tuples);
+
 }
 else {
     print q{<p>Greetings,</p><p>You have been directed here to log in.</p><p> You will be sent to the HathiTrust login page from the login link below where you will proceed to your institutional login page and be redirected back to a HathiTrust page where you will be able to view your login credentials.</p>};
+
+    my $ticket = $cgi->path_info;
 
     print q{<p>You then have the option to email those credentials to HathiTrust for purposes such as:
  <li>Recovering access to personal collections if you change institutional affiliation</li>
 <li>Supporting our staff in setting up your access to materials</li></p>};
 
-    print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
+    print qq{<p>Please <a href="http://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami$ticket" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
 
     print q{<p>Questions?  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> };
 }
 print qq{</body>};
+
 
 exit 0;
 
@@ -149,4 +204,49 @@ sub get_geoip {
     my $countryCode = $geoIp->country_code_by_addr($IP);
     my $countryName = $geoIp->country_name_by_addr($IP);
     return "$countryCode / $countryName";
+}
+
+
+sub get_properties {
+    my $retval = [];
+
+    my $remote_user = $ENV{REMOTE_USER};
+    my $remote_addr = $ENV{REMOTE_ADDR};
+    my $country = get_geoip($remote_addr);
+    my $client_host = `host $remote_addr`;
+    chomp($client_host);
+
+    my $shibboleth_remote_user;
+
+    my $auth_type = $ENV{AUTH_TYPE};
+    if ( $auth_type eq 'shibboleth' && ! Utils::is_cosign_active() && $ENV{Shib_Identity_Provider} eq $Utils::UMICH_ENTITY_ID ) {
+        $shibboleth_remote_user = $remote_user;
+        $remote_user = Utils::Get_Legacy_Remote_User();
+    }
+
+    push @$retval, [ 'REMOTE_USER', $remote_user ];
+    push @$retval, [ 'SHIBBOLETH_REMOTE_USER', $shibboleth_remote_user ] if ( $shibboleth_remote_user );
+    push @$retval, [ 'REMOTE_ADDR', $remote_addr ];
+    push @$retval, [ 'REMOTE_HOST', $client_host ];
+    push @$retval, [ 'REMOTE_COUNTRY', $country ];
+
+    foreach my $key ( qw/HTTP_X_FORWARDED_FOR REMOTE_REALM AUTH_TYPE HTTP_USER_AGENT HTTP_HOST SDRINST SDRLIB/ ) {
+        push @$retval, [ $key, $ENV{$key} ] if ( $ENV{$key} );
+    }
+
+    my $affiliation = $ENV{affiliation} || '';
+    push @$retval, [ 'eduPersonScopedAffiliation', [ sort split(/;/, $affiliation) ] ];
+    push @$retval, [ 'eduPersonPrincipalName', $ENV{eppn} ] if ( $ENV{eppn} );
+    push @$retval, [ 'displayName', $ENV{displayName} ] if ( $ENV{displayName} );
+    push @$retval, [ 'entityID', $ENV{Shib_Identity_Provider} ];
+    push @$retval, [ 'authenticationMethod', $ENV{Shib_Authentication_Method} ];
+    push @$retval, [ 'authnContextClass', $ENV{Shib_AuthnContext_Class} ];
+
+    return $retval;
+}
+
+sub get_cookie_values {
+    my $cookie_value = $ENV{HTTP_COOKIE};
+    my @values = split(/;\s+/, $cookie_value);
+    return \@values;
 }
