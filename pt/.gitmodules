@@ -3,7 +3,7 @@
 	url = /htapps/repos/mdp-web.git
 [submodule "vendor/common-lib/lib"]
 	path = vendor/common-lib/lib
-    url = git@github.com:respinos/mdp-lib.git
+    url = git@github.com:hathitrust/mdp-lib.git
     # url = /htapps/repos/mdp-lib.git
 [submodule "vendor/slip-lib/lib"]
 	path = vendor/slip-lib/lib
