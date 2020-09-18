@@ -30,7 +30,7 @@ sub key {
     unless ( $$self{key} ) {
         my $C = $$self{C};
         my $cgi = $C->get_object('CGI');
-        my @parts = ( $coll_id );
+        my @parts = ( $$self{coll_id} );
         if ( defined $cgi->param('q1') ) {
             push @parts, scalar $cgi->param('q1');
         }
