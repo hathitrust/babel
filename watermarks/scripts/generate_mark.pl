@@ -97,6 +97,13 @@ foreach my $prefix ( @parts ) {
             ]
             ;
 
+        run [ "convert",
+            "-flatten",
+            "$Bin/../$code/$part/$size.png",
+            "$Bin/../$code/$part/$size.flat.png"
+            ]
+            ;
+
         # pngtopam $pngfile > parts/$pnmfile
         run [ "pngtopam",
             "$Bin/../$code/$part/$size.png",
