@@ -146,7 +146,7 @@ HT.Downloader = {
             error: function(req, textStatus, errorThrown) {
                 console.log("DOWNLOAD STARTUP NOT DETECTED");
                 if ( self.$dialog ) { self.$dialog.closeModal(); }
-                if ( req.status == 503 ) {
+                if ( req.status == 429 ) {
                     self.displayWarning(req);
                 } else {
                     self.displayError(req);
