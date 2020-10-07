@@ -745,25 +745,6 @@ sub handle_HATHITRUST_AFFILIATE_PI
     return $is_hathitrust ? 'true' : 'false'
 }
 
-# ---------------------------------------------------------------------
-
-=item handle_MICHIGAN_AFFILIATE_PI : PI_handler(MICHIGAN_AFFILIATE)
-
-Handler for MICHIGAN_AFFILIATE
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_MICHIGAN_AFFILIATE_PI
-    : PI_handler(MICHIGAN_AFFILIATE)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $is_umich = $C->get_object('Auth')->affiliation_is_umich($C);
-
-    return $is_umich ? 'true' : 'false'
-}
-
 
 # ---------------------------------------------------------------------
 
