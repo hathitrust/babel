@@ -1087,6 +1087,9 @@
     <xsl:if test="$pViewTypeList//ViewTypeFullPdfLink">
       <xsl:call-template name="download-links--full-pdf" />
     </xsl:if>
+    <xsl:if test="$pViewTypeList//ViewTypeFullPdfLink">
+      <xsl:call-template name="download-links--full-text" />
+    </xsl:if>
     <xsl:if test="$pViewTypeList//ViewTypeFullEpubLink">
       <xsl:call-template name="download-links--full-epub" />
     </xsl:if>
@@ -1224,6 +1227,27 @@
         <xsl:with-param name="id" select="'fullEpubLink'" />
         <xsl:with-param name="type" select="'EPUB'" />
         <xsl:with-param name="link" select="$pViewTypeList/ViewTypeFullEpubLink" />
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="download-links--full-text">
+    <xsl:param name="pViewTypeList" select="//MdpApp/ViewTypeLinks"/>
+    <xsl:variable name="link">
+      <xsl:text>/cgi/imgsrv/download/text?id=</xsl:text>
+      <xsl:value-of select="$gHtId" />
+      <xsl:text>;format=</xsl:text>
+    </xsl:variable>
+    <xsl:if test="$gFullPdfAccessMessage=''">
+      <xsl:call-template name="download-full-book">
+        <xsl:with-param name="id" select="'fullTextBundleTextLink'" />
+        <xsl:with-param name="type" select="'Text'" />
+        <xsl:with-param name="link" select="concat($link, 'text')" />
+      </xsl:call-template>
+      <xsl:call-template name="download-full-book">
+        <xsl:with-param name="id" select="'fullTextBundleZipLink'" />
+        <xsl:with-param name="type" select="'ZIP'" />
+        <xsl:with-param name="link" select="concat($link, 'zip')" />
       </xsl:call-template>
     </xsl:if>
   </xsl:template>
