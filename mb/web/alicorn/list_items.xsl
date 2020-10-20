@@ -38,6 +38,7 @@
       <xsl:value-of select="//MBooksGlobals/CurrentCgi/Param[@name='c']" />
       <xsl:text>:</xsl:text>
     </xsl:attribute>
+    <xsl:attribute name="data-c"><xsl:value-of select="$coll_id" /></xsl:attribute>
   </xsl:template>
 
   <xsl:template name="setup-extra-header">
