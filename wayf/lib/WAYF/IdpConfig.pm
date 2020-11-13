@@ -36,8 +36,6 @@ sub __populate_HT_hash {
         my $template = $hashref->{template};
         my $authtype = $hashref->{authtype};
 
-        print STDERR "AHOY : $name : $enabled : $social\n";
-
         my $h = {
                  'name' => $name,
                  'authtype' => $authtype,
