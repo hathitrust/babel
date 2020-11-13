@@ -124,7 +124,7 @@ my $app = sub {
             }
         }
 
-        my $auth_type = $$info{auth_type};
+        my $auth_type = $$info{auth_type} || 'null';
         my $r = ref($$info{r}) ? q{JSON.parse('} . encode_json($$info{r}) . q{')} : 'null';
 
         # my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
