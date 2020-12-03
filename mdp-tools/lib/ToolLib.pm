@@ -39,7 +39,7 @@ use Exporter ();
 
 $ToolLib::VERBOSE = 0;
 
-@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4);
+@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4 preview);
 @ToolLib::all_valid_stages = (@ToolLib::valid_beta_stages, 'test');
 
 @ToolLib::valid_developers =
