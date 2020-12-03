@@ -35,3 +35,5 @@ watermarks
 whoami
 ic-tracking
 crms
+audit
+singleimage_validator
