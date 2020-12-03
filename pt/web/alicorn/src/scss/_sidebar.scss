@@ -308,11 +308,16 @@ html.mobile, html[data-item-type="volume/epub"] {
   justify-content: space-between;
 }
 
+// #action-clear-selection {
+//   position: absolute;
+//   right: 0;
+//   margin-left: -8px;
+//   visibility: hidden;
+// }
+
 #action-clear-selection {
-  position: absolute;
-  right: 0;
-  margin-left: -8px;
   visibility: hidden;
+  margin-top: -4px;
 }
 
 #sidebar {
@@ -324,6 +329,20 @@ html.mobile, html[data-item-type="volume/epub"] {
 
   #input-search-text {
     font-size: 1rem !important;
+  }
+
+  .panel {
+    h2, h3 {
+      display: flex;
+      align-items: center;
+      > * + * {
+        margin-left: 0.5rem;
+      }
+    }
+
+    & + .panel {
+      margin-top: 1rem;
+    }
   }
 }
 

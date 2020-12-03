@@ -418,10 +418,8 @@ html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.downlo
 }
 
 #action-clear-selection {
-  position: absolute;
-  right: 0;
-  margin-left: -8px;
   visibility: hidden;
+  margin-top: -4px;
 }
 
 #sidebar {
@@ -434,6 +432,23 @@ html.mobile li.download-item--EPUB, html[data-item-type="volume/epub"] li.downlo
 
 #sidebar #input-search-text {
   font-size: 1rem !important;
+}
+
+#sidebar .panel h2, #sidebar .panel h3 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+#sidebar .panel h2 > * + *, #sidebar .panel h3 > * + * {
+  margin-left: 0.5rem;
+}
+
+#sidebar .panel + .panel {
+  margin-top: 1rem;
 }
 
 .inactive {
