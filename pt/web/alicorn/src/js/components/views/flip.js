@@ -334,16 +334,34 @@ export var Flip = class extends Base {
     return tuple[1].seq;
   }
 
-  currentLocation() {
+  currentLocation(side='DEFAULT') {
     var slice = this.container.querySelector('.slice[data-visible="true"]');
-    var page = slice.querySelector('.page[data-seq]');
-    return page.dataset.seq;
+    var expr;
+    switch(side) {
+      case 'DEFAULT':
+        expr = '.page[data-seq]'; // first match
+        break;
+      case 'VERSO':
+        expr = '.page.verso';
+        break;
+      case 'RECTO':
+        expr = '.page.recto';
+    }
+    var page = slice.querySelector(expr);
+    return page ? page.dataset.seq : null;
   }
 
   currentPage() {
     var slice = this.container.querySelector('.slice[data-visible="true"]');
     var page = slice.querySelector('.page[data-seq]');
     return page;
+  }
+
+  currentLocations() {
+    var verso = this.container.querySelector('.slice[data-visible="true"] .page.verso');
+    var recto = this.container.querySelector('.slice[data-visible="true"] .page.recto');
+    var retval = [];
+
   }
 
   _calculateSeq(direction) {
