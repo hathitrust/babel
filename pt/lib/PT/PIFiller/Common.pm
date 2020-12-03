@@ -31,6 +31,7 @@ use Collection;
 use CollectionSet;
 use Access::Rights;
 use Survey;
+use Namespaces;
 
 use File::Slurp ();
 
@@ -1477,6 +1478,18 @@ sub handle_IN_COPYRIGHT_PI
         return 'true';
     }
     return 'false';
+}
+
+sub handle_GOOGLE_BOOK_LINK
+    : PI_handler(GOOGLE_BOOK_LINK)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $id = $C->get_object('CGI')->param('id');
+    my $book_id = Namespaces::get_google_id_by_namespace($C, $id);
+    if ( $book_id ) {
+        return qq{<Link service="google" href="https://books.google.com/books?vid=$book_id">Google Books</Link>};
+    }
+    return '';
 }
 
 sub ExtractLSParams {
