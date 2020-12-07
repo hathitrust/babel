@@ -1161,7 +1161,7 @@
       #download-selected-pages-output {
         font-size: 90%;
         color: #666;
-        margin-left: 2.5rem;
+        margin-left: 0rem;
         margin-bottom: 0.5rem;
       }
 
@@ -1294,12 +1294,20 @@
             </div>
 
             <xsl:if test="$gUsingSearch = 'false'">
-              <div class="form-control" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap" data-download-format-target="pdf plaintext plaintext-zip image">
+              <div class="form-control" data-download-format-target="pdf plaintext plaintext-zip image">
                 <input name="range" type="radio" id="download-selected-pages" value="selected-pages" data-is-partial="true" /> 
                 <label for="download-selected-pages" style="white-space: nowrap">Selected page scans</label>
-                <button id="action-clear-selection" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button>
-                <div id="download-selected-pages-output" style="flex-basis: 100%"><ul></ul></div>
+                <!-- <button id="action-clear-selection" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button> -->
+                <!-- <div id="download-selected-pages-output" style="flex-basis: 100%"><ul></ul></div> -->
+
+                <div class="range-selected-pages-summary" style="display: flex; margin-left: 1.5rem; align-items: center">
+                  <div id="download-selected-pages-output" style="flex-basis: 100%; margin-right: 0.5rem"><ul></ul></div>
+                  <button id="action-clear-selection" data-role="tooltip" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button>
+                </div>
+
               </div>
+
+
             </xsl:if>
 
           </xsl:if>
