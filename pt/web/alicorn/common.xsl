@@ -620,7 +620,7 @@
         <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
         <xsl:attribute name="data-tracking-action">PT Find in a Library</xsl:attribute>
         <xsl:attribute name="data-tracking-label"><xsl:value-of select="$oclc-number" /></xsl:attribute>
-        <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+        <!-- <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute> -->
 
         <xsl:value-of select="$label" />
 
@@ -690,7 +690,7 @@
             <xsl:element name="img">
               <xsl:attribute name="src">//common-web/graphics/bookmark.gif</xsl:attribute>
               <xsl:attribute name="alt">Bookmark this item</xsl:attribute>
-              <xsl:attribute name="title">Bookmark this item in your browser</xsl:attribute>
+              <!-- <xsl:attribute name="title">Bookmark this item in your browser</xsl:attribute> -->
             </xsl:element>
           </xsl:element>
           <xsl:element name="a">
@@ -998,7 +998,7 @@
               <xsl:attribute name="data-tracking-action">PT VuFind Catalog Record</xsl:attribute>
               <xsl:attribute name="data-tracking-label"><xsl:value-of select="$href" /></xsl:attribute>
               <xsl:attribute name="href"><xsl:value-of select="$href" /></xsl:attribute>
-              <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute>
+              <!-- <xsl:attribute name="title">Link to the HathiTrust VuFind Record for this item</xsl:attribute> -->
               <xsl:text>View full catalog record</xsl:text>
             </xsl:element>
           </xsl:when>
@@ -1353,7 +1353,7 @@
             <xsl:text>https://www.worldcat.org/oclc/</xsl:text>
             <xsl:value-of select="$oclc-number" />
           </xsl:attribute>
-          <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute>
+          <!-- <xsl:attribute name="title">Link to OCLC Find in a Library</xsl:attribute> -->
           <xsl:text>Find in a library</xsl:text>
         </xsl:element>
       </li>
@@ -1380,7 +1380,9 @@
   <xsl:template name="get-service-links">
     <xsl:for-each select="//MdpApp/ExternalLinks/Link">
       <li>
-        <a href="{@href}"><xsl:text>Read at </xsl:text><xsl:value-of select="." /></a>
+        <a href="{@href}" data-toggle="tracking" data-tracking-category="outLinks" data-traction-action="PT Google Books" data-tracking-label="{@href}">
+          <xsl:text>Find at </xsl:text><xsl:value-of select="." />
+        </a>
       </li>
     </xsl:for-each>
   </xsl:template>
