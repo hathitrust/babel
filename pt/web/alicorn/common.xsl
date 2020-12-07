@@ -1310,7 +1310,7 @@
           <button class="btn" type="submit">Download</button>
         </p>
         <p style="font-size: 90%; margin-top: -0.5rem">
-          <a target="_blank" href="https://www.hathitrust.org/help_digital_library#printinghelp">Printing/Downloading Help</a> 
+          <a target="_blank" href="https://www.hathitrust.org/help_digital_library#downloadhelp">Download Help</a> 
         </p>
       </form>
 
