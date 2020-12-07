@@ -1309,6 +1309,9 @@
         <p style="margin-top: 0.5rem;">
           <button class="btn" type="submit">Download</button>
         </p>
+        <p style="font-size: 90%; margin-top: -0.5rem">
+          <a target="_blank" href="https://www.hathitrust.org/help_digital_library#printinghelp">Printing/Downloading Help</a> 
+        </p>
       </form>
 
       <form id="tunnel-download-module" style="display: none" data-action-template="/cgi/imgsrv/download/" method="GET">
