@@ -54,6 +54,9 @@ head.ready(function() {
       if ( $this.parents(".form-search-volume").length ) {
         return;
       }
+      if ( $this.parents(".form-download-module").length ) {
+        return;
+      }
       if ( $this.is("button,a") ) {
         HT.toggle(false);
       }

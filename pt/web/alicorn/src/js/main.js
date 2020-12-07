@@ -550,6 +550,11 @@ if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
   window.addEventListener('scroll', _scrollCheck);
 }
 
+$root.addEventListener('scroll', debounce(function(event) {
+  console.log("AHOY FIXING $root SCROLL", $root.scrollTop);
+  $root.scrollTop = 0;
+}, 50));
+
 $main.dataset.selected = 0;
 
 reader.on('track', () => {

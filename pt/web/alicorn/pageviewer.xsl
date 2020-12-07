@@ -453,7 +453,7 @@
     <main class="main-container" id="main">
       <xsl:call-template name="header" />
       <div class="container flex-container container-boxed container-full">
-        <div class="sidebar-container" id="sidebar" tabindex="0">
+        <div class="sidebar-container scroll-gradient" id="sidebar" tabindex="0">
           <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
               <span class="filter-group-heading">Options</span>
