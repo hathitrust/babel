@@ -1143,19 +1143,19 @@
       }
 
       main[data-view="1up"] .form-control[data-view-target~="1up"] {
-        display: block;
+        display: flex;
       }
 
       main[data-view="plaintext"] .form-control[data-view-target~="plaintext"] {
-        display: block;
+        display: flex;
       }
 
       main[data-view="image"] .form-control[data-view-target~="image"] {
-        display: block;
+        display: flex;
       }
 
       main[data-view="2up"] .form-control[data-view-target~="2up"] {
-        display: block;
+        display: flex;
       }
 
       #download-selected-pages-output {
@@ -1195,6 +1195,28 @@
       .form-download-module input[disabled] ~ * {
         opacity: 0.4;
         pointer-events: none;
+      }
+
+      .form-download-module .form-control {
+        display: flex;
+        align-items: center;
+      }
+
+      .form-download-module input[type="radio"] {
+        position: static;
+        width: auto;
+        height: auto;
+        clip: unset;
+        margin-top: 0;
+        margin-bottom: 0.25rem;
+      }
+
+      .form-download-module input[type="radio"] + label {
+        padding-left: 0.5rem;
+      }
+
+      .form-download-module input[type="radio"] + label:before {
+        display: none;
       }
 
     </style>
