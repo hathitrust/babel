@@ -1321,14 +1321,12 @@
                 <label for="download-selected-pages" style="white-space: nowrap">Selected page scans</label>
                 <!-- <button id="action-clear-selection" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button> -->
                 <!-- <div id="download-selected-pages-output" style="flex-basis: 100%"><ul></ul></div> -->
-
-                <div class="range-selected-pages-summary" style="display: flex; margin-left: 1.5rem; align-items: center">
-                  <div id="download-selected-pages-output" style="flex-basis: 100%; margin-right: 0.5rem"><ul></ul></div>
-                  <button id="action-clear-selection" data-role="tooltip" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button>
-                </div>
-
               </div>
 
+              <div class="range-selected-pages-summary" style="display: flex; margin-left: 1.5rem; align-items: center">
+                <div id="download-selected-pages-output" style="flex-basis: 100%; margin-right: 0.5rem"><ul></ul></div>
+                <button id="action-clear-selection" data-role="tooltip" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button>
+              </div>
 
             </xsl:if>
 
