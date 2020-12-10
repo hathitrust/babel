@@ -1138,8 +1138,17 @@
         font-size: 0.875rem;
       }
 
+      .form-download-module .form-control {
+        display: flex;
+        align-items: center;
+      }
+
       .form-control[data-view-target] {
         display: none;
+      }
+
+      main[data-view="thumb"] .form-control[data-view-target~="thumb"] {
+        display: flex;
       }
 
       main[data-view="1up"] .form-control[data-view-target~="1up"] {
@@ -1195,11 +1204,6 @@
       .form-download-module input[disabled] ~ * {
         opacity: 0.4;
         pointer-events: none;
-      }
-
-      .form-download-module .form-control {
-        display: flex;
-        align-items: center;
       }
 
       .form-download-module input[type="radio"] {
@@ -1308,7 +1312,7 @@
           </div>
 
           <xsl:if test="$gFullPdfAccess = 'allow'">
-            <div class="form-control" data-download-format-target="pdf epub plaintext plaintext-zip image">
+            <div class="form-control" data-view-target="1up 2up image plaintext thumb" data-download-format-target="pdf epub plaintext plaintext-zip image">
               <input name="range" type="radio" id="download-volume" value="volume">
                 <xsl:attribute name="checked">checked</xsl:attribute>
               </input> 
@@ -1316,7 +1320,7 @@
             </div>
 
             <xsl:if test="$gUsingSearch = 'false'">
-              <div class="form-control" data-download-format-target="pdf plaintext plaintext-zip image">
+              <div class="form-control" data-view-target="1up 2up image plaintext thumb" data-download-format-target="pdf plaintext plaintext-zip image">
                 <input name="range" type="radio" id="download-selected-pages" value="selected-pages" data-is-partial="true" /> 
                 <label for="download-selected-pages" style="white-space: nowrap">Selected page scans</label>
                 <!-- <button id="action-clear-selection" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button> -->

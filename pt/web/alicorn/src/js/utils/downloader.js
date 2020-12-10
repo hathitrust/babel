@@ -432,14 +432,22 @@ head.ready(function() {
         input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"]`);
       })
       
-      if ( ! hasFullPdfAccess ) {
-        var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input:checked`);
-        if ( ! checked ) {
-            // check the first one
-            var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input`);
-            input.checked = true;
-        }
+      // if ( ! hasFullPdfAccess ) {
+      //   var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input:checked`);
+      //   if ( ! checked ) {
+      //       // check the first one
+      //       var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input`);
+      //       input.checked = true;
+      //   }
+      // }
+
+      var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input:checked`);
+      if ( ! checked ) {
+          // check the first one
+          var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input`);
+          input.checked = true;
       }
+
     }
     downloadFormatOptions.forEach(function(option) {
       option.addEventListener('change', function(event) {
