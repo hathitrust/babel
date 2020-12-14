@@ -38,6 +38,7 @@
     <Filename>loads_helper_pt.xsl</Filename>
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
+    <Filename>icons.xsl</Filename>
     <Filename>pageviewer.xsl</Filename>
     <Filename>searchresults.xsl</Filename>
   </XslFileList>
