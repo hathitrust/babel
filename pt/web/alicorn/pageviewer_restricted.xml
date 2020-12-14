@@ -168,6 +168,10 @@
 
     <DownloadProgressBase><?DOWNLOAD_PROGRESS_BASE?></DownloadProgressBase>
 
+    <ExternalLinks>
+      <?GOOGLE_BOOK_LINK?>
+    </ExternalLinks>
+
   </MdpApp>
 
   <?METS_XML?>
