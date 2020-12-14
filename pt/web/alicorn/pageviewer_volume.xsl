@@ -118,6 +118,8 @@
       <meta property="og:image" content="{//CurrentPageImageSource}" />
     </xsl:if>
 
+    <xsl:call-template name="build-hotjar-script" />
+
   </xsl:template>
 
   <xsl:template name="setup-body-class">
@@ -631,6 +633,19 @@
       <br />
       <a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable" class="btn btn-primary">Learn more.</a>
     </div>
+  </xsl:template>
+
+  <xsl:template name="build-hotjar-script">
+    <script>
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:2109672,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    </script>
   </xsl:template>
 
   <xsl:template match="node()" mode="copy-guts">
