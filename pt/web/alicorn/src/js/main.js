@@ -250,8 +250,8 @@ var Reader = class {
       // this is way more complicated
       var verso = this.view.container.querySelector('.slice[data-visible="true"] .page.verso');
       var recto = this.view.container.querySelector('.slice[data-visible="true"] .page.recto');
-      self._updateLinkSeq(document.querySelector(`#pagePdfLink1`), verso ? verso.dataset.seq : null);
-      self._updateLinkSeq(document.querySelector(`#pagePdfLink2`), recto ? recto.dataset.seq : null);
+      // self._updateLinkSeq(document.querySelector(`#pagePdfLink1`), verso ? verso.dataset.seq : null);
+      // self._updateLinkSeq(document.querySelector(`#pagePdfLink2`), recto ? recto.dataset.seq : null);
 
       [ [ 'current-recto-seq', recto ], [ 'current-verso-seq', verso ] ].forEach(function(tuple) {
         var span = document.querySelector(`#sidebar [data-slot="${tuple[0]}"]`);
@@ -266,17 +266,18 @@ var Reader = class {
       })
 
     } else {
-      var $link = document.querySelector("#pagePdfLink");
-      self._updateLinkSeq($link, seq);
+      // var $link = document.querySelector("#pagePdfLink");
+      // self._updateLinkSeq($link, seq);
 
-      document.querySelector('#sidebar [data-slot="current-seq"]').innerText = seq;
+      var span = document.querySelector('#sidebar [data-slot="current-seq"]');
+      if ( span ) { span.innerText = seq; }
     }
     self._updateLinkSeq(document.querySelector("#pageURL"), seq);
     self._updateLinkSeq(document.querySelector("input[name=seq]"), seq);
     self._updateLinkSeq(document.querySelector("#login-link"), seq);
     self._updateLinkSeq(document.querySelector("#ssd-link"), seq);
 
-    if ( HT.downloader.updateDownloadFormatRangeOptions ) {
+    if ( HT.downloader && HT.downloader.updateDownloadFormatRangeOptions ) {
       HT.downloader.updateDownloadFormatRangeOptions();
     }
   }
