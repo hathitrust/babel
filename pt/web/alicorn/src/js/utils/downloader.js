@@ -411,6 +411,11 @@ var rangeOptions;
 var downloadIdx = 0;
 
 head.ready(function() {
+
+    downloadForm = document.querySelector('#form-download-module');
+    if ( ! downloadForm ) { return ; }
+
+
     HT.downloader = Object.create(HT.Downloader).init({
         params : HT.params
     })
@@ -418,7 +423,6 @@ head.ready(function() {
     HT.downloader.start();
 
     // non-jquery?
-    downloadForm = document.querySelector('#form-download-module');
     downloadFormatOptions = Array.prototype.slice.call(downloadForm.querySelectorAll('input[name="download_format"]'));
     rangeOptions = Array.prototype.slice.call(downloadForm.querySelectorAll('[data-download-format-target]'));
 
@@ -441,10 +445,11 @@ head.ready(function() {
       //   }
       // }
 
-      var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input:checked`);
+      var current_view = ( HT.reader && HT.reader.view ) ?  HT.reader.view.name : 'search'; // pick a default
+      var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${current_view}"] input:checked`);
       if ( ! checked ) {
           // check the first one
-          var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input`);
+          var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${current_view}"] input`);
           input.checked = true;
       }
 

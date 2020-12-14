@@ -1167,6 +1167,10 @@
         display: flex;
       }
 
+      main[data-view="search"] .form-control[data-view-target~="search"] {
+        display: flex;
+      }
+
       #download-selected-pages-output {
         font-size: 90%;
         color: #666;
@@ -1312,7 +1316,7 @@
           </div>
 
           <xsl:if test="$gFullPdfAccess = 'allow'">
-            <div class="form-control" data-view-target="1up 2up image plaintext thumb" data-download-format-target="pdf epub plaintext plaintext-zip image">
+            <div class="form-control" data-view-target="1up 2up image plaintext thumb search" data-download-format-target="pdf epub plaintext plaintext-zip image">
               <input name="range" type="radio" id="download-volume" value="volume">
                 <xsl:attribute name="checked">checked</xsl:attribute>
               </input> 

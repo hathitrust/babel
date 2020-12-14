@@ -73,7 +73,7 @@
   </xsl:template>
 
   <xsl:template name="build-main-container">
-    <main class="main-container" id="main">
+    <main class="main-container" id="main" data-view="search">
       <xsl:call-template name="header" />
 
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
