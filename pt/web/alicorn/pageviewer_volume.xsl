@@ -649,7 +649,7 @@
         __hj = setInterval(function() {
           if ( ! window.hj || ! HT.login_status ) { 
             __hjIdx += 1;
-            if ( __hjIdx == 10 ) { clearInterval(__hjIdx); return; }
+            if ( __hjIdx == 100 ) { clearInterval(__hjIdx); return; }
             console.log("-- HOTJAR: punting", __hjIdx); 
             return; 
           }
