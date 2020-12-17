@@ -642,6 +642,13 @@ head.ready(function() {
                 }
             }, 100);
 
+
+            HT.analytics.trackEvent({ 
+                label : '-', 
+                category : 'PT', 
+                action : `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}` 
+            });
+
             tunnelForm.submit();
 
             return false;

@@ -645,6 +645,26 @@
             r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
             a.appendChild(r);
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+        var __hj; var __hjIdx = 0;
+        __hj = setInterval(function() {
+          if ( ! window.hj ) { 
+            __hjIdx += 1;
+            if ( __hjIdx == 10 ) { clearInterval(__hjIdx); return; }
+            console.log("-- HOTJAR: punting", __hjIdx); 
+            return; 
+          }
+          clearInterval(__hj);
+          var tags = [];
+          if ( HT.login_status ) {
+            tags.push(HT.login_status.affiliation);
+          }
+          <xsl:if test="$gInCopyright = 'true'">
+            if ( HT.login_status.x ) {
+              tags.push('ETAS');
+            }
+          </xsl:if>
+          hj('tagRecording', tags);
+        }, 100);
     </script>
   </xsl:template>
 

@@ -1,6 +1,16 @@
 var HT = HT || {};
 head.ready(function() {
 
+  if ( HT.analytics.trackEvent ) {
+    HT.analytics.__originalTrackEvent = HT.analytics.trackEvent;
+    HT.analytics.trackEvent = function(params) {
+      if ( params.action && params.action.indexOf('Download') > -1 && window.hj ) {
+        hj('tagRecordings', params.action);
+      }
+      HT.analytics.__originalTrackEvent(params);
+    }
+  }
+
   HT.analytics.getContentGroupData = function() {
     // cheat
     var suffix = '';

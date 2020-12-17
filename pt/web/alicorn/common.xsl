@@ -1419,7 +1419,7 @@
   <xsl:template name="get-service-links">
     <xsl:for-each select="//MdpApp/ExternalLinks/Link">
       <li>
-        <a href="{@href}" data-toggle="tracking" data-tracking-category="outLinks" data-traction-action="PT Google Books" data-tracking-label="{@href}">
+        <a href="{@href}" data-toggle="tracking" data-tracking-category="outLinks" data-tracking-action="PT Google Books" data-tracking-label="{@href}">
           <xsl:text>Find at </xsl:text><xsl:value-of select="." />
         </a>
       </li>

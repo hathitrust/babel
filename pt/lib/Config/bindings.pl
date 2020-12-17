@@ -27,6 +27,7 @@
      'h'        => '.*',
      'l11_tracking' => '.*',
      'l11_uid' => '.*',
+     'hjVerifyInstall' => '.*',
     );
 
 # Specification of global *database* operations to be executed before
