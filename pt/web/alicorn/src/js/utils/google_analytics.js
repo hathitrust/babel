@@ -5,7 +5,7 @@ head.ready(function() {
     HT.analytics.__originalTrackEvent = HT.analytics.trackEvent;
     HT.analytics.trackEvent = function(params) {
       if ( params.action && params.action.indexOf('Download') > -1 && window.hj ) {
-        hj('tagRecordings', params.action);
+        hj('tagRecording', params.action);
       }
       HT.analytics.__originalTrackEvent(params);
     }
