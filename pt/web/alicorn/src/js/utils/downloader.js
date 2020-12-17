@@ -250,6 +250,7 @@ HT.Downloader = {
                         category : 'PT', 
                         action : `PT Download - ${self.$config.downloadFormat.toUpperCase()} - ${self.$config.trackingAction}` 
                     });
+                    if ( window.hj ) { hj('tagRecording', [ `PT Download - ${self.$config.downloadFormat.toUpperCase()} - ${self.$config.trackingAction}` ]) };
 
                     setTimeout(function() {
                         self.$dialog.closeModal();
@@ -648,6 +649,7 @@ head.ready(function() {
                 category : 'PT', 
                 action : `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}` 
             });
+            if ( window.hj ) { hj('tagRecording', [ `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}` ]) };
 
             tunnelForm.submit();
 
