@@ -647,7 +647,7 @@
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
         var __hj; var __hjIdx = 0;
         __hj = setInterval(function() {
-          if ( ! window.hj ) { 
+          if ( ! window.hj || ! HT.login_status ) { 
             __hjIdx += 1;
             if ( __hjIdx == 10 ) { clearInterval(__hjIdx); return; }
             console.log("-- HOTJAR: punting", __hjIdx); 
