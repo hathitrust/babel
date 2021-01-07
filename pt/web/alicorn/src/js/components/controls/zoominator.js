@@ -116,6 +116,8 @@ export var Zoominator = class {
     this.enable(document.querySelectorAll('.action-zoom-in'), ! ( idx == ( this.possibles.length - 1 )))
     this.enable(document.querySelectorAll('.action-zoom-out'), ! ( idx == 0 ))
 
+    document.body.dataset.zoomedIn = ( this.scale > 1 );
+
     // this.input.zoom_in.disabled = ( idx == ( this.possibles.length - 1 ) );
     // this.input.zoom_out.disabled = ( idx == 0 );
 

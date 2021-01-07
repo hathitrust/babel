@@ -10,6 +10,16 @@ import NanoEvents from 'nanoevents';
 // _.union = array.union;
 // _.difference = array.difference;
 
+
+var checkboxEmptySvg = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+</svg>`;
+var checkboxCheckedSvg = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-check-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+  <path fill-rule="evenodd" d="M10.97 4.97a.75.75 0 0 1 1.071 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.236.236 0 0 1 .02-.022z"/>
+</svg>`;
+
+
 export var Selectinator = class {
   constructor(options={}) {
     // this.options = Object.assign({}, options);
@@ -82,10 +92,13 @@ export var Selectinator = class {
       if ( manifest.checkFeatures(page.dataset.seq, 'MISSING_PAGE') ) {
         continue;
       }
+
+      // <button data-role="tooltip" aria-pressed="false" aria-label="Select page">${checkboxEmptySvg}${checkboxCheckedSvg}</button> 
       var button = document.createElement('button');
-      button.classList.add('button', 'btn-mini', 'action-toggle-selection');
+      // button.classList.add('button', 'btn-mini', 'action-toggle-selection');
       button.dataset.seq = page.dataset.seq;
-      button.setAttribute('aria-label', `Select page scan ${page.dataset.seq} to download`);
+      button.dataset.action = 'toggle';
+      button.setAttribute('aria-label', `Select page scan #${page.dataset.seq}`);
       button.setAttribute('type', 'button');
       // button.setAttribute('aria-pressed', _.indexOf(printable, parseInt(page.dataset.seq, 10)) > -1);
       button.setAttribute('aria-pressed', printable.indexOf(parseInt(page.dataset.seq, 10)) > -1);
@@ -93,35 +106,45 @@ export var Selectinator = class {
       button.setAttribute('data-microtip-position', 'left');
       button.setAttribute('data-microtip-size', 'small');
       button.setAttribute('tabindex', '-1');
+      button.innerHTML = `${checkboxEmptySvg}${checkboxCheckedSvg}`;
 
-      var span = document.createElement('span');
-      span.setAttribute('aria-hidden', 'true');
-      button.appendChild(span);
+      // var span = document.createElement('span');
+      // span.setAttribute('aria-hidden', 'true');
+      // button.appendChild(span);
 
+      page.querySelector('.tag').insertBefore(button, page.querySelector('span'));
+      // button.style.marginRight = '0.25rem';
       page.dataset.selected = button.getAttribute('aria-pressed'); page.classList.toggle('page--selected', button.getAttribute('aria-pressed') == 'true');
-      page.appendChild(button);
+      // page.appendChild(button);
     }
   }
 
   clickHandler(event) {
-    var element = event.target.closest('button');
-    if ( ! element ) {
-      var page = event.target.closest('.page');
-      if ( ! page ) { return ; }
-      var button = page.querySelector('.action-toggle-selection');
-      var x = event.clientX - button.offsetLeft + this.reader.view.container.scrollLeft;
-      var y = event.clientY - button.offsetTop + this.reader.view.container.scrollTop;
-      console.log("AHOY AHOY SELECT", event.clientX, event.clientY, "/", x, y);
-      if ( ( x >= 0 && x <= button.offsetLeft ) && ( y >= 0 && y <= button.outerHeight ) ) {
-        element = button;
-      }
-    }
-    if ( element && element.tagName.toLowerCase() == 'button' && element.classList.contains('action-toggle-selection') ) {
+    var element = event.target.closest('button[data-action="toggle"]');
+    if ( element ) {
       event.preventDefault();
       event.stopPropagation();
-      var page = element.parentNode;
+      var page = element.closest('.page');
       this._addPageToSelection(page, element, event, true);
     }
+
+    // if ( ! element ) {
+    //   var page = event.target.closest('.page');
+    //   if ( ! page ) { return ; }
+    //   var button = page.querySelector('.action-toggle-selection');
+    //   var x = event.clientX - button.offsetLeft + this.reader.view.container.scrollLeft;
+    //   var y = event.clientY - button.offsetTop + this.reader.view.container.scrollTop;
+    //   console.log("AHOY AHOY SELECT", event.clientX, event.clientY, "/", x, y);
+    //   if ( ( x >= 0 && x <= button.offsetLeft ) && ( y >= 0 && y <= button.outerHeight ) ) {
+    //     element = button;
+    //   }
+    // }
+    // if ( element && element.tagName.toLowerCase() == 'button' && element.classList.contains('action-toggle-selection') ) {
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    //   var page = element.parentNode;
+    //   this._addPageToSelection(page, element, event, true);
+    // }
   }
 
   render(slot, value) {
@@ -168,7 +191,8 @@ export var Selectinator = class {
       page.dataset.selected = checked; page.classList.toggle('page--selected', checked);
 
       input.setAttribute('aria-pressed', checked);
-      page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected for download` : '');
+      // page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected for download` : '');
+      page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected` : '');
 
       if ( evt && evt.shiftKey && self._last_selected_seq ) {
           // there should be an earlier selection

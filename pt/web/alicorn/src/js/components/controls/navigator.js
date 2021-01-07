@@ -46,6 +46,17 @@ export var Navigator = class {
         self._update();
     }, false);
 
+    var output_input = this.output.querySelector('input');
+    var capture_value = function(event) {
+      output_input.dataset.value = output_input.value;
+    }
+    output_input.addEventListener('click', capture_value, false);
+    output_input.addEventListener('focus', capture_value, false);
+    output_input.addEventListener('blur', (event) => {
+      if ( ! this.handleValue('#' + output_input.value) ) {
+        output_input.value = output_input.dataset.value;
+      }
+    })
 
     var isTouchDevice = 'ontouchstart' in document.documentElement;
     if ( isTouchDevice ) {
@@ -222,8 +233,10 @@ export var Navigator = class {
   }
 
   render(slot, value) {
-    var span = this.output.querySelector(`[data-slot="${slot}"]`);
-    span.innerText = value;
+    // var span = this.output.querySelector(`[data-slot="${slot}"]`);
+    // span.innerText = value;
+    var input = this.output.querySelector('input');
+    input.value = value;
   }
 
   _update() {

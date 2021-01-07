@@ -234,8 +234,12 @@
   <!-- <xsl:template name="header" /> -->
 
   <xsl:template name="build-extra-header">
+    <xsl:call-template name="build-access-alert-block" />
+  </xsl:template>
+
+  <xsl:template name="build-access-alert-block">
     <xsl:variable name="access-type" select="//AccessType" />
-    <xsl:if test="$gFinalAccessStatus='allow' and $gInCopyright='true'">
+    <xsl:if test="( $gFinalAccessStatus='allow' and $gInCopyright='true' )">
       <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
         <xsl:call-template name="build-emergency-access-affiliate-header" />
       </xsl:if>
@@ -263,7 +267,7 @@
         <xsl:text> and may automatically renew. </xsl:text>
         <xsl:text>Access to this work is provided through the </xsl:text>
         <a href="{$etas_href}">Emergency Temporary Access Service</a>
-        <xsl:text>.</xsl:text>
+        <!-- <xsl:text>.</xsl:text> -->
       </p>
 
       <div class="alert--emergency-access--options">
@@ -311,149 +315,65 @@
   </xsl:template>
 
   <xsl:template name="setup-body-tail">
-    <!-- define a modal -->
-    <div class="modal micromodal-slide" id="search-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close="true">
-          <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
-            <form action="/cgi/ls/one" method="GET" role="search">
-              <div class="modal__header">
-                <h2 class="modal__title" id="search-modal-title">
-                  Search HathiTrust
-                </h2>
-                <button class="modal__close" aria-label="Close modal" data-micromodal-close="true"></button>
+    <div id="search-modal-template" class="hide">
+      <form id="ht-search-form" class="ht-search-form" method="GET" action="/cgi/ls/one">
+        <div style="display: flex; flex-direction: row">
+          <div style="flex-grow: 1">
+            <div style="display: flex">
+              <div class="control control-q1">
+                <label for="q1-input" class="offscreen">Search full-text index</label>
+                <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
+                  <xsl:attribute name="value">
+                    <xsl:call-template name="header-search-q1-value" />
+                  </xsl:attribute>
+                </input>
               </div>
-              <div class="modal__content" id="search-modal-content">
-                 <!-- <form class="nav-search-form form-inline" action="/cgi/ls/one" method="GET" role="search"> -->
-                   <xsl:call-template name="global-search-form-fieldset" />
-                   <xsl:call-template name="global-search-form-options" />
-                <!-- </form> -->
+              <div class="control control-searchtype">
+                <label for="search-input-select" class="offscreen">Search Field List</label>
+                <select id="search-input-select" size="1" class="search-input-select" name="searchtype" style="font-size: 1rem">
+                  <xsl:call-template name="search-input-select-options" />
+                </select>
               </div>
-              <div class="modal__footer">
-                <button class="modal__btn btn" data-micromodal-close="true" aria-label="Close modal">Close</button>
-                <button class="modal__btn btn btn-primary">Search</button>
-              </div>
-            </form>
+            </div>
+            <div class="global-search-options">
+              <fieldset class="search-target">
+                <legend class="offscreen">Available Indexes</legend>
+                <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
+                <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
+                <input name="target" type="radio" id="option-catalog-search" value="catalog" />
+                <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
+              </fieldset>
+              <xsl:call-template name="header-search-ft-checkbox" />
+            </div>
+          </div>
+          <div style="flex-grow: 0">
+            <div class="control">
+              <button class="btn btn-primary" id="action-search-hathitrust"><i class="icomoon icomoon-search" aria-hidden="true"></i> Search HathiTrust</button>
+            </div>
           </div>
         </div>
-      </div>
-  </xsl:template>
-
-
-  <xsl:template name="nav-search-form" mode="old">
-    <form class="nav-search-form form-inline relative" action="/cgi/ls/one" method="GET" role="search">
-      <xsl:call-template name="global-search-form-fieldset" />
-      <xsl:call-template name="global-search-form-options" />
-   </form>
-  </xsl:template>
-
-  <xsl:template name="global-search-form-fieldset">
-    <xsl:variable name="target">
-      <xsl:call-template name="header-search-target" />
-    </xsl:variable>
-    <div style="display: flex">
-      <div class="control control-q1">
-        <label for="q1-input" class="offscreen" >Search</label>
-        <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
-          <xsl:attribute name="value">
-            <xsl:call-template name="header-search-q1-value" />
-          </xsl:attribute>
-        </input>
-      </div>
-      <div class="control control-searchtype">
-        <xsl:if test="$target = 'ls'">
-          <xsl:attribute name="style">display: none;</xsl:attribute>
-        </xsl:if>
-        <label for="search-input-select" class="offscreen">Search Field List</label>
-        <select id="search-input-select" size="1" class="search-input-select" name="searchtype" style="font-size: 1rem">
-          <xsl:call-template name="search-input-select-options" />
-        </select>
-      </div>
-    </div>
-    <!-- <button class="button control control-search">Search</button> -->
-  </xsl:template>
-
-  <xsl:template name="global-search-form-options">
-    <div class="global-search-options">
-      <div class="search-target">
-        <xsl:call-template name="global-search-target-options" />
-      </div>
-      <div class="global-search-ft">
-        <xsl:call-template name="global-search-ft-options" />
-      </div>
-    </div>
-    <div class="global-search-links">
-      <xsl:call-template name="global-search-links" />
-    </div>
-  </xsl:template>
-
-  <xsl:template name="global-search-form-options-modal">
-    <div class="global-search-modal">
-      <div class="global-search-modal-inner">
-        <div class="global-search-options">
-          <div class="search-target">
-            <xsl:call-template name="global-search-target-options" />
-          </div>
-          <div class="global-search-ft">
-            <xsl:call-template name="global-search-ft-options" />
-          </div>
+        <div class="global-search-links" style="padding-top: 1rem; margin-top: -1rem">
+          <ul class="search-links">
+            <li class="search-advanced-link">
+              <a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a>
+            </li>
+            <li class="search-catalog-link">
+              <a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a>
+            </li>
+            <li>
+              <a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a>
+            </li>
+          </ul>
         </div>
-        <div class="global-search-links">
-          <xsl:call-template name="global-search-links" />
-        </div>
-      </div>
+      </form>      
     </div>
-  </xsl:template>
-
-  <xsl:template name="global-search-target-options">
-    <xsl:variable name="target">
-      <xsl:call-template name="header-search-target" />
-    </xsl:variable>
-    <input name="target" type="radio" id="option-full-text-search" value="ls">
-      <xsl:if test="$target = 'ls'">
-        <xsl:attribute name="checked">checked</xsl:attribute>
-      </xsl:if>
-    </input>
-    <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
-    <input name="target" type="radio" id="option-catalog-search" value="catalog">
-      <xsl:if test="$target = 'catalog'">
-        <xsl:attribute name="checked">checked</xsl:attribute>
-      </xsl:if>
-    </input>
-    <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
-  </xsl:template>
-
-  <xsl:template name="global-search-ft-options">
-    <xsl:variable name="checked">
-      <xsl:call-template name="header-search-ft-value" />
-    </xsl:variable>
-    <input type="checkbox" name="ft" value="ft" id="global-search-ft">
-      <xsl:if test="normalize-space($checked)">
-        <xsl:attribute name="checked">checked</xsl:attribute>
-      </xsl:if>
-    </input>
-    <label for="global-search-ft">Full view only</label>
-  </xsl:template>
-
-  <xsl:template name="global-search-links">
-    <ul class="search-links">
-      <li class="search-advanced-link">
-        <a>
-          <xsl:attribute name="href">
-            <xsl:call-template name="GetAdvancedFullTextHref"/>
-          </xsl:attribute>
-          <xsl:text>Advanced full-text search</xsl:text>
-        </a>
-      </li>
-      <li class="search-catalog-link"><a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
-      <li><a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
-    </ul>
   </xsl:template>
 
   <xsl:template name="build-main-container">
     <main class="main-container" id="main">
       <xsl:call-template name="header" />
-      <div class="container flex-container container-boxed container-full">
-        <div class="sidebar-container scroll-gradient" id="sidebar" tabindex="0">
+      <div class="container flex-container container-boxed container-medium">
+        <div class="sidebar-container" id="sidebar" tabindex="0">
           <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
               <span class="filter-group-heading">Options</span>
@@ -480,26 +400,7 @@
   </xsl:template>
 
   <xsl:template name="build-main-container-extra" />
-
-  <xsl:template name="contents-boo">
-    <aside class="side-container" id="sidebar" tabindex="0"><xsl:call-template name="sidebar" /></aside>
-    <main class="main-container" id="main" tabindex="0">
-      <xsl:call-template name="main" />
-    </main>
-  </xsl:template>
-
-  <xsl:template name="contents-grid1">
-    <!-- h2 ? -->
-
-    <main>
-      <div class="container">
-        <aside><xsl:call-template name="sidebar" /></aside>
-        <section id="main" tabindex="0"><xsl:call-template name="main" /></section>
-      </div>
-    </main>
-    <!-- <xsl:call-template name="pageviewer-contents" />
-    <xsl:call-template name="get-access-statements" /> -->
-  </xsl:template>
+  <xsl:template name="build-main-container-main" />
 
   <xsl:template name="pageviewer-contents">
     <xsl:call-template name="sidebar" />
@@ -523,27 +424,38 @@
           <xsl:otherwise>/cgi/pt/search</xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
-      <label for="input-search-text">Search in this text </label>
-      <input id="input-search-text" name="q1" type="text" class="input-small">
-        <xsl:if test="$gHasOcr!='YES'">
-          <xsl:attribute name="disabled">disabled</xsl:attribute>
-        </xsl:if>
-        <xsl:attribute name="placeholder">
-          <xsl:choose>
-            <xsl:when test="$gHasOcr = 'YES'">
-              <!-- <xsl:text>Search in this text</xsl:text> -->
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:text>No text to search in this item</xsl:text>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:attribute>
-        <xsl:attribute name="value">
-          <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
-            <xsl:value-of select="$gCurrentQ1" />
-          </xsl:if>
-        </xsl:attribute>
-      </input>
+      <style>
+
+        .form-inline {
+          display: flex;
+          align-items: center;
+        }
+
+        .field {
+          display: flex;
+          align-items: center;
+        }
+
+        .form-search-volume label {
+          margin-right: 0.25rem;
+          padding: 0.25rem 0.5rem;
+        }
+
+        .form-search-volume .input-large {
+          width: 10rem;
+        }
+
+      </style>
+      <div class="field" style="position: relative; margin-right: 0.25rem">
+        <label for="input-search-text">Search in this text </label>
+        <input id="input-search-text" type="text" class="input-large" name="q1" placeholder="Query?">
+          <xsl:attribute name="value">
+            <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
+              <xsl:value-of select="$gCurrentQ1" />
+            </xsl:if>
+          </xsl:attribute>
+        </input>
+      </div>
       <button type="submit" class="btn dark" data-trigger="search">Find</button>
       <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
       <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />

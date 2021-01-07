@@ -451,7 +451,7 @@ head.ready(function() {
       if ( ! checked ) {
           // check the first one
           var input = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${current_view}"] input`);
-          input.checked = true;
+          if ( input ) { input.checked = true; }
       }
 
     }

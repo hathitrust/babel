@@ -1,29 +1,24 @@
 
 import NanoEvents from 'nanoevents';
 import {Control} from './components/controls';
-import {Service} from './components/imgsrv';
+import {Service, Loader} from './components/imgsrv';
 import {View} from './components/views';
 
 import debounce from 'lodash/debounce';
 
 var HT = window.HT || {}; window.HT = HT;
-var $root = document.querySelector('main');
-var $main = document.querySelector('section#section');
-var $viewer = $main.querySelector('.viewer');
-var $inner = $viewer.querySelector('.viewer-inner');
-var $status = document.querySelector('div[role="status"]');
+if ( location.hostname.indexOf('.hathitrust.org') < 0 ) {
+  HT.force_size = 100;  
+}
+HT.force_size = 100; // JUST FOR GRINS
 
-var $toolbar = $main.querySelector('#toolbar-vertical');
-// // --- need to do something about the toolbar height
-// setTimeout(() => {
-//   // $toolbar.style.height = `${getComputedStyle($toolbar).height}`;
-//   var h = parseInt(getComputedStyle($toolbar).height);
+// TODO -- UPDATE ELEMENTS
 
-//   $toolbar.style.overflowY = 'auto';
-// }, 100);
+var $$main = document.querySelector('main');
+var $main = document.querySelector(".app--reader--viewer");
+var $root = document.querySelector('.app--reader');
 
-var min_height = $viewer.offsetHeight;
-var min_width = $viewer.offsetWidth * 0.80;
+var $toolbar = $root.querySelector('#toolbar-vertical');
 
 var Reader = class {
   constructor(options={}) {
@@ -44,37 +39,32 @@ var Reader = class {
     if ( cb === undefined ) {
       cb = function() {
         this.emit('ready', this.view.name);
-        $viewer.classList.remove('viewer--setup');
+        $root.classList.remove('viewer--setup');
         this.view.display(params.seq || 1);
       }.bind(this);
     } else {
       var original_cb = cb;
       cb = function() {
         this.emit('ready', this.view.name);
-        $viewer.classList.remove('viewer--setup');
+        $root.classList.remove('viewer--setup');
         original_cb();
       }.bind(this);
     }
 
-    $viewer.classList.add('viewer--setup');
+    $root.classList.add('viewer--setup');
 
     if ( params.view ) {
-      $main.dataset.view = params.view; 
-      $main.classList.add(`view--${params.view}`);
+      $$main.dataset.view = $root.dataset.view = params.view; 
+      $root.classList.add(`view--${params.view}`);
 
       if ( params.restarting ) {
         this.emit('status', `Switching to ${params.view} view`);
       }
     }
     if ( params.scale ) { this.options.scale = params.scale; }
-    this.setView({ view: $main.dataset.view });
+    this.setView({ view: $root.dataset.view, seq: ( params.seq || 1 ) });
     setTimeout(function() {
-      console.log("AHOY AHOY $inner.view timeout", $inner.offsetHeight);
-      var t0 = performance.now();
-      this.view.attachTo($inner, cb);
-      var t1 = performance.now();
-      console.log(`BENCHMARK attachTo ${t1 - t0}`);
-      // this.emit('ready', this.view.mode);
+      this.view.attachTo($main, cb);
     }.bind(this), 0);
   }
 
@@ -102,32 +92,42 @@ var Reader = class {
     var t0 = performance.now();
     var cls = View.for(params.view);
     var t1 = performance.now();
-    this.view = new cls({ reader: this, service: this.service, scale: this.options.scale });
+    this.view = new cls({ reader: this, service: this.service, scale: this.options.scale, seq: params.seq });
     var t2 = performance.now();
     this.emit('configure', this.view.config());
     this._updateViews(params.view);
 
     HT.update_status(`Viewing book in ${this.view.displayLabel} view.`);
-    document.querySelector('#view-heading').innerText = `View: ${this.view.displayLabel}`;
+    // document.querySelector('#view-heading').innerText = `View: ${this.view.displayLabel}`;
 
     HT.prefs.set({ pt : { view : params.view } })
     console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
+
+    HT.view = this.view;
   }
 
   next() {
-    this.view.next();
+    var params = { eventReferrer: document.documentElement.dataset.eventReferrer };
+    this.view.next(params);
+    document.documentElement.dataset.eventReferrer = null;
   }
 
   prev() {
-    this.view.prev();
+    var params = { eventReferrer: document.documentElement.dataset.eventReferrer };
+    this.view.prev(params);
+    document.documentElement.dataset.eventReferrer = null;
   }
 
   first() {
-    this.view.first();
+    var params = { eventReferrer: document.documentElement.dataset.eventReferrer };
+    this.view.first(params);
+    document.documentElement.dataset.eventReferrer = null;
   }
 
   last() {
-    this.view.last();
+    var params = { eventReferrer: document.documentElement.dataset.eventReferrer };
+    this.view.last(params);
+    document.documentElement.dataset.eventReferrer = null;
   }
 
   display(seq) {
@@ -155,19 +155,19 @@ var Reader = class {
   bindEvents() {
     /* NOOP */
     var lastMessage; var statusTimer;
-    this.on('status', (message) => {
-      if ( lastMessage != message ) {
-        if ( statusTimer ) { clearTimeout(statusTimer); statusTimer = null; }
-        setTimeout(() => {
-          $status.innerText = message;
-          lastMessage = message;
-          console.log("-- status:", message);
-        }, 50);
-        statusTimer = setTimeout(() => {
-          $status.innerText = '';
-        }, 500);
-      }
-    });
+    // this.on('status', (message) => {
+    //   if ( lastMessage != message ) {
+    //     if ( statusTimer ) { clearTimeout(statusTimer); statusTimer = null; }
+    //     setTimeout(() => {
+    //       $status.innerText = message;
+    //       lastMessage = message;
+    //       console.log("-- status:", message);
+    //     }, 50);
+    //     statusTimer = setTimeout(() => {
+    //       $status.innerText = '';
+    //     }, 500);
+    //   }
+    // });
 
     this.on('relocated', (params) => {
 
@@ -202,17 +202,17 @@ var Reader = class {
         return ; 
       }
       this.emit('resize');
-      this._checkToolbar();
+      // this._checkToolbar();
     }.bind(this), 100);
 
-    var jump = document.querySelector('#action-focus-current-page');
-    jump.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.view.focus(true);
-      this._logAction(undefined, 'action-focus-current-page');
-      console.log("AHOY FOCUS CURRENT PAGE");
-      return false;
-    })
+    // var jump = document.querySelector('#action-focus-current-page');
+    // jump.addEventListener('click', (event) => {
+    //   event.preventDefault();
+    //   this.view.focus(true);
+    //   this._logAction(undefined, 'action-focus-current-page');
+    //   console.log("AHOY FOCUS CURRENT PAGE");
+    //   return false;
+    // })
 
     var IGNORE_FOCUS = [ 'input', 'textarea', 'a', 'button' ];
     var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target]');
@@ -221,6 +221,7 @@ var Reader = class {
       btn.addEventListener('click', (event) => {
         event.preventDefault();
         var btn = document.querySelector(`#${event.target.dataset.target}`);
+        document.documentElement.dataset.eventReferrer = 'accesskey';
         btn.click();
         if ( document.activeElement && 
              IGNORE_FOCUS.indexOf(document.activeElement.localName) >= 0 && 
@@ -243,18 +244,20 @@ var Reader = class {
     window.addEventListener('resize', this._resizer);
   }
 
+  // TODO - REFLECT CURRENT LAYOUT
   _updateLinks(seq) {
     var self = this;
     if ( ! seq ) { seq = this.view.currentLocation(); }
     if ( this.view.name == '2up' ) {
       // this is way more complicated
-      var verso = this.view.container.querySelector('.slice[data-visible="true"] .page.verso');
-      var recto = this.view.container.querySelector('.slice[data-visible="true"] .page.recto');
+      var verso = this.view.container.querySelector('.page[tabindex="0"].verso');
+      var recto = this.view.container.querySelector('.page[tabindex="0"].recto');
       // self._updateLinkSeq(document.querySelector(`#pagePdfLink1`), verso ? verso.dataset.seq : null);
       // self._updateLinkSeq(document.querySelector(`#pagePdfLink2`), recto ? recto.dataset.seq : null);
 
       [ [ 'current-recto-seq', recto ], [ 'current-verso-seq', verso ] ].forEach(function(tuple) {
         var span = document.querySelector(`#sidebar [data-slot="${tuple[0]}"]`);
+        if ( ! span ) { return ; }
         var page = tuple[1];
         if ( page && page.dataset.seq ) {
           span.innerText = page.dataset.seq;
@@ -263,6 +266,8 @@ var Reader = class {
           span.innerText = '-';
           span.parentNode.previousElementSibling.disabled = true;
         }
+        console.log("_updateLinks", span, page.dataset.seq);
+
       })
 
     } else {
@@ -290,7 +295,7 @@ var Reader = class {
     for(var i = 0; i < inputs.length; i++) {
       inputs[i].value = view;
     }
-    $root.dataset.view = view;
+    $$main.dataset.view = $root.dataset.view = view;
     this._updateHistoryUrl({ view: view });
   }
 
@@ -457,10 +462,44 @@ var service = new Service({
 })
 HT.service = service;
 
+
 var reader = new Reader({ identifier: HT.params.id });
 reader.service = service;
 HT.reader = reader;
 HT.View = View;
+
+reader.$$main = $$main;
+
+// initiate loaders
+HT.service.loaders.images = new Loader({ name: 'images' })
+      .limit(3)
+      .on(Loader.events.LOADED, function(image, datum) {
+        if (! image ) { return false; }
+        reader.view.postImage(image, datum);
+      })
+      .on(Loader.events.ERROR, function() {
+        console.log("AHOY ERROR", arguments);
+      });
+
+// HT.service.loaders.texts = new Loader({ name: 'texts' })
+//       .limit(3)
+//       .on(Loader.events.LOADED, function(blob, datum) {
+//         if (! blob ) { return false; }
+//         reader.view.postText(blob, datum);
+//       })
+//       .on(Loader.events.ERROR, function() {
+//         console.log("AHOY ERROR", arguments);
+//       });
+
+HT.service.loaders.thumbnails = new Loader({ name: 'thumbnails' })
+      .limit(2)
+      .on(Loader.events.LOADED, function(image, datum) {
+        if (! image ) { return false; }
+        reader.view.postThumbnail(image, datum);
+      })
+      .on(Loader.events.ERROR, function() {
+        console.log("AHOY ERROR", arguments);
+      });
 
 $main.dataset.readingOrder = service.manifest.options.readingOrder;
 $main.classList.toggle('reading-order--rtl', $main.dataset.readingOrder == 'right-to-left');
@@ -469,9 +508,10 @@ var is_active = false;
 var scale = 0.75;
 var image_width = 680;
 
+// TODO -- VERIFY LAYOUT
 reader.controls.navigator = new Control.Navigator({
   input: document.querySelector('input[type="range"]'),
-  output: document.querySelector('.navigator .output'),
+  output: document.querySelector('.navigator-output'),
   prompt: document.querySelector('#action-prompt-seq'),
   form: document.querySelector('#form-go-page'),
   reader: reader
@@ -537,12 +577,6 @@ if ( reader.service.allowFullDownload ) {
 }
 
 var _scrollCheck = debounce(function(event) {
-  // if ( window.outerHeight != window.innerHeight ) 
-  // console.log("AHOY AHOY AHOY", window.innerWidth, );
-  // var x = 0;
-  // if ( window.innerWidth != document.documentElement.clientWidth ) {
-  //   x = window.scrollX;
-  // }
   if ( window.visualViewport && window.visualViewport.scale == 1 ) {
     window.scrollTo(0,0);
   }
@@ -550,11 +584,6 @@ var _scrollCheck = debounce(function(event) {
 if ( true || ! ( $("html").is(".mobile") && $("html").is(".ios") ) ) {
   window.addEventListener('scroll', _scrollCheck);
 }
-
-$root.addEventListener('scroll', debounce(function(event) {
-  console.log("AHOY FIXING $root SCROLL", $root.scrollTop);
-  $root.scrollTop = 0;
-}, 50));
 
 $main.dataset.selected = 0;
 
@@ -573,6 +602,18 @@ document.body.addEventListener('keydown', function(event) {
     document.activeElement == reader.view.container ) {
     event.preventDefault();
     reader.view.focus(true);
+  }
+
+  console.log("-- keydown", event.key, document.activeElement);
+  if ( reader.view && ( event.key == 'PageUp' || event.key == 'PageDown' ) ) {
+    if ( document.activeElement.closest("#sideabar") ) { return ; }
+    if ( document.activeElement.closest(".app--reader") ) { return ; }
+    event.preventDefault;
+    reader.view.focus(true);
+    var t = reader.view.container.parentNode.scrollTop;
+    var h = reader.view.container.parentNode.offsetHeight;
+    reader.view.container.parentNode.scrollTop += h;
+    return;
   }
 
   return;
@@ -602,13 +643,8 @@ if ( HT.params.size  ) {
 reader.is_mobile = $("html").is(".mobile") || ( HT.params.debug && HT.params.debug.indexOf('mobile') > -1 );
 
 var $sidebar = $("#sidebar");
-// scale = reader._bestFitScale();
 
 reader.controls.mobile = {};
-// reader.controls.mobile.zoominator = new Control.Zoominator({
-//   input: $sidebar.get(0),
-//   reader: reader
-// });
 
 reader.on('redraw', function() {
   HT.toggle(false);
@@ -676,59 +712,9 @@ if ( reader.service.manifest.totalSeq == 1 ) {
 }
 
 reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
-$sidebar.find(`.action-view[data-target="${$main.dataset.view}"]`).addClass('active');
+$sidebar.find(`.action-view[data-target="${$$main.dataset.view}"]`).addClass('active');
 
 var $menu; var $trigger; var $header; var $navigator;
-var touches = {
-  startTime: -1,
-  allowedTime: 200,
-  threshold: 150,
-  touchstart: {x: -1, y: -1},
-  touchmove: {x: -1, y: -1},
-  touchend: false,
-  direction: 'undetermined'
-};
-// $inner.addEventListener("touchstart", function(event) {
-//   if (event.touches.length >= 2) {
-//   } else {
-//     var touch = event.touches[0];
-//     touches.touchstart.x = touch.pageX;
-//     touches.touchstart.y = touch.pageY;
-//     touches.canceled = false;
-//     touches.startTime = new Date().getTime();
-//     event.preventDefault();
-//   }
-// });
-// $inner.addEventListener("touchmove", function(event) {
-//   if (event.touches.length >= 2) {
-//   } else {
-//     var touch = event.touches[0];
-//     touches.touchmove.x = touch.pageX;
-//     touches.touchmove.y = touch.pageY;
-//     // event.preventDefault();
-//   }
-// });
-// $inner.addEventListener("touchcancel", function(event) {
-//   touches.canceled = true;
-// })
-// $inner.addEventListener("touchend", function(event) {
-//   touches.touchend = true;
-//   if ( touches.canceled ) { return ; }
-//   if (touches.touchstart.x > -1 && touches.touchmove.x > -1) {
-//     var elapsedTime = new Date().getTime() - touches.startTime;
-//     var dist = touches.touchmove.x - touches.touchstart.x;
-//     console.log("AHOY TOUCHEND", elapsedTime, dist, touches.allowedTime);
-//     if ( elapsedTime <= touches.allowedTime && dist >= touches.threshold ) {
-//       touches.direction = touches.touchstart.x < touches.touchmove.x ? "right" : "left";
-//       if ( touches.direction == 'right' ) {
-//         reader.next();
-//       } else {
-//         reader.prev();
-//       }
-//       event.preventDefault();
-//     }
-//   }
-// });
 
 var daInterval;
 HT.debugActive = function() {
@@ -770,6 +756,11 @@ function handleWindowBlur() {
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
 window.addEventListener("focus", handleWindowFocus, false);
 window.addEventListener("blur", handleWindowBlur, false);
+
+const mq = window.matchMedia("(min-width: 992px)");
+document.body.dataset.sidebarNarrowState = mq.matches ? 'open' : 'closed';
+document.querySelector("#action-toggle-sidebar-narrow").setAttribute('aria-expanded', document.body.dataset.sidebarNarrowState == 'open');
+// also should handle aria-epxnaded
 
 setTimeout(() => {
     var event = document.createEvent('UIEvents');

@@ -1,5 +1,5 @@
 import NanoEvents from 'nanoevents';
-import {Base} from './base';
+import {Base, setfn} from './base';
 
 import debounce from 'lodash/debounce';
 
@@ -15,57 +15,56 @@ export var Scroll = class extends Base {
   }
 
   _renderr(page) {
-    var button = document.createElement('button');
-    button.classList.add('button', 'btn-sm', 'action-load-page');
-    button.dataset.seq = page.dataset.seq;
-    button.innerText = 'Load page';
-    button.setAttribute('tabindex', '-1');
-    page.appendChild(button);
+    // var button = document.createElement('button');
+    // button.classList.add('button', 'btn-sm', 'action-load-page');
+    // button.dataset.seq = page.dataset.seq;
+    // button.innerText = 'Load page';
+    // button.setAttribute('tabindex', '-1');
+    // page.appendChild(button);
   }
 
   display(seq) {
     seq = parseInt(seq, 10);
-    var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
+    var target = this.pagesIndex[seq];
+
+    // var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
     target.dataset.visible = true; target.classList.add('page--visible');
-    target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
-    this.currentSeq = seq;
-    this._currentPage = target;
-    this.reader.emit('relocated', { seq: target.dataset.seq });
+    console.log("-- display", seq, target);
+    console.trace();
+    // this.container.parentNode.scrollTop = target.offsetTop - this.container.parentNode.offsetTop;
+    this.container.parentNode.scrollTop = target.offsetTop;
+    // target.parentNode.parentNode.scrollTop = target.offsetTop - target.parentNode.parentNode.offsetTop;
+    // this.currentSeq = seq;
+    // this._currentPage = target;
+    // this.reader.emit('relocated', { seq: target.dataset.seq });
+    this.emitter.emit('scrolled');
   }
 
   handleObserver(entries, observer) {
     entries.forEach(entry => {
-      var div = entry.target;
-      var seq = div.dataset.seq;
-      var viewed = div.querySelector('img');
-      if ( entry.isIntersecting && entry.intersectionRatio > 0.0  ) {
-        // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter', entry.intersectionRatio);
-        if ( ! viewed ) {
-          // console.log("AHOY OBSERVING", entries.length, seq, 'onEnter');
-          this.loadImage(div, { check_scroll: true, callback: function(img) { div.dataset.visible = true; div.classList.add('page--visible'); } });
-        } else if (  div.dataset.preloaded ) {
-          div.dataset.preloaded = false;
-          this.resizePage(div);
+      var page = entry.target;
+      var seq = parseInt(page.dataset.seq, 10);
+      console.log('-- handleObserver', seq);
+      if ( entry.isIntersecting ) {
+        if ( entry.intersectionRatio > 0 ) {
+          page.dataset.lastViewsStarted = entry.time;
+          console.log("|>", seq);
+          this.sets.visible.add(seq);
         }
-        this.focus(div);
-        if ( div.dataset.visible != 'true' ) {
-          div.dataset.visible = true;
-          div.classList.add('page--visible');
+      } else {
+        this.sets.visible.delete(seq);
+        // console.log("****", page.dataset.seq);
+        if ( entry.intersectionRatio == 0.0 && page.dataset.lastViewsStarted >= ( 60000 * 2 ) ) {
+          // page.dataset.loaded = false;
+          // var img = page.querySelector('img');
+          // img.src = img.dataset.placeholderSrc;
         }
-      } else if ( viewed && ! div.dataset.preloaded ) {
-        console.log("AHOY OBSERVING", entries.length, seq, 'onExit');
-        this.unloadImage(div);
-        div.dataset.visible = false; div.classList.remove('page--visible');
-        this.unfocus(div);
+        // console.log("<|", entry.target.dataset.seq);      
       }
-    })
+    });
 
     this.emitter.emit('scrolled');
-
-    // if ( current.page ) {
-    //   this.reader.emit('relocated', { seq: current.page.dataset.seq });
-    // }
   };
 
   currentLocation() {
@@ -74,13 +73,28 @@ export var Scroll = class extends Base {
   }
 
   currentPage() {
-    var current_percentage = 0;
-    var current;
-    var bounds = this.container.getBoundingClientRect();
-    var scrollTop = this.container.scrollTop;
-    var visible = this.container.querySelectorAll('.page[data-loaded="true"],.page[data-loading="true"]');
+    var operating = this._operating();
+    var visible = operating.visible;
+    var maxPercentage = 0; var currentPage;
     for(var i = 0; i < visible.length; i++) {
-      var page = visible[i];
+      var page = this.getPage(visible[i]);
+      var percentage = this.visibility(page, { rootMargin: 0 });
+      console.log("-- currentPage", page, percentage);
+      if ( percentage > maxPercentage ) { currentPage = page; maxPercentage = percentage; }
+    }
+    return currentPage;
+  }
+
+  currentPageXX() {
+    var current;
+    var current_percentage = 0;
+    var bounds = this.container.parentElement.getBoundingClientRect();
+    var scrollTop = this.container.parentElement.scrollTop;
+
+    var visible = [...this.sets.visible];
+
+    for(var i = 0; i < visible.length; i++) {
+      var page = this.pagesIndex[visible[i]];
       var page_bounds = page.getBoundingClientRect();
       if ( page.offsetTop > ( scrollTop + bounds.height ) ) { continue; }
       if ( current_percentage < 1.0 && page.offsetTop >= scrollTop && (page.offsetTop + page_bounds.height) <= scrollTop + bounds.height ) {
@@ -98,7 +112,6 @@ export var Scroll = class extends Base {
         current_percentage = percentage;
         current = page;
       }
-      // console.log("AHOY currentLocation", page.dataset.seq, percentage);
     }
     return current ? current : null;
   }
@@ -145,37 +158,36 @@ export var Scroll = class extends Base {
     var self = this;
     super.bindEvents();
 
-    var threshold = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
-    if ( document.querySelector('html').classList.contains('gt-ie9') ) {
-      threshold = [ 0, 0.25, 0.5, 0.75, 1 ];
-    }
     this.observer = new IntersectionObserver(this.handleObserver.bind(this), {
-        root: this.container,
-        rootMargin: '0px',
-        threshold: threshold
+        root: this.container.parentNode,
+        rootMargin: `${this.rootMargin}px`,
+        threshold: 0
     });
-    // this.observer.USE_MUTATION_OBSERVER = false;
 
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
       var seq = self.currentLocation();
-      self.service.manifest.rotateBy(seq, delta);
-      self.redrawPage(seq);
+      var page = self.pagesIndex[seq];
+      var image_frame = page.querySelector('.image');
+
+      var rotated = parseInt(page.dataset.rotated || 360, 10);
+      rotated += delta;
+      rotated = rotated % 360;
+
+      if ( rotated % 90 == 0 ) {
+        // set margins!
+        var margin = image_frame.clientWidth * 0.8;
+        page.style.setProperty('--margin-rotated', ( margin / 2 ) * -1);
+      } else {
+        page.style.setProperty('--margin-rotated', null);
+      }
+
+      page.dataset.rotated = rotated;
+
+      // self.service.manifest.rotateBy(seq, delta);
+      // self.redrawPage(self.getPage(seq));
     });
 
-    this._handlers.scrolled = this.on('scrolled', debounce(function() {
-      if ( this._scrollPause ) { return ; }
-      var page = this.currentPage();
-      if ( page != null && this.currentSeq != page.dataset.seq ) {
-        var seq = page.dataset.seq;
-        this.reader.emit('relocated', { seq: seq });
-        this.currentSeq = parseInt(seq, 10);
-        if ( this._currentPage ) {
-          this.unfocus(this._currentPage);
-        }
-        this.focus(page);
-        this._currentPage = page;
-      }
-    }.bind(this), 50));
+    this._handlers.scrolled = this.on('scrolled', debounce(this.scrollHandler.bind(this), 50));
 
     this._handlers.click = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._handlers.click);
@@ -183,6 +195,29 @@ export var Scroll = class extends Base {
     this.on('loaded', (page) => {
       page.querySelector('.action-load-page').setAttribute('tabindex', '-1');
     })
+
+  }
+
+  scrollHandler() {
+    if ( this._scrollPause ) { return ; }
+    this.loadPages();
+    var page = this.currentPage();
+    console.log("-- scrollHandler", page, this.currentSeq);
+    if ( page != null && this.currentSeq != page.dataset.seq ) {
+      var seq = page.dataset.seq;
+      this.reader.emit('relocated', { seq: seq });
+      this.currentSeq = parseInt(seq, 10);
+      if ( this._currentPage ) {
+        this.unfocus(this._currentPage);
+      }
+      if ( this._targetSeq ) {
+        this.focus(this.getPage(this._targetSeq));
+        this.currentSeq = this._targetSeq;
+      } else {
+        this.focus(page);
+      }
+      this._currentPage = page;
+    }
   }
 
   bindPageEvents(page) {
@@ -191,6 +226,7 @@ export var Scroll = class extends Base {
 
   clickHandler(event) {
     var element = event.target;
+    super.clickHandler(event);
     if ( element.tagName.toLowerCase() == 'button' && element.classList.contains('action-load-page') ) {
       event.preventDefault();
       event.stopPropagation();
@@ -206,6 +242,92 @@ export var Scroll = class extends Base {
     }
   }
 
+  // unloadPages() {
+  //   // if ( setfn.eqSet(this.sets.visible, this.sets.unloaded) ) { return; }
+  //   // this.sets.unloaded = new Set(this.sets.visible);
+
+  //   var pages = this.container.querySelectorAll('.page[data-loaded="true"]');
+  //   var possibles = new Set();
+  //   pages.forEach((page) => possibles.add(page.dataset.seq));
+  //   if ( setfn.eqSet(this.sets.unloaded, possibles )) { return ; }
+  //   this.sets.unloaded = possibles;
+
+  //   var nearest = 5;
+  //   var visible = this.sets.visible;
+
+  //   var now = Date.now();
+  //   var tmp = [...visible].sort((a,b) => { return a - b});
+  //   var seq1 = parseInt(tmp[0], 10);
+  //   var seq2 = parseInt(tmp[1], 10);
+
+  //   pages.forEach((page) => {
+  //     var seq = parseInt(page.dataset.seq, 10);
+  //     if ( ! this.isVisible(page) ) {
+  //       if ( ! ( ( Math.abs(seq - seq1) <= nearest ) || ( Math.abs(seq - seq2) <= nearest ) ) ) {
+  //         this.unloadImage(page);
+  //         console.log("<<", seq);
+  //       } else {
+  //         console.log("**", seq);
+  //       }
+  //     }
+  //   })
+
+  //   // for(const [seq, page] of Object.entries(this.pagesIndex)) {
+  //   //   if ( ! this.isVisible(page) && page.dataset.loaded == 'true' ) {
+  //   //     if ( ! ( ( Math.abs(seq - seq1) <= nearest ) || ( Math.abs(seq - seq2) <= nearest ) ) ) {
+  //   //       this.unloadImage(page);
+  //   //       // page.dataset.loaded = 'false';
+  //   //       // page.dataset.isLeaving = false;
+
+  //   //       // var img = page.querySelector('img');
+  //   //       // // img.src = img.dataset.thumbnailSrc;
+  //   //       // img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+
+  //   //     } else {
+  //   //       console.log("**", page.dataset.seq);
+  //   //     }
+  //   //   }
+  //   // }
+  // }
+
+  loadPages() {
+    // this.sets.visible = this.debugScrolled();
+    if ( setfn.eqSet(this.sets.visible, this.sets.loaded) ) { return; }
+    this.sets.loaded = new Set(this.sets.visible);
+
+    var visible = this.sets.visible;
+    console.log('-- loadPages', visible);
+
+    var tmp = [...visible].sort((a,b) => { return a - b});
+
+    for(var i = 0; i < tmp.length; i++) {
+      var seq = tmp[i];
+      var page = this.pagesIndex[seq];
+      if ( this.isVisible(page) ) {
+        console.log("//", seq);
+        this.loadImage(page);
+      } else {
+        console.log("@@", seq);
+        // visible.delete(seq);
+      }
+    }
+  }
+
+  debugScrolled(debug) {
+    var t1 = (new Date).getTime();
+    var visible = new Set;
+    for(var idx in this.pages) {
+      var page = this.pages[idx];
+      if ( this.isVisible(page)) {
+        visible.add(page.dataset.seq)
+      }
+    }
+    if ( debug ) {
+      console.log("!!", visible, ( ( new Date ).getTime() - t1 ));
+    }
+    return visible;
+  }
+
   destroy() {
     super.destroy();
     this._handlers.rotate();
@@ -217,6 +339,8 @@ export var Scroll = class extends Base {
       this.container.removeChild(pages[i]);
     }
     this.observer = null;
+    // clearInterval(this.intervals.loader);
+    // clearInterval(this.intervals.unloader);
   }
 
 };
