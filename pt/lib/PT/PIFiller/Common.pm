@@ -1228,6 +1228,55 @@ sub handle_VIEW_TYPE_FULL_EPUB_LINK_PI
     return $href;
 }
 
+sub handle_VIEW_TYPE_REMEDIATED_FILES_LINKS_PI
+    : PI_handler(VIEW_TYPE_REMEDIATED_FILES_LINKS)
+{
+
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+
+    my $finalAccessStatus =
+        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+
+    if ( $finalAccessStatus ne 'allow' ) {
+        return '';
+    }
+
+    my $dbh = $C->get_object('Database')->get_DBH;
+
+    my $retval = '';
+    my $links = $dbh->selectall_arrayref(qq{SELECT * FROM emma_items WHERE original_item_id = ?}, {Slice=>{}}, $id);
+    if ( scalar @$links ) {
+        foreach my $link ( @$links ) {
+            my $label = $$link{rem_coverage};
+            if ( $$link{dc_format} ) {
+                $label .= " (" . uc $$link{dc_format} . ")";
+            }
+            my $remediation;
+            if ( $$link{rem_remediation} ) {
+                my @tmp = split(/\n/, $$link{rem_remediation});
+                $remediation = "<p>" . join("</p><p>", @tmp) . "</p>";
+            }
+            $retval .= <<XML;
+<View name="remediated">
+    <Link>/cgi/imgsrv/download/remediated?id=$id;remediated_item_id=$$link{remediated_item_id}</Link>
+    <Format>$$link{dc_format}</Format>
+    <Coverage>$$link{rem_coverage}</Coverage>
+    <Label>$label</Label>
+    <Remediation>$remediation</Remediation>
+</View>
+XML
+        }
+    } else {
+        $retval .= q{<NOP></NOP>};
+    }
+
+    return $retval;
+
+}
+
 #
 # ---------------------------------------------------------------------
 

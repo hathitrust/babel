@@ -1081,36 +1081,18 @@
           </p>
         </xsl:when>
         <xsl:otherwise>
-          <!-- <div class="subpanel" data-experiment="v0">
-            <ul>
-              <xsl:call-template name="download-links" />
-            </ul>
-          </div>
-
-          <div class="subpanel" data-experiment="v1">
-            <xsl:call-template name="download-this-book-v1" />
-          </div> -->
 
           <div class="subpanel" data-experiment="v2">
             <xsl:call-template name="download-this-book-v2" />
           </div>
 
-          <!-- <div class="subpanel" data-experiment="v3">
-            <xsl:call-template name="download-this-book-v3" />
-          </div> -->
         </xsl:otherwise>
       </xsl:choose>
 
       <xsl:call-template name="no-download-access" />
 
-      <!-- <script>
-        var dlxd = document.querySelector('.download.panel');
-        var dlxs = document.querySelector('#select-download-v');
-        dlxs.addEventListener('change', function(event) {
-          dlxd.dataset.experiment = dlxs.value;
-        })
-        dlxs.value = 'v2'; // force this
-      </script> -->
+      <xsl:call-template name="build-remediated-file-download" />
+
     </div>
   </xsl:template>
 
@@ -1358,6 +1340,36 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="build-remediated-file-download">
+    <xsl:variable name="download-links" select="//ViewTypeLinks/View[@name='remediated']" />
+    <xsl:if test="count($download-links) &gt; 0">
+      <div class="subpanel download--remediated" style="margin-top: 1rem; margin-bottom: 1.5rem">
+        <style>
+          .panel .download--remediated blockquote {
+            font-size: 90%;
+            margin-top: 0.5rem;
+          }
+          .panel .download--remediated blockquote p {
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+          }
+        </style>
+        <h4 style="font-weight: bold">Accessible Materials</h4>
+        <ul>
+          <xsl:for-each select="$download-links">
+            <li>
+              <a download="" href="{Link}"><xsl:value-of select="Label" /></a>
+              <xsl:if test="normalize-space(Remediation)">
+                <blockquote>
+                  <xsl:apply-templates select="Remediation" mode="copy-guts" />
+                </blockquote>
+              </xsl:if>
+            </li>
+          </xsl:for-each>
+        </ul>
+      </div>
+    </xsl:if>
+  </xsl:template>
 
   <xsl:template name="find-in-library">
     <xsl:variable name="x" select="$gMdpMetadata/datafield" />

@@ -114,6 +114,7 @@
       <View name="thumb"><?VIEW_TYPE_THUMBNAIL_LINK?></View>
       <View name="text"><?VIEW_TYPE_TEXT_LINK?></View>
       <View name="plaintext"><?VIEW_TYPE_PLAINTEXT_LINK?></View>
+      <?VIEW_TYPE_REMEDIATED_FILES_LINKS?>
     </ViewTypeLinks>
 
     <ResizeForm>
