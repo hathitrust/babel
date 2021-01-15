@@ -113,7 +113,7 @@ export var PlainText = class extends Single {
   postText(text, datum) {
     super.postText(text, datum);
     var page_text = datum.page.querySelector('.page-text');
-    if ( page_text.textContent.trim() == "" ) {
+    if ( page_text.textContent.trim() == "" || ! page_text.textContent.trim().match(/\w+/) ) {
       page_text.innerHTML = `<div class="alert alert-block alert-info alert-headline"><p>NO TEXT ON PAGE</p></div><p>This page does not contain any text recoverable by the OCR engine.</p>`;
     }
 

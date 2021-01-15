@@ -30,14 +30,9 @@ export var Scroll = class extends Base {
     // var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
     if ( ! target ) { return; }
     target.dataset.visible = true; target.classList.add('page--visible');
-    console.log("-- display", seq, target);
-    console.trace();
-    // this.container.parentNode.scrollTop = target.offsetTop - this.container.parentNode.offsetTop;
+    // console.log("-- display", seq, target);
+    // console.trace();
     this.container.parentNode.scrollTop = target.offsetTop;
-    // target.parentNode.parentNode.scrollTop = target.offsetTop - target.parentNode.parentNode.offsetTop;
-    // this.currentSeq = seq;
-    // this._currentPage = target;
-    // this.reader.emit('relocated', { seq: target.dataset.seq });
     this.emitter.emit('scrolled');
   }
 
@@ -45,11 +40,10 @@ export var Scroll = class extends Base {
     entries.forEach(entry => {
       var page = entry.target;
       var seq = parseInt(page.dataset.seq, 10);
-      console.log('-- handleObserver', seq);
+      // console.log('-- handleObserver', this._installed, seq);
       if ( entry.isIntersecting ) {
         if ( entry.intersectionRatio > 0 ) {
           page.dataset.lastViewsStarted = entry.time;
-          console.log("|>", seq);
           this.sets.visible.add(seq);
         }
       } else {
@@ -79,41 +73,10 @@ export var Scroll = class extends Base {
     for(var i = 0; i < visible.length; i++) {
       var page = this.getPage(visible[i]);
       var percentage = this.visibility(page, { rootMargin: 0 });
-      console.log("-- currentPage", page, percentage);
+      // console.log("-- currentPage", page, percentage);
       if ( percentage > maxPercentage ) { currentPage = page; maxPercentage = percentage; }
     }
     return currentPage;
-  }
-
-  currentPageXX() {
-    var current;
-    var current_percentage = 0;
-    var bounds = this.container.parentElement.getBoundingClientRect();
-    var scrollTop = this.container.parentElement.scrollTop;
-
-    var visible = [...this.sets.visible];
-
-    for(var i = 0; i < visible.length; i++) {
-      var page = this.pagesIndex[visible[i]];
-      var page_bounds = page.getBoundingClientRect();
-      if ( page.offsetTop > ( scrollTop + bounds.height ) ) { continue; }
-      if ( current_percentage < 1.0 && page.offsetTop >= scrollTop && (page.offsetTop + page_bounds.height) <= scrollTop + bounds.height ) {
-        current_percentage = 1.0;
-        current = page;
-        continue;
-      }
-
-      var y1 = Math.abs(scrollTop - page.offsetTop);
-      var y2 = Math.abs( ( scrollTop + bounds.height ) - ( page.offsetTop + page_bounds.height ) );
-      var h = page_bounds.height - y1 - y2;
-      var percentage = h / bounds.height;
-      if ( percentage < 0 ) { continue; }
-      if ( percentage > current_percentage ) {
-        current_percentage = percentage;
-        current = page;
-      }
-    }
-    return current ? current : null;
   }
 
   next() {
@@ -128,23 +91,24 @@ export var Scroll = class extends Base {
     this.display(this.currentSeq - 1);
   }
 
-  _postResizePage(page, bounds, rect) {
-    if ( rect.bottom <= bounds.bottom && rect.top < 0 ) {
-      var scrollTop = this.container.scrollTop;
-      setTimeout(function() {
-        var updated_rect = page.getBoundingClientRect();
-        var delta = updated_rect.height - rect.height;
-        if ( this.container.scrollTop == scrollTop ) {
-          // delta /= this.settings.scale;
-          // console.log("AHOY afterResized", view.index, this.container.scrollTop, view.element.getBoundingClientRect().height, rect.height, delta / this.settings.scale);
-          this.container.scrollTop += Math.ceil(delta);
-          console.log("AHOY afterResized", page.dataset.seq, scrollTop, this.container.scrollTop, delta);
-        } else {
-          console.log("AHOY donotResized", page.dataset.seq, scrollTop, this.container.scrollTop, delta);
-        }
-      }.bind(this), 500);
-    }
-  }
+  // _postResizePage(page, bounds, rect) {
+  //   if ( this._scrollPause ) { return ; }
+  //   if ( rect.bottom <= bounds.bottom && rect.top < 0 ) {
+  //     var scrollTop = this.container.scrollTop;
+  //     setTimeout(function() {
+  //       var updated_rect = page.getBoundingClientRect();
+  //       var delta = updated_rect.height - rect.height;
+  //       if ( this.container.scrollTop == scrollTop ) {
+  //         // delta /= this.settings.scale;
+  //         // console.log("AHOY afterResized", view.index, this.container.scrollTop, view.element.getBoundingClientRect().height, rect.height, delta / this.settings.scale);
+  //         this.container.scrollTop += Math.ceil(delta);
+  //         console.log("AHOY afterResized", page.dataset.seq, scrollTop, this.container.scrollTop, delta);
+  //       } else {
+  //         console.log("AHOY donotResized", page.dataset.seq, scrollTop, this.container.scrollTop, delta);
+  //       }
+  //     }.bind(this), 500);
+  //   }
+  // }
 
   updatePageRotation(target, rotate) {
     // var margin = ( rotate % 180 == 0 ) ? 0 : ( target.offsetHeight - target.offsetWidth ) / 2;
@@ -192,10 +156,6 @@ export var Scroll = class extends Base {
     this._handlers.click = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._handlers.click);
 
-    this.on('loaded', (page) => {
-      page.querySelector('.action-load-page').setAttribute('tabindex', '-1');
-    })
-
   }
 
   scrollHandler() {
@@ -240,6 +200,58 @@ export var Scroll = class extends Base {
     if ( target.tagName.toLowerCase() == 'div' && target.classList.contains('page') && ! window.reactivated ) {
       target.parentNode.scrollTop = target.offsetTop - target.parentNode.offsetTop;
     }
+  }
+
+  visibility(page, options={}) {
+    var windowTop = this.container.parentNode.scrollTop;
+    var windowHeight = this.container.parentNode.offsetHeight;
+    var windowBottom = windowTop + windowHeight;
+
+    options.percentage = options.percentage || 0;
+
+    // var rootMargin = this.rootMargin;
+    var rootMargin = options.rootMargin === undefined ? this.rootMargin : options.rootMargin;
+
+    var top = page.offsetTop;
+    var height = page.offsetHeight;
+    var bottom = top + height;
+    // var top = page.__coords.offsetTop;
+    // var height = page.__coords.offsetHeight;
+
+    var topIsVisible = ( top <= ( windowBottom + rootMargin ) && top >= ( windowTop - rootMargin ) );
+    var bottomIsVisible = ( bottom <= ( windowBottom + rootMargin ) && bottom >= ( windowTop - rootMargin ) );
+
+    var percentage = 0; var test;
+    if ( topIsVisible || bottomIsVisible ) {
+      // now we're visible
+      if ( topIsVisible && bottomIsVisible ) {
+        percentage = 100;
+        test = 'topIsVisible && bottomIsVisible';
+      } else if ( topIsVisible ) {
+        // only the top is visible
+        var height_visible = windowBottom - top;
+        percentage = height_visible / height;
+        test = 'topIsVisible';
+      } else if ( bottomIsVisible ) {
+        var height_visible = bottom - windowTop;
+        percentage = height_visible / height;
+        test = 'bottomIsVisible';
+      }
+    }
+
+    // console.log("-- visibility", page.dataset.seq, percentage, test);
+    return percentage;
+
+    if (top + height + rootMargin >= windowTop &&
+              top - rootMargin <= windowTop + windowHeight ) {
+
+      var height_visible = height - ( bottom - ( windowTop + windowHeight ) );
+      var percentage = height_visible / height;
+
+      return percentage;
+    }
+
+    return 0;
   }
 
   // unloadPages() {
@@ -296,7 +308,7 @@ export var Scroll = class extends Base {
     this.sets.loaded = new Set(this.sets.visible);
 
     var visible = this.sets.visible;
-    console.log('-- loadPages', visible);
+    // console.log('-- loadPages', visible);
 
     var tmp = [...visible].sort((a,b) => { return a - b});
 
@@ -304,10 +316,10 @@ export var Scroll = class extends Base {
       var seq = tmp[i];
       var page = this.pagesIndex[seq];
       if ( this.isVisible(page) ) {
-        console.log("//", seq);
+        // console.log("//", seq);
         this.loadImage(page);
       } else {
-        console.log("@@", seq);
+        // console.log("@@", seq);
         // visible.delete(seq);
       }
     }

@@ -124,12 +124,14 @@ export var Base = class {
     var minWidth = this.minWidth();
     var maxHeight = this.maxHeight();
 
+    var manifest = this.service.manifest;
+
     var scale = this.scale;
 
     var t0 = performance.now();
     var fragment = document.createDocumentFragment();
 
-console.log("-- render", minWidth);
+    // console.log("-- render", minWidth);
 
     if ( maxHeight ) {
       this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
@@ -158,25 +160,9 @@ console.log("-- render", minWidth);
       var page = document.createElement('div');
       page.setAttribute('tabindex', '-1');
 
-      var meta = this.service.manifest.meta(seq);
-      var ratio = meta.height / meta.width;
-
-      var h = Math.ceil(minWidth * ratio * scale);
-      var w = Math.ceil(minWidth * scale);
-
-      page.dataset.height = h;
-      page.dataset.width = w;
-
-      page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
-      if ( scale <= 1 ) {
-        page.classList.add('page--best-fit');
-      }
-      // page.style.setProperty('--width', page.style.width);
-
       page.classList.add('page');
       page.dataset.seq = seq;
 
-      // var klass = ( seq - 1 ) % 2 == 0 ? 'verso' : 'recto';
       var klass = this._assignSide(seq);
       page.classList.add(klass);
 
@@ -185,8 +171,22 @@ console.log("-- render", minWidth);
       page.dataset.slice = slice_index;
       page.dataset.loaded = false;
 
-      var bgColor = randomColor({ luminosity: 'random', hue: 'random', format: 'hex' });
-      var textColor = contrast(bgColor);
+      page.dataset.visible = false;
+      page.dataset.scale = scale;
+
+      var meta = this.service.manifest.meta(seq);
+
+      var sizing = this._calculatePageSize(meta, page, minWidth, maxHeight);
+      var w = sizing.width;
+      var h = sizing.height;
+
+      page.dataset.height = h;
+      page.dataset.width = w;
+
+      page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
+      if ( scale <= 1 ) {
+        page.classList.add('page--best-fit');
+      }
 
       var bgColor = '#F8F8F8';
       var textColor = '#F0F0F0';
@@ -200,8 +200,41 @@ console.log("-- render", minWidth);
         height: h,
       });
 
+      // var placeholder = '/imgsrv/graphics/1x1b.png';
+
+      function titleCase(str) {
+        return str.toLowerCase().split('_').map(function(word) {
+          return (word.charAt(0).toUpperCase() + word.slice(1));
+        }).join(' ');
+      }
+
+      var altText = `Page Scan #${seq}`;
+
+      var features = [];
+      if ( manifest.featureMap[seq] && manifest.featureMap[seq].features ) {
+        features = manifest.featureMap[seq].features;
+      }
+      var priorityFeatures = [
+        'BLANK',
+        'FOLDOUT',
+        'FRONT_COVER',
+        'TITLE',
+        'FIRST_CONTENT_CHAPTER_START',
+        'CHAPTER_START',
+        'CONTENTS',
+        'TABLE_OF_CONTENTS',
+        'COPYRIGHT',
+        'BACK_COVER',
+        'IMAGE_ON_PAGE'
+      ];
+
+      var priorityFeature = priorityFeatures.find((feature) => { features.indexOf(feature) > -1 });
+      if ( priorityFeature ){
+        altText += ' - ' + titleCase(priorityFeature);
+      }
+
       var thumbnailSrc = this.service.thumbnail({ seq: seq });
-      page.innerHTML = `<div class="page--toolbar"><div class="tag"><span>#${seq}</span></div></div><div class="page-text"></div><div class="image" style="height: ${h}px; width: ${w}px"><img height="${h}" width="${w}" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="${thumbnailSrc}" /></div>`;
+      page.innerHTML = `<div class="page--toolbar"><div class="tag"><span>#${seq}</span></div></div><div class="page-text"></div><div class="image" style="height: ${sizing.frameHeight}px; width: ${sizing.frameWidth}px"><img alt="${altText}" style="height: ${sizing.height}px; width: ${sizing.width}px" height="${sizing.height}" width="${sizing.width}" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="${thumbnailSrc}" /></div>`;
       this._renderr(page);
 
       fragment.appendChild(page);
@@ -226,10 +259,6 @@ console.log("-- render", minWidth);
 
     for(var i = 0; i < pages.length; i++) {
       this.bindPageEvents(pages[i]);
-      // pages[i].__coords = {
-      //   offsetTop: pages[i].offsetTop,
-      //   offsetHeight: pages[i].offsetHeight
-      // }
     }
 
     if ( this._initialSeq ) {
@@ -237,7 +266,7 @@ console.log("-- render", minWidth);
     }
 
     if ( cb ) {
-      setTimeout(cb, 1000);
+      setTimeout(cb, 100);
       this._initialized = true;
       // cb();
     }
@@ -261,63 +290,6 @@ console.log("-- render", minWidth);
     return klass;
   }
 
-  resizePage(page) {
-    var canvas = page.querySelector('img');
-    if ( ! canvas ) { return ; }
-
-    if ( page.dataset.loading !== 'false' ) {
-      return;
-    }
-
-    if ( canvas.dataset.restricted == 'true' ) { return ; }
-
-    var bounds = this.container.getBoundingClientRect();
-    var rect = page.getBoundingClientRect();
-
-    if ( canvas.height == 0 ) {
-      // punt? I guess?
-      var x = ( page.dataset.attempts || 1 ) - 0;
-      x += 1;
-      if ( x < 3 ) {
-        // console.log(`--- AHOY ATTEMPTING resizePage ${page.dataset.seq} : ${x}`);
-        page.dataset.attempts = x;
-        setTimeout(function() {
-          this.resizePage(page);
-        }.bind(this), 0);
-        return;
-      } else {
-        // console.log(`--- AHOY PUNTING resizePage ${page.dataset.seq} : ${x}`);
-        return;
-      }
-    }
-
-    var seq = parseInt(page.dataset.seq, 10);
-    var minWidth = this.minPageWidth();
-
-    var meta = this.service.manifest.meta(seq);
-    var ratio = meta.height / meta.width;
-    var scale = this.scale;
-
-    var pageHeight = Math.ceil(minWidth * ratio * scale);
-    var pageWidth = Math.ceil(minWidth * scale);
-
-    // var option = 'A';
-    // console.log("AHOY base.resizePage - rotated", option, meta.rotation, pageHeight, pageWidth, "::", canvas.height, canvas.width, canvas.naturalHeight, canvas.naturalWidth);
-
-    // page.style.height = `${pageHeight}px`;
-    // page.style.width = `${pageWidth}px`;
-    // page.style.setProperty('--width', `${canvas.naturalWidth}px`);
-
-    var updated_rect = page.getBoundingClientRect();
-    var scrollTop = this.container.scrollTop;
-
-    this._postResizePage(page, rect, bounds);
-  }
-
-  _postResizePage(page, rect, bounds) {
-
-  }
-
   redrawPage(page) {
     console.log("-- base.redrawPage", page);
     page.dataset.loaded = page.dataset.reframed = false;
@@ -335,19 +307,21 @@ console.log("-- render", minWidth);
     var _process = function(seq, loadImage) {
       var page = self.pagesIndex[seq] ? self.pagesIndex[seq] : null;
       if ( page && page.dataset.loaded == 'false' ) {
+
         var img = page.querySelector('img');
+
         // img.src.indexOf(img.dataset.thumbnailSrc) < 0 
         // img.src == img.dataset.placeHolderSrc
         if ( page.dataset.reframed != 'true' ) {
           self._tracker.thumbnails[seq] = self._tracker.thumbnails[seq] ? self._tracker.thumbnails[seq] + 1 : 1;
           self.service.loaders.thumbnails.queue({ src: img.dataset.thumbnailSrc, page: page });          
         }
-        // previewLoader.add({ src: img.dataset.thumbnailSrc, page: page });
+
         if ( loadImage ) {
-          // imageLoader.add({ src: self.imageUrl(page), page: page })
-          self._tracker.images[seq] = self._tracker.images[seq] ? self._tracker.images[seq] + 1 : 1;
+          page.classList.add('loading');
+          // self._tracker.images[seq] = self._tracker.images[seq] ? self._tracker.images[seq] + 1 : 1;
           self.service.loaders.images.queue({ src: self.imageUrl(page), page: page });
-          if ( self.embedHtml ) {
+          if ( false && self.embedHtml ) {
             var html_url = self.service.html({ seq: seq });
             if ( html_url ) {
               self.service.loaders.images.queue({ src: html_url, page: page, mimetype: 'text/html' });
@@ -359,12 +333,10 @@ console.log("-- render", minWidth);
     }
 
     var pages = Array.isArray(page) ? page : [ page ];
-    console.log("?? loadImage", pages);
     var page = pages[0];
 
     var seq = parseInt(page.dataset.seq, 10);
     if ( Math.abs(seq - self.currentSeq ) > 5 ) {
-      console.log("-- RESETTING THE LOADERS");
       self.service.loaders.thumbnails.stop(true);
       self.service.loaders.images.stop(true);
     }
@@ -400,35 +372,13 @@ console.log("-- render", minWidth);
       }
     }
 
-    // var seq = parseInt(page.dataset.seq, 10);
-    // _process(seq, true);
-
-    // if ( options.lazy !== false ) {
-    //   // queue thumbnails + images
-    //   for(var i = seq + 2; i > seq; i--) {
-    //     _process(i, true);
-    //   }
-    //   for(var i = seq - 2; i < seq; i++) {
-    //     _process(i, true);
-    //   }
-
-    //   // queue thumbnails
-    //   for(var i = seq + 10; i > seq + 2; i--) {
-    //     _process(i, false);
-    //   }
-    //   for(var i = seq - 10; i < seq - 2; i++) {
-    //     _process(i, false);
-    //   }
-    // }
-
     self.service.loaders.images.start();
     self.service.loaders.thumbnails.start();
-
-    console.log("-- loading:", page.dataset.seq);
   }
 
   postImage(image, datum) {
     var page = datum.page;
+    page.classList.remove('loading');
     if ( datum.mimetype == 'text/html' ) {
       return this.postText(image, datum);
     }
@@ -437,27 +387,8 @@ console.log("-- render", minWidth);
       img.src = image.src;
       this.service.manifest.update(page.dataset.seq, { width: image.width, height: image.height });
       this._reframePage(image, page);
-      // if ( page.dataset.reframed != 'true' ) {
-      //   // img.parentElement.style.height = `${img.offsetHeight}px`;
-      //   var r = image.height / image.width;
-      //   var frame = img.parentElement;
-      //   var new_img_height = parseFloat(frame.style.width) * r;
-      //   frame.style.height = `${new_img_height}px`;
-      //   img.height = new_img_height;
-      //   page.dataset.reframed = 'true';
-      //   // --- this is like with absolute positioning, everything that 
-      //   // --- follows also has to be updated
-      //   // page.__coords = {
-      //   //   offsetTop: pages[i].offsetTop,
-      //   //   offsetHeight: pages[i].offsetHeight
-      //   // }
-      // }
       page.dataset.loaded = true;
-
-      // if ( this.embedHtml ) {
-      //   this.loadText(page);
-      // }
-
+      URL.revokeObjectURL(img.src); 
     }
   }
 
@@ -489,9 +420,34 @@ console.log("-- render", minWidth);
       img.dataset.width = frameWidth;
       img.dataset.height = frameWidth * r;
 
-      this._checkForFoldouts(image, page);
+      img.style.height = `${img.dataset.width}px`;
+      img.style.height = `${img.dataset.height}px`;
+
+      if ( this._checkForFoldouts(image, page) ) {
+        var altText = img.getAttribute('alt');
+        if ( altText.indexOf('Foldout') < 0 ) {
+          altText += '; Foldout';
+          img.setAttribute('alt', altText);
+        }
+      }
       page.dataset.reframed = 'true';
     }
+
+  }
+
+  _isUnusualPage(image, page) {
+    var seq = page.dataset.seq;
+    var manifest = this.service.manifest;
+
+    if ( image && image.width < image.height ) { return false ; }
+
+    var is_unusual = ( 
+      ( manifest.checkFeatures(seq, "FOLDOUT") && ! manifest.checkFeatures(seq, "BLANK") )
+        || 
+      ( image && ( image.width / image.height ) > ( 4 / 3 ) )
+    );
+
+    return is_unusual;
 
   }
 
@@ -500,7 +456,7 @@ console.log("-- render", minWidth);
     var seq = page.dataset.seq;
     var manifest = this.service.manifest;
 
-    if ( image.width < image.height ) { return ; }
+    if ( image.width < image.height ) { return false ; }
 
     var is_unusual = ( 
       ( manifest.checkFeatures(seq, "FOLDOUT") && ! manifest.checkFeatures(seq, "BLANK") )
@@ -508,14 +464,17 @@ console.log("-- render", minWidth);
       ( ( image.width / image.height ) > ( 4 / 3 ) )
     );
 
-    console.log("-- _checkForFoldouts", seq, is_unusual, image.width, image.height, image.width / image.height, image.width / image.height > ( 4 / 3 ));
-
     if ( is_unusual ) {
       // probably a fold out? maybe not a fold out?
+
+      // manifest.manifest[seq].is_unusual = true;
+
       page.classList.add('page--foldout');
       this._reframeUnusualImage(page);
       this._addFoldoutPopout(page);
     }
+
+    return is_unusual;
   }
 
   _reframeUnusualImage(page) {
@@ -528,6 +487,9 @@ console.log("-- render", minWidth);
 
   _addFoldoutPopout(page) {
     var toolbar = page.querySelector('.page--toolbar .tag');
+    var check = toolbar.querySelector("button[data-action='popout']");
+    if ( check ) { return ; }
+
     var icon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-left" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M7.364 3.5a.5.5 0 0 1 .5-.5H14.5A1.5 1.5 0 0 1 16 4.5v10a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 3 14.5V7.864a.5.5 0 1 1 1 0V14.5a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5H7.864a.5.5 0 0 1-.5-.5z"/>
         <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h5a.5.5 0 0 1 0 1H1.707l8.147 8.146a.5.5 0 0 1-.708.708L1 1.707V5.5a.5.5 0 0 1-1 0v-5z"/>
@@ -549,7 +511,7 @@ console.log("-- render", minWidth);
   }
 
   redrawPageImages() {
-    var possibles = this.container.querySelectorAll('.page[data-loaded="true"]');
+    var possibles = this.container.querySelectorAll('.page[data-loaded="true"],.page[data-visible="true"]');
     for(var i = 0; i < possibles.length; i++) {
       var page = possibles[i];
       this.redrawPage(page);
@@ -559,11 +521,15 @@ console.log("-- render", minWidth);
 
   unloadImage(page) {
 
+    // console.log("unloadImage", page.dataset.seq);
+    // console.trace();
+
     page.dataset.loaded = 'false';
     page.dataset.isLeaving = false;
 
     var img = page.querySelector('img');
     img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+    // img.src = "";
 
     var page_text = page.querySelector('.page-text');
     page_text.innerHTML = '';
@@ -654,7 +620,6 @@ console.log("-- render", minWidth);
     if ( this.trackResize ) {
 
       this.reader.on('redraw', (params) => {
-        console.log("AHOY PARAMS", params);
         if ( params.scale && params.scale != this.scale ) {
           this.scale = params.scale;
           this.reader.emit('resize');
@@ -663,14 +628,16 @@ console.log("-- render", minWidth);
 
       this._handlers.resize = this.reader.on('resize', () => {
         if ( ! this._initialized ) { return ; }
-        console.log("base._handlers.resize", this._lastContainerWidth, this._lastContainerWidth ? ( this._lastContainerWidth == ( this.container.offsetWidth * this.scale ) ) : '-',  this.container.offsetWidth, this.scale);
+        // console.log("base._handlers.resize", this._lastContainerWidth, this._lastContainerWidth ? ( this._lastContainerWidth == ( this.container.offsetWidth * this.scale ) ) : '-',  this.container.offsetWidth, this.scale);
         if ( this._lastContainerWidth && ( this._lastContainerWidth == this.container.offsetWidth * this.scale ) ) { return ; }
         this._lastContainerWidth = this.container.offsetWidth * this.scale;
+        var t0 = performance.now();
         this._resizePages();
+        // console.log("-- resize _resizePages", performance.now() - t0);
       })
     }
 
-    this._intervals.unloader = setInterval(this.unloadPages.bind(this), 5000);
+    this._intervals.unloader = setInterval(this.unloadPages.bind(this), 30 * 1000);
   }
 
   unloadPages() {
@@ -694,9 +661,9 @@ console.log("-- render", minWidth);
       if ( ! this.isVisible(page) ) {
         if ( ! ( ( Math.abs(seq - seq1) <= nearest ) || ( Math.abs(seq - seq2) <= nearest ) ) ) {
           this.unloadImage(page);
-          console.log("<<", seq);
+          // console.log("<<", seq);
         } else {
-          console.log("**", seq);
+          // console.log("**", seq);
         }
       }
     })
@@ -730,24 +697,20 @@ console.log("-- render", minWidth);
       var page = element.closest('.page');
       var img = page.querySelector('img');
 
-      var img_height = parseInt(img.dataset.height, 10);
-      var img_width = parseInt(img.dataset.width, 10);
-
-      var max_zoom_h = Math.floor(window.innerHeight * 0.85);
-      // var r = zoom_h / img_height;
-      // var zoom_w = img_width * r;
+      var seq = page.dataset.seq;
+      var meta = this.service.manifest.meta(page.dataset.seq);
 
       var zoom_w = Math.floor(window.innerWidth * 0.90);
-      var r = zoom_w / img_width;
-      var zoom_h = img_height * r;
+      var zoom_h = zoom_w * meta.ratio;
 
-      if ( max_zoom_h < zoom_h ) {
-        r = max_zoom_h / zoom_h;
+      var max_zoom_h = Math.floor(window.innerHeight * 0.85);
+      if ( zoom_h > max_zoom_h ) {
+        var r = max_zoom_h / zoom_h;
         zoom_h = max_zoom_h;
-        zoom_w *= r;
+        zoom_w = zoom_w * r;
       }
 
-      var zoom_img_src = this.imageUrl({ seq: page.dataset.seq, width: zoom_w });
+      var zoom_img_src = this.imageUrl({ seq: seq, width: zoom_w });
 
       var new_img = `<div class="loading foldout"><img style="visibility: hidden; max-height: 100%;" height="${zoom_h}" width="${zoom_w}" /></div>`;
       var dialog = bootbox.dialog(new_img,
@@ -760,7 +723,6 @@ console.log("-- render", minWidth);
         }
       );
 
-console.log("-- popout", `${zoom_w}x${zoom_h}`, `${window.innerWidth * 0.9}x${window.innerHeight * 0.9}`, dialog);
 window.xdialog = dialog;
 
       var $zoom_img = dialog.find("img");
@@ -842,47 +804,77 @@ window.xdialog = dialog;
     var maxHeight = this.maxHeight();
 
     var scale = this.scale;
-    var currentSeq = this.currentLocation();
-console.log("?? _resizePages", currentSeq);
+    var currentSeq = this._currentPage.dataset.seq; // this.currentLocation();
 
     if ( maxHeight ) {
       this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
     }
 
+    console.log("__RESIZE__ start", currentSeq);
+
     var dirty = false;
     this.pages.forEach((page) => {
+
       var seq = parseInt(page.dataset.seq, 10);
       var meta = this.service.manifest.meta(seq);
-      var ratio = meta.height / meta.width;
+      // var ratio = meta.height / meta.width;
 
-      var h = Math.ceil(minWidth * ratio * scale);
-      var w = Math.ceil(minWidth * scale);
+      var h; var w;
 
-      // console.log("AHOY _resizePages", seq, page.style.width, "x", page.style.height, "/", w, "x", h);
+      var img = page.querySelector('img');
+      var frame = page.querySelector('.image');
 
-      dirty = dirty || ( page.style.height != `${h}px` );
+      var sizing = this._calculatePageSize(meta, page, minWidth, maxHeight);
 
-      page.dataset.width = w;
-      page.dataset.height = h;
-      page.querySelector('.image').style.width = `${w}px`;
-      page.querySelector('.image').style.height = `${h}px`;
+      h = sizing.height;
+      w = sizing.width;
+
+      dirty = dirty || ( img.offsetHeight != h );
+
+      requestAnimationFrame(() => {
+        page.dataset.width = w;
+        page.dataset.height = h;
+
+        frame.style.width = `${sizing.frameWidth}px`;
+        frame.style.height = `${sizing.frameHeight}px`;
+
+        img.style.width = `${w}px`;
+        img.style.height = `${h}px`;        
+      })
+
       page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
       if ( scale <= 1 ) {
         page.classList.add('page--best-fit');
       }
 
-      this._resizePageByPages(page);
+      // this._resizePageByPages(page);
     })
 
     if ( dirty ) {
       if ( this._redrawPageImagesTimer ) { clearTimeout(this._redrawPageImagesTimer); }
       this._redrawPageImagesTimer = setTimeout(() => {
         this.redrawPageImages();
+        this.display(currentSeq);
+        this._scrollPause = false;
+        console.log("__RESIZE__ end/dirty", currentSeq);
       }, 100);
+      return;
     }
+
+    console.log("__RESIZE__ end", currentSeq);
 
     this.display(currentSeq);
     this._scrollPause = false;
+  }
+
+  _calculatePageSize(meta, page, minWidth, maxHeight) {
+    var ratio = meta.ratio;
+    var scale = this.scale;
+
+    var h = Math.ceil(minWidth * ratio * scale);
+    var w = Math.ceil(minWidth * scale);
+
+    return { height: h, width: w, frameHeight: h, frameWidth: w };
   }
 
   _drawHighlights(page) {
@@ -1044,55 +1036,7 @@ console.log("?? _resizePages", currentSeq);
   }
 
   visibility(page, options={}) {
-    var windowTop = this.container.parentNode.scrollTop;
-    var windowHeight = this.container.parentNode.offsetHeight;
-    var windowBottom = windowTop + windowHeight;
-
-    options.percentage = options.percentage || 0;
-
-    // var rootMargin = this.rootMargin;
-    var rootMargin = options.rootMargin === undefined ? this.rootMargin : options.rootMargin;
-
-    var top = page.offsetTop;
-    var height = page.offsetHeight;
-    var bottom = top + height;
-    // var top = page.__coords.offsetTop;
-    // var height = page.__coords.offsetHeight;
-
-    var topIsVisible = ( top <= ( windowBottom + rootMargin ) && top >= ( windowTop - rootMargin ) );
-    var bottomIsVisible = ( bottom <= ( windowBottom + rootMargin ) && bottom >= ( windowTop - rootMargin ) );
-
-    var percentage = 0; var test;
-    if ( topIsVisible || bottomIsVisible ) {
-      // now we're visible
-      if ( topIsVisible && bottomIsVisible ) {
-        percentage = 100;
-        test = 'topIsVisible && bottomIsVisible';
-      } else if ( topIsVisible ) {
-        // only the top is visible
-        var height_visible = windowBottom - top;
-        percentage = height_visible / height;
-        test = 'topIsVisible';
-      } else if ( bottomIsVisible ) {
-        var height_visible = bottom - windowTop;
-        percentage = height_visible / height;
-        test = 'bottomIsVisible';
-      }
-    }
-
-    console.log("-- visibility", page.dataset.seq, percentage, test);
-    return percentage;
-
-    if (top + height + rootMargin >= windowTop &&
-              top - rootMargin <= windowTop + windowHeight ) {
-
-      var height_visible = height - ( bottom - ( windowTop + windowHeight ) );
-      var percentage = height_visible / height;
-
-      return percentage;
-    }
-
-    return 0;
+    return page.dataset.visible == 'true' ? 100 : 0;
   }
 
   isVisible(page, options={}) {
@@ -1101,6 +1045,10 @@ console.log("?? _resizePages", currentSeq);
     var percentage = this.visibility(page, options);
 
     return ( percentage >= options.percentage );
+  }
+
+  svg() {
+    return simpleSvgPlaceholder.apply(null, arguments);
   }
 
 }

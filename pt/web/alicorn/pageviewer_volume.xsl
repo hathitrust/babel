@@ -118,7 +118,7 @@
       <meta property="og:image" content="{//CurrentPageImageSource}" />
     </xsl:if>
 
-    <xsl:call-template name="build-hotjar-script" />
+    <!-- <xsl:call-template name="build-hotjar-script" /> -->
 
   </xsl:template>
 
@@ -144,6 +144,12 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="setup-extra-header--reader">
+    <script>
+      HT.params.featureList = <xsl:value-of select="concat(//Manifest/FeatureList, ';')"  />
+    </script>
+  </xsl:template>
+
   <xsl:template name="skip-to-main-link">
     <div id="skiplinks" role="complementary" aria-label="Skip links">
       <ul>
@@ -167,7 +173,7 @@
       <xsl:call-template name="build-reader-toolbar-controls" />
       <xsl:call-template name="build-main-container-main" />
       <div class="app--sidebar--toggle--container">
-        <button class="mq--wide" id="action-toggle-sidebar" aria-expanded="true">
+        <button class="btn mq--wide" id="action-toggle-sidebar" aria-expanded="true">
           <i class="icomoon toggle-sidebar row" aria-hidden="true"></i>
           <span class="offscreen">Toggle Options</span>
           <span class="mq--narrow flex-space-between flex-center">
@@ -175,7 +181,7 @@
             <i class="icomoon icomoon-sidebar-toggle column" aria-hidden="true"></i>
           </span>
         </button>
-        <button class="mq--narrow" id="action-toggle-sidebar-narrow" aria-expanded="false">
+        <button class="btn mq--narrow" id="action-toggle-sidebar-narrow" aria-expanded="false">
           <span class="flex-space-between flex-center">
             <span class="filter-group-heading">Options</span>
             <i class="icomoon icomoon-sidebar-toggle column" aria-hidden="true"></i>
@@ -226,7 +232,7 @@
         <xsl:attribute name="data-first-seq"><xsl:value-of select="//Manifest/FirstPageSeq" /></xsl:attribute>
         <xsl:attribute name="data-default-height"><xsl:value-of select="//Manifest/BaseImage/Height" /></xsl:attribute>
         <xsl:attribute name="data-default-width"><xsl:value-of select="//Manifest/BaseImage/Width" /></xsl:attribute>
-        <xsl:attribute name="data-feature-list"><xsl:value-of select="//Manifest/FeatureList" /></xsl:attribute>
+        <!-- <xsl:attribute name="data-feature-list"><xsl:value-of select="//Manifest/FeatureList" /></xsl:attribute> -->
         <xsl:attribute name="data-htid"><xsl:value-of select="//Param[@name='id']" /></xsl:attribute>
       </section>
     </div>
@@ -242,7 +248,7 @@
     </div>
 
     <xsl:variable name="modtime" select="//Timestamp[@href='/pt/alicorn/js/main.js']/@modtime" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.6.1/randomColor.min.js" integrity="sha512-vPeZ7JCboHcfpqSx5ZD+/jpEhS4JpXxfz9orSvAPPj0EKUVShU2tgy7XkU+oujBJKnWmu4hU7r9MMQNWPfXsYw==" crossorigin="anonymous"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.6.1/randomColor.min.js" integrity="sha512-vPeZ7JCboHcfpqSx5ZD+/jpEhS4JpXxfz9orSvAPPj0EKUVShU2tgy7XkU+oujBJKnWmu4hU7r9MMQNWPfXsYw==" crossorigin="anonymous"></script> -->
     <script type="text/javascript">
       <xsl:text>head.load('/pt/alicorn/js/main.js?_</xsl:text>
       <xsl:value-of select="$modtime" />
@@ -445,7 +451,7 @@
   </xsl:template>
 
   <xsl:template name="sidebar-table-of-contents">
-    <div class="panel mq--narrower" rel="note">
+    <div class="panel mq--narrow" rel="note">
       <h3>
         <xsl:call-template name="build-pt-icon">
           <xsl:with-param name="id">bi-list</xsl:with-param>
@@ -560,11 +566,13 @@
 
       <xsl:call-template name="action-go-page" />
 
-      <div class="btn-group table-of-contents">
+      <div class="btn-group table-of-contents mq--wide">
         <xsl:call-template name="action-table-of-contents" />
       </div>
 
-      <xsl:call-template name="action-search-volume" />
+      <xsl:call-template name="action-search-volume">
+        <xsl:with-param name="class">mq--wide</xsl:with-param>
+      </xsl:call-template>
 
       <div class="btn-group">
         <xsl:call-template name="action-page-navigation" />

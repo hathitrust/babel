@@ -9,6 +9,7 @@ export var Single = class extends Base {
     this.displayLabel = 'page by page';
     this.embedHtml = true;
     this.isAnimating = false;
+    this.useAnimations = true;
   }
 
   display(seq) {
@@ -21,7 +22,7 @@ export var Single = class extends Base {
 
     var current = this.container.querySelector(`.page[data-visible="true"]`);
 
-    var target = this.container.querySelector(`.page[data-seq="${seq}"]`);
+    var target = this.getPage(seq);
     if ( ! target ) { return; }
 
     this.loadImage(target);
@@ -31,13 +32,51 @@ export var Single = class extends Base {
     target.dataset.visible = true;
     this.currentSeq = seq;
 
-    if ( ! current ) {
+    if ( ! current || ! this.useAnimations ) {
       self.reader.emit('relocated', { seq: seq });
       self.currentSeq = parseInt(target.dataset.seq);
       self._currentPage = target;
       self.focus(target);
+      if ( current ) {
+        current.dataset.visible = false;
+      }
       return;
     }
+
+    // setTimeout(() => {
+    //   target.classList.add('pending');
+
+    //   if ( ! current || ! this.useAnimations ) {
+    //     self.reader.emit('relocated', { seq: seq });
+    //     self.currentSeq = parseInt(target.dataset.seq);
+    //     self._currentPage = target;
+    //     self.focus(target);
+    //     if ( current ) {
+    //       current.classList.add('exiting');
+    //     }
+    //     setTimeout(() => {
+    //       if ( current ) {
+    //         setTimeout(() => {
+    //           current.dataset.visible = false;
+    //           setTimeout(() => {
+    //             current.classList.remove('exiting');
+    //             setTimeout(() => {
+    //               target.classList.remove('pending');
+    //             }, 100);
+    //           }, 0);
+    //         }, 0);
+    //       } else {
+    //         target.classList.remove('pending');
+    //       }
+    //     }, 0);
+    //     return;
+    //   }
+
+    // }, 0);
+
+    // if ( ! this.useAnimations ) {
+    //   return;
+    // }
 
     var inClass = delta > 0 ? 'page--moveFromRight' : 'page--moveFromLeft';
     var outClass = delta > 0 ? 'page--moveToLeft' : 'page--moveToRight';
@@ -53,7 +92,7 @@ export var Single = class extends Base {
       current.dataset.visible = false;
       current.classList.remove(outClass);
       target.classList.remove(inClass);
-      self.container.classList.remove('animating');
+      self.container.parentNode.classList.remove('animating');
       self.isAnimating = false;
       self.currentSeq = parseInt(target.dataset.seq);
       self._currentPage = target;
@@ -75,7 +114,7 @@ export var Single = class extends Base {
       if ( endCurrentPage ) { onEndAnimation(current, target); }      
     }
 
-    this.container.classList.add('animating');
+    this.container.parentNode.classList.add('animating');
     current.addEventListener('animationend', outAnimationHandler);
     target.addEventListener('animationend', inAnimationHandler);
 

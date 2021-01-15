@@ -1028,7 +1028,7 @@
 
   <xsl:template name="sidebar-search-this-book">
     <xsl:if test="$gUsingBookReader = 'true' and $gHasOcr='YES'">
-      <div class="searchItem panel mq--narrower">
+      <div class="searchItem panel mq--narrow">
         <h3>
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-search</xsl:with-param>

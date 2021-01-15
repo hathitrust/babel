@@ -157,6 +157,7 @@
       HT.params.download_progress_base = '<xsl:value-of select="//DownloadProgressBase" />';
       HT.params.RecordURL = '<xsl:value-of select="concat('https://catalog.hathitrust.org/Record/', $gCatalogRecordNo)" />';
     </script>
+    <xsl:call-template name="setup-extra-header--reader" />
 
     <!-- <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script> -->
     <xsl:call-template name="build-js-link">
@@ -168,6 +169,8 @@
 
     <xsl:call-template name="setup-extra-header-extra" />
   </xsl:template>
+
+  <xsl:template name="setup-extra-header--reader" />
 
   <xsl:template name="setup-social-twitter">
     <meta name="twitter:card">
@@ -416,8 +419,9 @@
   </xsl:template>
 
   <xsl:template name="action-search-volume">
+    <xsl:param name="class" />
     <!-- <h3 class="offscreen">Search in this volume</h3> -->
-    <form class="form-inline form-search-volume" method="get" id="form-search-volume" role="search">
+    <form class="form-inline form-search-volume {$class}" method="get" id="form-search-volume" role="search">
       <xsl:attribute name="action">
         <xsl:choose>
           <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>

@@ -7,10 +7,11 @@ import {View} from './components/views';
 import debounce from 'lodash/debounce';
 
 var HT = window.HT || {}; window.HT = HT;
-if ( location.hostname.indexOf('.hathitrust.org') < 0 ) {
+if ( location.hostname.indexOf('.hathitrust.org') < 0 ||
+     ( HT.is_dev && location.hostname.indexOf('beta-3') ) ) {
+  // FOR PERFORMANCE IN DEV
   HT.force_size = 100;  
 }
-HT.force_size = 100; // JUST FOR GRINS
 
 // TODO -- UPDATE ELEMENTS
 
@@ -193,6 +194,7 @@ var Reader = class {
         this.controls.flexinator.sidebar(params.scale <= 1.0);
         this.trigger.push(`zoom:${params.scale}`); // triggers track
         // this._logAction(undefined, `zoom:${params.scale}`);
+        this._updateHistoryUrl({});
       }
     })
 
@@ -252,8 +254,6 @@ var Reader = class {
       // this is way more complicated
       var verso = this.view.container.querySelector('.page[tabindex="0"].verso');
       var recto = this.view.container.querySelector('.page[tabindex="0"].recto');
-      // self._updateLinkSeq(document.querySelector(`#pagePdfLink1`), verso ? verso.dataset.seq : null);
-      // self._updateLinkSeq(document.querySelector(`#pagePdfLink2`), recto ? recto.dataset.seq : null);
 
       [ [ 'current-recto-seq', recto ], [ 'current-verso-seq', verso ] ].forEach(function(tuple) {
         var span = document.querySelector(`#sidebar [data-slot="${tuple[0]}"]`);
@@ -266,8 +266,6 @@ var Reader = class {
           span.innerText = '-';
           span.parentNode.previousElementSibling.disabled = true;
         }
-        console.log("_updateLinks", span, page.dataset.seq);
-
       })
 
     } else {
@@ -452,7 +450,7 @@ var service = new Service({
     firstSeq: $main.dataset.firstSeq,
     defaultHeight: $main.dataset.defaultHeight,
     defaultWidth: $main.dataset.defaultWidth,
-    featureList: JSON.parse($main.dataset.featureList)
+    featureList: HT.params.featureList // JSON.parse($main.dataset.featureList)
   },
   identifier: HT.params.id,
   q1: HT.params.q1,
@@ -604,7 +602,6 @@ document.body.addEventListener('keydown', function(event) {
     reader.view.focus(true);
   }
 
-  console.log("-- keydown", event.key, document.activeElement);
   if ( reader.view && ( event.key == 'PageUp' || event.key == 'PageDown' ) ) {
     if ( document.activeElement.closest("#sideabar") ) { return ; }
     if ( document.activeElement.closest(".app--reader") ) { return ; }
@@ -757,9 +754,13 @@ document.addEventListener("visibilitychange", handleVisibilityChange, false);
 window.addEventListener("focus", handleWindowFocus, false);
 window.addEventListener("blur", handleWindowBlur, false);
 
-const mq = window.matchMedia("(min-width: 992px)");
-document.body.dataset.sidebarNarrowState = mq.matches ? 'open' : 'closed';
+// const mq = window.matchMedia("(min-width: 992px)");
+// document.body.dataset.sidebarNarrowState = mq.matches ? 'open' : 'closed';
+// document.querySelector("#action-toggle-sidebar-narrow").setAttribute('aria-expanded', document.body.dataset.sidebarNarrowState == 'open');
+
+document.body.dataset.sidebarNarrowState = 'closed';
 document.querySelector("#action-toggle-sidebar-narrow").setAttribute('aria-expanded', document.body.dataset.sidebarNarrowState == 'open');
+
 // also should handle aria-epxnaded
 
 setTimeout(() => {

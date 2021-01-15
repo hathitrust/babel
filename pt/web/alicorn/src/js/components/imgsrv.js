@@ -11,6 +11,7 @@ export var Manifest = class {
       width: parseInt(options.defaultWidth, 10),
       rotation: 0
     };
+    this.defaultImage.ratio = this.defaultImage.height / this.defaultImage.width;
     this.featureList = options.featureList;
     this.featureMap = {};
     this._seq2num = {};
@@ -41,7 +42,8 @@ export var Manifest = class {
     this.manifest[seq] = {
       width: this.defaultImage.width,
       height: meta.height * ratio,
-      rotation: meta.rotation || 0
+      rotation: meta.rotation || 0,
+      ratio: meta.height / meta.width
     }
   }
 
