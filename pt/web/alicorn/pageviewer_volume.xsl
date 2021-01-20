@@ -38,7 +38,7 @@
       <xsl:when test="$gCurrentView = '2up'"><xsl:value-of select="'true'" /></xsl:when>
       <xsl:when test="$gCurrentView = 'thumb'"><xsl:value-of select="'true'" /></xsl:when>
       <!-- <xsl:when test="$gCurrentView = 'text'"><xsl:value-of select="'true'" /></xsl:when> -->
-      <xsl:otherwise><xsl:value-of select="'false'" /></xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="'true'" /></xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
 
@@ -236,7 +236,7 @@
         <xsl:attribute name="data-htid"><xsl:value-of select="//Param[@name='id']" /></xsl:attribute>
       </section>
     </div>
-    <div class="app---reader--toolbar">
+    <div class="app--reader--toolbar">
       <button id="action-expando" class="btn for-mobile" aria-label="Toggle Controls" aria-expanded="true">
         <i class="icomoon" aria-hidden="true"></i>
       </button>
@@ -300,7 +300,7 @@
 
 
   <xsl:template name="build-reader-toolbar-controls">
-    <div class="app---reader--toolbar--controls">
+    <div class="app--reader--toolbar--controls">
       <xsl:call-template name="build-reader-toolbar-paginator" />
       <xsl:call-template name="build-reader-toolbar-options" />
     </div>
@@ -607,10 +607,10 @@
   </xsl:template>
 
   <xsl:template name="action-page-navigation">
-    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT First Page" aria-label="Go to first page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-first"></i></button>
+    <button id="action-go-first" href="{//FirstPageLink}" type="button" class="btn square mq--wide" data-toggle="tracking" data-tracking-action="PT First Page" aria-label="Go to first page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-first"></i></button>
     <button id="action-go-prev" href="{//PreviousPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Previous Page" aria-label="Go to previous page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-go-previous"></i></button>
     <button id="action-go-next" href="{//NextPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Next Page" aria-label="Go to next page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-go-next"></i></button>
-    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square" data-toggle="tracking" data-tracking-action="PT Last Page" aria-label="Go to last page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-last"></i></button>
+    <button id="action-go-last" href="{//LastPageLink}" type="button" class="btn square mq--wide" data-toggle="tracking" data-tracking-action="PT Last Page" aria-label="Go to last page scan" data-microtip-position="bottom" data-microtip-size="small" data-role="x-tooltip"><i class="icomoon icomoon-last"></i></button>
   </xsl:template>
 
   <xsl:template name="action-table-of-contents">

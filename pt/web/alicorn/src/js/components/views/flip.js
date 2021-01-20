@@ -241,6 +241,14 @@ export var Flip = class extends Base {
     this.visible(targetPages);
   }
 
+  _resizePages() {
+    if ( this.isAnimating ) {
+      console.log("-- something something", this.currentSeq);
+
+    }
+    super._resizePages();
+  }
+
   displayNOANIMATION(seq) {
     var currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
     if ( currentPages ) {
@@ -417,7 +425,8 @@ export var Flip = class extends Base {
   }
 
   currentPage() {
-    return this.container.querySelector('.page[data-visible="true"]');
+    // return this.container.querySelector('.page[data-visible="true"]');
+    return this.getPage(this.currentSeq);
   }
 
   _calculateSeq(direction) {
@@ -456,7 +465,9 @@ export var Flip = class extends Base {
   }
 
   maxHeight() {
-    return this.container.parentNode.offsetHeight * 0.81;
+    var h = this.container.parentNode.offsetHeight * 0.81;
+    if ( h <= 360 ) { h = 360; }
+    return h;
   }
 
   minWidthNew2() {

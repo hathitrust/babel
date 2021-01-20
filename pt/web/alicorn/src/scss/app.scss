@@ -1,4 +1,5 @@
 @import "variables";
+@import "grid_mixins";
 @import "spinthatshit/src/loaders";
 
 // THE NEW GRID
@@ -25,8 +26,7 @@ html, body {
   min-height: 0;
 
   display: block;
-  display:-ms-grid;
-  display: grid;
+  @include display-grid();
 
   width: 100vw;
   overflow: hidden;
@@ -48,7 +48,7 @@ html, body {
   }
 }
 
-@media only screen and ( min-width: 527px ) and ( max-width: 62rem ) {
+@media only screen and ( min-width: 527px ) and ( max-width: 62rem ) and ( min-height: 491px ) {
   .mq--narrower {
     display: none !important;
   }
@@ -58,9 +58,11 @@ html, body {
 }
 
 .app--container {
-  display: grid;
-  grid-template-columns: minmax(min-content, 18rem) min-content 1fr;
-  grid-template-rows: 1fr;
+  @include display-grid();
+  @include grid-template-columns(minmax(min-content, 18rem) min-content 1fr);
+  @include grid-template-rows(1fr);
+  // grid-template-columns: minmax(min-content, 18rem) min-content 1fr;
+  // grid-template-rows: 1fr;
   min-height: 0;
   min-width: 0;
   height: auto;
@@ -80,8 +82,10 @@ html, body {
 
   .app--sidebar--toggle--container {
     align-self: center;    
-    grid-column: 2;
-    grid-row: 1;
+    @include grid-column(2,3);
+    @include grid-row(1,2);
+    // grid-column: 2;
+    // grid-row: 1;
   }
 
   button {
@@ -97,42 +101,59 @@ html, body {
 
   @media only screen and (max-width: 62rem) {
 
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content 1fr;
+    // grid-template-columns: 1fr;
+    // grid-template-rows: min-content 1fr;
+
+    @include grid-template-columns(1fr);
+    @include grid-template-rows(1fr);
 
     padding: 0;
     margin: 0;
 
     .app--sidebar {
-      grid-column: 1;
-      grid-row: 2;
+      // grid-column: 1;
+      // grid-row: 2;
+
+      @include grid-column(1,2);
+      @include grid-row(2,3);
+
       z-index: 1;
 
       max-height: 100vh;
     }
 
     .app--reader {
-      grid-column: 1;
-      grid-row: 2;
+      // grid-column: 1;
+      // grid-row: 2;
+
+      @include grid-column(1,2);
+      @include grid-row(2,3);
+
       z-index: 10;
 
       .app--reader--viewer {
         .page {
           .page--toolbar {
-            margin-right: 2rem;
+            // margin-right: 2rem;
+            margin-right: 0;
+            justify-content: flex-start;
+            top: 0.25rem;
           }
         }
       }
     }
 
-    .app---reader--toolbar--controls {
+    .app--reader--toolbar--controls {
       top: 3.75rem;
       right: 1rem;
     }
 
     .app--sidebar--toggle--container {
-      grid-column: 1;
-      grid-row: 1;
+      // grid-column: 1;
+      // grid-row: 1;
+      @include grid-column(1,2);
+      @include grid-row(1,2);
+
 
       #action-toggle-sidebar-narrow {
         width: 100%;
@@ -152,19 +173,28 @@ html, body {
       }
 
     }
+  }
 
+  @media only screen and (max-height: 490px) {
+    #toolbar-vertical {
+      display: none;
+    }
   }
 }
 
 .app--sidebar {
   position: relative;
-  display: grid;
   min-height: 0;
-  grid-template-rows: min-content;
+  // display: grid;
+  // grid-template-rows: min-content;
+  @include display-grid();
+  @include grid-template-rows(min-content);
   overflow: auto;
 
-  grid-column: 1;
-  grid-row: 1;
+  // grid-column: 1;
+  // grid-row: 1;
+  @include grid-column(1,2);
+  @include grid-row(1,2);
 }
 
 .app--panels {
@@ -266,7 +296,7 @@ $sidebar-buffer: 1.0rem;
 
 body[data-sidebar-narrow-state="open"] .app--container {
   @media only screen and ( max-width: 992px ) {
-    .app---reader--toolbar--controls {
+    .app--reader--toolbar--controls {
       display: none;
     }
 
@@ -283,7 +313,8 @@ body[data-sidebar-narrow-state="open"] .app--container {
 @media only screen and (min-width: 992px) {
   body[data-sidebar-state="closed"] {
     .app--container {
-      grid-template-columns: 0 min-content 1fr;
+      @include grid-template-columns(0 min-content 1fr);
+      // grid-template-columns: 0 min-content 1fr;
       .app--reader--container {
         margin-left: 0;
       }
@@ -339,7 +370,8 @@ body[data-sidebar-narrow-state="closed"] {
 
 body[data-zoomed-in="true"] {
   .app--reader--container {
-    margin-right: 5rem;
+    // TODO: A
+    // margin-right: 5rem;
   }
 }
 
@@ -432,24 +464,30 @@ body[data-zoomed-in="true"] {
 
 // READER
 .app--reader {
-  grid-column: 3;
-  grid-row: 1;
+  // grid-column: 3;
+  // grid-row: 1;
+  @include grid-column(3,4);
+  @include grid-row(1,2);
 
   min-height: 0;
-  // background: aliceblue;
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
+  // display: grid;
+  // grid-template-columns: 1fr;
+  // grid-template-rows: 1fr;
+  @include display-grid();
+  @include grid-template-columns(1fr);
+  @include grid-template-rows(1fr);
   overflow: hidden;
 
   background: #fffefb;
-  padding-top: 1rem;
+  // padding-top: 1rem;
 
   &[data-view="1up"], &[data-view="thumb"], &[data-view="image"], &[data-view="plaintext"] {
     .app--reader--container {
       overflow: auto;
-      padding-right: 3.25rem; // vertical toolbar
+      // scroll-behavior: smooth;
+
+      // padding-right: 3.25rem; // vertical toolbar
 
       &.animating {
         overflow: hidden;
@@ -501,15 +539,19 @@ body[data-zoomed-in="true"] {
     }
 
     .app--reader--viewer {
-      display: grid;
+      // display: grid;
+      @include display-grid();
       // grid-template-rows: max-content;
       min-height: 0;
       height: auto;
       width: 100%;
 
       grid-template-areas: "page";
-      grid-template-rows: 1fr;
-      grid-template-columns: min-content;
+      // grid-template-rows: 1fr;
+      // grid-template-columns: min-content;
+      @include grid-template-rows(1fr);
+      @include grid-template-columns(min-content);
+
       justify-content: center;
       align-content: center;
 
@@ -529,10 +571,12 @@ body[data-zoomed-in="true"] {
 
         backface-visibility: hidden;
         grid-area: page;
+        -ms-grid-row: 1;
+        -ms-grid-row-span: 1;
 
         visibility: hidden;
         opacity: 0;
-        transition: visibility 0s linear 300ms, opacity 300ms;
+        // transition: visibility 0s linear 300ms, opacity 300ms;
 
         margin-bottom: 4rem;
 
@@ -541,7 +585,7 @@ body[data-zoomed-in="true"] {
         &[data-visible="true"] {
           visibility: visible;
           opacity: 1;
-          transition: visibility 0s linear 0s, opacity 300ms;
+          // transition: visibility 0s linear 0s, opacity 300ms;
         }
 
         &[data-visible="false"] {
@@ -609,15 +653,20 @@ body[data-zoomed-in="true"] {
     }
 
     .app--reader--viewer {
-      display: grid;
+      // display: grid;
+      @include display-grid();
       // grid-template-rows: max-content;
       min-height: 0;
       height: auto;
       width: 100%;
 
       grid-template-areas: "page";
-      grid-template-rows: 1fr;
-      grid-template-columns: 85%;
+
+      // grid-template-rows: 1fr;
+      // grid-template-columns: 85%;
+      @include grid-template-rows(1fr);
+      @include grid-template-columns(85%);
+
       justify-content: center;
       align-content: center;
 
@@ -637,6 +686,8 @@ body[data-zoomed-in="true"] {
 
         backface-visibility: hidden;
         grid-area: page;
+        -ms-grid-row: 1;
+        -ms-grid-row-span: 1;
 
         visibility: hidden;
         opacity: 0;
@@ -702,7 +753,7 @@ body[data-zoomed-in="true"] {
           line-height: 1.25;
 
           align-items: flex-start;
-          justify-content: start;
+          justify-content: flex-start;
 
           .ocr_page, .ocrx_block { font-size: inherit; }
           .ocrx_block {
@@ -783,14 +834,18 @@ body[data-zoomed-in="true"] {
 
   &[data-view="2up"] {
 
-    grid-template-rows: 1fr;
+    // grid-template-rows: 1fr;
+    @include grid-template-rows(1fr);
+
     justify-content: center;
     align-content: center;
 
     .app--reader--container {
       min-width: 0;
       overflow: auto;
-      padding-right: 3.25rem; // vertical toolbar
+      scroll-behavior: smooth;
+
+      // padding-right: 3.25rem; // vertical toolbar
 
       // display: flex;
       // justify-content: center;
@@ -798,16 +853,23 @@ body[data-zoomed-in="true"] {
     }
 
     .app--reader--viewer {
-      display: grid;
+      // display: grid;
       grid-template-areas: "verso recto";
-      grid-template-rows: 1fr;
-      grid-template-columns: min-content min-content;
+      // grid-template-rows: 1fr;
+      // grid-template-columns: min-content min-content;
+      @include display-grid();
+      @include grid-template-rows(1fr);
+      @include grid-template-columns(min-content min-content);
       grid-gap: 0rem;
 
-      padding-top: 1.5rem;
-      margin-bottom: 4rem;
+      width: 105%;
+
+      padding-top: 2.5rem;
+      margin-bottom: 6rem;
 
       min-width: 0;
+
+      justify-content: center;
 
       .page {
         backface-visibility: hidden;
@@ -972,16 +1034,16 @@ body[data-zoomed-in="true"] {
   }
 }
 
-.app---reader--toolbar--options {
+.app--reader--toolbar--options {
   position: absolute;
 }
 
-.app---reader--toolbar--controls {
+.app--reader--toolbar--controls {
   position: absolute;
   display: flex;
   align-items: flex-start;
   top: -0.5rem;
-  right: -0.5rem;
+  right: 1.5rem; // -0.5rem; // --- some browsers have scrollbars
   z-index: 23;
 
   background: transparent;
@@ -1173,10 +1235,10 @@ body[data-zoomed-in="true"] {
   }
 }
 
-.app---reader--toolbar {
+.app--reader--toolbar {
   z-index: 23;
   position: absolute;
-  bottom: 0rem;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -1204,6 +1266,11 @@ body[data-zoomed-in="true"] {
 
   @media screen and ( max-width: 700px ) {
     width: 98%;
+  }
+
+  @media screen and ( orientation: portrait ), screen and ( orientation: landscape ) {
+    bottom: 0;
+    width: 100%;
   }
 }
 
@@ -1245,11 +1312,15 @@ body[data-expanded="false"] {
     height: 1px !important;
   }
 
-  .app---reader--toolbar--controls {
-    display: none !important;
+  // .app--reader--toolbar--controls {
+  //   display: none !important;
+  // }
+
+  .app--reader--toolbar--controls {
+    top: 0.25rem;
   }
 
-  .app---reader--toolbar {
+  .app--reader--toolbar {
     form {
       display: none !important;
     }
@@ -1261,12 +1332,12 @@ body[data-expanded="false"] {
 
 .app--reader--container {
   // background: #707070;
-  margin-left: 1rem;
+  // margin-left: 1rem;
 }
 
 .app--reader--viewer {
   width: 100%;
-  padding: 1rem;
+  // padding: 1rem;
   min-height: 0;
 
   display: flex;
@@ -1486,7 +1557,7 @@ body[data-expanded="false"] {
   }
 
   @media screen and ( max-width: 900px ) {
-    padding: 1rem 0;
+    // padding: 1rem 0;
   }
 }
 
@@ -1697,6 +1768,7 @@ body[data-expanded="false"] {
       .page {
         &.recto {
           grid-area: recto;
+          -ms-grid-column: 2;
           transform-origin: 0% 0%;
           margin-left: 0;
 
@@ -1721,6 +1793,8 @@ body[data-expanded="false"] {
 
         &.verso {
           grid-area: verso;
+          -ms-grid-column: 1;
+
           transform-origin: 100% 0%;
           margin-right: 0;
 
@@ -1953,6 +2027,12 @@ main[data-view="thumb"] {
     display: none;
   }
 
+  body[data-zoomed-in="true"] {
+    .app--reader--container {
+      margin-right: 0;
+    }
+  }
+
   .app--reader[data-view="2up"] {
     .app--reader--container {
       padding-right: 0;
@@ -1960,6 +2040,7 @@ main[data-view="thumb"] {
   }
 
   .app--reader--viewer {
+    padding-right: 0;
     .page {
       .page--toolbar {
         margin-right: 0rem;
@@ -1969,7 +2050,7 @@ main[data-view="thumb"] {
 
 }
 
-@media only screen and ( max-width: 521px ) {
+@media only screen and ( max-width: 521px ), only screen and ( max-height: 480px ) {
   .panel.configure {
     button {
       width: 100%;
@@ -1984,7 +2065,7 @@ main[data-view="thumb"] {
 
 @media only screen and ( max-height: 1050px ) {
   .scrollable-list.action-contents-navigation {
-    height: 150px;
+    max-height: 150px;
     overflow: auto;
   }
 }
@@ -1992,6 +2073,19 @@ main[data-view="thumb"] {
 @media only screen and ( max-width: 450px ) {
   #action-prompt-seq {
     display: none;
+  }
+
+  .app--container {
+    .app--reader {
+      .app--reader--viewer {
+        .page {
+          .page--toolbar {
+            justify-content: flex-start;
+            top: 0.25rem;
+          }
+        }
+      }
+    }
   }
 }
 

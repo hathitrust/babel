@@ -47,9 +47,9 @@ head.ready(function() {
     HT.utils = HT.utils || {};
 
     // $sidebar.on('click', function(event) {
-    $("body").on('click', '.sidebar-container', function(event) {
+    $("body").on('click', '#sidebar', function(event) {
       // hide the sidebar
-      var $this = $(event.target);
+      var $this = $(event.target).closest("input,select,button,a");
       if ( $this.is("input[type='text'],select") ) {
         return;
       }
@@ -70,9 +70,12 @@ head.ready(function() {
   HT.toggle = function(state) {
 
     // $trigger.attr('aria-expanded', state);
-    $(".sidebar-container").find("button[aria-expanded]").attr('aria-expanded', state);
+    // $(".sidebar-container").find("button[aria-expanded]").attr('aria-expanded', state);
     $("html").get(0).dataset.sidebarExpanded = state;
     $("html").get(0).dataset.view = state ? 'options' : 'viewer';
+
+    document.body.dataset.sidebarNarrowState = state ? 'open' : 'closed';
+    $("action-toggle-sidebar-narrow".attr('aria-expanded', state);
 
     // var xlink_href;
     // if ( $trigger.attr('aria-expanded') == 'true' ) {
@@ -85,13 +88,13 @@ head.ready(function() {
 
   setTimeout(HT.mobify, 1000);
 
-  var updateToolbarTopProperty = function() {
-    var h = $("#sidebar .sidebar-toggle-button").outerHeight() || 40;
-    var top = ( $("header").height() + h ) * 1.05;
-    document.documentElement.style.setProperty('--toolbar-horizontal-top', top + 'px');
-  }
-  $(window).on('resize', updateToolbarTopProperty);
-  updateToolbarTopProperty();
+  // var updateToolbarTopProperty = function() {
+  //   var h = $("#sidebar .sidebar-toggle-button").outerHeight() || 40;
+  //   var top = ( $("header").height() + h ) * 1.05;
+  //   document.documentElement.style.setProperty('--toolbar-horizontal-top', top + 'px');
+  // }
+  // $(window).on('resize', updateToolbarTopProperty);
+  // updateToolbarTopProperty();
 
   $("html").get(0).setAttribute('data-sidebar-expanded', false);
 

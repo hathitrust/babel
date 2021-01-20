@@ -47,16 +47,19 @@ html, body {
   }
 }
 
-@media only screen and (min-width: 527px) and (max-width: 62rem) {
+@media only screen and (min-width: 527px) and (max-width: 62rem) and (min-height: 491px) {
   .mq--narrower {
     display: none !important;
   }
 }
 
 .app--container {
+  display: -ms-grid;
   display: grid;
+  -ms-grid-columns: minmax(min-content, 18rem) min-content 1fr;
   grid-template-columns: minmax(-webkit-min-content, 18rem) -webkit-min-content 1fr;
   grid-template-columns: minmax(min-content, 18rem) min-content 1fr;
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
   min-height: 0;
   min-width: 0;
@@ -73,8 +76,12 @@ html, body {
 
 .app--container .app--sidebar--toggle--container {
   align-self: center;
-  grid-column: 2;
-  grid-row: 1;
+  -ms-grid-column: 2;
+  -ms-grid-column-span: 1;
+  grid-column: 2 / 3;
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 1;
+  grid-row: 1 / 2;
 }
 
 .app--container button {
@@ -96,33 +103,50 @@ html, body {
 
 @media only screen and (max-width: 62rem) {
   .app--container {
+    -ms-grid-columns: 1fr;
     grid-template-columns: 1fr;
-    grid-template-rows: -webkit-min-content 1fr;
-    grid-template-rows: min-content 1fr;
+    -ms-grid-rows: 1fr;
+    grid-template-rows: 1fr;
     padding: 0;
     margin: 0;
   }
   .app--container .app--sidebar {
-    grid-column: 1;
-    grid-row: 2;
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 1;
+    grid-column: 1 / 2;
+    -ms-grid-row: 2;
+    -ms-grid-row-span: 1;
+    grid-row: 2 / 3;
     z-index: 1;
     max-height: 100vh;
   }
   .app--container .app--reader {
-    grid-column: 1;
-    grid-row: 2;
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 1;
+    grid-column: 1 / 2;
+    -ms-grid-row: 2;
+    -ms-grid-row-span: 1;
+    grid-row: 2 / 3;
     z-index: 10;
   }
   .app--container .app--reader .app--reader--viewer .page .page--toolbar {
-    margin-right: 2rem;
+    margin-right: 0;
+    -webkit-box-pack: start;
+        -ms-flex-pack: start;
+            justify-content: flex-start;
+    top: 0.25rem;
   }
-  .app--container .app---reader--toolbar--controls {
+  .app--container .app--reader--toolbar--controls {
     top: 3.75rem;
     right: 1rem;
   }
   .app--container .app--sidebar--toggle--container {
-    grid-column: 1;
-    grid-row: 1;
+    -ms-grid-column: 1;
+    -ms-grid-column-span: 1;
+    grid-column: 1 / 2;
+    -ms-grid-row: 1;
+    -ms-grid-row-span: 1;
+    grid-row: 1 / 2;
   }
   .app--container .app--sidebar--toggle--container #action-toggle-sidebar-narrow {
     width: 100%;
@@ -143,15 +167,27 @@ html, body {
   }
 }
 
+@media only screen and (max-height: 490px) {
+  .app--container #toolbar-vertical {
+    display: none;
+  }
+}
+
 .app--sidebar {
   position: relative;
-  display: grid;
   min-height: 0;
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: min-content;
   grid-template-rows: -webkit-min-content;
   grid-template-rows: min-content;
   overflow: auto;
-  grid-column: 1;
-  grid-row: 1;
+  -ms-grid-column: 1;
+  -ms-grid-column-span: 1;
+  grid-column: 1 / 2;
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 1;
+  grid-row: 1 / 2;
 }
 
 .app--panels {
@@ -232,7 +268,7 @@ html, body {
 }
 
 @media only screen and (max-width: 992px) {
-  body[data-sidebar-narrow-state="open"] .app--container .app---reader--toolbar--controls {
+  body[data-sidebar-narrow-state="open"] .app--container .app--reader--toolbar--controls {
     display: none;
   }
   body[data-sidebar-narrow-state="open"] .app--container .app--sidebar {
@@ -245,6 +281,7 @@ html, body {
 
 @media only screen and (min-width: 992px) {
   body[data-sidebar-state="closed"] .app--container {
+    -ms-grid-columns: 0 min-content 1fr;
     grid-template-columns: 0 -webkit-min-content 1fr;
     grid-template-columns: 0 min-content 1fr;
   }
@@ -282,10 +319,6 @@ html, body {
 
 body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.column::before {
   content: "\ea43";
-}
-
-body[data-zoomed-in="true"] .app--reader--container {
-  margin-right: 5rem;
 }
 
 .app--panels .panel {
@@ -377,21 +410,26 @@ body[data-zoomed-in="true"] .app--reader--container {
 }
 
 .app--reader {
-  grid-column: 3;
-  grid-row: 1;
+  -ms-grid-column: 3;
+  -ms-grid-column-span: 1;
+  grid-column: 3 / 4;
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 1;
+  grid-row: 1 / 2;
   min-height: 0;
   position: relative;
+  display: -ms-grid;
   display: grid;
+  -ms-grid-columns: 1fr;
   grid-template-columns: 1fr;
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
   overflow: hidden;
   background: #fffefb;
-  padding-top: 1rem;
 }
 
 .app--reader[data-view="1up"] .app--reader--container, .app--reader[data-view="thumb"] .app--reader--container, .app--reader[data-view="image"] .app--reader--container, .app--reader[data-view="plaintext"] .app--reader--container {
   overflow: auto;
-  padding-right: 3.25rem;
 }
 
 .app--reader[data-view="1up"] .app--reader--container.animating, .app--reader[data-view="thumb"] .app--reader--container.animating, .app--reader[data-view="image"] .app--reader--container.animating, .app--reader[data-view="plaintext"] .app--reader--container.animating {
@@ -437,12 +475,15 @@ body[data-zoomed-in="true"] .app--reader--container {
 }
 
 .app--reader[data-view="image"] .app--reader--viewer {
+  display: -ms-grid;
   display: grid;
   min-height: 0;
   height: auto;
   width: 100%;
   grid-template-areas: "page";
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
+  -ms-grid-columns: min-content;
   grid-template-columns: -webkit-min-content;
   grid-template-columns: min-content;
   -webkit-box-pack: center;
@@ -466,10 +507,10 @@ body[data-zoomed-in="true"] .app--reader--container {
   -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
   grid-area: page;
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 1;
   visibility: hidden;
   opacity: 0;
-  -webkit-transition: visibility 0s linear 300ms, opacity 300ms;
-  transition: visibility 0s linear 300ms, opacity 300ms;
   margin-bottom: 4rem;
 }
 
@@ -480,8 +521,6 @@ body[data-zoomed-in="true"] .app--reader--container {
 .app--reader[data-view="image"] .app--reader--viewer .page[data-visible="true"] {
   visibility: visible;
   opacity: 1;
-  -webkit-transition: visibility 0s linear 0s, opacity 300ms;
-  transition: visibility 0s linear 0s, opacity 300ms;
 }
 
 .app--reader[data-view="image"] .app--reader--viewer .page[data-visible="false"] .image {
@@ -548,12 +587,15 @@ body[data-zoomed-in="true"] .app--reader--container {
 }
 
 .app--reader[data-view="plaintext"] .app--reader--viewer {
+  display: -ms-grid;
   display: grid;
   min-height: 0;
   height: auto;
   width: 100%;
   grid-template-areas: "page";
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
+  -ms-grid-columns: 85%;
   grid-template-columns: 85%;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
@@ -577,6 +619,8 @@ body[data-zoomed-in="true"] .app--reader--container {
   -webkit-backface-visibility: hidden;
           backface-visibility: hidden;
   grid-area: page;
+  -ms-grid-row: 1;
+  -ms-grid-row-span: 1;
   visibility: hidden;
   opacity: 0;
   -webkit-transition: visibility 0s linear 150ms, opacity 300ms;
@@ -642,7 +686,7 @@ body[data-zoomed-in="true"] .app--reader--container {
           align-items: flex-start;
   -webkit-box-pack: start;
       -ms-flex-pack: start;
-          justify-content: start;
+          justify-content: flex-start;
 }
 
 .app--reader[data-view="plaintext"] .app--reader--viewer .page .page-text .ocr_page, .app--reader[data-view="plaintext"] .app--reader--viewer .page .page-text .ocrx_block {
@@ -720,6 +764,7 @@ body[data-zoomed-in="true"] .app--reader--container {
 }
 
 .app--reader[data-view="2up"] {
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
@@ -731,19 +776,26 @@ body[data-zoomed-in="true"] .app--reader--container {
 .app--reader[data-view="2up"] .app--reader--container {
   min-width: 0;
   overflow: auto;
-  padding-right: 3.25rem;
+  scroll-behavior: smooth;
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer {
-  display: grid;
   grid-template-areas: "verso recto";
+  display: -ms-grid;
+  display: grid;
+  -ms-grid-rows: 1fr;
   grid-template-rows: 1fr;
+  -ms-grid-columns: min-content min-content;
   grid-template-columns: -webkit-min-content -webkit-min-content;
   grid-template-columns: min-content min-content;
   grid-gap: 0rem;
-  padding-top: 1.5rem;
-  margin-bottom: 4rem;
+  width: 105%;
+  padding-top: 2.5rem;
+  margin-bottom: 6rem;
   min-width: 0;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer .page {
@@ -853,11 +905,11 @@ body[data-zoomed-in="true"] .app--reader--container {
   border-right: 8px solid #666;
 }
 
-.app---reader--toolbar--options {
+.app--reader--toolbar--options {
   position: absolute;
 }
 
-.app---reader--toolbar--controls {
+.app--reader--toolbar--controls {
   position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -866,13 +918,13 @@ body[data-zoomed-in="true"] .app--reader--container {
       -ms-flex-align: start;
           align-items: flex-start;
   top: -0.5rem;
-  right: -0.5rem;
+  right: 1.5rem;
   z-index: 23;
   background: transparent;
   pointer-events: none;
 }
 
-.app---reader--toolbar--controls .toolbar {
+.app--reader--toolbar--controls .toolbar {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -881,7 +933,7 @@ body[data-zoomed-in="true"] .app--reader--container {
   pointer-events: auto;
 }
 
-.app---reader--toolbar--controls .toolbar .btn-group {
+.app--reader--toolbar--controls .toolbar .btn-group {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -889,7 +941,7 @@ body[data-zoomed-in="true"] .app--reader--container {
       flex-wrap: nowrap;
 }
 
-.app---reader--toolbar--controls .toolbar button {
+.app--reader--toolbar--controls .toolbar button {
   background-color: #666;
   color: #eee;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
@@ -897,15 +949,15 @@ body[data-zoomed-in="true"] .app--reader--container {
   height: 2.375rem;
 }
 
-.app---reader--toolbar--controls .toolbar button.active {
+.app--reader--toolbar--controls .toolbar button.active {
   background: rgba(0, 0, 0, 0.8);
 }
 
-.app---reader--toolbar--controls .toolbar button:hover:enabled {
+.app--reader--toolbar--controls .toolbar button:hover:enabled {
   background: rgba(0, 0, 0, 0.8);
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal {
+.app--reader--toolbar--controls #toolbar-horizontal {
   width: 100%;
   z-index: 5;
   -webkit-box-pack: end;
@@ -920,11 +972,11 @@ body[data-zoomed-in="true"] .app--reader--container {
   background: linear-gradient(90deg, rgba(255, 254, 251, 0) 0%, #fffefb 15%, #fffefb 52%, rgba(255, 254, 251, 0) 100%);
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal > * {
+.app--reader--toolbar--controls #toolbar-horizontal > * {
   margin-right: 0.25rem;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal form {
+.app--reader--toolbar--controls #toolbar-horizontal form {
   -ms-flex-preferred-size: auto;
       flex-basis: auto;
   display: -webkit-box;
@@ -935,7 +987,7 @@ body[data-zoomed-in="true"] .app--reader--container {
           align-items: center;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal form label {
+.app--reader--toolbar--controls #toolbar-horizontal form label {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -949,30 +1001,30 @@ body[data-zoomed-in="true"] .app--reader--container {
   padding: 0.25rem 0.5rem;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal form #input-go-page {
+.app--reader--toolbar--controls #toolbar-horizontal form #input-go-page {
   width: 5rem;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal .dropdown-menu {
+.app--reader--toolbar--controls #toolbar-horizontal .dropdown-menu {
   display: none;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal .caret {
+.app--reader--toolbar--controls #toolbar-horizontal .caret {
   margin-left: 0.3rem;
 }
 
-.app---reader--toolbar--controls #toolbar-horizontal ul button {
+.app--reader--toolbar--controls #toolbar-horizontal ul button {
   text-align: center;
   width: 3rem;
   height: 2.8rem;
   margin-left: 0.25rem;
 }
 
-.app---reader--toolbar--controls #form-go-page {
+.app--reader--toolbar--controls #form-go-page {
   display: none !important;
 }
 
-.app---reader--toolbar--controls .selected-list {
+.app--reader--toolbar--controls .selected-list {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -983,24 +1035,24 @@ body[data-zoomed-in="true"] .app--reader--container {
           justify-content: center;
 }
 
-.app---reader--toolbar--controls .selected-list a {
+.app--reader--toolbar--controls .selected-list a {
   display: inline-block;
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.app---reader--toolbar--controls .selected-list a > span {
+.app--reader--toolbar--controls .selected-list a > span {
   display: block;
   margin-top: 0px;
 }
 
-.app---reader--toolbar--controls .selected-list img {
+.app--reader--toolbar--controls .selected-list img {
   border: 1px solid #666;
   padding: 2px;
   margin: 0 0.25rem;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical {
+.app--reader--toolbar--controls #toolbar-vertical {
   margin-top: 3rem;
   z-index: 2;
   -webkit-box-ordinal-group: 3;
@@ -1016,55 +1068,55 @@ body[data-zoomed-in="true"] .app--reader--container {
           flex-direction: column;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical button {
+.app--reader--toolbar--controls #toolbar-vertical button {
   height: 3rem;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical .btn-group + .btn-group {
+.app--reader--toolbar--controls #toolbar-vertical .btn-group + .btn-group {
   margin-top: 10px;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical #action-zoom-in .icomoon, .app---reader--toolbar--controls #toolbar-vertical #action-zoom-out .icomoon {
+.app--reader--toolbar--controls #toolbar-vertical #action-zoom-in .icomoon, .app--reader--toolbar--controls #toolbar-vertical #action-zoom-out .icomoon {
   font-size: 135%;
   margin-left: -4px;
   margin-top: -2px;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical .action-fullscreen button {
+.app--reader--toolbar--controls #toolbar-vertical .action-fullscreen button {
   display: none;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical .action-fullscreen[data-expanded="false"] [data-target="enter-fullscreen"] {
+.app--reader--toolbar--controls #toolbar-vertical .action-fullscreen[data-expanded="false"] [data-target="enter-fullscreen"] {
   display: block;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical .action-fullscreen[data-expanded="true"] [data-target="exit-fullscreen"] {
+.app--reader--toolbar--controls #toolbar-vertical .action-fullscreen[data-expanded="true"] [data-target="exit-fullscreen"] {
   display: block;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical.toolbar--shrunken {
+.app--reader--toolbar--controls #toolbar-vertical.toolbar--shrunken {
   -ms-flex-preferred-size: 4rem;
       flex-basis: 4rem;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar {
+.app--reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar {
   -webkit-appearance: none;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar:vertical {
+.app--reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar:vertical {
   width: 1rem;
 }
 
-.app---reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar-thumb {
+.app--reader--toolbar--controls #toolbar-vertical.toolbar--shrunken::-webkit-scrollbar-thumb {
   border-radius: 8px;
   border: 2px solid white;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.app---reader--toolbar {
+.app--reader--toolbar {
   z-index: 23;
   position: absolute;
-  bottom: 0rem;
+  bottom: 1rem;
   left: 50%;
   -webkit-transform: translateX(-50%);
           transform: translateX(-50%);
@@ -1081,15 +1133,22 @@ body[data-zoomed-in="true"] .app--reader--container {
           justify-content: space-between;
 }
 
-.app---reader--toolbar form button {
+.app--reader--toolbar form button {
   padding: 0.5rem 1rem;
   -webkit-box-shadow: 0 0 0 4px #39383a;
           box-shadow: 0 0 0 4px #39383a;
 }
 
 @media screen and (max-width: 700px) {
-  .app---reader--toolbar {
+  .app--reader--toolbar {
     width: 98%;
+  }
+}
+
+@media screen and (orientation: portrait), screen and (orientation: landscape) {
+  .app--reader--toolbar {
+    bottom: 0;
+    width: 100%;
   }
 }
 
@@ -1138,26 +1197,21 @@ body[data-expanded="false"] .app--sidebar--toggle--container {
   height: 1px !important;
 }
 
-body[data-expanded="false"] .app---reader--toolbar--controls {
-  display: none !important;
+body[data-expanded="false"] .app--reader--toolbar--controls {
+  top: 0.25rem;
 }
 
-body[data-expanded="false"] .app---reader--toolbar {
+body[data-expanded="false"] .app--reader--toolbar {
   height: 0px !important;
   min-height: 0;
 }
 
-body[data-expanded="false"] .app---reader--toolbar form {
+body[data-expanded="false"] .app--reader--toolbar form {
   display: none !important;
-}
-
-.app--reader--container {
-  margin-left: 1rem;
 }
 
 .app--reader--viewer {
   width: 100%;
-  padding: 1rem;
   min-height: 0;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1338,12 +1392,6 @@ body[data-expanded="false"] .app---reader--toolbar form {
 
 .app--reader--viewer .page[data-rotated="-270"] .image img, .app--reader--viewer .page[data-rotated="90"] .image img {
   height: 100%;
-}
-
-@media screen and (max-width: 900px) {
-  .app--reader--viewer {
-    padding: 1rem 0;
-  }
 }
 
 .app--reader--navigator {
@@ -1528,6 +1576,7 @@ body[data-expanded="false"] .app---reader--toolbar form {
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.recto {
   grid-area: recto;
+  -ms-grid-column: 2;
   -webkit-transform-origin: 0% 0%;
           transform-origin: 0% 0%;
   margin-left: 0;
@@ -1557,6 +1606,7 @@ body[data-expanded="false"] .app---reader--toolbar form {
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.verso {
   grid-area: verso;
+  -ms-grid-column: 1;
   -webkit-transform-origin: 100% 0%;
           transform-origin: 100% 0%;
   margin-right: 0;
@@ -1732,8 +1782,8 @@ main[data-view="thumb"] button[data-target="thumb"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-uad581b64 1s linear alternate infinite;
-          animation: loader12-uad581b64 1s linear alternate infinite;
+  -webkit-animation: loader12-ufc2b76fd 1s linear alternate infinite;
+          animation: loader12-ufc2b76fd 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1742,7 +1792,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-uad581b64 {
+@-webkit-keyframes loader12-ufc2b76fd {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1765,7 +1815,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@keyframes loader12-uad581b64 {
+@keyframes loader12-ufc2b76fd {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1817,7 +1867,13 @@ main[data-view="thumb"] button[data-target="thumb"] {
   #toolbar-vertical {
     display: none;
   }
+  body[data-zoomed-in="true"] .app--reader--container {
+    margin-right: 0;
+  }
   .app--reader[data-view="2up"] .app--reader--container {
+    padding-right: 0;
+  }
+  .app--reader--viewer {
     padding-right: 0;
   }
   .app--reader--viewer .page .page--toolbar {
@@ -1825,7 +1881,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@media only screen and (max-width: 521px) {
+@media only screen and (max-width: 521px), only screen and (max-height: 480px) {
   .panel.configure button {
     width: 100%;
     -webkit-box-pack: center;
@@ -1839,7 +1895,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
 
 @media only screen and (max-height: 1050px) {
   .scrollable-list.action-contents-navigation {
-    height: 150px;
+    max-height: 150px;
     overflow: auto;
   }
 }
@@ -1847,6 +1903,12 @@ main[data-view="thumb"] button[data-target="thumb"] {
 @media only screen and (max-width: 450px) {
   #action-prompt-seq {
     display: none;
+  }
+  .app--container .app--reader .app--reader--viewer .page .page--toolbar {
+    -webkit-box-pack: start;
+        -ms-flex-pack: start;
+            justify-content: flex-start;
+    top: 0.25rem;
   }
 }
 

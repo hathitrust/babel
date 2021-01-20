@@ -134,7 +134,8 @@ export var Base = class {
     // console.log("-- render", minWidth);
 
     if ( maxHeight ) {
-      this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
+      // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
+      document.documentElement.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
     }
 
     var slice_index = 1;
@@ -270,8 +271,30 @@ export var Base = class {
       this._initialized = true;
       // cb();
     }
+
+    this._lastContainerWidth = this.container.offsetWidth * this.scale;
+    // is this really necessary
+    this._adjustContainer();
+
   }
 
+  // _adjustContainer() {
+  //   // NOP
+  // }
+
+  _adjustContainer() {
+    this.container.style.width = `${this.scale * 100}%`;
+    console.log("-- adjust", ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2);
+    // setTimeout(() => {
+    //   this.container.parentNode.scrollLeft = ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2
+    //   console.log("-- adjust redux", ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2);
+    // }, 500);
+    requestAnimationFrame(() => {
+      this.container.parentNode.scrollLeft = 
+        ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2;
+    })
+  }
+  
   _renderr(page) {
     /* NOP */
   }
@@ -321,7 +344,7 @@ export var Base = class {
           page.classList.add('loading');
           // self._tracker.images[seq] = self._tracker.images[seq] ? self._tracker.images[seq] + 1 : 1;
           self.service.loaders.images.queue({ src: self.imageUrl(page), page: page });
-          if ( false && self.embedHtml ) {
+          if ( self.embedHtml ) {
             var html_url = self.service.html({ seq: seq });
             if ( html_url ) {
               self.service.loaders.images.queue({ src: html_url, page: page, mimetype: 'text/html' });
@@ -804,11 +827,20 @@ window.xdialog = dialog;
     var maxHeight = this.maxHeight();
 
     var scale = this.scale;
-    var currentSeq = this._currentPage.dataset.seq; // this.currentLocation();
+    var currentSeq;
+    if ( this._currentPage ) {
+      currentSeq = this._currentPage.dataset.seq; // this.currentLocation();
+    } else {
+      currentSeq = this.currentLocation();
+    }
 
     if ( maxHeight ) {
-      this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
+      // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
+      document.documentElement.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
     }
+
+    // // is this really necessary
+    // this.container.style.width = `${this.scale * 100}%`;
 
     console.log("__RESIZE__ start", currentSeq);
 
@@ -857,6 +889,7 @@ window.xdialog = dialog;
         this.display(currentSeq);
         this._scrollPause = false;
         console.log("__RESIZE__ end/dirty", currentSeq);
+        this._adjustContainer();
       }, 100);
       return;
     }
@@ -865,6 +898,7 @@ window.xdialog = dialog;
 
     this.display(currentSeq);
     this._scrollPause = false;
+    this._adjustContainer();
   }
 
   _calculatePageSize(meta, page, minWidth, maxHeight) {
