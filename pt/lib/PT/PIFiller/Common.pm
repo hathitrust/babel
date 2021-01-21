@@ -1238,7 +1238,7 @@ sub handle_VIEW_TYPE_REMEDIATED_FILES_LINKS_PI
     my $id = $cgi->param('id');
 
     my $finalAccessStatus =
-        $C->get_object('Access::Rights')->assert_final_access_status($C, $id);
+        $C->get_object('Access::Rights')->get_remediated_items_access_status($C, $id);
 
     if ( $finalAccessStatus ne 'allow' ) {
         return '';
