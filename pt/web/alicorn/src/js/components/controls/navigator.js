@@ -52,11 +52,24 @@ export var Navigator = class {
     }
     output_input.addEventListener('click', capture_value, false);
     output_input.addEventListener('focus', capture_value, false);
-    output_input.addEventListener('blur', (event) => {
-      if ( ! this.handleValue('#' + output_input.value) ) {
+
+    var output_handler = function(event) {
+      if ( event.type == 'keydown' ) {
+        if ( ! ( event.key == 'Enter' || event.key == 'Return' ) ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      var value = output_input.value;
+      if ( value.match(/^\d/) ) { value = '#' + value; }
+      if ( ! this.handleValue(value) ) {
         output_input.value = output_input.dataset.value;
       }
-    })
+    }.bind(this);
+
+    output_input.addEventListener('blur', output_handler);
+    output_input.addEventListener('keydown', output_handler);
 
     var isTouchDevice = 'ontouchstart' in document.documentElement;
     if ( isTouchDevice ) {
@@ -115,6 +128,7 @@ export var Navigator = class {
     }
 
     this.prompt.addEventListener('click', (event) => {
+      var seq = output_input.value;
       event.preventDefault();
       var $dialog = bootbox.dialog(
         // `<p>Jump to which page scan?</p><p><input type="text" name="seq" class="input-medium" placeholder="Enter a page scan sequence (e.g. 1-${this.reader.service.manifest.totalSeq})" /></p>`,
@@ -138,6 +152,7 @@ export var Navigator = class {
         {
           header: "Jump to page scan",
           onShow: function(modal) {
+            modal.querySelector("input[name='seq']").value = '#' + seq;
             modal.querySelector("input[name='seq']").focus();
           }
         }
