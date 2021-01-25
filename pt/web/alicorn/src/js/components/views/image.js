@@ -10,73 +10,65 @@ export var Single = class extends Base {
     this.embedHtml = true;
     this.isAnimating = false;
     this.useAnimations = true;
+    this._queue = [];
   }
 
   display(seq) {
     var self = this;
 
-    if ( self.isAnimating ) { return ; }
-
     seq = parseInt(seq, 10);
+
     if ( seq == this.currentSeq ) { return ; }
+    if ( this.getPage(seq).dataset.visible == 'true' ) { return ; }
 
-    var current = this.container.querySelector(`.page[data-visible="true"]`);
+    var currentPage; var targetPage;
+    if ( this.currentSeq ) {
+      currentPage = this.container.querySelector(`.page[data-seq="${this.currentSeq}"]`);
+    }
 
-    var target = this.getPage(seq);
-    if ( ! target ) { return; }
+    var targetPage = this.container.querySelector(`.page[data-seq="${seq}"]`);
+    if ( ! targetPage ) { return; }
 
-    this.loadImage(target);
+    this.loadImage(targetPage);
 
-    // really?
     var delta = this.currentSeq < seq;
-    target.dataset.visible = true;
+    this._queue.push([ seq, currentPage, targetPage, delta ]);
+
     this.currentSeq = seq;
 
-    if ( ! current || ! this.useAnimations ) {
-      self.reader.emit('relocated', { seq: seq });
-      self.currentSeq = parseInt(target.dataset.seq);
-      self._currentPage = target;
-      self.focus(target);
-      if ( current ) {
-        current.dataset.visible = false;
-      }
+    this._processQueue();
+  }
+
+  _processQueue() {
+    var self = this;
+
+    if ( ! this._queue.length ) { return; }
+
+    if ( this.isAnimating ) {
+      console.log("-- _processQueue: postponing", this._queue[0][0]);
+      setTimeout(() => { this._processQueue() }, 100);
       return;
     }
 
-    // setTimeout(() => {
-    //   target.classList.add('pending');
+    this.isAnimating = true;
+    console.log("-- _processQueue: processing", this._queue[0][0]);
 
-    //   if ( ! current || ! this.useAnimations ) {
-    //     self.reader.emit('relocated', { seq: seq });
-    //     self.currentSeq = parseInt(target.dataset.seq);
-    //     self._currentPage = target;
-    //     self.focus(target);
-    //     if ( current ) {
-    //       current.classList.add('exiting');
-    //     }
-    //     setTimeout(() => {
-    //       if ( current ) {
-    //         setTimeout(() => {
-    //           current.dataset.visible = false;
-    //           setTimeout(() => {
-    //             current.classList.remove('exiting');
-    //             setTimeout(() => {
-    //               target.classList.remove('pending');
-    //             }, 100);
-    //           }, 0);
-    //         }, 0);
-    //       } else {
-    //         target.classList.remove('pending');
-    //       }
-    //     }, 0);
-    //     return;
-    //   }
+    var tuple = this._queue.shift();
+    var seq = tuple[0];
+    var currentPage = tuple[1];
+    var targetPage = tuple[2];
+    var delta = tuple[3];
 
-    // }, 0);
+    targetPage.dataset.visible = true;
 
-    // if ( ! this.useAnimations ) {
-    //   return;
-    // }
+    var currentPages = document.querySelectorAll('.page[data-visible="true"]');
+
+    if ( ! currentPages || ! currentPages.length || ! this._initialized ) { 
+      self.focus(targetPage);
+      self.reader.emit('relocated', { seq: self.currentSeq });
+      self.isAnimating = false;
+      return ; 
+    }
 
     var inClass = delta > 0 ? 'page--moveFromRight' : 'page--moveFromLeft';
     var outClass = delta > 0 ? 'page--moveToLeft' : 'page--moveToRight';
@@ -85,49 +77,54 @@ export var Single = class extends Base {
     var endCurrentPage = false;
     var endTargetPage = false;
 
-    var onEndAnimation = function(current, target) {
-      console.log("-- onEndAnimation", current, target);
+    var onEndAnimation = function(currentPages, targetPages) {
+      // console.log("-- onEndAnimation", currentPages, targetPages);
       endTargetPage = false;
       endCurrentPage = false;
-      current.dataset.visible = false;
-      current.classList.remove(outClass);
-      target.classList.remove(inClass);
-      self.container.parentNode.classList.remove('animating');
-      self.isAnimating = false;
-      self.currentSeq = parseInt(target.dataset.seq);
-      self._currentPage = target;
-      self.focus(target);
+      currentPages.forEach((page) => { 
+        // console.log("-- onEndAnimation currentPages", page.dataset.seq,self.sets.visible.has(parseInt(page.dataset.seq, 10)) );
+        page.classList.remove(outClass); 
+        if ( page.dataset.seq == self.currentSeq ) { return ; }
+        // if ( self.sets.visible.has(parseInt(page.dataset.seq, 10)) ) { page.dataset.visible = true; return ; }
+        page.dataset.visible = false; 
+        // page.classList.remove(outClass, otherClass); 
+        self.unfocus(page);
+      }) 
+      targetPage.classList.remove(inClass);
+      targetPage.dataset.visible = true;
+      targetPage.classList.remove(inClass);
+      self.focus(targetPage);
 
-      self.reader.emit('relocated', { seq: seq });
+console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
+
+      self.container.classList.remove('animating');
+      self.isAnimating = false;
+
+      self.reader.emit('relocated', { seq: self.currentSeq });
     }
 
     var outAnimationHandler = function(event) {
-      current.removeEventListener('animationend', outAnimationHandler);
+      currentPages.forEach((page) => { page.removeEventListener('animationend', outAnimationHandler); });
       endCurrentPage = true;
-      console.log("-- outAnimationHandler", endCurrentPage, endTargetPage);
-      if ( endTargetPage ) { onEndAnimation(current, target); }      
+      // console.log("-- outAnimationHandler", endCurrentPage, endTargetPage);
+      if ( endTargetPage ) { onEndAnimation(currentPages, targetPage); }
     }
     var inAnimationHandler = function(event) {
-      target.removeEventListener('animationend', inAnimationHandler);
+      targetPage.removeEventListener('animationend', inAnimationHandler);
       endTargetPage = true;
-      console.log("-- inAnimationHandler", endCurrentPage, endTargetPage);
-      if ( endCurrentPage ) { onEndAnimation(current, target); }      
+      // console.log("-- inAnimationHandler", endCurrentPage, endTargetPage);
+      if ( endCurrentPage ) { onEndAnimation(currentPages, targetPage); }      
     }
 
-    this.container.parentNode.classList.add('animating');
-    current.addEventListener('animationend', outAnimationHandler);
-    target.addEventListener('animationend', inAnimationHandler);
+    this.container.classList.add('animating');
+    currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
+    targetPage.addEventListener('animationend', inAnimationHandler);
 
-    // current.addEventListener('animationend', (event) => { console.log('-- current animationend') });
-    // target.addEventListener('animationend', (event) => { console.log('-- target animationend') });
+    currentPage.classList.add(outClass);
+    targetPage.classList.add(inClass);
 
-
-    current.classList.add(outClass);
-    target.classList.add(inClass);
-
-    this.visible(target);
+    this.visible(targetPage);
   }
-
 
   currentLocation() {
     return this.currentSeq;

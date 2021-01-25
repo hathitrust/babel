@@ -17,6 +17,7 @@ export var Flip = class extends Base {
     this._layout = {};
     this.trackResize = true;
     this.isAnimating = false;
+    this._queue = [];
   }
 
   _pageRatio(seq) {
@@ -82,7 +83,7 @@ export var Flip = class extends Base {
       frameHeight = h;
     }
 
-    var sliceMax = this._slicify(this.service.manifest.totalSeq);
+    var sliceMax = this._sliceMax = this._slicify(this.service.manifest.totalSeq);
     var maxEdgeWidth = sliceMax * 0.25;
 
     var sliceFraction;
@@ -134,22 +135,6 @@ export var Flip = class extends Base {
     return { height: h, width: w, frameHeight: h, frameWidth: frameWidth };
   }
 
-  _hide(seq) {
-    this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`).forEach(function(page) {
-      page.dataset.visible = false;
-    });
-  }
-
-  _queue(seq) {
-    var nodes = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
-    var possibles = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
-    this.loadImage(Array.prototype.slice.call(possibles));
-    nodes.forEach(function(page) {
-      page.dataset.visible = 'pending';
-    });  
-    return nodes;
-  }
-
   render(cb) {
     if ( this.isRTL ) {
       this.container.classList.add('reading-order--rtl');
@@ -160,37 +145,65 @@ export var Flip = class extends Base {
   display(seq) {
     var self = this;
 
-    if ( self.isAnimating ) { return ; }
-
     seq = parseInt(seq, 10);
-    if ( seq == this.currentSeq ) { return ; }
 
-    var currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
-    
-    var slice_index = this._slicify(seq);
+    if ( seq == this.currentSeq ) { return ; }
+    if ( this.getPage(seq) && this.getPage(seq).dataset.visible == 'true' ) { return ; }
+
+    var currentPages; var targetPages;
+    if ( this.currentSeq ) {
+      var currentSlice = this._slicify(this.currentSeq);
+      currentPages = this.container.querySelectorAll(`.page[data-slice="${currentSlice}"]`);
+    }
+
     var targetPages = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
     if ( ! targetPages.length ) { return; }
 
     this.loadImage(Array.prototype.slice.call(targetPages));
 
-    // really?
     var delta = this.currentSeq < seq;
-    targetPages.forEach((page) => { page.dataset.visible = true; })
-    this.currentSeq = seq;
+    this._queue.push([ this._slicify(seq), currentPages, targetPages, delta ]);
 
-    if ( ! currentPages.length ) { 
+    this.currentSeq = seq;
+    this.currentSlice = this._slicify(seq);
+
+    this._processQueue();
+  }
+
+  _processQueue() {
+    var self = this;
+
+    if ( ! this._queue.length ) { return; }
+
+    if ( this.isAnimating ) {
+      console.log("-- _processQueue: postponing", this._queue[0][0]);
+      setTimeout(() => { this._processQueue() }, 100);
+      return;
+    }
+
+    this.isAnimating = true;
+    console.log("-- _processQueue: processing", this._queue[0][0]);
+
+    var tuple = this._queue.shift();
+    var seq = tuple[0];
+    var currentPages = tuple[1];
+    var targetPages = tuple[2];
+    var delta = tuple[3];
+
+    targetPages.forEach((page) => { page.dataset.visible = true; })
+
+    currentPages = document.querySelectorAll('.page[data-visible="true"]');
+
+    if ( ! currentPages || ! currentPages.length || ! this._initialized ) { 
       targetPages.forEach((page) => { self.focus(page); })
       self.reader.emit('relocated', { seq: self.currentSeq });
+      self.isAnimating = false;
       return ; 
     }
 
-    // var inClass = delta > 0 ? 'page--flipFromRight' : 'page--flipFromLeft';
-    // var outClass = delta > 0 ? 'page--flipToLeft' : 'page--flipToRight';
     var inClass = delta > 0 ? 'page--flipToLeft' : 'page--flipToRight';
     var otherClass = delta > 0 ? 'page--flippingToLeft' : 'page--flippingToRight';
     var outClass = inClass;
-
-    // outClass = 'page--fade';
 
     var endCurrentPage = false;
     var endTargetPage = false;
@@ -199,12 +212,21 @@ export var Flip = class extends Base {
       // console.log("-- onEndAnimation", currentPages, targetPages);
       endTargetPage = false;
       endCurrentPage = false;
-      currentPages.forEach((page) => { page.dataset.visible = false; page.classList.remove(outClass, otherClass); self.unfocus(page) })      
-      targetPages.forEach((page) => { page.classList.remove(inClass, otherClass); self.focus(page); })
+      currentPages.forEach((page) => { 
+        // console.log("-- onEndAnimation currentPages", page.dataset.seq,self.sets.visible.has(parseInt(page.dataset.seq, 10)) );
+        page.classList.remove(outClass, otherClass); 
+        if ( page.dataset.slice == self.currentSlice ) { return ; }
+        // if ( self.sets.visible.has(parseInt(page.dataset.seq, 10)) ) { page.dataset.visible = true; return ; }
+        page.dataset.visible = false; 
+        // page.classList.remove(outClass, otherClass); 
+        self.unfocus(page);
+      })      
+      targetPages.forEach((page) => { page.dataset.visible = true; page.classList.remove(inClass, otherClass); self.focus(page); })
+
+console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
+
       self.container.classList.remove('animating');
       self.isAnimating = false;
-
-
 
       self.reader.emit('relocated', { seq: self.currentSeq });
     }
@@ -226,10 +248,6 @@ export var Flip = class extends Base {
     currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
     targetPages.forEach((page) => { page.addEventListener('animationend', inAnimationHandler); });
 
-    // current.addEventListener('animationend', (event) => { console.log('-- current animationend') });
-    // target.addEventListener('animationend', (event) => { console.log('-- target animationend') });
-
-    // console.log("flip.display", seq, currentPages, targetPages);
     if ( delta > 0 ) {
       currentPages[1].classList.add(outClass);
       targetPages[0].classList.add(inClass);
@@ -241,38 +259,33 @@ export var Flip = class extends Base {
     this.visible(targetPages);
   }
 
+  _maxSliceWidth() {
+    var maxWidth = 0;
+    for(var sliceIdx = 1; sliceIdx <= this._sliceMax; sliceIdx++) {
+      var pages = this.container.querySelectorAll(`.page[data-slice="${sliceIdx}"]`);
+      var width = pages[0].offsetWidth;
+      if ( pages[1] ) { width += pages[1].offsetWidth; }
+      if ( width > maxWidth ) {
+        maxWidth = width;
+      }
+    }
+    return maxWidth;
+  }
+
+  _adjustContainerWidth() {
+    // return this.scale * 100;
+    var maxWidth = this.container.parentNode.offsetWidth;
+    var width = this._maxSliceWidth();
+    if ( width * 1.25 > maxWidth ) { maxWidth = width * 1.25; }
+    return `${maxWidth}px`;
+  }
+
   _resizePages() {
     if ( this.isAnimating ) {
       console.log("-- something something", this.currentSeq);
 
     }
     super._resizePages();
-  }
-
-  displayNOANIMATION(seq) {
-    var currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
-    if ( currentPages ) {
-      currentPages.forEach((page) => {
-        page.dataset.visible = false;
-      })
-    }
-
-    // this._queue(seq);
-    // this.container.dataset.animating = true;
-    // this.container.dataset.transition = ( this.currentSeq < seq ) ? 'next' : 'previous';
-
-    this.currentSeq = parseInt(seq, 10);
-
-    var slice_index = this._slicify(seq);
-    var possibles = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
-    console.log("--", seq, slice_index, possibles);
-    this.loadImage(Array.prototype.slice.call(possibles));
-    possibles.forEach(function(page) {
-      page.dataset.visible = true;
-    });
-
-    this.visible(possibles);
-    this.reader.emit('relocated', { seq: seq });
   }
 
   _reframePage(image, page) {
@@ -334,77 +347,11 @@ export var Flip = class extends Base {
       }
 
       page.dataset.reframed = 'true';
-      console.log("-- _reframePage", page.dataset.seq, img.style.width, img.style.height);
+      // console.log("-- _reframePage", page.dataset.seq, img.style.width, img.style.height);
     }
 
   }
 
-  _reframePageXX(image, page) {
-    return; 
-
-    if ( page.dataset.reframed != 'true' ) {
-      var frame = page.querySelector('.image');
-      var img = frame.querySelector('img');
-
-      var frameHeight = frame.offsetHeight;
-      var frameWidth = this.minWidth() * this.scale; // this.container.offsetWidth / 2;
-
-      var r = frameHeight / image.height;
-
-
-      if ( false && this._checkForFoldouts(image, page) ) {
-        // do something different
-        r = image.width / image.height;
-        img.style.width = `${frameWidth * 0.9}px`;
-        img.style.height = `${( frameWidth * 0.9 ) / r}px`;
-
-        // // this results in a shorter frame but will be consistent
-        // frameHeight = img.offsetHeight;
-        // frame.style.height = `${frameHeight}px`;
-
-        var backdrop = new Image();
-        backdrop.src = '/imgsrv/graphics/1x1b.png';
-        backdrop.classList.add('page--backdrop');
-        backdrop.style.width = img.style.width;
-        frame.appendChild(backdrop);
-
-      } else {
-
-        var w = image.width * r;
-        var h = frameHeight;
-        if ( w > this.minWidth() * this.scale ) {
-          r = ( this.minWidth() * this.scale * 0.9 ) / w;
-          w = this.minWidth() * this.scale * 0.9;
-          frameHeight *= r;
-        }
-
-        img.style.height = `${frameHeight}px`;
-        img.style.width = `${w}px`;
-        frame.style.height = img.style.height;
-      }
-      
-      // change the width to match how much padding we have
-      var slice_index = parseInt(page.dataset.slice, 10);
-      var slice_max = this._slicify(this.service.manifest.totalSeq);
-      var slice_fraction;
-      if ( page.classList.contains('verso') ) {
-        slice_fraction = slice_index / slice_max;
-      } else {
-        slice_fraction = ( slice_max - slice_index ) / slice_max;
-      }
-      var edge_width = ( frameWidth - img.offsetWidth ) * slice_fraction;
-
-      img.dataset.width = image.width * r;
-      img.dataset.height = frameHeight;
-      img.dataset.scale = this.scale;
-
-      frame.style.width = `${img.offsetWidth + edge_width}px`;
-
-      page.dataset.reframed = 'true';
-      console.log("-- _reframePage", page.dataset.seq, edge_width, slice_fraction, img.clientWidth, frameWidth * slice_fraction, img.clientWidth + ( frameWidth * slice_fraction ));
-    }
-
-  }
 
   currentLocation(side='DEFAULT') {
     // var slice = this.container.querySelector('.page[data-visible="true"]');
@@ -487,30 +434,6 @@ export var Flip = class extends Base {
     return minWidth;
   }
 
-  minWidthOld() {
-    if ( ! this._max ) {
-      var max = null;
-      for(var seq = 1; seq < this.service.manifest.totalSeq; seq++) {
-        var meta = this.service.manifest.meta(seq);
-        if ( max === null || meta.width > max.width ) {
-          max = meta;
-        }
-      }
-      this._max = max;
-    }
-
-    var w = this.container.parentNode.offsetWidth;
-    var h = this.container.parentNode.offsetHeight;
-
-    var r = h / this._max.height;
-    var ideal_w = ( this._max.width * r * 1 );
-    if ( ideal_w < w ) { this._minWidth = w; }
-    else if ( ideal_w / w < 1.125 ) { this._minWidth = w; }
-    else { this._minWidth = ideal_w; }
-
-    return this._minWidth;
-  }
-
   _reframeUnusualImage(page) {
     // NOP
   }
@@ -529,29 +452,6 @@ export var Flip = class extends Base {
       }
       this.reader.emit('resize');
     });
-
-    // this._handlers.resize = this.reader.on('resize', () => {
-
-    //   // this._updateLayout();
-
-    //   // this.slices.forEach((datum) => {
-    //   //   this._updateLayoutSlice(datum);
-    //   // });
-
-    //   // this._updateLayoutEdges();
-
-    //   // this.slices.forEach((datum) => {
-    //   //   this._updateLayoutSliceSize(datum);
-    //   // });
-
-    //   // if ( this._redrawPageImagesTimer ) { clearTimeout(this._redrawPageImagesTimer); }
-    //   // this._redrawPageImagesTimer = setTimeout(() => {
-    //   //   this.redrawPageImages();
-    //   // }, 100);
-
-    // })
-
-    // })
   }
 
   bindPageEvents(page) {

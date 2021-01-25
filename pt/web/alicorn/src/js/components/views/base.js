@@ -282,8 +282,17 @@ export var Base = class {
   //   // NOP
   // }
 
+  _adjustContainerWidth() {
+    return `${this.scale * 100}%`;
+  }
+
   _adjustContainer() {
-    this.container.style.width = `${this.scale * 100}%`;
+    // this.container.style.width = `${this.scale * 100}%`;
+
+    var width = this._adjustContainerWidth();
+
+    // var adjustment = ( this.scale == 1 ) ? ( 1.1 * 100 ) : this.scale * 100;
+    this.container.style.width = width;
     console.log("-- adjust", ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2);
     // setTimeout(() => {
     //   this.container.parentNode.scrollLeft = ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2
@@ -1083,6 +1092,24 @@ window.xdialog = dialog;
 
   svg() {
     return simpleSvgPlaceholder.apply(null, arguments);
+  }
+
+  test(numPages) {
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    var totalSeq = this.service.manifest.totalSeq;
+    for(var i = 0; i < numPages; i++) {
+      setTimeout(() => {
+        var timeout = 100 + getRandomInt(100);
+        var seq = getRandomInt(totalSeq);
+        setTimeout(() => {
+          console.log(seq, timeout);
+          this.display(seq);
+        }, timeout);
+      }, 0);
+    }
   }
 
 }
