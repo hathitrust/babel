@@ -78,9 +78,14 @@ export var Manifest = class {
     return false;
   }
 
-  pageNum(seq) {
+  pageNum(seq, prefixed=true) {
     var value = this._seq2num[seq];
-    if ( value ) { value = `p.${value}`; return value; }
+    if ( value ) { 
+      if ( prefixed ) {
+        value = `p.${value}`; 
+      }
+      return value; 
+    }
     return null;
   }
 
