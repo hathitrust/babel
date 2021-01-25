@@ -339,7 +339,11 @@ var Reader = class {
     if ( HT.params.l11_tracking ) { argv.push(`l11_tracking=${HT.params.l11_tracking}`); }
     if ( HT.params.l11_uid ) { argv.push(`l11_uid=${HT.params.l11_uid}`); }
     var new_href = location.pathname + '?' + argv.join('&');
-    window.history.replaceState(null, document.title, new_href);
+    var title = document.title;
+    if ( ! title.match(/^#/) ) { this._original_title = title; }
+    title = `#${params.seq || HT.params.seq} - ${this._original_title}`;
+    window.history.replaceState(null, title, new_href);
+    document.title = title;
   }
 
   _updateLinkAttribute($link, key, value) {
