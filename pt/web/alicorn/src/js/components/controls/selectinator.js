@@ -96,6 +96,7 @@ export var Selectinator = class {
       // <button data-role="tooltip" aria-pressed="false" aria-label="Select page">${checkboxEmptySvg}${checkboxCheckedSvg}</button> 
       var button = document.createElement('button');
       // button.classList.add('button', 'btn-mini', 'action-toggle-selection');
+      button.classList.add('action-toggle-selection');
       button.dataset.seq = page.dataset.seq;
       button.dataset.action = 'toggle';
       button.setAttribute('aria-label', `Select page scan #${page.dataset.seq}`);
@@ -125,6 +126,7 @@ export var Selectinator = class {
       event.preventDefault();
       event.stopPropagation();
       var page = element.closest('.page');
+      var checked = ! ( page.dataset.selected == "true" );
       this._addPageToSelection(page, element, event, true);
     }
 
