@@ -1,5 +1,9 @@
 html.crms {
 
+  .app--panel--contents {
+    display: block !important;
+  }
+
   #person-nav {
     margin-left: auto;
   }
@@ -41,6 +45,15 @@ html.crms {
 
   main {
     padding: 0;
+    margin: 0;
+  }
+
+  .app--reader--toolbar--controls {
+    top: 0.25rem;
+  }
+
+  #toolbar-horizontal {
+    background: #fff;
   }
 
   #form-search-volume {
