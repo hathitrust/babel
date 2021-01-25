@@ -8,7 +8,7 @@
 
   <xsl:template name="action-fullscreen" />
 
-  <xsl:template name="build-extra-sidebar-panels">
+  <!-- <xsl:template name="build-extra-sidebar-panels">
     <div class="panel" rel="note">
       <h3>Table of Contents</h3>
       <ul class="scrollable-list action-contents-navigation">
@@ -25,7 +25,7 @@
         </xsl:for-each>
       </ul>
     </div>
-  </xsl:template>
+  </xsl:template> -->
 
   <xsl:template name="load-extra-main-script">
     <script type="text/javascript"><xsl:text>head.load('/pt/crms/crms.js</xsl:text><xsl:value-of select="$timestamp" /><xsl:text>')</xsl:text></script>

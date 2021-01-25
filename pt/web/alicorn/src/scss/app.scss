@@ -1,10 +1,15 @@
 @import "variables";
 @import "grid_mixins";
 @import "spinthatshit/src/loaders";
+@import "crms";
 
 // THE NEW GRID
 html, body {
   overflow: hidden;
+}
+
+img:-moz-loading {
+  visibility: hidden;
 }
 
 .page[tabindex="0"]:focus {
@@ -513,20 +518,20 @@ body[data-zoomed-in="true"] {
           // margin-right: -0.5rem;
         }
 
-        .tag {
-          svg {
-            height: 1rem;
-            width: 1rem;
-          }
+        // .tag {
+        //   svg {
+        //     height: 1rem;
+        //     width: 1rem;
+        //   }
 
-          font-size: 1rem; // 1.5rem;
+        //   font-size: 1rem; // 1.5rem;
 
-          // & > * + *::before {
-          //   font-size: 80%;
-          //   padding: 0 0.5rem;
-          // }
+        //   // & > * + *::before {
+        //   //   font-size: 80%;
+        //   //   padding: 0 0.5rem;
+        //   // }
 
-        }
+        // }
       }
     }
   }
@@ -611,10 +616,16 @@ body[data-zoomed-in="true"] {
 
         &.page--moveToLeft {
           animation: imageMoveToLeft .4s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromRight {
           animation: imageMoveFromRight .4s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         // $fade-duration: .7s;
@@ -622,22 +633,37 @@ body[data-zoomed-in="true"] {
         $fadeOut-duration: .4s;
         &.page--moveFromRightFade {
           animation: imageMoveFromRightFade $fade-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveToRight {
           animation: imageMoveToRight .2s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromLeft {
           animation: imageMoveFromLeft .2s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromLeftFade {
           animation: imageMoveFromLeftFade $fade-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--fade {
           animation: imageFade $fadeOut-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
       }
@@ -798,10 +824,16 @@ body[data-zoomed-in="true"] {
 
         &.page--moveToLeft {
           animation: imageMoveToLeft .6s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromRight {
           animation: imageMoveFromRight .6s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         // $fade-duration: .7s;
@@ -809,22 +841,37 @@ body[data-zoomed-in="true"] {
         $fadeOut-duration: .7s;
         &.page--moveFromRightFade {
           animation: imageMoveFromRightFade $fade-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveToRight {
           animation: imageMoveToRight .6s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromLeft {
           animation: imageMoveFromLeft .6s ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--moveFromLeftFade {
           animation: imageMoveFromLeftFade $fade-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
         &.page--fade {
           animation: imageFade $fadeOut-duration ease both;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
 
       }
@@ -862,7 +909,7 @@ body[data-zoomed-in="true"] {
       @include grid-template-columns(min-content min-content);
       grid-gap: 0rem;
 
-      width: 105%;
+      // width: 105%;
 
       padding-top: 2.5rem;
       margin-bottom: 6rem;
@@ -881,16 +928,16 @@ body[data-zoomed-in="true"] {
         .page--toolbar {
           position: static !important;
 
-          .tag {
+          // .tag {
 
-            font-size: 1rem;
+          //   font-size: 1rem;
 
-            svg {
-              height: 1rem;
-              width: 1rem;
-            }
+          //   svg {
+          //     height: 1rem;
+          //     width: 1rem;
+          //   }
 
-          }
+          // }
         }
 
         .image {
@@ -1268,7 +1315,7 @@ body[data-zoomed-in="true"] {
     width: 98%;
   }
 
-  @media screen and ( orientation: portrait ), screen and ( orientation: landscape ) {
+  @media screen and ( orientation: portrait ), screen and ( orientation: landscape ) and (hover: none) {
     bottom: 0;
     width: 100%;
   }
@@ -1406,7 +1453,7 @@ body[data-expanded="false"] {
         background: transparent;
         border: transparent;
         margin-right: 0;
-        padding: 0 0.5rem;
+        padding: 0.5rem; // 0 0.5rem;
 
         svg {
           height: 2rem;
@@ -1495,6 +1542,9 @@ body[data-expanded="false"] {
       .image {
         img {
           animation: pulsate 1.5s ease infinite;
+          @media ( prefers-reduced-motion ) {
+            animation-duration: 0s;
+          }
         }
       }
     }
@@ -1774,10 +1824,16 @@ body[data-expanded="false"] {
 
           &.page--flipToLeft {
             animation: flip-hide-recto $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flipToRight {
             animation: flip-show-recto $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flippingToLeft {
@@ -1806,10 +1862,16 @@ body[data-expanded="false"] {
 
           &.page--flipToRight {
             animation: flip-hide-verso $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flipToLeft {
             animation: flip-show-verso $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           .page--toolbar {
@@ -1843,10 +1905,16 @@ body[data-expanded="false"] {
 
           &.page--flipToLeft {
             animation: flip-hide-recto-right-to-left $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flipToRight {
             animation: flip-show-recto-right-to-left $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           // &.page--flippingToLeft {
@@ -1876,10 +1944,16 @@ body[data-expanded="false"] {
 
           &.page--flipToRight {
             animation: flip-hide-verso-right-to-left $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flipToLeft {
             animation: flip-show-verso-right-to-left $flip-animation-delay forwards ease;
+            @media ( prefers-reduced-motion ) {
+              animation-duration: 0s;
+            }
           }
 
           &.page--flippingToLeft {
@@ -2089,6 +2163,15 @@ main[data-view="thumb"] {
   }
 }
 
+@media ( max-height: 675px ) {
+  #toolbar-vertical {
+    height: 55vh;
+    overflow-y: scroll;
+    flex-basis: 3.75rem;
+    margin-top: 4rem;
+  }
+}
+
 // LOADING ANIMATIONS
 @keyframes pulsate {
   0% {
@@ -2096,7 +2179,7 @@ main[data-view="thumb"] {
   }
 
   50% {
-   border: 4px solid #c6c6c6; 
+   border: 1px solid #666; // #c6c6c6; 
   }
 
   100% {

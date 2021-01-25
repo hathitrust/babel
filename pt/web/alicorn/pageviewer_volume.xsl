@@ -118,7 +118,7 @@
       <meta property="og:image" content="{//CurrentPageImageSource}" />
     </xsl:if>
 
-    <!-- <xsl:call-template name="build-hotjar-script" /> -->
+    <xsl:call-template name="build-hotjar-script" />
 
   </xsl:template>
 
@@ -281,7 +281,7 @@
         <span> / </span>
         <span data-slot="total-seq"><xsl:value-of select="$totalSeq" /></span>
       </div>
-      <button id="action-prompt-seq">
+      <button id="action-prompt-seq" class="btn">
         <!-- <xsl:call-template name="build-pt-icon">
           <xsl:with-param name="id">bi-card-list</xsl:with-param>
         </xsl:call-template> -->
@@ -451,7 +451,7 @@
   </xsl:template>
 
   <xsl:template name="sidebar-table-of-contents">
-    <div class="panel mq--narrow" rel="note">
+    <div class="panel mq--narrow app--panel--contents" rel="note">
       <h3>
         <xsl:call-template name="build-pt-icon">
           <xsl:with-param name="id">bi-list</xsl:with-param>

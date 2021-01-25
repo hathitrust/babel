@@ -3,8 +3,83 @@
   --microtip-transition-delay: 0.25s;
 }
 
+html.crms .app--panel--contents {
+  display: block !important;
+}
+
+html.crms #person-nav {
+  margin-left: auto;
+}
+
+html.crms footer {
+  display: none;
+}
+
+html.crms #toggle-bib-metadata {
+  margin-top: 4px;
+  display: inline-block;
+}
+
+html.crms span.blocked {
+  display: block;
+  margin-top: 4px;
+  /*margin-bottom: 2px;*/
+}
+
+html.crms span.blocked strong {
+  display: block;
+}
+
+html.crms span.blocked strong::first-letter {
+  text-transform: capitalize;
+}
+
+html.crms .collectionLinks {
+  display: none;
+}
+
+html.crms .social-links {
+  display: none;
+}
+
+html.crms label[for='pageURL'], html.crms #pageURL {
+  display: none;
+}
+
+html.crms main {
+  padding: 0;
+  margin: 0;
+}
+
+html.crms .app--reader--toolbar--controls {
+  top: 0.25rem;
+}
+
+html.crms #toolbar-horizontal {
+  background: #fff;
+}
+
+html.crms #form-search-volume {
+  display: none;
+}
+
+html.crms .action-contents-navigation {
+  max-height: 15rem;
+  overflow: auto;
+}
+
+html.crms #form-go-page {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+}
+
 html, body {
   overflow: hidden;
+}
+
+img:-moz-loading {
+  visibility: hidden;
 }
 
 .page[tabindex="0"]:focus {
@@ -454,15 +529,6 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
   min-height: 160px;
 }
 
-.app--reader[data-view="thumb"] .app--reader--viewer .page .tag {
-  font-size: 1rem;
-}
-
-.app--reader[data-view="thumb"] .app--reader--viewer .page .tag svg {
-  height: 1rem;
-  width: 1rem;
-}
-
 .app--reader[data-view="image"] {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
@@ -545,9 +611,23 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveToLeft .4s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromRight {
   -webkit-animation: imageMoveFromRight .4s ease both;
           animation: imageMoveFromRight .4s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromRightFade {
@@ -555,9 +635,23 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveFromRightFade 0.2s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromRightFade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="image"] .app--reader--viewer .page.page--moveToRight {
   -webkit-animation: imageMoveToRight .2s ease both;
           animation: imageMoveToRight .2s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromLeft {
@@ -565,14 +659,35 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveFromLeft .2s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromLeftFade {
   -webkit-animation: imageMoveFromLeftFade 0.2s ease both;
           animation: imageMoveFromLeftFade 0.2s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--moveFromLeftFade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="image"] .app--reader--viewer .page.page--fade {
   -webkit-animation: imageFade 0.4s ease both;
           animation: imageFade 0.4s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="image"] .app--reader--viewer .page.page--fade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="plaintext"] {
@@ -733,9 +848,23 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveToLeft .6s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromRight {
   -webkit-animation: imageMoveFromRight .6s ease both;
           animation: imageMoveFromRight .6s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromRightFade {
@@ -743,9 +872,23 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveFromRightFade 0.4s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromRightFade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveToRight {
   -webkit-animation: imageMoveToRight .6s ease both;
           animation: imageMoveToRight .6s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromLeft {
@@ -753,14 +896,35 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
           animation: imageMoveFromLeft .6s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromLeftFade {
   -webkit-animation: imageMoveFromLeftFade 0.4s ease both;
           animation: imageMoveFromLeftFade 0.4s ease both;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--moveFromLeftFade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--fade {
   -webkit-animation: imageFade 0.7s ease both;
           animation: imageFade 0.7s ease both;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="plaintext"] .app--reader--viewer .page.page--fade {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="2up"] {
@@ -789,7 +953,6 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
   grid-template-columns: -webkit-min-content -webkit-min-content;
   grid-template-columns: min-content min-content;
   grid-gap: 0rem;
-  width: 105%;
   padding-top: 2.5rem;
   margin-bottom: 6rem;
   min-width: 0;
@@ -807,15 +970,6 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
 
 .app--reader[data-view="2up"] .app--reader--viewer .page .page--toolbar {
   position: static !important;
-}
-
-.app--reader[data-view="2up"] .app--reader--viewer .page .page--toolbar .tag {
-  font-size: 1rem;
-}
-
-.app--reader[data-view="2up"] .app--reader--viewer .page .page--toolbar .tag svg {
-  height: 1rem;
-  width: 1rem;
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer .page .image {
@@ -1145,7 +1299,7 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
   }
 }
 
-@media screen and (orientation: portrait), screen and (orientation: landscape) {
+@media screen and (orientation: portrait), screen and (orientation: landscape) and (hover: none) {
   .app--reader--toolbar {
     bottom: 0;
     width: 100%;
@@ -1280,7 +1434,7 @@ body[data-expanded="false"] .app--reader--toolbar form {
   background: transparent;
   border: transparent;
   margin-right: 0;
-  padding: 0 0.5rem;
+  padding: 0.5rem;
 }
 
 .app--reader--viewer .page .tag button svg {
@@ -1352,6 +1506,13 @@ body[data-expanded="false"] .app--reader--toolbar form {
 .app--reader--viewer .page[data-loaded="false"].loading .image img {
   -webkit-animation: pulsate 1.5s ease infinite;
           animation: pulsate 1.5s ease infinite;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader--viewer .page[data-loaded="false"].loading .image img {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader--viewer .page:first-of-type {
@@ -1587,9 +1748,23 @@ body[data-expanded="false"] .app--reader--toolbar form {
           animation: flip-hide-recto 0.5s forwards ease;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.recto.page--flipToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.recto.page--flipToRight {
   -webkit-animation: flip-show-recto 0.5s forwards ease;
           animation: flip-show-recto 0.5s forwards ease;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.recto.page--flipToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.recto.page--flippingToLeft {
@@ -1623,9 +1798,23 @@ body[data-expanded="false"] .app--reader--toolbar form {
           animation: flip-hide-verso 0.5s forwards ease;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.verso.page--flipToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.verso.page--flipToLeft {
   -webkit-animation: flip-show-verso 0.5s forwards ease;
           animation: flip-show-verso 0.5s forwards ease;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.verso.page--flipToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="left-to-right"] .page.verso .page--toolbar {
@@ -1668,9 +1857,23 @@ body[data-expanded="false"] .app--reader--toolbar form {
           animation: flip-hide-recto-right-to-left 0.5s forwards ease;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.recto.page--flipToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.recto.page--flipToRight {
   -webkit-animation: flip-show-recto-right-to-left 0.5s forwards ease;
           animation: flip-show-recto-right-to-left 0.5s forwards ease;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.recto.page--flipToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.recto.page--flippingToRight {
@@ -1696,9 +1899,23 @@ body[data-expanded="false"] .app--reader--toolbar form {
           animation: flip-hide-verso-right-to-left 0.5s forwards ease;
 }
 
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.verso.page--flipToRight {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
+}
+
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.verso.page--flipToLeft {
   -webkit-animation: flip-show-verso-right-to-left 0.5s forwards ease;
           animation: flip-show-verso-right-to-left 0.5s forwards ease;
+}
+
+@media (prefers-reduced-motion) {
+  .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.verso.page--flipToLeft {
+    -webkit-animation-duration: 0s;
+            animation-duration: 0s;
+  }
 }
 
 .app--reader[data-view="2up"] .app--reader--viewer[data-reading-order="right-to-left"] .page.verso.page--flippingToLeft {
@@ -1782,8 +1999,8 @@ main[data-view="thumb"] button[data-target="thumb"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ufc2b76fd 1s linear alternate infinite;
-          animation: loader12-ufc2b76fd 1s linear alternate infinite;
+  -webkit-animation: loader12-uad71d20e 1s linear alternate infinite;
+          animation: loader12-uad71d20e 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -1792,7 +2009,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-ufc2b76fd {
+@-webkit-keyframes loader12-uad71d20e {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1815,7 +2032,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@keyframes loader12-ufc2b76fd {
+@keyframes loader12-uad71d20e {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -1912,12 +2129,22 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
+@media (max-height: 675px) {
+  #toolbar-vertical {
+    height: 55vh;
+    overflow-y: scroll;
+    -ms-flex-preferred-size: 3.75rem;
+        flex-basis: 3.75rem;
+    margin-top: 4rem;
+  }
+}
+
 @-webkit-keyframes pulsate {
   0% {
     border: 1px solid #ddd;
   }
   50% {
-    border: 4px solid #c6c6c6;
+    border: 1px solid #666;
   }
   100% {
     border: 1px solid #ddd;
@@ -1929,7 +2156,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
     border: 1px solid #ddd;
   }
   50% {
-    border: 4px solid #c6c6c6;
+    border: 1px solid #666;
   }
   100% {
     border: 1px solid #ddd;

@@ -20,3 +20,7 @@ span.blocked strong {
 span.blocked strong::first-letter {
     text-transform: capitalize;
 }
+
+.app--panel--contents {
+  display: block !important;
+}

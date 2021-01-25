@@ -432,12 +432,14 @@
 
         .form-inline {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
         }
 
         .field {
           display: flex;
           align-items: center;
+          flex-wrap: wrap;
         }
 
         .form-search-volume label {
@@ -447,6 +449,7 @@
 
         .form-search-volume .input-large {
           width: 10rem;
+          max-width: 90%;
         }
 
       </style>
