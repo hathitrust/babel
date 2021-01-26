@@ -325,12 +325,12 @@ export var Base = class {
   redrawPage(page) {
     console.log("-- base.redrawPage", page);
     page.dataset.loaded = page.dataset.reframed = false;
-    var page_text = page.querySelector('.page-text');
-    if ( page_text ) {
-      page_text.innerHTML = '';      
-    }
-    this._removeHighlights(page);
-    this.loadImage(page, { lazy: false });
+    // var page_text = page.querySelector('.page-text');
+    // if ( page_text ) {
+    //   page_text.innerHTML = '';      
+    // }
+    // this._removeHighlights(page);
+    this.loadImage(page, { lazy: false, reuseText: true });
   }
 
   loadImage(page, options={}) {
@@ -353,7 +353,7 @@ export var Base = class {
           page.classList.add('loading');
           // self._tracker.images[seq] = self._tracker.images[seq] ? self._tracker.images[seq] + 1 : 1;
           self.service.loaders.images.queue({ src: self.imageUrl(page), page: page });
-          if ( self.embedHtml ) {
+          if ( options.reuseText !== true && self.embedHtml ) {
             var html_url = self.service.html({ seq: seq });
             if ( html_url ) {
               self.service.loaders.images.queue({ src: html_url, page: page, mimetype: 'text/html' });
@@ -962,17 +962,20 @@ window.xdialog = dialog;
       scaling.height = img.height; // img.offsetHeight;
     }
 
-    // if we're rotated then shift these
-    var meta = this.service.manifest.meta(page.dataset.seq);
-    if ( meta.rotation == 90 || meta.rotation == 270 ) {
-      [ scaling.width, scaling.height ] = [ scaling.height, scaling.width ];
-    }
+    scaling.width = img.offsetWidth;
+    scaling.height = img.offsetHeight;
+
+    // // if we're rotated then shift these
+    // var meta = this.service.manifest.meta(page.dataset.seq);
+    // if ( meta.rotation == 90 || meta.rotation == 270 ) {
+    //   [ scaling.width, scaling.height ] = [ scaling.height, scaling.width ];
+    // }
 
     scaling.ratio = scaling.width / page_coords[2];
     scaling.ratioY = scaling.height / page_coords[3];
     scaling.padding = 0; // parseInt(window.getComputedStyle(page).marginTop) / 2;
 
-    if ( img.hasAttribute('height') ) {
+    if ( false && img.hasAttribute('height') ) {
       scaling.ratioA = img.offsetHeight / parseInt(img.getAttribute('height'), 10);
       scaling.ratioB = img.offsetWidth / parseInt(img.getAttribute('width'), 10);
       scaling.ratioZ = ( scaling.ratioA < scaling.ratioB ) ? scaling.ratioA : scaling.ratioB;

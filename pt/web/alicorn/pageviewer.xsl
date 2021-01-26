@@ -455,7 +455,7 @@
       </style>
       <div class="field" style="position: relative; margin-right: 0.25rem">
         <label for="input-search-text">Search in this text </label>
-        <input id="input-search-text" type="text" class="input-large" name="q1" placeholder="Query?">
+        <input id="input-search-text" type="text" class="input-large" name="q1" placeholder="">
           <xsl:attribute name="value">
             <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
               <xsl:value-of select="$gCurrentQ1" />
