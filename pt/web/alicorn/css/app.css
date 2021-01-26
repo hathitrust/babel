@@ -1107,7 +1107,7 @@ body[data-sidebar-narrow-state="closed"] #action-toggle-sidebar-narrow .icomoon.
   background: rgba(0, 0, 0, 0.8);
 }
 
-.app--reader--toolbar--controls .toolbar button:hover:enabled {
+.app--reader--toolbar--controls .toolbar button:hover:enabled, .app--reader--toolbar--controls .toolbar button:focus:enabled {
   background: rgba(0, 0, 0, 0.8);
 }
 
@@ -1381,10 +1381,6 @@ body[data-expanded="false"] .app--reader--toolbar form {
   position: relative;
 }
 
-.app--reader--viewer .page:hover .tag {
-  background: black;
-}
-
 .app--reader--viewer .page .page--toolbar {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1418,10 +1414,6 @@ body[data-expanded="false"] .app--reader--toolbar form {
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
-}
-
-.app--reader--viewer .page .tag:hover {
-  background: black;
 }
 
 .app--reader--viewer .page .tag > span {
@@ -1999,8 +1991,8 @@ main[data-view="thumb"] button[data-target="thumb"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-uad71d20e 1s linear alternate infinite;
-          animation: loader12-uad71d20e 1s linear alternate infinite;
+  -webkit-animation: loader12-ua4ecacb1 1s linear alternate infinite;
+          animation: loader12-ua4ecacb1 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2009,7 +2001,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-uad71d20e {
+@-webkit-keyframes loader12-ua4ecacb1 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2032,7 +2024,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@keyframes loader12-uad71d20e {
+@keyframes loader12-ua4ecacb1 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

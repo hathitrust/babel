@@ -212,7 +212,7 @@
       <xsl:call-template name="get-view-title" />
     </h2>
     <!-- <xsl:call-template name="build-reader-toolbar-controls" /> -->
-    <div class="app--reader--container">
+    <div id="section" class="app--reader--container">
       <section class="app--reader--viewer">
         <xsl:attribute name="data-has-ocr">
           <xsl:choose>

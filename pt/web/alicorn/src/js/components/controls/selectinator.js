@@ -194,7 +194,7 @@ export var Selectinator = class {
 
       input.setAttribute('aria-pressed', checked);
       // page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected for download` : '');
-      page.setAttribute('aria-label', checked ? `Page scan ${seq} is selected` : '');
+      input.setAttribute('aria-label', checked ? `Page scan #${seq} is selected` : `Select page scan #${seq}`);
 
       if ( evt && evt.shiftKey && self._last_selected_seq ) {
           // there should be an earlier selection
@@ -226,8 +226,9 @@ export var Selectinator = class {
               var page_prev = container.querySelector(`.page[data-seq="${prev}"]`);
               if ( page_prev ) {
                 page_prev.dataset.selected = checked; page_prev.classList.toggle('page--selected', checked);
-                page_prev.querySelector('button.action-toggle-selection').setAttribute('aria-pressed', checked);
-                page_prev.setAttribute('aria-label', checked ? `Page scan ${prev} is selected for download` : '');
+                var prev_input = page_prev.querySelector('button.action-toggle-selection');
+                prev_input.setAttribute('aria-pressed', checked);
+                page_input.setAttribute('aria-label', checked ? `Page scan #${prev} is selected for download` : `Select page scan #${prev}`);
               }
               to_process.push(prev);
             }

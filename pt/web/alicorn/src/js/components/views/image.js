@@ -116,12 +116,16 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
       if ( endCurrentPage ) { onEndAnimation(currentPages, targetPage); }      
     }
 
-    this.container.classList.add('animating');
-    currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
-    targetPage.addEventListener('animationend', inAnimationHandler);
+    if ( window.matchMedia('(prefers-reduced-motion)').matches ) {
+      onEndAnimation(currentPages, targetPage);
+    } else {
+      this.container.classList.add('animating');
+      currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
+      targetPage.addEventListener('animationend', inAnimationHandler);
 
-    currentPage.classList.add(outClass);
-    targetPage.classList.add(inClass);
+      currentPage.classList.add(outClass);
+      targetPage.classList.add(inClass);      
+    }
 
     this.visible(targetPage);
   }

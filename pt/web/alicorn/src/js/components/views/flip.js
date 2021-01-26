@@ -244,16 +244,20 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
       if ( endCurrentPage ) { onEndAnimation(currentPages, targetPages); }      
     }
 
-    this.container.classList.add('animating');
-    currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
-    targetPages.forEach((page) => { page.addEventListener('animationend', inAnimationHandler); });
-
-    if ( delta > 0 ) {
-      currentPages[1].classList.add(outClass);
-      targetPages[0].classList.add(inClass);
+    if ( window.matchMedia('(prefers-reduced-motion)').matches ) {
+      onEndAnimation(currentPages, targetPages);
     } else {
-      currentPages[0].classList.add(outClass);
-      targetPages[1].classList.add(inClass);
+      this.container.classList.add('animating');
+      currentPages.forEach((page) => { page.addEventListener('animationend', outAnimationHandler); });
+      targetPages.forEach((page) => { page.addEventListener('animationend', inAnimationHandler); });
+
+      if ( delta > 0 ) {
+        currentPages[1].classList.add(outClass);
+        targetPages[0].classList.add(inClass);
+      } else {
+        currentPages[0].classList.add(outClass);
+        targetPages[1].classList.add(inClass);
+      }      
     }
 
     this.visible(targetPages);

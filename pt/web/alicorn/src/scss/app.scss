@@ -3,6 +3,8 @@
 @import "spinthatshit/src/loaders";
 @import "crms";
 
+$reduced-duration: 0s;
+
 // THE NEW GRID
 html, body {
   overflow: hidden;
@@ -617,14 +619,14 @@ body[data-zoomed-in="true"] {
         &.page--moveToLeft {
           animation: imageMoveToLeft .4s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromRight {
           animation: imageMoveFromRight .4s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
@@ -634,35 +636,35 @@ body[data-zoomed-in="true"] {
         &.page--moveFromRightFade {
           animation: imageMoveFromRightFade $fade-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveToRight {
           animation: imageMoveToRight .2s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromLeft {
           animation: imageMoveFromLeft .2s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromLeftFade {
           animation: imageMoveFromLeftFade $fade-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--fade {
           animation: imageFade $fadeOut-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
@@ -825,14 +827,14 @@ body[data-zoomed-in="true"] {
         &.page--moveToLeft {
           animation: imageMoveToLeft .6s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromRight {
           animation: imageMoveFromRight .6s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
@@ -842,35 +844,35 @@ body[data-zoomed-in="true"] {
         &.page--moveFromRightFade {
           animation: imageMoveFromRightFade $fade-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveToRight {
           animation: imageMoveToRight .6s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromLeft {
           animation: imageMoveFromLeft .6s ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--moveFromLeftFade {
           animation: imageMoveFromLeftFade $fade-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
         &.page--fade {
           animation: imageFade $fadeOut-duration ease both;
           @media ( prefers-reduced-motion ) {
-            animation-duration: 0s;
+            animation-duration: $reduced-duration;
           }
         }
 
@@ -1121,7 +1123,7 @@ body[data-zoomed-in="true"] {
         // background: #000;
       }
 
-      &:hover:enabled {
+      &:hover:enabled, &:focus:enabled {
         background: rgba(0,0,0,0.8);
         // background: #000;
       }
@@ -1397,11 +1399,11 @@ body[data-expanded="false"] {
 
     // transition: height .5s ease-in-out;
 
-    &:hover {
-      .tag {
-        background: rgba(0,0,0,1.0);
-      }
-    }
+    // &:hover {
+    //   .tag {
+    //     background: rgba(0,0,0,1.0);
+    //   }
+    // }
 
     .page--toolbar {
       display: flex;
@@ -1429,9 +1431,11 @@ body[data-expanded="false"] {
     }
 
     .tag {
+
       font-size: 1.5rem;
       padding: 0.5rem 1rem;
       background: #39383a; // rgba(0,0,0,1);
+      // background: rgba(0,0,0,0.5);
       color: #eee;
       border-radius: 1rem;
       border: 1px solid #000; // ddd;
@@ -1441,9 +1445,12 @@ body[data-expanded="false"] {
       display: flex;
       align-items: center;
 
-      &:hover {
-        background: rgba(0,0,0,1.0);
-      }
+      // opacity: 0.25;
+
+      // &:hover {
+      //   background: rgba(0,0,0,1.0);
+      //   // opacity: 1.0;
+      // }
 
       & > span {
         display: flex;
@@ -1825,14 +1832,14 @@ body[data-expanded="false"] {
           &.page--flipToLeft {
             animation: flip-hide-recto $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
           &.page--flipToRight {
             animation: flip-show-recto $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
@@ -1863,14 +1870,14 @@ body[data-expanded="false"] {
           &.page--flipToRight {
             animation: flip-hide-verso $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
           &.page--flipToLeft {
             animation: flip-show-verso $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
@@ -1906,14 +1913,14 @@ body[data-expanded="false"] {
           &.page--flipToLeft {
             animation: flip-hide-recto-right-to-left $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
           &.page--flipToRight {
             animation: flip-show-recto-right-to-left $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
@@ -1945,14 +1952,14 @@ body[data-expanded="false"] {
           &.page--flipToRight {
             animation: flip-hide-verso-right-to-left $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
           &.page--flipToLeft {
             animation: flip-show-verso-right-to-left $flip-animation-delay forwards ease;
             @media ( prefers-reduced-motion ) {
-              animation-duration: 0s;
+              animation-duration: $reduced-duration;
             }
           }
 
