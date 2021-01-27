@@ -12,6 +12,7 @@
   xmlns:date="http://exslt.org/dates-and-times"
   xmlns:xlink="https://www.w3.org/1999/xlink"
   xmlns:h="http://www.hathitrust.org"
+  xmlns:svg="http://www.w3.org/2000/svg"
   xmlns="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="h exsl date"
   extension-element-prefixes="exsl date">
@@ -669,6 +670,55 @@
     <xsl:param name="href" />
     <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
     <script type="text/javascript" src="{$href}?_{$modtime}"></script>
+  </xsl:template>
+
+  <xsl:template match="node()" mode="copy-guts">
+    <xsl:apply-templates select="@*|*|text()" mode="copy" />
+  </xsl:template>
+
+  <xsl:template match="svg" mode="copy" priority="101">
+    <xsl:param name="class" />
+    <xsl:copy>
+      <xsl:attribute name="data-animal">seahorse</xsl:attribute>
+      <xsl:apply-templates select="@*" mode="copy">
+        <xsl:with-param name="class" select="$class" />
+      </xsl:apply-templates>
+      <xsl:apply-templates select="*" mode="copy" />
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="svg:svg" mode="copy" priority="100">
+    <xsl:param name="class" />
+    <xsl:copy>
+      <xsl:attribute name="data-animal">zebra</xsl:attribute>
+      <xsl:apply-templates select="@*" mode="copy">
+        <xsl:with-param name="class" select="$class" />
+      </xsl:apply-templates>
+      <xsl:apply-templates select="*" mode="copy" />
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="node()[name()]" mode="copy" priority="10">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="@class" mode="copy" priority="100">
+    <xsl:param name="class" />
+    <xsl:attribute name="class">
+      <xsl:value-of select="." />
+      <xsl:if test="normalize-space($class)">
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="$class" />
+      </xsl:if>
+    </xsl:attribute>
+  </xsl:template>
+
+  <xsl:template match="@*|*|text()" mode="copy">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|*|text()" mode="copy" />
+    </xsl:copy>
   </xsl:template>
 
 </xsl:stylesheet>
