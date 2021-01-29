@@ -215,17 +215,19 @@ export var Scroll = class extends Base {
     var top = page.offsetTop;
     var height = page.offsetHeight;
     var bottom = top + height;
-    // var top = page.__coords.offsetTop;
-    // var height = page.__coords.offsetHeight;
 
-    var topIsVisible = ( top <= ( windowBottom + rootMargin ) && top >= ( windowTop - rootMargin ) );
-    var bottomIsVisible = ( bottom <= ( windowBottom + rootMargin ) && bottom >= ( windowTop - rootMargin ) );
+    var containerTop = windowTop; var containerBottom = windowBottom;
+    var elemTop = top; var elemBottom = bottom;
+
+    var pageIsVisible = ( elemTop >= ( containerTop - rootMargin ) && elemBottom <= ( containerBottom + rootMargin ));
+    var bottomIsVisible = ( elemTop < ( containerTop - rootMargin ) && containerTop < ( elemBottom + rootMargin ) )
+    var topIsVisible = ( elemTop < ( containerBottom + rootMargin ) && containerBottom < ( elemBottom + rootMargin ));
 
     var percentage = 0; var test;
-    if ( topIsVisible || bottomIsVisible ) {
+    if ( topIsVisible || bottomIsVisible || pageIsVisible ) {
       // now we're visible
-      if ( topIsVisible && bottomIsVisible ) {
-        percentage = 100;
+      if ( pageIsVisible ) {
+        percentage = 1.0;
         test = 'topIsVisible && bottomIsVisible';
       } else if ( topIsVisible ) {
         // only the top is visible
