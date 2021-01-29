@@ -152,11 +152,32 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
     this._clickHandler = this.clickHandler.bind(this);
     this.container.addEventListener('click', this._clickHandler);
 
+    // this._handlers.rotate = this.reader.on('rotate', function(delta) {
+    //   var seq = self.currentLocation();
+    //   self.service.manifest.rotateBy(seq, delta);
+    //   self.redrawPage(seq);
+    // });
+
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
-      var seq = self.currentLocation();
-      self.service.manifest.rotateBy(seq, delta);
-      self.redrawPage(seq);
+      var seq = self.currentSeq; // self.currentLocation();
+      var page = self.pagesIndex[seq];
+      var image_frame = page.querySelector('.image');
+
+      var rotated = parseInt(page.dataset.rotated || 360, 10);
+      rotated += delta;
+      rotated = rotated % 360;
+
+      if ( rotated % 90 == 0 ) {
+        // set margins!
+        var margin = image_frame.clientWidth * 0.8;
+        page.style.setProperty('--margin-rotated', ( margin / 2 - margin / 8 ) * -1);
+      } else {
+        page.style.setProperty('--margin-rotated', null);
+      }
+
+      page.dataset.rotated = rotated;
     });
+
   }
 
   bindPageEvents(page) {

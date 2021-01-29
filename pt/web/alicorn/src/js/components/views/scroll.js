@@ -129,7 +129,7 @@ export var Scroll = class extends Base {
     });
 
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
-      var seq = self.currentLocation();
+      var seq = self.currentSeq; // self.currentLocation();
       var page = self.pagesIndex[seq];
       var image_frame = page.querySelector('.image');
 
@@ -140,7 +140,7 @@ export var Scroll = class extends Base {
       if ( rotated % 90 == 0 ) {
         // set margins!
         var margin = image_frame.clientWidth * 0.8;
-        page.style.setProperty('--margin-rotated', ( margin / 2 ) * -1);
+        page.style.setProperty('--margin-rotated', ( margin / 2 - margin / 8 ) * -1);
       } else {
         page.style.setProperty('--margin-rotated', null);
       }
