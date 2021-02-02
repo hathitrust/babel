@@ -228,7 +228,7 @@ export var Selectinator = class {
                 page_prev.dataset.selected = checked; page_prev.classList.toggle('page--selected', checked);
                 var prev_input = page_prev.querySelector('button.action-toggle-selection');
                 prev_input.setAttribute('aria-pressed', checked);
-                page_input.setAttribute('aria-label', checked ? `Page scan #${prev} is selected for download` : `Select page scan #${prev}`);
+                prev_input.setAttribute('aria-label', checked ? `Page scan #${prev} is selected for download` : `Select page scan #${prev}`);
               }
               to_process.push(prev);
             }
