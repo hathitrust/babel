@@ -765,7 +765,31 @@ window.addEventListener("blur", handleWindowBlur, false);
 document.body.dataset.sidebarNarrowState = 'closed';
 document.querySelector("#action-toggle-sidebar-narrow").setAttribute('aria-expanded', document.body.dataset.sidebarNarrowState == 'open');
 
-// also should handle aria-epxnaded
+window.addEventListener('error', function(event) {
+  if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
+    return;
+  }
+  console.log("AHOY", event.error);
+  const response = fetch('/cgi/pt/error', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+      error: event.error,
+      trace: event.error.stack,
+      htid: HT.params.id,
+      view: HT.params.view,
+      seq: HT.params.seq
+    })
+  })
+})
 
 setTimeout(() => {
     var event = document.createEvent('UIEvents');

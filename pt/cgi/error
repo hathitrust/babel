@@ -1,0 +1,163 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use File::Basename qw(dirname);
+use IO::File;
+autoflush STDOUT 1;
+
+use Plack::Runner;
+use Plack::Builder;
+use Plack::Builder::Conditionals::Choke;
+
+use JSON::XS;
+
+
+use Time::HiRes qw(time);
+
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'pt');
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ping/pt');
+    }
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+use Utils::Logger;
+use Utils::Time;
+
+{
+    package App;
+
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+
+    sub get_app_name {
+        my $self = shift;
+        return "error";
+    }
+}
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    my $C = new Context;
+    $C->set_object('App', new App);
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('pt'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
+                              );
+    $C->set_object('MdpConfig', $config);
+
+    my $content = $request->content;
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    my $payload = $json->decode($content);
+    my $message = [];
+
+    my $datetime = Utils::Time::iso_Time();
+
+
+    push @$message, [ 'datetime', $datetime ];
+    push @$message, [ 'id', $$payload{id} ];
+
+    my $remote_addr           = $ENV{REMOTE_ADDR} || undef;
+    my $remote_user_processed = Utils::Get_Remote_User() || undef;
+    my $remote_user_from_env  = $ENV{REMOTE_USER} || undef;
+
+    my $entityID = 'notset';
+    $entityID = $ENV{Shib_Identity_Provider} if ( defined($ENV{Shib_Identity_Provider}) );
+    $entityID = $ENV{'Shib-Identity-Provider'} if ( defined($ENV{'Shib-Identity-Provider'}) );
+    my $persistent_id = 'notset';
+    $persistent_id = $ENV{persistent_id} if ( defined($ENV{persistent_id}) );
+    $persistent_id = $ENV{'persistent-id'} if ( defined($ENV{'persistent-id'}) );
+
+    my $request_uri          = $ENV{HTTP_REFERER}  || undef; # $http_referer = URI::Escape::uri_escape($http_referer);
+    my $user_agent            = $ENV{HTTP_USER_AGENT}  || undef;
+
+    push @$message, ['remote_addr', $remote_addr];
+    push @$message, ['remote_user_processed', $remote_user_processed];
+    push @$message, ['remote_user_from_env', $remote_user_from_env];
+    push @$message, ['entityID', $entityID];
+    push @$message, ['persistent_id', $persistent_id];
+    push @$message, ['request_uri', $request_uri];
+    push @$message, ['user_agent', $user_agent];
+
+    foreach my $key ( qw/message filename lineno colno error trace view seq/ ) {
+        push @$message, [ $key, $$payload{$key} ];
+    }
+
+    my $s = '{';
+    while ( scalar @$message ) {
+        my $kv = shift @$message;
+        my ( $key, $value ) = @$kv;
+        my $suffix = scalar @$message ? "," : "";
+        $s .= sprintf(qq{%s:%s%s}, $json->encode($key), $json->encode($value), $suffix)
+    }
+    $s .= '}';
+
+    my $pattern = qr(slip/run-___RUN___|___QUERY___);
+    my $logfile_pattern = 'pt_reader_error';
+    # $logfile_pattern .= "_" . $$altenv{postfix} if ( $$altenv{postfix} );
+    Utils::Logger::__Log_string(
+        $C,                     # $C
+        $s,                     # logged string
+        'access_logfile',       # logfile key -> '___APP_NAME______DATE___.log'
+        $pattern,               # substitution optional_dir_pattern
+        "error",                # optional_dir_key
+        qr(___APP_NAME___),     # optional_logfile_pattern
+        $logfile_pattern        # optional_logfile_key
+    );
+
+    $response = Plack::Response->new(204);
+    $response->body("Error logged.");
+    return $response->finalize;
+};
+
+$app = builder {
+
+    enable "PopulateENV", app_name => 'pt';
+    enable 'Choke::Cache::Filesystem';
+
+    enable
+        match_if unchoked(),
+            'Choke::Requests',
+                %{ $$settings{choke}{default} }
+            ;
+
+    $app;
+};
+
+Plack::Runner->new->run($app);
+
