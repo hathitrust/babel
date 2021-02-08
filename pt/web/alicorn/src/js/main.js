@@ -769,7 +769,6 @@ window.addEventListener('error', function(event) {
   if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
     return;
   }
-  console.log("AHOY", event.error);
   const response = fetch('/cgi/pt/error', {
     method: 'POST',
     credentials: 'include',
