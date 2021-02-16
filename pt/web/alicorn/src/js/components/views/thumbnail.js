@@ -145,8 +145,8 @@ export var Thumbnail = class extends Scroll {
 
     this.service.loaders.thumbnails.limit(4);
 
-    this._clickHandler = this.clickHandler.bind(this);
-    this.container.addEventListener('click', this._clickHandler);
+    // this._clickHandler = this.clickHandler.bind(this);
+    // this.container.addEventListener('click', this._clickHandler);
 
     this.reader.on('redraw', (params) => {
       if ( ! params.scale ) { return; }
@@ -243,7 +243,7 @@ export var Thumbnail = class extends Scroll {
   destroy() {
     super.destroy();
     this.service.loaders.thumbnails.limit(2); // restore default
-    this.container.removeEventListener('click', this._clickHandler);
+    // this.container.removeEventListener('click', this._clickHandler);
   }
 
   config() {

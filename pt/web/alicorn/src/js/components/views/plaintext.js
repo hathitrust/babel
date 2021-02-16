@@ -60,6 +60,10 @@ export var PlainText = class extends Single {
       setTimeout(cb, 1000);
       this._initialized = true;
     }
+
+    this._lastContainerWidth = this.container.offsetWidth * this.scale;
+    // is this really necessary
+    this._adjustContainer();
   }
 
   loadImage(page, options={}) {
@@ -158,12 +162,6 @@ export var PlainText = class extends Single {
 
   bindPageEvents(page) {
     page.dataset.visible = false;
-  }
-
-  destroy() {
-    super.destroy();
-    this._handlers.resize();
-    // window.removeEventListener('resize', this._resizer);
   }
 
   config() {

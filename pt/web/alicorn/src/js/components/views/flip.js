@@ -447,8 +447,8 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
 
     super.bindEvents();
 
-    this._clickHandler = this.clickHandler.bind(this);
-    this.container.addEventListener('click', this._clickHandler);
+    // this._clickHandler = this.clickHandler.bind(this);
+    // this.container.addEventListener('click', this._clickHandler);
 
     this.reader.on('redraw', (params) => {
       if ( params.scale ) {
@@ -514,16 +514,10 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
     this.display(targetSeq);
   }
 
-  destroy() {
-    super.destroy();
-    var pages = this.container.querySelectorAll('.page');
-    for(var i = 0; i < pages.length; i++) {
-      this.container.removeChild(pages[i]);
-    }
-    this.container.removeEventListener('click', this._clickHandler);
-    this._handlers.resize();
-
-  }
+  // destroy() {
+  //   super.destroy();
+  //   this.container.removeEventListener('click', this._clickHandler);
+  // }
 
   config() {
     var retval = super.config();

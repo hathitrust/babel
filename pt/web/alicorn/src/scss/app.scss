@@ -1292,7 +1292,7 @@ body[data-zoomed-in="true"] {
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
-  max-width: 62rem;
+  // max-width: 62rem;
   min-height: 3rem;
 
   background: $navbar-bgcolor;

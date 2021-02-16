@@ -149,8 +149,8 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
 
     super.bindEvents();
 
-    this._clickHandler = this.clickHandler.bind(this);
-    this.container.addEventListener('click', this._clickHandler);
+    // this._clickHandler = this.clickHandler.bind(this);
+    // this.container.addEventListener('click', this._clickHandler);
 
     // this._handlers.rotate = this.reader.on('rotate', function(delta) {
     //   var seq = self.currentLocation();
@@ -182,22 +182,6 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
 
   bindPageEvents(page) {
     page.dataset.visible = false; page.classList.remove('page--visible');
-  }
-
-  // focus(page, invoke=false) {
-  //   page = super.focus(page, invoke);
-  //   page.style.zIndex = 1;
-  // }
-
-  destroy() {
-    super.destroy();
-    if ( this._handlers.rotate ){
-      this._handlers.rotate();
-    }
-    var pages = this.container.querySelectorAll('.page');
-    for(var i = 0; i < pages.length; i++) {
-      this.container.removeChild(pages[i]);
-    }
   }
 
 };

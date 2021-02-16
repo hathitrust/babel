@@ -278,21 +278,14 @@ export var Base = class {
 
   }
 
-  // _adjustContainer() {
-  //   // NOP
-  // }
-
   _adjustContainerWidth() {
 
     return `${( this.scale > 1 ? this.scale : 1 ) * 100}%`;
   }
 
   _adjustContainer() {
-    // this.container.style.width = `${this.scale * 100}%`;
-
     var width = this._adjustContainerWidth();
 
-    // var adjustment = ( this.scale == 1 ) ? ( 1.1 * 100 ) : this.scale * 100;
     this.container.style.width = width;
     console.log("-- adjust", ( this.container.offsetWidth - this.container.parentNode.offsetWidth ) / 2);
     // setTimeout(() => {
@@ -648,7 +641,9 @@ export var Base = class {
   bindEvents() {
     this._lastContainerWidth = this.container.offsetWidth;
     this._handlers.focus = this.focusHandler.bind(this);
-    // this.container.addEventListener('focusin', this._handlers.focus);
+
+    this._handlers.clickHandler = this.clickHandler.bind(this);
+    this.container.addEventListener('click', this._handlers.clickHandler);
 
     if ( this.trackResize ) {
 
@@ -814,13 +809,30 @@ window.xdialog = dialog;
 
   destroy() {
     unbindAll(this.emitter);
+
     if ( this._handlers.focus ) {
       this.container.removeEventListener('focusin', this._handlers.focus);
     }
     if ( this._handlers.resize ) {
       this._handlers.resize();
     }
+    if ( this._handlers.rotate ) {
+      this._handlers.rotate();
+    }
+    if ( this._handlers.clickHandler ) {
+      this.container.removeEventListener('click', this._handlers.clickHandler);
+    }
+
     clearInterval(this._intervals.unloader);
+    var pages = this.container.querySelectorAll('.page');
+    for(var i = 0; i < pages.length; i++) {
+      this._destroy_page(pages[i]);
+      this.container.removeChild(pages[i]);
+    }
+  }
+
+  _destroy_page(page) {
+    /* NOP */
   }
 
   _enableControlTabIndex(page) {

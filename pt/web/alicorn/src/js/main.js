@@ -712,7 +712,6 @@ if ( reader.service.manifest.totalSeq == 1 ) {
   }
 }
 
-reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
 $sidebar.find(`.action-view[data-target="${$$main.dataset.view}"]`).addClass('active');
 
 var $menu; var $trigger; var $header; var $navigator;
@@ -765,6 +764,16 @@ window.addEventListener("blur", handleWindowBlur, false);
 document.body.dataset.sidebarNarrowState = 'closed';
 document.querySelector("#action-toggle-sidebar-narrow").setAttribute('aria-expanded', document.body.dataset.sidebarNarrowState == 'open');
 
+// start the reader when all resources have been loaded
+window.addEventListener('load', (event) => {
+  reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale });
+  setTimeout(() => {
+      var event = document.createEvent('UIEvents');
+      event.initEvent('resize', true, false, window, 0);
+      window.dispatchEvent(event)
+  }, 100);
+})
+
 window.addEventListener('error', function(event) {
   if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
     return;
@@ -790,8 +799,3 @@ window.addEventListener('error', function(event) {
   })
 })
 
-setTimeout(() => {
-    var event = document.createEvent('UIEvents');
-    event.initEvent('resize', true, false, window, 0);
-    window.dispatchEvent(event)
-}, 100);

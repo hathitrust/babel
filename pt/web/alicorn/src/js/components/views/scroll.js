@@ -153,8 +153,8 @@ export var Scroll = class extends Base {
 
     this._handlers.scrolled = this.on('scrolled', debounce(this.scrollHandler.bind(this), 50));
 
-    this._handlers.click = this.clickHandler.bind(this);
-    this.container.addEventListener('click', this._handlers.click);
+    // this._handlers.click = this.clickHandler.bind(this);
+    // this.container.addEventListener('click', this._handlers.click);
 
   }
 
@@ -343,18 +343,15 @@ export var Scroll = class extends Base {
   }
 
   destroy() {
-    super.destroy();
-    this._handlers.rotate();
-    this.container.removeEventListener('click', this._handlers.click);
-    var pages = this.container.querySelectorAll('.page');
     this.observer.disconnect();
-    for(var i = 0; i < pages.length; i++) {
-      this.observer.unobserve(pages[i]);
-      this.container.removeChild(pages[i]);
-    }
+    // this.container.removeEventListener('click', this._handlers.click);
+
+    super.destroy();
     this.observer = null;
-    // clearInterval(this.intervals.loader);
-    // clearInterval(this.intervals.unloader);
+  }
+
+  _destroy_page(page) {
+    this.observer.unobserve(page);
   }
 
 };
