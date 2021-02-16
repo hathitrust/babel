@@ -323,7 +323,7 @@ $gStandardPixelWidthAmount = 680;
     );
 
 # Views open to all
-@gViewTypes = ( 'image', 'text', '1up', '2up', 'thumb', 'plaintext' );
+@gViewTypes = ( 'page', 'text', '1up', '2up', 'thumb', 'plaintext', 'image' );
 # Views open to some
 @gAuthdViewTypes = ( 'fpdf' );
 

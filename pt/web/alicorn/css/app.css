@@ -223,6 +223,10 @@ html.crms #form-go-page {
   display: flex !important;
 }
 
+html.crms .beta--alert {
+  display: none;
+}
+
 html, body {
   overflow: hidden;
 }
@@ -2242,6 +2246,72 @@ main[data-view="thumb"] button[data-target="thumb"] {
   background: #0099cc;
 }
 
+.beta--panel {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.beta--panel > div {
+  width: 90%;
+}
+
+.beta--panel .alert {
+  background: orange;
+  color: #333;
+  text-shadow: none;
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: start;
+  margin-bottom: 0.25rem;
+  padding: 0.875rem;
+}
+
+.beta--panel .alert svg {
+  display: block;
+  width: 1.5rem;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.beta--panel .alert svg text {
+  display: none;
+}
+
+.beta--panel .alert p a {
+  color: #000;
+  font-size: 0.875rem;
+}
+
+.beta--panel .alert p a:focus {
+  outline: 4px solid black;
+}
+
+.beta--panel a.action-beta-2021 {
+  background: transparent;
+  color: #924a0b;
+  border: 2px solid #924a0b;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+}
+
 .modal.lightbox.is-open .modal__container .modal__content {
   padding: 0;
   max-height: 98vh;
@@ -2254,8 +2324,8 @@ main[data-view="thumb"] button[data-target="thumb"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u4a55f93d 1s linear alternate infinite;
-          animation: loader12-u4a55f93d 1s linear alternate infinite;
+  -webkit-animation: loader12-u0286b3e6 1s linear alternate infinite;
+          animation: loader12-u0286b3e6 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2264,7 +2334,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-u4a55f93d {
+@-webkit-keyframes loader12-u0286b3e6 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2287,7 +2357,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@keyframes loader12-u4a55f93d {
+@keyframes loader12-u0286b3e6 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

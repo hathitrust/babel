@@ -467,6 +467,8 @@ sub Solr_search_item {
     # Solr paging is zero-relative
     my $start = max($cgi->param('start') - 1, 0);
     my $rows = $cgi->param('size');
+    my $sort = $cgi->param('sort') || 'seq';
+
 
     use Digest::SHA;
     use Storable();
@@ -479,7 +481,9 @@ sub Solr_search_item {
         $id,
         utf8::is_utf8($processed_q1) ? Encode::encode_utf8($processed_q1) : $processed_q1,
         $start,
-        $rows
+        $rows,
+        $cgi->param('sort') || 'seq',
+        Time::HiRes::time()
     ));
 
     my $cached_results = $cache->Get($id, $cache_key);
@@ -525,10 +529,13 @@ sub Solr_search_item {
 
         # Must wrap query string with outermost parens so that +-
         # operators are handled as ocr:(-foo +bar) -ocr:foo +ocr:bar
-        my $query = qq{q=ocr:($q_str)&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
+        my $sort_param = $sort eq 'seq' ? q{&sort=seq asc} : '';
+        my $query = qq{q=ocr:($q_str)$sort_param&start=$start&rows=$rows&fl=$fls&hl.fragListBuilder=simple&fq=vol_id:$safe_id&hl.snippets=$snip&hl.fragsize=$frag&$solr_q_op_param};
 
         if ( 1 && $mdpItem->GetItemSubType() eq 'EPUB' ) {
             $query .= qq{&hl.tag.pre=[[&hl.tag.post=]]};
+        } else {
+            # $query .= qq{&hl.tag.pre={lt:}mark{gt:}&hl.tag.post={lt:}/mark{gt:}};
         }
 
         $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);

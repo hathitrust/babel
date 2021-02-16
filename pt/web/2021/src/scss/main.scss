@@ -1,0 +1,273 @@
+@import "variables";
+
+:root {
+  --background: #39383a;
+}
+
+article.result {
+  margin: 1rem 0 1.5rem;
+
+  h3 {
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  p.kwic {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.results-search-form {
+  margin: 1rem 0;
+  border-bottom: 1px dotted #666;
+  padding-bottom: 1rem;
+
+  label {
+    font-weight: bold;
+  }
+
+  input[type=text] {
+    width: 20rem;
+  }
+}
+
+.mdpEmp {
+  font-weight: bold;
+}
+
+a.worldcat.inline {
+  font-weight: bold;
+}
+
+#mdpTextDeny {
+  .form-inline {
+    margin-top: 1.5rem;
+  }
+}
+
+// @media only screen and (max-width: 62em) {
+//   #sidebar {
+//     order: 2;
+//   }
+// }
+
+
+$icomoon-circle-right: "\ea42";
+$icomoon-circle-left: "\ea44";
+$sidebar-buffer: 1.0rem;
+
+.sidebar-toggle {
+  border-right: 1px solid #ddd;
+  margin-right: $sidebar-buffer;
+  width: $sidebar-buffer;
+  display: none;
+  align-items: flex-start;
+  justify-content: flex-end;
+  // justify-content: center;
+  padding-top: 1.5rem;
+
+  button {
+    flex-grow: 0;
+    height: auto;
+    white-space: nowrap;
+    padding: 1rem 0.5rem;
+    font-size: 1rem; // 2rem;
+    // margin-left: $sidebar-buffer;
+    z-index: 24;
+
+    &[aria-expanded="true"] {
+      opacity: 0.5;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 0;
+
+      .icomoon {
+        &:before {
+          content: $icomoon-circle-left; 
+        }
+      }
+    }
+
+    &:hover, &:focus {
+      opacity: 1.0;
+    }
+
+    &[aria-expanded="false"] {
+      opacity: 1.0;
+      background: rgba(0, 0, 0, 0.8);
+      color: #eee;
+      font-size: 2rem;
+
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 0;
+      margin-right: -3rem;
+
+      // border: 2px solid #666;
+      .icomoon {
+        &:before {
+          content: $icomoon-circle-right; 
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 62em) {
+  #sidebar:not(.sidebar-container--right) {
+    max-height: 100vh;
+  }
+
+  html[data-sidebar-expanded="true"] {
+    #toolbar-horizontal {
+      display: none;
+    }
+  }
+
+  html[data-sidebar-expanded="false"] {
+    &[data-expanded="true"] {
+      #toolbar-horizontal {
+        top: var(--toolbar-horizontal-top, 5.5rem);
+      }
+    }
+
+    &[data-expanded="false"] {
+      #toolbar-horizontal {
+        top: 0;
+      }
+    }
+  }
+}
+
+
+// -- BROWSER HACK
+@media only screen and ( max-width: 62em ) {
+  // html.mobile.ios[data-expanded="true"] {
+  //   .sidebar-container {
+  //     position: fixed;
+  //     z-index: 100;
+  //   }
+  // }
+
+  #sidebar {
+    button.sidebar-toggle-button[aria-expanded="true"] {
+      position: fixed;
+      z-index: 2;
+
+      & + div {
+        padding-top: 4rem;
+      }
+    }
+  }
+}
+
+*[hidden] {
+  display: none;
+}
+
+@media only screen and (max-width:62em) {
+
+  html[data-view="options"] {
+
+    #sidebar {
+      // position: fixed;
+      // display: block;
+      background: #fff;
+      z-index: 15;
+    }
+
+  }
+
+  #sidebar:not(.sidebar-container--right) {
+    width: 100%;
+  }
+
+  html[data-expanded="false"] {
+    header {
+      display: none;
+    }
+
+    #sidebar {
+      display: none;
+      // transition: max-height 0.2s ease-out;
+    }
+  }
+
+  html[data-sidebar-expanded="true"] {
+    #sidebar {
+      flex-basis: 100vh;
+    }
+
+    #section {
+      flex-basis: 0;
+    }
+  }
+
+}
+
+.alert--emergency-access {
+  // border-radius: 0;
+  background-color: orange;
+  border: 1px solid darkorange;
+  display: flex;
+  text-shadow: none;
+  margin-bottom: 0.5rem;
+
+  &[data-initialized="false"] {
+    & > * {
+      opacity: 0;
+    }
+  }
+
+  p {
+    font-weight: bold;
+    color: black;
+
+    a {
+      color: #333;
+    }
+  }
+
+  .alert--emergency-access--options {
+    margin-top: 0.5rem;
+
+    display: flex;
+    align-items: center;
+
+    a.btn {
+      border-top-color: #666;
+      border-left-color: #666;
+      border-bottom-color: #000;
+      border-right-color: #000;
+      border-bottom-width: 2px;
+
+      white-space: nowrap;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    a.button-link {
+      color: black;
+
+      &[disabled] {
+        display: none;
+      }
+    }
+  }
+}
+
+#sidebar {
+  margin-top: 0;
+}
+
+@import "tippy.js/dist/tippy";
+@import "debug";
+@import "tippy";
+@import "panels";
+@import "results";
+@import "download";
+
+button[data-action="toggle-highlights"] {
+  display: none;
+}

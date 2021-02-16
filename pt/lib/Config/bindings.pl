@@ -9,13 +9,15 @@
      'seq'      => '\d+',
      'size'     => '\d+',
      'sz'     => '\d+',
-     'view'     => 'image|text|1up|2up|thumb|plaintext|search|default',
+     'view'     => 'image|text|1up|2up|thumb|plaintext|search|default|page|flip|scroll',
+     'format'     => 'image|plaintext',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
      'attr'     => '\d+',
      'src'      => '\d+',
      'num'      => '.*',
      'start'    => '\d+',
+     'sort'     => 'score|seq',
      'ssd'      => '1', # backwards compatible but obsolete
      'skin'     => '.*',
      'q1'       => '.*',
@@ -28,6 +30,8 @@
      'l11_tracking' => '.*',
      'l11_uid' => '.*',
      'hjVerifyInstall' => '.*',
+     'prototype' => '.*',
+     'hl'       => 'true|false',
     );
 
 # Specification of global *database* operations to be executed before

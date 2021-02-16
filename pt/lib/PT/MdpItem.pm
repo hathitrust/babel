@@ -152,7 +152,7 @@ sub DetermineAndSetContentHandler {
         my $handler = $self->GetFormatHandler('nul', 'fpdf');
         $self->SetContentHandler($handler);
     }
-    elsif ( $requestedPageView eq 'image' || $requestedPageView eq '1up' || $requestedPageView eq '2up' || $requestedPageView eq 'thumb' || $requestedPageView eq 'default' ) {
+    elsif ( $requestedPageView eq 'page' || $requestedPageView eq 'image' || $requestedPageView eq '1up' || $requestedPageView eq '2up' || $requestedPageView eq 'thumb' || $requestedPageView eq 'default' ) {
         my $requestedPageSequence = $self->GetRequestedPageSequence();
         my $storedFileType = $self->GetStoredFileType( $requestedPageSequence );
         # my $handler = $self->GetFormatHandler( $storedFileType, 'image' ); # all variations on image

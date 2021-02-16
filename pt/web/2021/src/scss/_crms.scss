@@ -1,0 +1,43 @@
+html.crms {
+
+  #person-nav {
+    margin-left: auto;
+  }
+
+  // #toggle-bib-metadata {
+  //     margin-top: 4px;
+  //     display: inline-block;
+  // }
+
+  span.blocked {
+      display: block;
+      margin-top: 4px;
+      /*margin-bottom: 2px;*/
+  }
+
+  span.blocked strong {
+      display: block;
+  }
+
+  span.blocked strong::first-letter {
+      text-transform: capitalize;
+  }
+
+  #panel-get-this-book,
+  #panel-bookmark,
+  #panel-share,
+  #panel-search
+  {
+    display: none;
+  }
+
+  main {
+    padding: 0;
+    margin: 0;
+  }
+
+  .beta--alert {
+    display: none;
+  }
+
+}

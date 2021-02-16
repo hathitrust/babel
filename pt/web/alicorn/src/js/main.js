@@ -312,6 +312,10 @@ var Reader = class {
     self._updateLinkSeq(document.querySelector("#login-link"), seq);
     self._updateLinkSeq(document.querySelector("#ssd-link"), seq);
 
+    document.querySelectorAll('a[data-params-seq="true"]').forEach((link) => {
+      self._updateLinkSeq(link, seq);
+    })
+
     if ( HT.downloader && HT.downloader.updateDownloadFormatRangeOptions ) {
       HT.downloader.updateDownloadFormatRangeOptions();
     }
@@ -807,6 +811,16 @@ window.addEventListener('load', (event) => {
       event.initEvent('resize', true, false, window, 0);
       window.dispatchEvent(event)
   }, 100);
+})
+
+// BETA 
+HT.prefs.set({ pt: { skin: null }});
+if ( window.hj ) { hj('tagRecording', [ `PT 2019` ]) };
+document.querySelector('a.action-beta-2021').addEventListener('click', (event) => {
+  if ( window.hj ) { hj('tagRecording', [ `PT 2019 -> 2021` ]) };
+  if ( reader.view.name == 'page' ) {
+    HT.prefs.set({ pt: { view: reader.view.format == 'image' ? 'image' : 'plaintext' }});
+  }
 })
 
 HT.post_error = function(event) {

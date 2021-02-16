@@ -83,28 +83,28 @@ use PT::Prolog;
 
 $::VERSION = 1.1200;
 
-# ---------------------------------------------------------------------
-#
-#                           MOBILE DETECTION
-#
-# ---------------------------------------------------------------------
+# # ---------------------------------------------------------------------
+# #
+# #                           MOBILE DETECTION
+# #
+# # ---------------------------------------------------------------------
 
-{
-    unless ( $ENV{QUERY_STRING} =~ m,skin=, || $ENV{TERM} ) {
-        require HTTP::BrowserDetect;
-        my $browser = HTTP::BrowserDetect->new();
-        if ( 0 && ( $browser->mobile() || $browser->tablet() ) ) {
-            # redirect out of here
-            my $url = $ENV{REQUEST_URI};
-            my $join = ";";
-            if ( $url =~ m,&, ) {
-                $join = '&';
-            }
-            print CGI::redirect(qq{${url}${join}skin=mobile});
-            exit;
-        }
-    }
-}
+# {
+#     unless ( $ENV{QUERY_STRING} =~ m,skin=, || $ENV{TERM} ) {
+#         require HTTP::BrowserDetect;
+#         my $browser = HTTP::BrowserDetect->new();
+#         if ( 0 && ( $browser->mobile() || $browser->tablet() ) ) {
+#             # redirect out of here
+#             my $url = $ENV{REQUEST_URI};
+#             my $join = ";";
+#             if ( $url =~ m,&, ) {
+#                 $join = '&';
+#             }
+#             print CGI::redirect(qq{${url}${join}skin=mobile});
+#             exit;
+#         }
+#     }
+# }
 
 # ---------------------------------------------------------------------
 #
@@ -343,15 +343,23 @@ sub ValidityChecks {
     my $orient = $cgi->param( 'orient' );
     my $ui = defined $cgi->param('ui') ? $cgi->param('ui') : 'default';
 
-    unless ( $view || $ui eq 'embed'  ) {
-        my $prefs = $cgi->cookie('HT.prefs');
+    my $prefs = $cgi->cookie('HT.prefs');
+    if ( $prefs ) {
+        eval {
+            $prefs = decode_json($prefs);
+        };
+        if ( my $err = $@ ) {
+            $prefs = undef;
+        }
+    }
+
+    unless ( ( $view && $view ne 'default' ) || $ui eq 'embed' ) {
         if ( $prefs ) {
             eval {
-                $prefs = decode_json($prefs);
                 $view = $$prefs{'pt'}{'view'};
                 $cgi->param('view', $view);
             };
-            if ( $@ ) {
+            if ( my $err = $@ ) {
                 # ignore
                 # $prefs = { pt => { view => $PTGlobals::gDefaultView } };
             }
@@ -380,9 +388,15 @@ sub ValidityChecks {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
     }
 
-    if ( $cgi->param('ui') eq 'embed' && ! $cgi->param('skin') ) {
-        $cgi->param('skin', 'mobile');
+    if ( ! defined $cgi->param('skin') && ref($prefs) && $$prefs{'pt'}{'skin'} ) {
+        $cgi->param('skin', $$prefs{'pt'}{'skin'});
     }
+
+    # if ( $cgi->param('ui') eq 'embed' && ! $cgi->param('skin') ) {
+    #     $cgi->param('skin', 'mobile');
+    # }
+
+
 
     ## assume defaults later down the road
     # if (! defined($orient) ||

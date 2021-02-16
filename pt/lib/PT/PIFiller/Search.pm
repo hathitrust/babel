@@ -322,7 +322,11 @@ sub WrapSearchResultsInXml {
     my $tempCgi = new CGI($cgi);
     my $view = $tempCgi->param('view');
     if ($view eq 'thumb') {
-        $tempCgi->param('view', '1up');
+        # $tempCgi->param('view', '1up');
+        $tempCgi->delete('view');
+    }
+    if ( $tempCgi->param('format') eq 'image' ) {
+        $tempCgi->delete('format');
     }
     $tempCgi->delete('type');
     $tempCgi->delete('orient');
@@ -344,7 +348,7 @@ sub WrapSearchResultsInXml {
     while (my $Page_result = $rs->get_next_Page_result()) {
 
         my $snip_list = $Page_result->{snip_list};
-        my $pgnum = $Page_result->{pgnum};
+        my $pgnum = $Page_result->{pgnum} || '';
         my $seq = $mdpItem->GetVirtualPageSequence($Page_result->{seq});
         my $id = $Page_result->{id};
         my $vol_id = $Page_result->{vol_id};
@@ -998,18 +1002,20 @@ sub _ls_make_pagelink
     my $href;
 
     my $linkNumberElement = '<LinkNumber>'. $pageLabel .  '</LinkNumber>';
+    my $startPage;
     if ($pageLabel eq $current_pageLabel)
     {
 	add_attribute(\$linkNumberElement, 'focus', 'true');
-    	$href = '';
+    	# $href = '';
+        ( $href, $startPage ) = _ls_make_item_page_href($pageLabel, $numOccurrences, $temp_cgi);
     }
     else
     {
-        $href = _ls_make_item_page_href($pageLabel, $numOccurrences, $temp_cgi);
+        ( $href, $startPage ) = _ls_make_item_page_href($pageLabel, $numOccurrences, $temp_cgi);
     }
     my $url .= wrap_string_in_tag($href, 'Href');
     $url .= $linkNumberElement;
-    my $pagelink = wrap_string_in_tag($url, 'FisheyeLink');
+    my $pagelink = wrap_string_in_tag($url, 'FisheyeLink', [['start', $startPage]]);
 
     return $pagelink;
 }
@@ -1037,7 +1043,7 @@ sub _ls_make_item_page_href
     $temp_cgi->param('start', $focusPage);
     my $href = CGI::self_url($temp_cgi);
 
-    return $href;
+    return ( $href, $focusPage );
 }
 
 1;

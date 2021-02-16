@@ -186,6 +186,10 @@ sub ValidityChecks
         $cgi->param( 'page', 'search' );
     }
 
+    unless ( $cgi->param('sort') ) {
+        $cgi->param('sort', 'seq');
+    }
+
     return PT::Prolog::ST_EMPTY;
 }
 

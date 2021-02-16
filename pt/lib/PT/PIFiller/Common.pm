@@ -842,6 +842,37 @@ sub handle_COLLECTION_LIST_PI
     return $coll_list;
 }
 
+sub handle_FEATURED_COLLECTION_LIST_PI
+    : PI_handler(FEATURED_COLLECTION_LIST)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $auth = $C->get_object('Auth');
+    my $co = $C->get_object('Collection');
+
+    my $cgi = $C->get_object('CGI');
+    my $id = $cgi->param('id');
+
+    my $coll_list;
+    if ($co->item_exists($id))
+    {
+        my $coll_data_arrayref =
+            $co->get_coll_data_for_item_in_features($id);
+
+        foreach my $coll_hashref (@$coll_data_arrayref)
+        {
+            my $MBooks_url
+                = $PTGlobals::gCollectionBuilderCgiRoot
+                    . qq{?a=listis;c=$$coll_hashref{'MColl_ID'}};
+            $coll_list .=
+                wrap_string_in_tag
+                    (wrap_string_in_tag($MBooks_url, 'Url') .
+                     wrap_string_in_tag($$coll_hashref{'collname'}, 'CollName'), 'Coll');
+        }
+    }
+
+    return $coll_list;
+}
 
 # ---------------------------------------------------------------------
 
@@ -1491,7 +1522,7 @@ sub handle_SETUP_APPLICATION_PARAMS_PI
     my $cgi = $C->get_object('CGI');
 
     my $xml = [ 'HT.params = {};'];
-    foreach my $param ( qw(id view size orient seq debug q1 skin l11_tracking l11_uid ui) ) {
+    foreach my $param ( qw(id view size orient seq debug q1 skin l11_tracking l11_uid ui format) ) {
         my $v = $cgi->param($param);
         if ( defined $v ) {
             if ( $param =~ m/size|orient|seq/ ) {
@@ -1539,6 +1570,81 @@ sub handle_GOOGLE_BOOK_LINK
         return qq{<Link service="google" href="https://books.google.com/books?vid=$book_id">Google Books</Link>};
     }
     return '';
+}
+
+sub __xml_hash {
+    my ( $stack, $key, $value ) = @_;
+    push @$stack, qq{<Key name="$key">};
+    if ( ref($value) eq 'HASH' ) {
+        foreach my $_key ( sort keys %$value ) {
+            __xml_hash($stack, $_key, $$value{$key});
+        }
+    } elsif ( ref($value) eq 'ARRAY' ) {
+        foreach my $_v ( @{ $value } ) {
+            push @$stack, qq{<Value>$_v</Value>};
+        }
+    } else {
+        push @$stack, qq{<Value>$value</Value>};
+    }
+    push @$stack, qq{</Key>};
+}
+
+use JSON::XS;
+sub handle_APPLICATION_PREFS
+    : PI_handler(APPLICATION_PREFS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $prefs = $cgi->cookie('HT.prefs');
+    my $key = $$piParamHashRef{key};
+    my $xmldata = [];
+    if ( $prefs ) {
+        eval {
+            $prefs = decode_json($prefs);
+            my $value = $$prefs{$key};
+            foreach my $_key ( sort keys %$value ) {
+                __xml_hash($xmldata, $_key, $$value{$_key} );
+            }
+        };
+        if ( my $err = $@ ) {
+            push @$xmldata, $err;
+            # ignore
+            # $prefs = { pt => { view => $PTGlobals::gDefaultView } };
+        }
+    }
+    return join("\n", @$xmldata);
+}
+
+sub handle_ITEM_INDEX_STATUS
+    : PI_handler(ITEM_INDEX_STATUS)
+{
+
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+
+    my $retval = 'UNKNOWN';
+
+    # only check if there's an existing q1
+    if ( defined $cgi->param('q1') ) {
+        require SLIP_Utils::Common;
+        require PT::SearchUtils;
+
+        my $config = $C->get_object('MdpConfig');
+        my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config);
+
+        my $id = $cgi->param('id');
+
+        my ($is_indexed, $Solr_error) =
+          PT::SearchUtils::has_Solr_index_item($C,
+                                               SLIP_Utils::Common::get_run_number($run_config),
+                                               $id,
+                                               $stats_ref);
+
+        $retval = $is_indexed ? 'INDEXED' : 'UNKNOWN';
+    }
+
+    return $retval;
 }
 
 sub ExtractLSParams {

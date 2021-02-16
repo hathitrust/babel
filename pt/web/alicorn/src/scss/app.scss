@@ -2125,6 +2125,63 @@ main[data-view="thumb"] {
   background: #0099cc;
 }
 
+// beta notice
+.beta--panel {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+
+  & > div {
+    width: 90%;
+  }
+
+  .alert {
+    background: orange; 
+    color: #333; 
+    text-shadow: none; 
+    margin-bottom: 0.25rem; 
+    // width: 90%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+
+    margin-bottom: 0.25rem;
+    padding: 0.875rem;
+
+    svg {
+      display: block;
+      width: 1.5rem;
+      flex-shrink: 0;
+      margin-right: 0.5rem;
+
+      text {
+        display: none;
+      }
+    }
+
+    p {
+      a {
+        color: #000;
+        font-size: 0.875rem;
+
+        &:focus {
+          outline: 4px solid black;
+        }
+      }
+    }
+  }
+
+  a.action-beta-2021 {
+    background: transparent;
+    color: #924a0b;
+    border: 2px solid #924a0b;
+    width: 100%;
+    text-align: center;
+    font-weight: bold
+  }
+}
+
 // POPOUTS
 .modal.lightbox.is-open {
   .modal__container {
