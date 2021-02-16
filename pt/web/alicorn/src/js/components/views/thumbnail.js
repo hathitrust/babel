@@ -17,6 +17,10 @@ export var Thumbnail = class extends Scroll {
 
   }
 
+  _adjustContainerWidth() {
+    return `${( this.scale > 1 ? this.scale : 0.9 ) * 100}%`;
+  }
+
   loadImage(page, options={}) {
     var self = this;
 

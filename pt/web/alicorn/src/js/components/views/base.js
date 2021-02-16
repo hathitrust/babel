@@ -283,7 +283,8 @@ export var Base = class {
   // }
 
   _adjustContainerWidth() {
-    return `${this.scale * 100}%`;
+
+    return `${( this.scale > 1 ? this.scale : 1 ) * 100}%`;
   }
 
   _adjustContainer() {
