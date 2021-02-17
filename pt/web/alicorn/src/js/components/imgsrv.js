@@ -469,7 +469,7 @@ export var Loader = class {
 
     var image_src = (typeof src === 'string') ? src : src.src;
 
-    fetch(image_src, { credentials: 'include', referrer: `https://babel.hathitrust.org/cgi/pt?id=${HT.params.id}` })
+    fetch(image_src, { credentials: 'include' })
       .then(response => {
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           image.dataset.restricted = true;
@@ -498,11 +498,9 @@ export var Loader = class {
         } else {
           var objectUrl = URL.createObjectURL(blob);
           image.src = objectUrl;
-          // image.src = image_src;
         }
       })
 
-    // image.src = (typeof src === 'string') ? src : src.src;
     return this;
   }
 

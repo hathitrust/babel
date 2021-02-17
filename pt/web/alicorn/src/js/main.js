@@ -774,10 +774,7 @@ window.addEventListener('load', (event) => {
   }, 100);
 })
 
-window.addEventListener('error', function(event) {
-  if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
-    return;
-  }
+const post_error = function(event) {
   const response = fetch('/cgi/pt/error', {
     method: 'POST',
     credentials: 'include',
@@ -797,5 +794,15 @@ window.addEventListener('error', function(event) {
       seq: HT.params.seq
     })
   })
+}
+
+window.addEventListener('error', function(event) {
+  if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
+    return;
+  }
+  post_error(event);
 })
 
+window.addEventListener('unhandledrejection', function(event) {
+  post_error(event.reason);
+});
