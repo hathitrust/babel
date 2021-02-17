@@ -32,6 +32,11 @@ p.Image {
 #mdpFlexible_1 {
 }
 
+#mdpContentContainer {
+  max-width: 62rem;
+  margin-bottom: 6rem;
+}
+
 .mdpMetaDataRow {
   margin-bottom: 3px;
 }
@@ -108,14 +113,18 @@ img {
   bottom: 1rem;
   right: 1rem;
   padding: 1rem;
-  background: rgba(255,165,0, 0.25);
-  width: 18rem;
+  background: rgb(255,215,0);
+  min-width: 18rem;
   border: 2px solid darkorange;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
 }
 
 .ssd--survey p {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.0125rem;
+  margin-bottom: 0.125rem;
+  margin-right: 0.5rem;
 }
 
 .ssd--survey a {
