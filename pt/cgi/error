@@ -114,7 +114,7 @@ my $app = sub {
     push @$message, ['request_uri', $request_uri];
     push @$message, ['user_agent', $user_agent];
 
-    foreach my $key ( qw/message filename lineno colno error trace view seq/ ) {
+    foreach my $key ( qw/message filename lineno colno error trace view seq imgsrv_url/ ) {
         push @$message, [ $key, $$payload{$key} ];
     }
 
