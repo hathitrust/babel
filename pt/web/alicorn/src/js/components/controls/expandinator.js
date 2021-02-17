@@ -47,7 +47,7 @@ export var Expandinator = class {
       })
     }
 
-    ['fullscreenchange', 'MSFullscreenChange' ].forEach((eventName) => {
+    ['fullscreenchange', 'MSFullscreenChange', 'webkitfullscreenchange' ].forEach((eventName) => {
       document.addEventListener(eventName, (event) => {
         var check = ( 
           document.webkitFullscreenElement || 
