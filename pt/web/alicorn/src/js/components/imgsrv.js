@@ -375,11 +375,12 @@ export var Loader = class {
     var request_src = (typeof src === 'string') ? src : src.src;
 
     var is_restricted = false;
-    var err = null;
+    var is_error = false;
     fetch(request_src, { credentials: 'include' })
       .then(response => {
         if ( ! response.ok ) {
-          err = response.text();
+          // err = response.text();
+          is_error = true;
         }
         if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
           is_restricted = true;
@@ -412,7 +413,7 @@ export var Loader = class {
           for(i;i<l;++i){
             if(loading[i] == src){loading.splice(i,1);}
           }
-          if(err){
+          if(is_error){
             self._errors.push(src);
             self.dispatch(Events.ERROR,[src]);
             self.dispatch(src,[null,src]);
@@ -425,6 +426,18 @@ export var Loader = class {
           self.next();
         }, 0);
 
+      })
+      .catch((error) => {
+        HT.post_error({
+          message: error.message,
+          filename: error.fileName,
+          lineno: error.lineNumber,
+          colno: error.columnNumber,
+          error: {
+            stack: error.stack
+          },
+          imgsrv_url: request_src
+        });
       })
 
     // image.src = (typeof src === 'string') ? src : src.src;
@@ -499,6 +512,18 @@ export var Loader = class {
           var objectUrl = URL.createObjectURL(blob);
           image.src = objectUrl;
         }
+      })
+      .catch((error) => {
+        HT.post_error({
+          message: error.message,
+          filename: error.fileName,
+          lineno: error.lineNumber,
+          colno: error.columnNumber,
+          error: {
+            stack: error.stack
+          },
+          imgsrv_url: image_src
+        });
       })
 
     return this;

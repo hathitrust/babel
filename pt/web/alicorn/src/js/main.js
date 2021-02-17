@@ -70,7 +70,7 @@ var Reader = class {
   }
 
   restart(params) {
-    var current = params.seq || this.view.currentLocation();
+    var current = params.seq || this.view && this.view.currentLocation() || HT.params.seq;
 
     if ( params.view == this.view.name && params.view == 'plaintext' && params.clicked ) { params.view = '1up'; }
     if ( params.view == '2up' && this.service.manifest.totalSeq == 1 ) { params.view = '1up'; }
@@ -690,7 +690,7 @@ HT.utils.handleOrientationChange = function(ignore) {
       // disable the 2up and switch views
       // $sidebar.find(`button[data-target="2up"]`).attr('disabled', true);
       $(`button[data-target="2up"]`).attr('disabled', true);
-      if ( reader.view.name == '2up' && ignore !== true ) {
+      if ( reader.view && reader.view.name == '2up' && ignore !== true ) {
         HT.utils.switch_view('1up');
       }
     }
@@ -774,7 +774,7 @@ window.addEventListener('load', (event) => {
   }, 100);
 })
 
-const post_error = function(event) {
+HT.post_error = function(event) {
   const response = fetch('/cgi/pt/error', {
     method: 'POST',
     credentials: 'include',
@@ -791,7 +791,8 @@ const post_error = function(event) {
       trace: event.error ? event.error.stack : null,
       htid: HT.params.id,
       view: HT.params.view,
-      seq: HT.params.seq
+      seq: HT.params.seq,
+      imgsrv_url: event.imgsrv_url
     })
   })
 }
@@ -800,13 +801,13 @@ window.addEventListener('error', function(event) {
   if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
     return;
   }
-  post_error(event);
+  HT.post_error(event);
 })
 
 window.addEventListener('unhandledrejection', function(event) {
   var reason = event.reason;
   if ( ! reason ) { return ; }
-  post_error({
+  HT.post_error({
     message: reason.message,
     filename: reason.fileName,
     lineno: reason.lineNumber,
