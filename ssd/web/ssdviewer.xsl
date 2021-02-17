@@ -784,7 +784,7 @@
           <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-1 0A7 7 0 1 0 1 8a7 7 0 0 0 14 0z"/>
         </svg>
         <xsl:text> How useful is the text-only view of the book?</xsl:text></p>
-      <p><a href="https://umich.qualtrics.com/jfe/form/SV_2tA6ksgRjzOYv5Q">Take our 2-question survey</a></p>
+      <p><a target="_blank" href="https://umich.qualtrics.com/jfe/form/SV_2tA6ksgRjzOYv5Q">Take our 2-question survey</a> (open in a new window)</p>
     </div>
   </xsl:template>
 
