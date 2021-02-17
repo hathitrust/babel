@@ -788,7 +788,7 @@ const post_error = function(event) {
       lineno: event.lineno,
       colno: event.colno,
       error: event.error,
-      trace: event.error.stack,
+      trace: event.error ? event.error.stack : null,
       htid: HT.params.id,
       view: HT.params.view,
       seq: HT.params.seq
@@ -804,5 +804,15 @@ window.addEventListener('error', function(event) {
 })
 
 window.addEventListener('unhandledrejection', function(event) {
-  post_error(event.reason);
+  var reason = event.reason;
+  if ( ! reason ) { return ; }
+  post_error({
+    message: reason.message,
+    filename: reason.fileName,
+    lineno: reason.lineNumber,
+    colno: reason.columnNumber,
+    error: {
+      stack: reason.stack
+    }
+  });
 });
