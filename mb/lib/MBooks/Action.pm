@@ -108,8 +108,8 @@ sub set_back_to_app_url
             my $new_cgi = new CGI('');
             
             $new_cgi->param('a', 'listis');
-            $new_cgi->param('c', $cgi->param('c'));
-            $new_cgi->param('debug', $cgi->param('debug'));
+            $new_cgi->param('c', scalar $cgi->param('c'));
+            $new_cgi->param('debug', scalar $cgi->param('debug'));
             
             $ses->set_persistent($app_name . '_app_url', $new_cgi->self_url());
         }
