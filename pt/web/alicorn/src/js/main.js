@@ -712,6 +712,9 @@ if ( reader.service.manifest.totalSeq == 1 ) {
   }
 }
 
+var validViews = [ '1up', '2up', 'thumb', 'image', 'plaintext' ];
+if ( validViews.indexOf(HT.params.view) < 0 ) { HT.params.view = '1up'; }
+
 $sidebar.find(`.action-view[data-target="${$$main.dataset.view}"]`).addClass('active');
 
 var $menu; var $trigger; var $header; var $navigator;
