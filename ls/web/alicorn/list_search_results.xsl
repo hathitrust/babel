@@ -391,7 +391,7 @@
     <xsl:for-each select="//SearchResults//Item">
       <article class="record">
         <div class="cover" data-hdl="{ItemID}">
-          <img class="bookCover" aria-hidden="true" alt="" src="/cgi/imgsrv/cover?id={ItemID}" />
+          <img loading="lazy" class="bookCover" aria-hidden="true" alt="" src="/cgi/imgsrv/cover?id={ItemID}" />
         </div>
         <div class="record-container record-medium-container">
           <div class="record-title-and-actions-container">
