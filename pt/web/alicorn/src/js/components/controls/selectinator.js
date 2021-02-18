@@ -25,7 +25,7 @@ export var Selectinator = class {
     // this.options = Object.assign({}, options);
     this.reader = options.reader;
     this.input = options.input;
-    this.datalist = this.input.querySelector('ul');
+    this.datalist = this.input ? this.input.querySelector('ul') : null;
     // this.datalist = this.input.querySelector('ul.dropdown-menu');
 
     this.link = options.link;
@@ -41,6 +41,8 @@ export var Selectinator = class {
 
   bindEvents() {
     var self = this;
+    if ( ! this.datalist ) { return ; }
+    
     this.reader.on('ready', () => {
       self.setup();
     });
