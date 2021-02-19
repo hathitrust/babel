@@ -194,6 +194,7 @@
           <xsl:call-template name="sidebar" />
         </div>
       </div>
+      <xsl:call-template name="build-main-app-script" />
       <xsl:call-template name="build-main-container-extra" />
     </main>
   </xsl:template>
@@ -247,13 +248,6 @@
       </xsl:call-template>
     </div>
 
-    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/alicorn/js/main.js']/@modtime" />
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.6.1/randomColor.min.js" integrity="sha512-vPeZ7JCboHcfpqSx5ZD+/jpEhS4JpXxfz9orSvAPPj0EKUVShU2tgy7XkU+oujBJKnWmu4hU7r9MMQNWPfXsYw==" crossorigin="anonymous"></script> -->
-    <script type="text/javascript">
-      <xsl:text>head.load('/pt/alicorn/js/main.js?_</xsl:text>
-      <xsl:value-of select="$modtime" />
-      <xsl:text>')</xsl:text>
-    </script>
     <xsl:call-template name="load-extra-main-script" />
   </xsl:template>
 
@@ -730,6 +724,15 @@
       <br />
       <a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable" class="btn btn-primary">Learn more.</a>
     </div>
+  </xsl:template>
+
+  <xsl:template name="build-main-app-script">
+    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/alicorn/js/main.js']/@modtime" />
+    <script type="text/javascript">
+      <xsl:text>head.load('/pt/alicorn/js/main.js?_</xsl:text>
+      <xsl:value-of select="$modtime" />
+      <xsl:text>')</xsl:text>
+    </script>
   </xsl:template>
 
   <xsl:template name="build-hotjar-script">
