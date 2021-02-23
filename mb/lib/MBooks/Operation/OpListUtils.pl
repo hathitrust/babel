@@ -229,24 +229,53 @@ sub get_final_item_arr_ref {
     foreach my $item_hashref (@$item_arr_ref) {
         my $item_rights_attr = $item_hashref->{'rights'};
 
-        if ( $self->is_full_text($rights_ref, $item_rights_attr)) {
-            $item_hashref->{'fulltext'} = '1';
-        }
-        else {
-            $item_hashref->{'fulltext'} = '0';
+        ## --- the classic mb algorithm is way permissive
+        # if ( $self->is_full_text($rights_ref, $item_rights_attr)) {
+        #     $item_hashref->{'fulltext'} = '1';
+        # }
+        # else {
+        #     $item_hashref->{'fulltext'} = '0';
+        # }
+
+        # if ( $self->is_emergency_access($C, $$item_hashref{extern_item_id}, $rights_ref, $item_rights_attr)) {
+        #     $item_hashref->{'emergency_flag'} = '1';
+        # }
+        # else {
+        #     $item_hashref->{'emergency_flag'} = '0';
+        # }
+
+        ## --- use the ls algorithm
+        # Access rights
+        my $id = $$item_hashref{extern_item_id};
+        my $access_status;
+        eval {
+            my $ar = new Access::Rights($C, $id);
+            $access_status = $ar->check_final_access_status_by_attribute($C, $item_rights_attr, $id);
+        };
+        $access_status = 'deny'
+            if ($@);
+
+        my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
+        my $emergency_flag = 0;
+        my $initial_access_status;
+
+        if ( $access_status eq 'allow' ) {
+            my $initial_access_status;
+            eval {
+                my $ar = new Access::Rights($C, $id);
+                if ( $ar->in_copyright($C, $id) ) {
+                    $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $item_rights_attr, $id);
+                    $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+                }
+            };
         }
 
-        if ( $self->is_emergency_access($C, $$item_hashref{extern_item_id}, $rights_ref, $item_rights_attr)) {
-            $item_hashref->{'emergency_flag'} = '1';
-        }
-        else {
-            $item_hashref->{'emergency_flag'} = '0';
-        }
+        $$item_hashref{fulltext} = $fulltext_flag;
+        $$item_hashref{emergency_flag} = $emergency_flag;
 
         # add array_of hashrefs of collection info for collections
         # owned by user that also include the item
         my $coll_ary_hashref;
-        my $id = $item_hashref->{'extern_item_id'};
 
         # eval {
         #     $coll_ary_hashref = $co->get_coll_data_for_item_and_user($id, $owner);
