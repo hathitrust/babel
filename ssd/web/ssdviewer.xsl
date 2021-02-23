@@ -152,7 +152,7 @@
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
 
-      <xsl:call-template name="build-survey-link" />
+      <!-- <xsl:call-template name="build-survey-link" /> -->
 
       <div id="ControlContentContainer">
         <xsl:choose>
