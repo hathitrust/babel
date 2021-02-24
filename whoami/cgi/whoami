@@ -240,6 +240,7 @@ sub get_properties {
     push @$retval, [ 'eduPersonScopedAffiliation', [ sort split(/;/, $affiliation) ] ];
     push @$retval, [ 'eduPersonPrincipalName', $ENV{eppn} ] if ( $ENV{eppn} );
     push @$retval, [ 'displayName', $ENV{displayName} ] if ( $ENV{displayName} );
+    push @$retval, [ 'entitlement', $ENV{entitlement} ] if ( $ENV{entitlement} );
     push @$retval, [ 'entityID', $ENV{Shib_Identity_Provider} ];
     push @$retval, [ 'authenticationMethod', $ENV{Shib_Authentication_Method} ];
     push @$retval, [ 'authnContextClass', $ENV{Shib_AuthnContext_Class} ];
