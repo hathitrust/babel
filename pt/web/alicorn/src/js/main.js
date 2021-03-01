@@ -19,7 +19,15 @@ var $$main = document.querySelector('main');
 var $main = document.querySelector(".app--reader--viewer");
 var $root = document.querySelector('.app--reader');
 
+var $header = document.querySelector('header');
+var $footer = document.querySelector('footer');
+
+var $sidebar = document.querySelector('#sidebar');
+
 var $toolbar = $root.querySelector('#toolbar-vertical');
+
+const usesGrid = window.getComputedStyle(document.documentElement).getPropertyValue('--uses-grid') != 'false';
+window.usesGrid = usesGrid;
 
 var Reader = class {
   constructor(options={}) {
@@ -198,7 +206,27 @@ var Reader = class {
       }
     })
 
+    this._updateViewports = function() {
+      if ( ! usesGrid ) {
+        $$main.style.height = `${window.innerHeight - $header.clientHeight - $footer.clientHeight}px`;
+        $main.style.height = $$main.style.height;
+        $root.style.height = $$main.style.height;
+        if ( $sidebar.style ) {
+          $sidebar.style.height = $$main.style.height;
+        }
+      }
+    }
+
+    if ( ! usesGrid ) {
+      this.on('resize', () => {
+        this._updateViewports();
+      })
+    }
+
     this._resizer = debounce(function() {
+
+      this._updateViewports();
+
       // DO NOT emit resize events if we're pinch-zooming??
       if ( window.visualViewport && window.visualViewport.scale > 1 ) { 
         return ; 
