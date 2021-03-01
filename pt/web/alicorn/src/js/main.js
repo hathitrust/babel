@@ -215,6 +215,14 @@ var Reader = class {
           $sidebar.style.height = $$main.style.height;
         }
       }
+      if ( navigator.userAgent.indexOf('Safari/') > -1 && 
+         navigator.userAgent.indexOf('Version/12.1') > -1 ) {
+        // Safari 12 patching
+        if ( this.view && this.view.container && this.view.container.parentElement ) {
+          var node = this.view.container.parentElement;
+          node.style.height = `${node.parentElement.clientHeight}px`;
+        }
+      }
     }
 
     if ( ! usesGrid ) {
