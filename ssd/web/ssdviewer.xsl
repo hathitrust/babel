@@ -124,7 +124,7 @@
         <script src="/common/alicorn/js/utils.201910.js"></script>
         <script src="/ssd/access_banner.js"></script>
 
-        <!-- <xsl:call-template name="build-hotjar-script" /> -->
+        <xsl:call-template name="build-hotjar-script" />
       </head>
 
       <body>
@@ -152,7 +152,7 @@
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
 
-      <!-- <xsl:call-template name="build-survey-link" /> -->
+      <xsl:call-template name="build-survey-link" />
 
       <div id="ControlContentContainer">
         <xsl:choose>
