@@ -24,6 +24,9 @@
     <xsl:call-template name="build-css-link">
       <xsl:with-param name="href" select="'/pt/alicorn/css/search.css'" />
     </xsl:call-template>
+
+    <xsl:call-template name="build-hotjar-script" />
+
     <!-- <link rel="stylesheet" href="/pt/alicorn/css/search.css?_{//Timestamp}" /> -->
   </xsl:template>
 
@@ -83,6 +86,7 @@
       <xsl:when test="//AccessType/Available = 'TRUE'">
 
         <!-- item is available for checkout -->
+        <xsl:if test="true()">
         <div class="alert alert-block alert--emergency-access">
           <p style="margin-right: 1rem">
             <xsl:text>Access to this work is provided through the </xsl:text>
@@ -90,9 +94,23 @@
             <xsl:text>.</xsl:text>
           </p>
           <div class="alert--emergency-access--options">
-            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+            <a class="btn btn-default" style="white-space: nowrap; font-size: 1.5rem; text-transform: uppercase" href="{$access-type/Action}">Check Out</a>
           </div>
         </div>
+        </xsl:if>
+
+        <xsl:if test="false()">
+        <div class="alert alert-block alert--emergency-access" style="flex-direction: column;">
+          <p style="margin-bottom: 1rem">
+            <xsl:text>Access to this work is provided through the </xsl:text>
+            <a href="{$etas_href}">Emergency Temporary Access Service</a>
+            <xsl:text>.</xsl:text>
+          </p>
+          <div class="alert--emergency-access--options">
+            <a class="btn btn-default" style="white-space: nowrap; font-size: 1.5rem; text-transform: uppercase" href="{$access-type/Action}">Check Out and Read</a>
+          </div>
+        </div>
+        </xsl:if>
 
       </xsl:when>
       <xsl:otherwise>

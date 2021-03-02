@@ -484,6 +484,14 @@ img:-moz-loading {
           align-items: center;
 }
 
+.alert--emergency-access .alert--emergency-access--options a.btn {
+  border-top-color: #666;
+  border-left-color: #666;
+  border-bottom-color: #000;
+  border-right-color: #000;
+  border-bottom-width: 2px;
+}
+
 .alert--emergency-access .alert--emergency-access--options a.button-link {
   color: black;
 }
@@ -2246,8 +2254,8 @@ main[data-view="thumb"] button[data-target="thumb"] {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-u1ab117ae 1s linear alternate infinite;
-          animation: loader12-u1ab117ae 1s linear alternate infinite;
+  -webkit-animation: loader12-u4a55f93d 1s linear alternate infinite;
+          animation: loader12-u4a55f93d 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2256,7 +2264,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-u1ab117ae {
+@-webkit-keyframes loader12-u4a55f93d {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2279,7 +2287,7 @@ main[data-view="thumb"] button[data-target="thumb"] {
   }
 }
 
-@keyframes loader12-u1ab117ae {
+@keyframes loader12-u4a55f93d {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

@@ -901,46 +901,42 @@
       </xsl:choose>
     </xsl:variable>
 
-    <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
-    <div class="accessOverview panel" rel="note">
-      <h3>
-        <xsl:call-template name="build-pt-icon">
-          <xsl:with-param name="id">bi-file-text</xsl:with-param>
-        </xsl:call-template>
-        <span>Text Only Views</span>
-      </h3>
-        <xsl:if test="$gHtId">
-          <p>
-            <xsl:text>Go to the </xsl:text>
-            <xsl:element name="a">
-              <xsl:attribute name="id">ssd-link</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:text>/cgi/ssd?id=</xsl:text>
-                <xsl:value-of select="$gHtId"/>
-                <xsl:choose>
-                  <xsl:when test="$seq != '' and $gViewingMode = 'entire-volume'">
-                    <xsl:text>#seq</xsl:text>
-                    <xsl:value-of select="$seq" />
-                  </xsl:when>
-                  <xsl:when test="$seq">
-                    <xsl:text>;seq=</xsl:text>
-                    <xsl:value-of select="$seq" />
-                  </xsl:when>
-                  <xsl:otherwise />
-                </xsl:choose>
-              </xsl:attribute>
-              <xsl:text>text-only view of this item.</xsl:text>
-            </xsl:element>
-          </p>
-        </xsl:if>
-<!--         <xsl:if test="$gInCopyright = 'false'">
-          <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
-        </xsl:if>
-        <xsl:if test="$gInCopyright = 'true'">
-          <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        </xsl:if> -->
-        <p>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</p>
-    </div>
+    <xsl:if test="$gFinalAccessStatus='allow'">
+      <xsl:variable name="seq" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']" />
+      <div class="accessOverview panel" rel="note">
+        <h3>
+          <xsl:call-template name="build-pt-icon">
+            <xsl:with-param name="id">bi-file-text</xsl:with-param>
+          </xsl:call-template>
+          <span>Text Only Views</span>
+        </h3>
+          <xsl:if test="$gHtId">
+            <p>
+              <xsl:text>Go to the </xsl:text>
+              <xsl:element name="a">
+                <xsl:attribute name="id">ssd-link</xsl:attribute>
+                <xsl:attribute name="href">
+                  <xsl:text>/cgi/ssd?id=</xsl:text>
+                  <xsl:value-of select="$gHtId"/>
+                  <xsl:choose>
+                    <xsl:when test="$seq != '' and $gViewingMode = 'entire-volume'">
+                      <xsl:text>#seq</xsl:text>
+                      <xsl:value-of select="$seq" />
+                    </xsl:when>
+                    <xsl:when test="$seq">
+                      <xsl:text>;seq=</xsl:text>
+                      <xsl:value-of select="$seq" />
+                    </xsl:when>
+                    <xsl:otherwise />
+                  </xsl:choose>
+                </xsl:attribute>
+                <xsl:text>text-only view of this item.</xsl:text>
+              </xsl:element>
+            </p>
+          </xsl:if>
+          <p>See the <a href="http://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</p>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="sidebar-about-this-book">

@@ -735,39 +735,6 @@
     </script>
   </xsl:template>
 
-  <xsl:template name="build-hotjar-script">
-    <script>
-        (function(h,o,t,j,a,r){
-            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-            h._hjSettings={hjid:2109672,hjsv:6};
-            a=o.getElementsByTagName('head')[0];
-            r=o.createElement('script');r.async=1;
-            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-            a.appendChild(r);
-        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-        var __hj; var __hjIdx = 0;
-        __hj = setInterval(function() {
-          if ( ! window.hj || ! HT.login_status ) { 
-            __hjIdx += 1;
-            if ( __hjIdx == 100 ) { clearInterval(__hjIdx); return; }
-            console.log("-- HOTJAR: punting", __hjIdx); 
-            return; 
-          }
-          clearInterval(__hj);
-          var tags = [];
-          if ( HT.login_status ) {
-            tags.push(HT.login_status.affiliation);
-          }
-          <xsl:if test="$gInCopyright = 'true'">
-            if ( HT.login_status.x ) {
-              tags.push('ETAS');
-            }
-          </xsl:if>
-          hj('tagRecording', tags);
-        }, 100);
-    </script>
-  </xsl:template>
-
   <!-- <xsl:template match="node()" mode="copy-guts">
     <xsl:apply-templates select="@*|*|text()" mode="copy" />
   </xsl:template>

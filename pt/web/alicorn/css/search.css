@@ -225,6 +225,14 @@ button.control-search:hover, button.control-search:focus {
   display: none;
 }
 
+.alert--emergency-access .alert--emergency-access--options a.btn {
+  border-top-color: #666;
+  border-left-color: #666;
+  border-bottom-color: #000;
+  border-right-color: #000;
+  border-bottom-width: 2px;
+}
+
 header .alert--emergency-access {
   border-radius: 0;
 }
