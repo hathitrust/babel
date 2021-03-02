@@ -19,15 +19,15 @@ export var Single = class extends Base {
     seq = parseInt(seq, 10);
 
     if ( seq == this.currentSeq ) { return ; }
-    if ( this.getPage(seq).dataset.visible == 'true' ) { return ; }
 
     var currentPage; var targetPage;
     if ( this.currentSeq ) {
       currentPage = this.container.querySelector(`.page[data-seq="${this.currentSeq}"]`);
     }
 
-    var targetPage = this.container.querySelector(`.page[data-seq="${seq}"]`);
+    var targetPage = this.getPage(seq);
     if ( ! targetPage ) { return; }
+    if ( targetPage.dataset.visible == 'true' ) { return ; }
 
     this.loadImage(targetPage);
 

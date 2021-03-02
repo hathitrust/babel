@@ -98,19 +98,14 @@ var Reader = class {
   }
 
   setView(params) {
-    var t0 = performance.now();
     var cls = View.for(params.view);
-    var t1 = performance.now();
     this.view = new cls({ reader: this, service: this.service, scale: this.options.scale, seq: params.seq });
-    var t2 = performance.now();
     this.emit('configure', this.view.config());
     this._updateViews(params.view);
 
     HT.update_status(`Viewing book in ${this.view.displayLabel} view.`);
-    // document.querySelector('#view-heading').innerText = `View: ${this.view.displayLabel}`;
 
     HT.prefs.set({ pt : { view : params.view } })
-    console.log(`BENCHMARK setView: ${t2 - t0} / ${t1 - t0} / ${t2 - t1}`);
 
     HT.view = this.view;
   }
@@ -285,6 +280,7 @@ var Reader = class {
   // TODO - REFLECT CURRENT LAYOUT
   _updateLinks(seq) {
     var self = this;
+    if ( ! this.view || ! this.view.container ) { return ; }
     if ( ! seq ) { seq = this.view.currentLocation(); }
     if ( this.view.name == '2up' ) {
       // this is way more complicated
