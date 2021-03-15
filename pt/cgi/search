@@ -112,7 +112,7 @@ unless ($Solr_error) {
                                            SLIP_Utils::Common::get_run_number($run_config),
                                            $id,
                                            $stats_ref);
-    if ( $cgi->param('index') ) {
+    if ( $cgi->param('index') && ! DEBUG('index,doc,all') ) {
         # we've indexed, so bounce to get rid of the index parameter
         _redirect_to_browse($cgi);
     }
