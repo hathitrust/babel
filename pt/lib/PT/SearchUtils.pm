@@ -198,6 +198,15 @@ sub maybe_Solr_index_item {
             my ($index_state, $commit_stats_ref) = $indexer->commit_updates($C);
 
             SLIP_Utils::Common::merge_stats($C, $g_stats_ref, $commit_stats_ref);
+
+            my $host = `hostname`; chomp($host);
+            my $doc_Time = $$g_stats_ref{'create'}{'elapsed'} || 0;
+            my $idx_Time = $$g_stats_ref{'update'}{'elapsed'} || $$stats_ref{'delete'}{'elapsed'} || 0;
+            my $commit_Time = $$g_stats_ref{'commit'}{'elapsed'} || 0;
+
+            my $t = time() - $start_0;
+            Utils::Logger::__Log_simple(qq{ptsearch : $id : $t : $doc_Time : $idx_Time : $commit_Time :: $host $$});
+
         }
         else {
             Utils::Logger::__Log_string($C,
