@@ -420,62 +420,63 @@
 
   <xsl:template name="action-search-volume">
     <xsl:param name="class" />
-    <!-- <h3 class="offscreen">Search in this volume</h3> -->
-    <form class="form-inline form-search-volume {$class}" method="get" id="form-search-volume" role="search">
-      <xsl:attribute name="action">
-        <xsl:choose>
-          <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>
-          <xsl:otherwise>/cgi/pt/search</xsl:otherwise>
-        </xsl:choose>
-      </xsl:attribute>
-      <style>
+    <xsl:if test="$gHasOcr = 'YES'">
+      <form class="form-inline form-search-volume {$class}" method="get" id="form-search-volume" role="search">
+        <xsl:attribute name="action">
+          <xsl:choose>
+            <xsl:when test="$gUsingSearch = 'true'">/cgi/pt/search</xsl:when>
+            <xsl:otherwise>/cgi/pt/search</xsl:otherwise>
+          </xsl:choose>
+        </xsl:attribute>
+        <style>
 
-        .form-inline {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-        }
+          .form-inline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+          }
 
-        .field {
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-        }
+          .field {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+          }
 
-        .form-search-volume label {
-          margin-right: 0.25rem;
-          padding: 0.25rem 0.5rem;
-        }
+          .form-search-volume label {
+            margin-right: 0.25rem;
+            padding: 0.25rem 0.5rem;
+          }
 
-        .form-search-volume .input-large {
-          width: 10rem;
-          max-width: 90%;
-        }
+          .form-search-volume .input-large {
+            width: 10rem;
+            max-width: 90%;
+          }
 
-      </style>
-      <div class="field" style="position: relative; margin-right: 0.25rem">
-        <label for="input-search-text">Search in this text </label>
-        <input id="input-search-text" type="text" class="input-large" name="q1" placeholder="">
-          <xsl:attribute name="value">
-            <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
-              <xsl:value-of select="$gCurrentQ1" />
-            </xsl:if>
-          </xsl:attribute>
-        </input>
-      </div>
-      <button type="submit" class="btn dark" data-trigger="search">Find</button>
-      <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
-      <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
-      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
-        <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
-      </xsl:if>
-      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
-        <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
-      </xsl:if>
-      <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
-        <input type="hidden" name="debug" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']}" />
-      </xsl:if>
-    </form>
+        </style>
+        <div class="field" style="position: relative; margin-right: 0.25rem">
+          <label for="input-search-text">Search in this text </label>
+          <input id="input-search-text" type="text" class="input-large" name="q1" placeholder="">
+            <xsl:attribute name="value">
+              <xsl:if test="$gHasOcr = 'YES' and $gCurrentQ1 != '*'">
+                <xsl:value-of select="$gCurrentQ1" />
+              </xsl:if>
+            </xsl:attribute>
+          </input>
+        </div>
+        <button type="submit" class="btn dark" data-trigger="search">Find</button>
+        <xsl:apply-templates select="//MdpApp/SearchForm/HiddenVars" />
+        <input type="hidden" name="view" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='view']}" />
+        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']">
+          <input type="hidden" name="seq" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='seq']}" />
+        </xsl:if>
+        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']">
+          <input type="hidden" name="num" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='num']}" />
+        </xsl:if>
+        <xsl:if test="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']">
+          <input type="hidden" name="debug" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='debug']}" />
+        </xsl:if>
+      </form>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="get-access-statements">

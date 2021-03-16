@@ -1303,16 +1303,18 @@
             </div>
           </xsl:if>
 
-          <div class="form-control">
-            <input name="download_format" type="radio" id="format-plaintext" value="plaintext" /> 
-            <label for="format-plaintext">Text (.txt)</label>
-          </div>
-
-          <xsl:if test="$gFullPdfAccess = 'allow'">
+          <xsl:if test="$gHasOcr = 'YES'">
             <div class="form-control">
-              <input name="download_format" type="radio" id="format-archive" value="plaintext-zip" /> 
-              <label for="format-archive">Text (.zip)</label>
+              <input name="download_format" type="radio" id="format-plaintext" value="plaintext" /> 
+              <label for="format-plaintext">Text (.txt)</label>
             </div>
+
+            <xsl:if test="$gFullPdfAccess = 'allow'">
+              <div class="form-control">
+                <input name="download_format" type="radio" id="format-archive" value="plaintext-zip" /> 
+                <label for="format-archive">Text (.zip)</label>
+              </div>
+            </xsl:if>
           </xsl:if>
 
           <div class="form-control">
