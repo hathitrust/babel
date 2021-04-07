@@ -97,13 +97,6 @@ foreach my $prefix ( @parts ) {
             ]
             ;
 
-        run [ "convert",
-            "-flatten",
-            "$Bin/../$code/$part/$size.png",
-            "$Bin/../$code/$part/$size.flat.png"
-            ]
-            ;
-
         # pngtopam $pngfile > parts/$pnmfile
         run [ "pngtopam",
             "$Bin/../$code/$part/$size.png",
@@ -117,6 +110,15 @@ foreach my $prefix ( @parts ) {
         ], ">", "$Bin/../$code/$part/$size.pgm";
 
         print "== $size : $target_width x $target_height\n";
-    }    
+    }
+
+    # flatten for PDFs
+    run [ "convert",
+        "-flatten",
+        "$Bin/../$code/$part/100.png",
+        "$Bin/../$code/$part/100.flat.png"
+        ]
+        ;
+
 }
 
