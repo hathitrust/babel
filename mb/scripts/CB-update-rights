@@ -197,7 +197,7 @@ sub email_report {
 
     my $elapsed = sprintf("elapsed=%.2f hours", (time() - $start)/60/60);
 
-    my $email_to_addr_ref = [ q{roger@umich.edu}, q{tburtonw@umich.edu} ];
+    my $email_to_addr_ref = [ q{hathitrust-system-output@umich.edu} ];
     my $g_assert_email_from_addr = q{"Collection Builder Mailer" <dlps-help@umich.edu>};
 
     my $when = Utils::Time::iso_Time();
