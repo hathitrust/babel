@@ -199,6 +199,10 @@
           <a style="font-weight: bold">
             <xsl:attribute name="href">
               <xsl:value-of select="$gItemHandle"/>
+              <xsl:if test="$gViewingMode != 'entire-volume' and $gCurrentPageSeq != '1'">
+                <xsl:text>?urlappend=%3Bseq=</xsl:text>
+                <xsl:value-of select="$gCurrentPageSeq" />
+              </xsl:if>
             </xsl:attribute>
             View this item in the fully-styled HathiTrust interface.
           </a>
