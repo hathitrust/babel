@@ -77,6 +77,14 @@ export var Viewinator = class {
       }
     });
 
+    const accessPlaintextButton = document.querySelector(this.input.accessPlaintext);
+    if ( accessPlaintextButton ) {
+      accessPlaintextButton.addEventListener('click', (event) => {
+        this.reader.restart({ view: 'page', format: 'plaintext'});
+        return;
+      })
+    }
+
     this.reader.on('configure', function(config) {
       const view = self.reader.view.name;
       let currentViewItem;

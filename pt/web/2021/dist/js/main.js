@@ -22378,7 +22378,12 @@ var Searchinator = /*#__PURE__*/function () {
       if (skipLink) {
         skipLink.addEventListener('click', function (event) {
           event.preventDefault();
-          event.stopPropagation();
+          event.stopPropagation(); // this really shouldn't be here
+
+          if (document.body.dataset.sidebarState == 'closed') {
+            document.body.dataset.sidebarState = 'open';
+          }
+
           document.querySelector('#panel-search').open = true;
           document.querySelector('#input-search-text').focus();
         });
@@ -22861,6 +22866,8 @@ var Viewinator = /*#__PURE__*/function () {
   }, {
     key: "bindEvents",
     value: function bindEvents() {
+      var _this = this;
+
       var self = this;
       var action = this.action = document.querySelector(this.input.view);
       var reader = this.reader;
@@ -22928,6 +22935,19 @@ var Viewinator = /*#__PURE__*/function () {
           });
         }
       });
+      var accessPlaintextButton = document.querySelector(this.input.accessPlaintext);
+
+      if (accessPlaintextButton) {
+        accessPlaintextButton.addEventListener('click', function (event) {
+          _this.reader.restart({
+            view: 'page',
+            format: 'plaintext'
+          });
+
+          return;
+        });
+      }
+
       this.reader.on('configure', function (config) {
         var view = self.reader.view.name;
         var currentViewItem;
@@ -30786,7 +30806,8 @@ reader.controls.screeninator = new _components_controls__WEBPACK_IMPORTED_MODULE
 });
 reader.controls.viewinator = new _components_controls__WEBPACK_IMPORTED_MODULE_194__.Control.Viewinator({
   input: {
-    view: '#action-select-view'
+    view: '#action-select-view',
+    accessPlaintext: '#action-switch-view-plaintext'
   },
   reader: reader
 });

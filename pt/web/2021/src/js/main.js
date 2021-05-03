@@ -536,7 +536,8 @@ reader.controls.screeninator = new Control.Screeninator({
 
 reader.controls.viewinator = new Control.Viewinator({
   input: {
-    view: '#action-select-view'
+    view: '#action-select-view',
+    accessPlaintext: '#action-switch-view-plaintext'
   },
   reader: reader
 });

@@ -186,6 +186,10 @@ export var Searchinator = class {
       skipLink.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
+        // this really shouldn't be here
+        if ( document.body.dataset.sidebarState == 'closed' ) {
+          document.body.dataset.sidebarState = 'open';
+        }
         document.querySelector('#panel-search').open = true;
         document.querySelector('#input-search-text').focus();
       })
