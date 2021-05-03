@@ -286,6 +286,7 @@
               <xsl:with-param name="id"><xsl:value-of select="$view-options//xhtml:li[@href=$gCurrentView]/@icon" /></xsl:with-param>
             </xsl:call-template>
             <span>View</span>
+            <span class="offscreen" data-role="description"></span>
           </span>
         </button>
         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="action-select-view">
@@ -463,7 +464,7 @@
         <div class="alert alert-block results-options" style="justify-content: flex-end">
           <div class="btn-toolbar">
             <xsl:if test="//ItemIndexStatus = 'INDEXED'">
-              <button class="btn active" data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
+              <button aria-pressed="true" class="btn active" data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
                 <xsl:call-template name="build-pt-icon">
                   <xsl:with-param name="id">bi-brightness-high-fill</xsl:with-param>
                   <xsl:with-param name="class">toggled</xsl:with-param>

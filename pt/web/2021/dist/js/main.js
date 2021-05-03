@@ -21342,10 +21342,10 @@ var Jumpinator = /*#__PURE__*/function () {
 
       var pageNumRange = this.reader.service.manifest.pageNumRange();
       this._hasPageNum = pageNumRange != null;
-      var promptHTML = "\n    <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>\n    <div class=\"alert alert-error alert-block\" role=\"alert\" aria-atomic=\"true\"></div>\n    <p><label for=\"navigator-jump\" class=\"offscreen\">Page number or sequence: </label><input id=\"navigator-jump\" aria-describedby=\"navigator-hint-info\" type=\"text\" name=\"seq\" class=\"input-medium\" /></p>\n    <p class=\"offscreen\" id=\"navigator-hint-info\">Hints follow.</p>\n    <h3>Hints</h3>\n    <ul class=\"bullets\">\n      <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>\n      <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>\n      <li>Use a page scan sequence between #1-#".concat(this.reader.service.manifest.totalSeq, "</li>\n      <li>Use a page number between ").concat(pageNumRange, "</li>\n      <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>\n      <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>\n    </ul>\n    ");
+      var promptHTML = "\n    <p>Jump to a page scan by <strong>page number</strong> or <strong>page scan sequence</strong>.</p>\n    <div class=\"alert alert-error alert-block\" role=\"alert\" aria-atomic=\"true\"></div>\n    <p><label for=\"navigator-jump\" class=\"offscreen\">Page number or sequence: </label><input id=\"navigator-jump\" aria-describedby=\"navigator-hint-info\" type=\"text\" name=\"seq\" class=\"input-medium\" /></p>\n    <p class=\"offscreen\" id=\"navigator-hint-info\">Hints follow.</p>\n    <h3>Hints</h3>\n    <ul class=\"bullets\">\n      <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>\n      <li>Page scan sequences are entered as <tt><em><span aria-hidden=\"true\">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>\n      <li>Use a page scan sequence between #1-#".concat(this.reader.service.manifest.totalSeq, "</li>\n      <li>Use a page number between ").concat(pageNumRange, "</li>\n      <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>\n      <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>\n    </ul>\n    ");
 
       if (!pageNumRange) {
-        promptHTML = "\n          <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>\n          <div class=\"alert alert-error alert-block\" role=\"alert\" aria-atomic=\"true\" aria-live=\"assertive\"></div>\n          <p><label for=\"navigator-jump\" class=\"offscreen\">Page sequence: </label><input id=\"navigator-jump\" type=\"text\" name=\"seq\" class=\"input-medium\" /></p>\n          <h3>Hints</h3>\n          <ul class=\"bullets\">\n            <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>\n            <li>Use a page scan sequence between #1-#".concat(this.reader.service.manifest.totalSeq, "</li>\n            <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>\n            <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>\n          </ul>\n          ");
+        promptHTML = "\n          <p>Jump to a page scan by <strong>page scan sequence</strong>.</p>\n          <div class=\"alert alert-error alert-block\" role=\"alert\" aria-atomic=\"true\" aria-live=\"assertive\"></div>\n          <p><label for=\"navigator-jump\" class=\"offscreen\">Page sequence: </label><input id=\"navigator-jump\" type=\"text\" name=\"seq\" class=\"input-medium\" /></p>\n          <h3>Hints</h3>\n          <ul class=\"bullets\">\n            <li>Page scan sequences are entered as <tt><em><span aria-hidden=\"true\">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>\n            <li>Use a page scan sequence between #1-#".concat(this.reader.service.manifest.totalSeq, "</li>\n            <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>\n            <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>\n          </ul>\n          ");
       }
 
       action.addEventListener('click', function (event) {
@@ -22223,7 +22223,7 @@ var Searchinator = /*#__PURE__*/function () {
       }
 
       this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
-      HT.update_status(this.searchResultsContainer.innerHTML);
+      HT.update_status(this.searchResultsContainer.innerText);
       this.clearButton.style.display = 'none';
       this.submitButton.classList.add('btn-loading');
       fetch(search_url, {
@@ -22232,6 +22232,11 @@ var Searchinator = /*#__PURE__*/function () {
         return response.text();
       }).then(function (html) {
         var parser = new DOMParser();
+
+        if (String.prototype.replaceAll) {
+          html = html.replaceAll('<h3 class="results-header">', '<h4 class="results-header">').replaceAll('</h3>', '</h4>');
+        }
+
         var doc = parser.parseFromString(html, 'text/html');
         var resultsContainer = doc.querySelector('.results-container');
         self.searchResultsContainer.innerHTML = ''; // should also copy 'nav'
@@ -22317,6 +22322,7 @@ var Searchinator = /*#__PURE__*/function () {
           event.stopPropagation();
           var target = event.target.closest('button');
           target.classList.toggle("active");
+          target.setAttribute('aria-pressed', target.classList.contains('active'));
           _this3.showHighlights = !_this3.showHighlights;
           document.body.dataset.showHighlights = _this3.showHighlights;
           document.body.classList.toggle('hide-highlights', !_this3.showHighlights);
@@ -22345,8 +22351,16 @@ var Searchinator = /*#__PURE__*/function () {
         var target = event.target.closest('input#action-start-jump');
 
         if (target) {
+          var max = parseInt(target.max);
+          var min = parseInt(target.min);
           var sz = parseInt(target.dataset.sz, 10);
           var value = parseInt(target.value, 10);
+
+          if (isNaN(value) || value > max || value < min) {
+            target.value = target.dataset.value;
+            return;
+          }
+
           var start = (value - 1) * sz + 1; // resubmit the form
 
           _this3.searchStart = start;
@@ -22848,7 +22862,7 @@ var Viewinator = /*#__PURE__*/function () {
     key: "bindEvents",
     value: function bindEvents() {
       var self = this;
-      var action = document.querySelector(this.input.view);
+      var action = this.action = document.querySelector(this.input.view);
       var reader = this.reader;
       var possibles = {
         format: {},
@@ -22896,12 +22910,12 @@ var Viewinator = /*#__PURE__*/function () {
             } else {
               actualTargetView = targetView;
             }
-          }
+          } // if ( targetView != currentView ) {
+          //   actionSelectSvg.innerHTML = possibles.view[targetView].querySelector('svg').innerHTML;
+          // }
 
-          if (targetView != currentView) {
-            actionSelectSvg.innerHTML = possibles.view[targetView].querySelector('svg').innerHTML;
-          }
 
+          self.describe(targetView, targetFormat);
           possibles.view[currentView].classList.remove('active');
           possibles.format[currentFormat].classList.remove('active');
           possibles.view[targetView].classList.add('active');
@@ -22927,8 +22941,9 @@ var Viewinator = /*#__PURE__*/function () {
           currentViewItem.classList.remove('active');
         }
 
-        possibles.view[view].classList.add('active');
-        actionSelectSvg.innerHTML = possibles.view[view].querySelector('svg').innerHTML;
+        possibles.view[view].classList.add('active'); // actionSelectSvg.innerHTML = possibles.view[view].querySelector('svg').innerHTML;
+
+        self.describe(view, self.reader.options.format);
       });
 
       if (!this.reader.service.hasOcr) {
@@ -22951,6 +22966,16 @@ var Viewinator = /*#__PURE__*/function () {
     value: function disable(view) {
       this.possibles.view[view].classList.add('disabled');
       this.possibles.view[view].setAttribute('aria-disabled', true);
+    }
+  }, {
+    key: "describe",
+    value: function describe(view, format) {
+      var svg = this.action.querySelector('svg');
+      var span = this.action.querySelector('span[data-role="description"]');
+      var currentView = this.possibles.view[view];
+      var currentFormat = this.possibles.format[format];
+      span.innerText = "".concat(currentView.innerText.trim(), "/").concat(currentFormat.innerText.trim());
+      svg.innerHTML = currentView.querySelector('svg').innerHTML;
     }
   }]);
 
@@ -30391,6 +30416,17 @@ var Reader = /*#__PURE__*/function () {
 
         this.emit('resize');
       }.bind(this), 100);
+      var jump = document.querySelector('#action-focus-current-page');
+      jump.addEventListener('click', function (event) {
+        event.preventDefault();
+
+        _this.view.focus(true);
+
+        _this._logAction(undefined, 'action-focus-current-page');
+
+        console.log("AHOY FOCUS CURRENT PAGE");
+        return false;
+      });
       var IGNORE_FOCUS = ['input', 'textarea', 'a', 'button'];
       var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target]');
 

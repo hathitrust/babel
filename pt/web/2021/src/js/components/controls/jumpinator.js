@@ -29,7 +29,7 @@ export var Jumpinator = class {
     <h3>Hints</h3>
     <ul class="bullets">
       <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
-      <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+      <li>Page scan sequences are entered as <tt><em><span aria-hidden="true">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
       <li>Use a page scan sequence between #1-#${this.reader.service.manifest.totalSeq}</li>
       <li>Use a page number between ${pageNumRange}</li>
       <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
@@ -44,7 +44,7 @@ export var Jumpinator = class {
           <p><label for="navigator-jump" class="offscreen">Page sequence: </label><input id="navigator-jump" type="text" name="seq" class="input-medium" /></p>
           <h3>Hints</h3>
           <ul class="bullets">
-            <li>Page scan sequences are entered as <tt><em>#number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
+            <li>Page scan sequences are entered as <tt><em><span aria-hidden="true">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong></li>
             <li>Use a page scan sequence between #1-#${this.reader.service.manifest.totalSeq}</li>
             <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
             <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>

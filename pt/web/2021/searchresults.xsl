@@ -245,6 +245,14 @@
                   <xsl:text> active</xsl:text>
                 </xsl:if>
               </xsl:attribute>
+              <xsl:attribute name="aria-pressed">
+                <xsl:choose>
+                  <xsl:when test="$currentSort = 'score'">
+                    <xsl:text>true</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>false</xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
               <xsl:call-template name="build-pt-icon">
                 <xsl:with-param name="id">bi-sort-down</xsl:with-param>
               </xsl:call-template>
@@ -256,13 +264,21 @@
                   <xsl:text> active</xsl:text>
                 </xsl:if>
               </xsl:attribute>
+              <xsl:attribute name="aria-pressed">
+                <xsl:choose>
+                  <xsl:when test="$currentSort = 'seq'">
+                    <xsl:text>true</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>false</xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
               <xsl:call-template name="build-pt-icon">
                 <xsl:with-param name="id">bi-sort-numeric-down</xsl:with-param>
               </xsl:call-template>
             </button>
           </div>
           <div class="btn-toolbar">
-            <button data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
+            <button aria-pressed="true" data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
               <xsl:attribute name="class">
                 <xsl:text>btn</xsl:text>
                 <xsl:choose>
@@ -347,8 +363,9 @@
 
         <span class="" style="white-space: nowrap">
           <xsl:if test="count(FisheyeLinks/FisheyeLink) &gt; 1">
+            <xsl:variable name="value" select="FisheyeLinks/FisheyeLink/LinkNumber[@focus='true']" />
             <xsl:text>Page </xsl:text>
-            <input id="action-start-jump" name="start" type="number" size="5" min="1" max="{$gPagesFound}" value="{FisheyeLinks/FisheyeLink/LinkNumber[@focus='true']}" data-sz="{//Param[@name='sz']}" style="width: 5rem; text-align: center" />
+            <input id="action-start-jump" name="start" type="number" size="5" min="1" max="{$gPagesFound}" value="{$value}" data-value="{$value}" data-sz="{//Param[@name='sz']}" style="width: 5rem; text-align: center" />
             <xsl:text>  of </xsl:text>
             <xsl:value-of select="count(FisheyeLinks/FisheyeLink)" />
           </xsl:if>

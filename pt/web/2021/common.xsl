@@ -909,10 +909,10 @@
               <xsl:apply-templates select="$node-set//xhtml:h3" mode="copy-guts" />
             </h3>
             <xsl:if test="$interactive = 'true'">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon closed">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="icon closed">
                 <use xlink:href="#panel-collapsed"></use>
               </svg>
-              <svg xmlns="http://www.w3.org/2000/svg" class="icon open">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="icon open">
                 <use xlink:href="#panel-expanded"></use>
               </svg>
             </xsl:if>

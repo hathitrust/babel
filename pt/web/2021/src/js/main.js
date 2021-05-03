@@ -244,6 +244,15 @@ var Reader = class {
       this.emit('resize');
     }.bind(this), 100);
 
+    var jump = document.querySelector('#action-focus-current-page');
+    jump.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.view.focus(true);
+      this._logAction(undefined, 'action-focus-current-page');
+      console.log("AHOY FOCUS CURRENT PAGE");
+      return false;
+    })
+
     var IGNORE_FOCUS = [ 'input', 'textarea', 'a', 'button' ];
     var accesskey_triggers = document.querySelectorAll('button[accesskey][data-target]');
     for(var i = 0; i < accesskey_triggers.length; i++) {

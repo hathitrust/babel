@@ -15,7 +15,7 @@ export var Viewinator = class {
   bindEvents() {
     var self = this;
 
-    const action = document.querySelector(this.input.view);
+    const action = this.action = document.querySelector(this.input.view);
     const reader = this.reader;
     let possibles = { format: {}, view: {} };
     this.possibles = possibles;
@@ -59,9 +59,11 @@ export var Viewinator = class {
           }
         }
 
-        if ( targetView != currentView ) {
-          actionSelectSvg.innerHTML = possibles.view[targetView].querySelector('svg').innerHTML;
-        }
+        // if ( targetView != currentView ) {
+        //   actionSelectSvg.innerHTML = possibles.view[targetView].querySelector('svg').innerHTML;
+        // }
+
+        self.describe(targetView, targetFormat);
 
         possibles.view[currentView].classList.remove('active');
         possibles.format[currentFormat].classList.remove('active');
@@ -87,7 +89,8 @@ export var Viewinator = class {
         currentViewItem.classList.remove('active');
       }
       possibles.view[view].classList.add('active');
-      actionSelectSvg.innerHTML = possibles.view[view].querySelector('svg').innerHTML;
+      // actionSelectSvg.innerHTML = possibles.view[view].querySelector('svg').innerHTML;
+      self.describe(view, self.reader.options.format);
     })
 
     if ( ! this.reader.service.hasOcr ) {
@@ -109,6 +112,15 @@ export var Viewinator = class {
   disable(view) {
     this.possibles.view[view].classList.add('disabled');
     this.possibles.view[view].setAttribute('aria-disabled', true);
+  }
+
+  describe(view, format) {
+    const svg = this.action.querySelector('svg');
+    const span = this.action.querySelector('span[data-role="description"]');
+    const currentView = this.possibles.view[view];
+    const currentFormat = this.possibles.format[format];
+    span.innerText = `${currentView.innerText.trim()}/${currentFormat.innerText.trim()}`;
+    svg.innerHTML = currentView.querySelector('svg').innerHTML;
   }
 
 }

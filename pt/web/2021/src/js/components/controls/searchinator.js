@@ -38,7 +38,7 @@ export var Searchinator = class {
       search_url += '&hl=false';
     }
     this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
-    HT.update_status(this.searchResultsContainer.innerHTML);
+    HT.update_status(this.searchResultsContainer.innerText);
 
     this.clearButton.style.display = 'none';
     this.submitButton.classList.add('btn-loading');
@@ -49,6 +49,9 @@ export var Searchinator = class {
       })
       .then((html) => {
         var parser = new DOMParser();
+        if ( String.prototype.replaceAll ) {
+          html = html.replaceAll('<h3 class="results-header">', '<h4 class="results-header">').replaceAll('</h3>', '</h4>')
+        }
         var doc = parser.parseFromString(html, 'text/html');
         var resultsContainer = doc.querySelector('.results-container');
         self.searchResultsContainer.innerHTML = '';
@@ -120,6 +123,7 @@ export var Searchinator = class {
         event.stopPropagation();
         var target = event.target.closest('button');
         target.classList.toggle("active");
+        target.setAttribute('aria-pressed', target.classList.contains('active'));
         this.showHighlights = ! this.showHighlights;
         document.body.dataset.showHighlights = this.showHighlights;
         document.body.classList.toggle('hide-highlights', ! this.showHighlights);
@@ -154,8 +158,16 @@ export var Searchinator = class {
     this.searchResultsContainer.addEventListener('change', (event) => {
       const target = event.target.closest('input#action-start-jump');
       if ( target ) {
+        const max = parseInt(target.max);
+        const min = parseInt(target.min);
         const sz = parseInt(target.dataset.sz, 10);
         const value = parseInt(target.value, 10);
+
+        if ( isNaN(value) || value > max || value < min ) {
+          target.value = target.dataset.value;
+          return;
+        }
+
         const start = ( value - 1 ) * sz + 1;
 
         // resubmit the form
