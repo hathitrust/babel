@@ -365,7 +365,7 @@
           <xsl:if test="count(FisheyeLinks/FisheyeLink) &gt; 1">
             <xsl:variable name="value" select="FisheyeLinks/FisheyeLink/LinkNumber[@focus='true']" />
             <xsl:text>Page </xsl:text>
-            <input id="action-start-jump" name="start" type="number" size="5" min="1" max="{$gPagesFound}" value="{$value}" data-value="{$value}" data-sz="{//Param[@name='sz']}" style="width: 5rem; text-align: center" />
+            <input id="action-start-jump" name="start" type="number" size="5" min="1" max="{count(FisheyeLinks/FisheyeLink)}" value="{$value}" data-value="{$value}" data-sz="{//Param[@name='sz']}" style="width: 5rem; text-align: center" />
             <xsl:text>  of </xsl:text>
             <xsl:value-of select="count(FisheyeLinks/FisheyeLink)" />
           </xsl:if>

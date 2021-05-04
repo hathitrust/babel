@@ -21,9 +21,9 @@ head.ready(function() {
     var new_href = url.segment();
     new_href.push($("html").data('content-provider'));
     new_href.push(url.param("id"));
-    var qs = '';
+    var qs = '?skin=2021';
     if ( new_href.indexOf("search") > -1 && url.param('q1')  ) {
-      qs = '?q1=' + url.param('q1');
+      qs += '&q1=' + url.param('q1');
     }
     new_href = "/" + new_href.join("/") + qs;
     return new_href;

@@ -248,11 +248,11 @@
 
     <div class="d--toolbar--reader">
 
-      <button class="btn" id="action-go-minimal" data-untoggled-label="Hide buttons" data-toggled-label="Show buttons" data-tippy-role="tooltip">
+      <button class="btn" id="action-go-minimal" data-untoggled-label="Hide controls" data-toggled-label="Show controls" data-tippy-role="tooltip">
         <xsl:attribute name="aria-label">
           <xsl:choose>
-            <xsl:when test="//Param[@name='ui'] = 'embed'">Show buttons</xsl:when>
-            <xsl:otherwise>Hide Buttons</xsl:otherwise>
+            <xsl:when test="//Param[@name='ui'] = 'embed'">Show controls</xsl:when>
+            <xsl:otherwise>Hide controls</xsl:otherwise>
           </xsl:choose>
         </xsl:attribute>
 

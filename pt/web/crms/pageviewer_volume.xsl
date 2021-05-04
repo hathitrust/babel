@@ -8,6 +8,8 @@
 
   <xsl:template name="action-fullscreen" />
 
+  <xsl:template name="list-surveys"></xsl:template>
+
   <!-- <xsl:template name="build-extra-sidebar-panels">
     <div class="panel" rel="note">
       <h3>Table of Contents</h3>
