@@ -24683,11 +24683,11 @@ var Base = /*#__PURE__*/function () {
       button.dataset.seq = page.dataset.seq;
       button.dataset.action = 'popout';
       button.setAttribute('aria-label', "Open foldout for page scan #".concat(page.dataset.seq));
-      button.setAttribute('data-role', 'tooltip');
-      button.setAttribute('data-microtip-position', 'left');
-      button.setAttribute('data-microtip-size', 'small');
+      button.setAttribute('data-tippy-placement', 'auto');
+      button.setAttribute('data-tippy-role', 'tooltip');
       button.setAttribute('tabindex', '-1');
       button.innerHTML = "".concat(icon);
+      button.classList.add('btn', 'action-popout');
       toolbar.insertBefore(button, toolbar.childNodes[0]);
     }
   }, {
@@ -24959,6 +24959,7 @@ var Base = /*#__PURE__*/function () {
         var delta = 90;
         var page = element.closest('.page');
         var image_frame = page.querySelector('.image');
+        var img = image_frame.querySelector('img');
         var rotated = parseInt(page.dataset.rotated || 360, 10);
         rotated += delta;
         rotated = rotated % 360;
@@ -24966,7 +24967,13 @@ var Base = /*#__PURE__*/function () {
         if (rotated % 90 == 0) {
           // set margins!
           var margin = image_frame.clientWidth * 0.8;
-          page.style.setProperty('--margin-rotated', (margin / 2 - margin / 8) * -1);
+          var marginRotated = margin / 2 - margin / 8;
+
+          if (img.width < img.height) {
+            marginRotated *= -1;
+          }
+
+          page.style.setProperty('--margin-rotated', marginRotated);
         } else {
           page.style.setProperty('--margin-rotated', null);
         }

@@ -513,7 +513,7 @@
         __hj = setInterval(function() {
           if ( ! window.hj || ! HT.login_status ) { 
             __hjIdx += 1;
-            if ( __hjIdx == 100 ) { 
+            if ( __hjIdx == 1000 ) { 
               window.hj = function() {};
               clearInterval(__hj);
               return; 

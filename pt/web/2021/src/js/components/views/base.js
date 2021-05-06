@@ -578,11 +578,11 @@ export var Base = class {
     button.dataset.seq = page.dataset.seq;
     button.dataset.action = 'popout';
     button.setAttribute('aria-label', `Open foldout for page scan #${page.dataset.seq}`);
-    button.setAttribute('data-role', 'tooltip');
-    button.setAttribute('data-microtip-position', 'left');
-    button.setAttribute('data-microtip-size', 'small');
+    button.setAttribute('data-tippy-placement', 'auto');
+    button.setAttribute('data-tippy-role', 'tooltip');
     button.setAttribute('tabindex', '-1');
     button.innerHTML = `${icon}`;
+    button.classList.add('btn', 'action-popout');
     toolbar.insertBefore(button, toolbar.childNodes[0]);
   }
 
@@ -807,6 +807,7 @@ export var Base = class {
 
       var page = element.closest('.page');
       var image_frame = page.querySelector('.image');
+      var img = image_frame.querySelector('img');
 
       var rotated = parseInt(page.dataset.rotated || 360, 10);
       rotated += delta;
@@ -815,7 +816,11 @@ export var Base = class {
       if ( rotated % 90 == 0 ) {
         // set margins!
         var margin = image_frame.clientWidth * 0.8;
-        page.style.setProperty('--margin-rotated', ( margin / 2 - margin / 8 ) * -1);
+        var marginRotated = ( margin / 2 - margin / 8 );
+        if ( img.width < img.height ) {
+          marginRotated *= -1;
+        }
+        page.style.setProperty('--margin-rotated',  marginRotated);
       } else {
         page.style.setProperty('--margin-rotated', null);
       }

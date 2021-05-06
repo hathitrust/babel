@@ -2334,9 +2334,9 @@ body.hide-highlights .page-text .highlight--plaintext {
 }
 
 .d--reader--viewer .page[data-rotated="-90"] .image, .d--reader--viewer .page[data-rotated="270"] .image {
-  transform: rotate(-90deg) scale(0.8);
-  margin-top: calc(var(--margin-rotated) * 1px);
-  margin-bottom: calc(var(--margin-rotated) * 1px);
+  transform: rotate(-90deg) scale(0.8) !important;
+  margin-top: calc(var(--margin-rotated) * 1px) !important;
+  margin-bottom: calc(var(--margin-rotated) * 1px) !important;
 }
 
 .d--reader--viewer .page[data-rotated="-90"] .image img, .d--reader--viewer .page[data-rotated="270"] .image img {
@@ -2344,13 +2344,13 @@ body.hide-highlights .page-text .highlight--plaintext {
 }
 
 .d--reader--viewer .page[data-rotated="-180"] .image, .d--reader--viewer .page[data-rotated="180"] .image {
-  transform: rotate(-180deg);
+  transform: rotate(-180deg) !important;
 }
 
 .d--reader--viewer .page[data-rotated="-270"] .image, .d--reader--viewer .page[data-rotated="90"] .image {
-  transform: rotate(-270deg) scale(0.8);
-  margin-top: calc(var(--margin-rotated) * 1px);
-  margin-bottom: calc(var(--margin-rotated) * 1px);
+  transform: rotate(-270deg) scale(0.8) !important;
+  margin-top: calc(var(--margin-rotated) * 1px) !important;
+  margin-bottom: calc(var(--margin-rotated) * 1px) !important;
 }
 
 .d--reader--viewer .page[data-rotated="-270"] .image img, .d--reader--viewer .page[data-rotated="90"] .image img {

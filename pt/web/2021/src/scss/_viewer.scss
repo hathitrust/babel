@@ -703,15 +703,15 @@ body.hide-highlights {
         img {
           height: 100%;
         }
-        transform: rotate(-90deg) scale(0.8);
-        margin-top: calc(var(--margin-rotated) * 1px);
-        margin-bottom: calc(var(--margin-rotated) * 1px);
+        transform: rotate(-90deg) scale(0.8) !important;
+        margin-top: calc(var(--margin-rotated) * 1px) !important;
+        margin-bottom: calc(var(--margin-rotated) * 1px) !important;
       }
     }
 
     &[data-rotated="-180"], &[data-rotated="180"] {
       .image {
-        transform: rotate(-180deg);
+        transform: rotate(-180deg) !important;
       }
     }
 
@@ -720,9 +720,9 @@ body.hide-highlights {
         img {
           height: 100%;
         }
-        transform: rotate(-270deg) scale(0.8);
-        margin-top: calc(var(--margin-rotated) * 1px);
-        margin-bottom: calc(var(--margin-rotated) * 1px);
+        transform: rotate(-270deg) scale(0.8) !important;
+        margin-top: calc(var(--margin-rotated) * 1px) !important;
+        margin-bottom: calc(var(--margin-rotated) * 1px) !important;
       }
     }
   }
