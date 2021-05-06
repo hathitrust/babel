@@ -543,4 +543,10 @@
   </xsl:template>
 
   <xsl:template name="footer" />
+
+  <xsl:template name="build-hotjar-script-extra">
+    <xsl:text>
+      hj('trigger', 'test_2021');
+    </xsl:text>
+  </xsl:template>
 </xsl:stylesheet>

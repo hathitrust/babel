@@ -532,10 +532,12 @@
             }
           </xsl:if>
           hj('tagRecording', tags);
-          hj('trigger', 'test_2021');
+          <xsl:call-template name="build-hotjar-script-extra" />
         }, 100);
     </script>
   </xsl:template>
+
+  <xsl:template name="build-hotjar-script-extra"></xsl:template>
 
 </xsl:stylesheet>
 
