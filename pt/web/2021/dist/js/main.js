@@ -22222,6 +22222,10 @@ var Searchinator = /*#__PURE__*/function () {
         search_url += '&hl=false';
       }
 
+      if (HT.params.debug) {
+        search_url += "&debug=".concat(HT.params.debug);
+      }
+
       this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
       HT.update_status(this.searchResultsContainer.innerText);
       this.clearButton.style.display = 'none';

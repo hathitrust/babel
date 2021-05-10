@@ -1632,9 +1632,9 @@ body[data-expanded="false"] {
         img {
           height: 100%;
         }
-        transform: rotate(-90deg) scale(0.8);
-        margin-top: calc(var(--margin-rotated) * 1px);
-        margin-bottom: calc(var(--margin-rotated) * 1px);
+        transform: rotate(-90deg) scale(0.8) !important;
+        margin-top: calc(var(--margin-rotated) * 1px) !important;
+        margin-bottom: calc(var(--margin-rotated) * 1px) !important;
         // margin: calc(calc(calc( ( var(--height) * 0.8 ) - ( var(--width) * 0.8 ) ) * -0.5 ) + 8px );
         // margin-left: auto;
         // margin-right: auto;
@@ -1656,9 +1656,9 @@ body[data-expanded="false"] {
         img {
           height: 100%;
         }
-        transform: rotate(-270deg) scale(0.8);
-        margin-top: calc(var(--margin-rotated) * 1px);
-        margin-bottom: calc(var(--margin-rotated) * 1px);
+        transform: rotate(-270deg) scale(0.8) !important;
+        margin-top: calc(var(--margin-rotated) * 1px) !important;
+        margin-bottom: calc(var(--margin-rotated) * 1px) !important;
       }
     }
   }

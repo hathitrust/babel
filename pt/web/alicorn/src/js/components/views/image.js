@@ -162,6 +162,7 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
       var seq = self.currentSeq; // self.currentLocation();
       var page = self.pagesIndex[seq];
       var image_frame = page.querySelector('.image');
+      var img = image_frame.querySelector('img');
 
       var rotated = parseInt(page.dataset.rotated || 360, 10);
       rotated += delta;
@@ -170,7 +171,11 @@ console.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
       if ( rotated % 90 == 0 ) {
         // set margins!
         var margin = image_frame.clientWidth * 0.8;
-        page.style.setProperty('--margin-rotated', ( margin / 2 - margin / 8 ) * -1);
+        var marginRotated = ( margin / 2 - margin / 8 );
+        if ( img.width < img.height ) {
+          marginRotated *= -1;
+        }
+        page.style.setProperty('--margin-rotated',  marginRotated);
       } else {
         page.style.setProperty('--margin-rotated', null);
       }

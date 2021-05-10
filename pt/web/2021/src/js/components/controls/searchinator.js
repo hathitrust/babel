@@ -37,6 +37,10 @@ export var Searchinator = class {
     if ( ! this.showHighlights ) {
       search_url += '&hl=false';
     }
+    if ( HT.params.debug ) {
+      search_url += `&debug=${HT.params.debug}`;
+    }
+    
     this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
     HT.update_status(this.searchResultsContainer.innerText);
 
