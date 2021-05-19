@@ -3,6 +3,10 @@
   --microtip-transition-delay: 0.25s;
 }
 
+._hj-widget-container {
+  display: none !important;
+}
+
 nav.pagination-container {
   display: grid;
   grid-column-gap: 1rem;
