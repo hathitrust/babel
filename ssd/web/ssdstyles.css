@@ -145,3 +145,7 @@ img {
   width: 1.25rem;
   vertical-align: bottom;
 }
+
+._hj-widget-container {
+  display: none !important;
+}
