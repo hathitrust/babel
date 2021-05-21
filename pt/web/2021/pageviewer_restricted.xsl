@@ -35,7 +35,7 @@
       <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem; margin-bottom: 1.75rem">
         <!-- <div class="sidebar-container" id="sidebar" tabindex="0"><xsl:call-template name="build-sidebar-panels" /></div> -->
         <div class="sidebar-container" id="sidebar" tabindex="0">
-          <button class="for-mobile sr-only filter-group-toggle-show-button" aria-expanded="false">
+          <button class="for-mobile filter-group-toggle-show-button" aria-expanded="false">
             <span class="flex-space-between flex-center">
               <span class="filter-group-heading">Options</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>

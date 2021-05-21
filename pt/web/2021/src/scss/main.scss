@@ -114,6 +114,13 @@ $sidebar-buffer: 1.0rem;
   }
 }
 
+#sidebar {
+  .filter-group-toggle-show-button {
+    background: #444;
+    color: #fff;
+  }
+}
+
 @media only screen and (max-width: 62em) {
   #sidebar:not(.sidebar-container--right) {
     max-height: 100vh;
@@ -270,4 +277,8 @@ $sidebar-buffer: 1.0rem;
 
 button[data-action="toggle-highlights"] {
   display: none;
+}
+
+._hj-widget-container {
+  display: none !important;
 }
