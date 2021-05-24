@@ -1177,7 +1177,7 @@
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-bookshelf</xsl:with-param>
           </xsl:call-template>
-          <span>Get this Item</span>
+          <span>Get This Item</span>
         </h3>
 
         <xsl:apply-templates select="$contents" mode="copy" />
