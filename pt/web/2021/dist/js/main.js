@@ -22768,10 +22768,19 @@ var Selectinator = /*#__PURE__*/function () {
       // var button = this.input.querySelector('button');
 
       if (printable.length == 0) {
-        this.datalist.innerHTML = ''; // msg.innerText = '';
+        this.datalist.innerHTML = '';
+
+        if (HT.downloader && HT.downloader.selectRangeOption) {
+          HT.downloader.selectRangeOption('volume');
+        } // msg.innerText = '';
         // button.disabled = true;
 
+
         return;
+      }
+
+      if (HT.downloader && HT.downloader.selectRangeOption) {
+        HT.downloader.selectRangeOption('selected-pages');
       } // button.disabled = false;
       // msg.innerText = ` ${printable.length} ${printable.length == 1 ? 'page' : 'pages'}`;
 

@@ -151,19 +151,19 @@
         <xsl:call-template name="build-pt-icon">
           <xsl:with-param name="id">bi-search</xsl:with-param>
         </xsl:call-template>
-        <span>Search Inside</span>
+        <span>Search in This Text</span>
       </h3>
       <form class="d--search-form">
         <div class="input-group-text">
-          <label class="small" for="input-search-text">Search in this text</label>
-          <input type="text" class="form-control" name="q1" id="input-search-text" value="{//Param[@name='q1']}" />
+          <label class="small offscreen" for="input-search-text">Search for</label>
+          <input type="text" class="form-control" name="q1" id="input-search-text" value="{//Param[@name='q1']}" style="margin-bottom: 0" />
         </div>
-        <button class="btn" data-action="submit-search" aria-label="Submit search" style="margin-top: 0.5rem">
+        <button class="btn" data-action="submit-search" aria-label="Submit search" style="x-margin-top: 0.5rem">
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-search</xsl:with-param>
           </xsl:call-template>
         </button>
-        <button class="btn" aria-label="Clear search" data-tippy-role="tooltip" data-action="clear-search" style="margin-top: 0.5rem; margin-left: 0.25rem">
+        <button class="btn" aria-label="Clear search" data-tippy-role="tooltip" data-action="clear-search" style="x-margin-top: 0.5rem; margin-left: 0.25rem">
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-x-circle</xsl:with-param>
           </xsl:call-template>

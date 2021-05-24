@@ -475,6 +475,11 @@ head.ready(function() {
         updateDownloadFormatRangeOptions(formatOption);
     }
 
+    HT.downloader.selectRangeOption = function(option) {
+        var rangeOption = downloadForm.querySelector(`input[name="range"][value="${option}"]`);
+        rangeOption.checked = true;
+    }
+
     // default to PDF
     var pdfFormatOption = downloadFormatOptions.find(input => input.value == 'pdf');
     pdfFormatOption.checked = true;

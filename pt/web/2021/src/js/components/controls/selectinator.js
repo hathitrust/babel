@@ -300,9 +300,18 @@ export var Selectinator = class {
 
       if ( printable.length == 0 ) {
           this.datalist.innerHTML = '';
+
+          if ( HT.downloader && HT.downloader.selectRangeOption ) {
+            HT.downloader.selectRangeOption('volume');
+          }
+
           // msg.innerText = '';
           // button.disabled = true;
           return;
+      }
+
+      if ( HT.downloader && HT.downloader.selectRangeOption ) {
+        HT.downloader.selectRangeOption('selected-pages');
       }
 
       // button.disabled = false;
