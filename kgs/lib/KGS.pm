@@ -170,6 +170,10 @@ sub ConfirmHandler {
     
     my $Q = $self->query();
     KGS_Utils::kgs_clean_cgi($Q);
+
+    if ( $Q->request_method eq 'HEAD' ) {
+        return "";
+    }
     
     my $access_key = $Q->param('oauth_consumer_key');
     
