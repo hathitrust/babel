@@ -264,7 +264,7 @@
       <xsl:attribute name="id">access-emergency-access</xsl:attribute>
       <xsl:attribute name="data-access-granted">true</xsl:attribute>
 
-      <p style="margin-right: 1rem">
+      <p>
         <xsl:text>This work is checked out to you until </xsl:text>
         <span class="expires-display"></span>
         <xsl:text> and may automatically renew. </xsl:text>
