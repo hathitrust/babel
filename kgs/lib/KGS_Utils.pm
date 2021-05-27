@@ -149,7 +149,7 @@ sub kgs_clean_cgi {
     my $cgi = shift;
 
     foreach my $p ($cgi->param) {
-        my @vals = $cgi->param($p);
+        my @vals = $cgi->multi_param($p);
         my @newvals = ();
         foreach my $v (@vals) {
             $v = Encode::decode_utf8($v);
