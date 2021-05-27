@@ -22980,7 +22980,7 @@ var Viewinator = /*#__PURE__*/function () {
       });
 
       if (!this.reader.service.hasOcr) {
-        self.disable('plaintext');
+        self.disable('plaintext', 'format');
       }
 
       if (!(this.reader.service.manifest.totalSeq > 1)) {
@@ -22997,8 +22997,9 @@ var Viewinator = /*#__PURE__*/function () {
   }, {
     key: "disable",
     value: function disable(view) {
-      this.possibles.view[view].classList.add('disabled');
-      this.possibles.view[view].setAttribute('aria-disabled', true);
+      var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'view';
+      this.possibles[key][view].classList.add('disabled');
+      this.possibles[key][view].setAttribute('aria-disabled', true);
     }
   }, {
     key: "describe",
@@ -30851,37 +30852,40 @@ reader.controls.jumpinator = new _components_controls__WEBPACK_IMPORTED_MODULE_1
   },
   reader: reader
 });
-reader.controls.searchinator = new _components_controls__WEBPACK_IMPORTED_MODULE_194__.Control.Searchinator({
-  input: {
-    form: '.d--search-form',
-    container: '#panel-search .results-container'
-  },
-  reader: reader
-});
-reader.controls.searchinator.on('update', function (params) {
-  HT.params.q1 = params.q1;
-  reader.service.q1 = HT.params.q1;
 
-  reader._updateHistoryUrl({});
-
-  reader.view.resetHighlightIndex();
-  reader.view.container.querySelectorAll('.page[data-loaded="true"]').forEach(function (page) {
-    if (!params.q1) {
-      reader.view._removeHighlights(page);
-    } else {
-      var html_url = reader.service.html({
-        seq: page.dataset.seq
-      });
-      reader.service.loaders.images.queue({
-        src: html_url,
-        page: page,
-        mimetype: 'text/html',
-        redraw: true
-      });
-    }
+if (reader.service.hasOcr) {
+  reader.controls.searchinator = new _components_controls__WEBPACK_IMPORTED_MODULE_194__.Control.Searchinator({
+    input: {
+      form: '.d--search-form',
+      container: '#panel-search .results-container'
+    },
+    reader: reader
   });
-  reader.service.loaders.images.start();
-});
+  reader.controls.searchinator.on('update', function (params) {
+    HT.params.q1 = params.q1;
+    reader.service.q1 = HT.params.q1;
+
+    reader._updateHistoryUrl({});
+
+    reader.view.resetHighlightIndex();
+    reader.view.container.querySelectorAll('.page[data-loaded="true"]').forEach(function (page) {
+      if (!params.q1) {
+        reader.view._removeHighlights(page);
+      } else {
+        var html_url = reader.service.html({
+          seq: page.dataset.seq
+        });
+        reader.service.loaders.images.queue({
+          src: html_url,
+          page: page,
+          mimetype: 'text/html',
+          redraw: true
+        });
+      }
+    });
+    reader.service.loaders.images.start();
+  });
+}
 
 if (reader.service.allowFullDownload) {
   reader.controls.selectinator = new _components_controls__WEBPACK_IMPORTED_MODULE_194__.Control.Selectinator({

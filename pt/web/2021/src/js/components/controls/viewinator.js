@@ -102,7 +102,7 @@ export var Viewinator = class {
     })
 
     if ( ! this.reader.service.hasOcr ) {
-      self.disable('plaintext');
+      self.disable('plaintext', 'format');
     }
 
     if ( ! ( this.reader.service.manifest.totalSeq > 1 ) ) {
@@ -117,9 +117,9 @@ export var Viewinator = class {
     this.possibles.view[view].setAttribute('aria-disabled', false);
   }
 
-  disable(view) {
-    this.possibles.view[view].classList.add('disabled');
-    this.possibles.view[view].setAttribute('aria-disabled', true);
+  disable(view, key='view') {
+    this.possibles[key][view].classList.add('disabled');
+    this.possibles[key][view].setAttribute('aria-disabled', true);
   }
 
   describe(view, format) {

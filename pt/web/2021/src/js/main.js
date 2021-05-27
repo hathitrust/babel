@@ -565,29 +565,31 @@ reader.controls.jumpinator = new Control.Jumpinator({
   reader: reader
 })
 
-reader.controls.searchinator = new Control.Searchinator({
-  input: {
-    form: '.d--search-form',
-    container: '#panel-search .results-container'
-  },
-  reader: reader
-});
+if ( reader.service.hasOcr ) {
+  reader.controls.searchinator = new Control.Searchinator({
+    input: {
+      form: '.d--search-form',
+      container: '#panel-search .results-container'
+    },
+    reader: reader
+  });  
 
-reader.controls.searchinator.on('update', (params) => {
-  HT.params.q1 = params.q1;
-  reader.service.q1 = HT.params.q1;
-  reader._updateHistoryUrl({});
-  reader.view.resetHighlightIndex();
-  reader.view.container.querySelectorAll('.page[data-loaded="true"]').forEach((page) => {
-    if ( ! params.q1 ) {
-      reader.view._removeHighlights(page);
-    } else {
-      const html_url = reader.service.html({ seq: page.dataset.seq });
-      reader.service.loaders.images.queue({ src: html_url, page: page, mimetype: 'text/html', redraw: true });
-    }
-  })
-  reader.service.loaders.images.start();
-});
+  reader.controls.searchinator.on('update', (params) => {
+    HT.params.q1 = params.q1;
+    reader.service.q1 = HT.params.q1;
+    reader._updateHistoryUrl({});
+    reader.view.resetHighlightIndex();
+    reader.view.container.querySelectorAll('.page[data-loaded="true"]').forEach((page) => {
+      if ( ! params.q1 ) {
+        reader.view._removeHighlights(page);
+      } else {
+        const html_url = reader.service.html({ seq: page.dataset.seq });
+        reader.service.loaders.images.queue({ src: html_url, page: page, mimetype: 'text/html', redraw: true });
+      }
+    })
+    reader.service.loaders.images.start();
+  });
+}
 
 
 if ( reader.service.allowFullDownload ) {

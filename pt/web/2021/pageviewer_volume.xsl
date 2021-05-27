@@ -94,12 +94,14 @@
       </xsl:with-param>
     </xsl:call-template>
 
-    <xsl:call-template name="build-sidebar-panel">
-      <xsl:with-param name="id">panel-search</xsl:with-param>
-      <xsl:with-param name="html">
-        <xsl:call-template name="build-search-in-item-panel" />
-      </xsl:with-param>
-    </xsl:call-template>
+    <xsl:if test="$gHasOcr = 'YES'">
+      <xsl:call-template name="build-sidebar-panel">
+        <xsl:with-param name="id">panel-search</xsl:with-param>
+        <xsl:with-param name="html">
+          <xsl:call-template name="build-search-in-item-panel" />
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:if>
 
     <xsl:call-template name="build-sidebar-panel">
       <xsl:with-param name="id">panel-sections</xsl:with-param>
@@ -536,7 +538,9 @@
       <ul>
         <li><a href="#reader" accesskey="2">Skip to page content</a></li>
         <li><a href="/cgi/ssd?id={$gHtId}">Skip to text-only view</a></li>
-        <li><a href="#input-search-text">Skip to search in this text</a></li>
+        <xsl:if test="$gHasOcr = 'YES'">
+          <li><a href="#input-search-text">Skip to search in this text</a></li>
+        </xsl:if>
         <!-- <li><a href="#sidebar">Skip to book options</a></li> -->
       </ul>
     </div>
