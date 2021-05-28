@@ -722,7 +722,7 @@
       </p>
 
       <br />
-      <a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable" class="btn btn-primary">Learn more.</a>
+      <a target="_blank" href="https://www.hathitrust.org/ws-book-viewer-beta-site" class="btn btn-primary">Learn more.</a>
     </div>
   </xsl:template>
 
@@ -771,4 +771,3 @@
   </xsl:template> -->
 
 </xsl:stylesheet>
-
