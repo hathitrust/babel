@@ -628,17 +628,21 @@ img:-moz-loading {
 }
 
 .alert--emergency-access .alert--emergency-access--options {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
 }
 
 .alert--emergency-access .alert--emergency-access--options a.btn {
-  border-top-color: #666;
-  border-left-color: #666;
+  border-top-color: #333;
+  border-left-color: #333;
   border-bottom-color: #000;
   border-right-color: #000;
   border-bottom-width: 2px;
+}
+
+.alert--emergency-access .alert--emergency-access--options a.btn:hover {
+  color: white;
 }
 
 .alert--emergency-access .alert--emergency-access--options a.button-link {
@@ -1310,6 +1314,104 @@ html.ie .d--toolbar--reader .output-group input {
   width: 100%;
   text-align: center;
   font-weight: bold;
+}
+
+.details--alert {
+  margin-right: -1rem;
+  border-radius: 8px;
+}
+
+.details--alert[data-initialized="false"] > * {
+  opacity: 0;
+}
+
+.details--alert.beta {
+  background: #333;
+  color: #eee;
+}
+
+.details--alert.beta svg {
+  display: block;
+  width: 2rem;
+  max-height: 2rem;
+  flex-shrink: 0;
+  fill: white;
+  stroke: white;
+}
+
+.details--alert.beta svg text {
+  display: none;
+}
+
+.details--alert.beta a {
+  color: orange;
+}
+
+.details--alert.beta a.action-beta-2019 {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.details--alert summary {
+  font-weight: bold;
+}
+
+.details--alert summary .summary span {
+  margin-right: 0.5rem;
+}
+
+.details--alert.iconless summary {
+  padding-left: 0.75rem;
+}
+
+.details--alert > div {
+  padding: 1rem;
+  padding-top: 0;
+  font-size: 0.875rem;
+}
+
+.details--alert > div br {
+  margin-bottom: 0.25rem;
+}
+
+.details--alert.special-access {
+  background: orange;
+  border: 1px solid darkorange;
+  color: #333;
+}
+
+.details--alert.special-access a {
+  color: black;
+}
+
+.details--alert.special-access summary {
+  color: black;
+}
+
+.details--alert.special-access[data-access-type="emergency_access_affiliate"] summary span {
+  white-space: normal;
+}
+
+.details--alert.special-access .alert--emergency-access--options {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.details--alert.special-access .alert--emergency-access--options a.btn {
+  border-top-color: #333;
+  border-left-color: #333;
+  border-bottom-color: #000;
+  border-right-color: #000;
+  border-bottom-width: 2px;
+}
+
+.details--alert.special-access .alert--emergency-access--options a.btn:hover {
+  color: white;
+}
+
+.details--alert + .details--alert {
+  margin-top: 0.5rem;
 }
 
 html.ie .beta--panel {

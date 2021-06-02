@@ -82,7 +82,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg>
             </span>
           </button>
-          <xsl:call-template name="build-access-alert-block" />
+          <!-- <xsl:call-template name="build-access-alert-block" /> -->
           <div class="d--panels">
             <xsl:call-template name="build-sidebar-panels" />
           </div>
@@ -531,4 +531,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-

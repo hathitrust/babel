@@ -29,6 +29,10 @@ var $toolbar = $root.querySelector('#toolbar-vertical');
 const usesGrid = window.getComputedStyle(document.documentElement).getPropertyValue('--uses-grid') != 'false';
 window.usesGrid = usesGrid;
 
+const isSafari12 = navigator.userAgent.indexOf('Safari/') > -1 && 
+         navigator.userAgent.indexOf('Version/12.1') > -1;
+window.isSafari12 = isSafari12;        
+
 var Reader = class {
   constructor(options={}) {
     this.options = Object.assign({ scale: 1.0 }, options);
@@ -210,8 +214,7 @@ var Reader = class {
           $sidebar.style.height = $$main.style.height;
         }
       }
-      if ( navigator.userAgent.indexOf('Safari/') > -1 && 
-         navigator.userAgent.indexOf('Version/12.1') > -1 ) {
+      if ( isSafari12 ) {
         // Safari 12 patching
         if ( this.view && this.view.container && this.view.container.parentElement ) {
           var node = this.view.container.parentElement;
@@ -220,7 +223,7 @@ var Reader = class {
       }
     }
 
-    if ( ! usesGrid ) {
+    if ( ! usesGrid || isSafari12 ) {
       this.on('resize', () => {
         this._updateViewports();
       })

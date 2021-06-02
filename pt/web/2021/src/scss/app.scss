@@ -81,17 +81,21 @@ img:-moz-loading {
   }
 
   .alert--emergency-access--options {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
 
     display: flex;
     align-items: center;
 
     a.btn {
-      border-top-color: #666;
-      border-left-color: #666;
+      border-top-color: #333;
+      border-left-color: #333;
       border-bottom-color: #000;
       border-right-color: #000;
       border-bottom-width: 2px;
+
+      &:hover {
+        color: white;
+      }
     }
 
     a.button-link {
@@ -891,6 +895,116 @@ html.ie {
     text-align: center;
     font-weight: bold
   }
+}
+
+.details--alert { 
+  margin-right: -1rem; 
+  border-radius: 8px;
+
+    &[data-initialized="false"] {
+      & > * {
+        opacity: 0;
+      }
+    }
+}
+
+.details--alert.beta {
+  background: #333;
+  color: #eee;
+
+  svg {
+    display: block;
+    width: 2rem;
+    max-height: 2rem;
+    flex-shrink: 0;
+    // margin-right: 0.5rem;
+    fill: white;
+    stroke: white;
+
+    text {
+      display: none;;
+    }
+  }
+  a { color: orange; }
+  a.action-beta-2019 { 
+    font-weight: bold;
+    font-size: 1rem;
+  }
+}
+
+.details--alert {
+
+  summary {
+    font-weight: bold;
+
+    .summary {
+      span {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &.iconless {
+    summary {
+      padding-left: 0.75rem;
+    }
+  }
+  
+  & > div {
+    padding: 1rem;
+    padding-top: 0;
+
+    font-size: 0.875rem;
+
+    br {
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+.details--alert.special-access {
+  background: orange; 
+  border: 1px solid darkorange; 
+  color: #333;
+
+  a {
+    color: black;
+  }
+
+  summary {
+    color: black;
+  }
+
+  &[data-access-type="emergency_access_affiliate"] {
+    summary {
+      span {
+        white-space: normal;
+      }
+    }
+  }
+
+  .alert--emergency-access--options {
+    margin-top: 1rem;
+
+    display: flex;
+    align-items: center;
+
+    a.btn {
+      border-top-color: #333;
+      border-left-color: #333;
+      border-bottom-color: #000;
+      border-right-color: #000;
+      border-bottom-width: 2px;
+
+      &:hover {
+        color: white;
+      }
+    }
+  }
+}
+
+.details--alert + .details--alert {
+  margin-top: 0.5rem;
 }
 
 html.ie {

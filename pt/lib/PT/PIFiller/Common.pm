@@ -1577,12 +1577,14 @@ sub __xml_hash {
     push @$stack, qq{<Key name="$key">};
     if ( ref($value) eq 'HASH' ) {
         foreach my $_key ( sort keys %$value ) {
-            __xml_hash($stack, $_key, $$value{$key});
+            __xml_hash($stack, $_key, $$value{$_key});
         }
     } elsif ( ref($value) eq 'ARRAY' ) {
         foreach my $_v ( @{ $value } ) {
             push @$stack, qq{<Value>$_v</Value>};
         }
+    } elsif ( ref($value) eq 'JSON::PP::Boolean' ) {
+        push @$stack, qq{<Value>} . ( $value ? 'true' : 'false' ) . q{</Value>};
     } else {
         push @$stack, qq{<Value>$value</Value>};
     }
