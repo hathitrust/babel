@@ -32,6 +32,7 @@ use base qw(PIFiller);
 
 use PT::PIFiller::Common;
 
+use HTML::Entities qw();
 use JSON::XS qw(encode_json);
 
 use Utils::Cache::JSON;
@@ -1118,6 +1119,10 @@ sub handle_FEATURE_LIST_JSON
         }
 
         next unless ( scalar @$features || $pageNum );
+
+        if ( $pageNum ) {
+            $pageNum = HTML::Entities::encode_entities($pageNum);
+        }
 
         my $feature_json = [];
         push @$feature_json, q{"seq":} . $json->encode($seq);
