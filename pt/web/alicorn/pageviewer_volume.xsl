@@ -189,7 +189,7 @@
         </button>
       </div>
       <div class="app--sidebar scroll-gradient" id="sidebar">
-        <xsl:call-template name="build-access-alert-block" />
+        <!-- <xsl:call-template name="build-access-alert-block" /> -->
         <div class="app--panels">
           <xsl:call-template name="sidebar" />
         </div>
@@ -722,7 +722,7 @@
       </p>
 
       <br />
-      <a target="_blank" href="https://www.hathitrust.org/help_digital_library#PageNotAvailablehttps://www.hathitrust.org/ws-book-viewer-beta-site" class="btn btn-primary">Learn more.</a>
+      <a target="_blank" href="http://www.hathitrust.org/help_digital_library#PageNotAvailable" class="btn btn-primary">Learn more.</a>
     </div>
   </xsl:template>
 
@@ -735,7 +735,162 @@
     </script>
   </xsl:template>
 
+  <xsl:template name="build-access-alert-details">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <!-- debugging aid -->
+    <!-- <xsl:variable name="access-type-tmp">
+      <AccessType xmlns="">
+        <Name>emergency_access_affiliate</Name>
+      </AccessType>
+    </xsl:variable>
+    <xsl:variable name="access-type" select="exsl:node-set($access-type-tmp)//AccessType" /> -->
+    <xsl:if test="( $gFinalAccessStatus='allow' and $gInCopyright='true' )">
+      <xsl:variable name="alert-tmp">
+        <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
+          <xsl:call-template name="build-emergency-access-affiliate-header" />
+        </xsl:if>
+        <xsl:if test="$access-type/Name = 'in_library_user'">
+          <xsl:call-template name="build-in-library-user-header" />
+        </xsl:if>
+        <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
+          <xsl:call-template name="build-ssd-session-header" />
+        </xsl:if>
+        <xsl:if test="$access-type/Name = 'enhanced_text_user'">
+          <xsl:call-template name="build-ssd-session-header" />
+        </xsl:if>
+      </xsl:variable>
+      <xsl:variable name="alert" select="exsl:node-set($alert-tmp)/node()" />
+      <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name=$alert/@id]/Value" />
+      <details class="details--alert iconless special-access" data-access-type="{$access-type/Name}">
+        <xsl:attribute name="id">
+          <xsl:value-of select="$alert/@id" />
+        </xsl:attribute>
+        <xsl:if test="$state = 'open' or normalize-space($state) = ''">
+          <xsl:attribute name="open">open</xsl:attribute>
+        </xsl:if>
+        <xsl:attribute name="data-initialized">
+          <xsl:value-of select="$alert/@data-initialized" />
+        </xsl:attribute>
+        <xsl:if test="$alert/@data-access-expires">
+          <xsl:attribute name="data-access-expires">
+            <xsl:value-of select="$alert/@data-access-expires" />
+          </xsl:attribute>
+          <xsl:attribute name="data-access-expires-seconds">
+            <xsl:value-of select="$alert/@data-access-expires-seconds" />
+          </xsl:attribute>
+        </xsl:if>
+        <summary>
+          <div class="summary">
+            <span>
+              <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
+                <xsl:text>Checked out until </xsl:text>
+                <span class="expires-display"></span>
+              </xsl:if>
+              <xsl:if test="$access-type/Name = 'in_library_user'">
+                <xsl:text>Checked out until </xsl:text>
+                <span class="expires-display"></span>
+              </xsl:if>
+              <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
+                <xsl:text>In-Copyright Access</xsl:text>
+              </xsl:if>
+              <xsl:if test="$access-type/Name = 'enhanced_text_user'">
+                <xsl:text>In-Copyright Access</xsl:text>
+              </xsl:if>
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
+              <use xlink:href="#panel-collapsed"></use>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon open">
+              <use xlink:href="#panel-expanded"></use>
+            </svg>
+          </div>
+        </summary>
+        <div>
+          <xsl:apply-templates select="$alert/*" mode="copy" />
+        </div>
+      </details>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template name="list-surveys">
+    <xsl:call-template name="build-access-alert-details" />
+    <xsl:call-template name="build-survey-panel" />
+    <xsl:if test="false() or $gLoggedIn = 'YES'">
+      <xsl:if test="true() or //Header/ProviderName = 'University of Michigan'">
+        <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='beta-notice-2019']/Value" />
+        <details class="details--alert beta" id="beta-notice-2019" data-open="{$state}">
+          <xsl:if test="$state = 'open' or normalize-space($state) = ''">
+            <xsl:attribute name="open">open</xsl:attribute>
+          </xsl:if>
+          <summary style="font-weight: bold; padding-left: 0.25rem">
+            <div class="summary">
+              <span style="display: flex; flex-direction: row; align-items: center; margin-right: 0.5rem">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0" x="0px" y="0px" viewBox="0 0 100 125" enable-background="new 0 0 100 100" xml:space="preserve" style="height: 2rem; width: 2rem;">
+                  <polygon points="66.608,59.075 53.333,56.286 55.247,51.667 " />
+                  <polygon points="75.749,44.939 68.333,33.58 72.952,31.666 " />
+                  <polygon points="84.167,58.333 81.667,35 86.667,35 " />
+                  <polygon points="32.514,65.427 11.912,76.667 10,72.048 " />
+                  <polygon points="73.021,77.979 58.581,86.667 56.667,82.048 " />
+                  <path d="M47.291,35.137l9.376-8.805l-16.12-2.26L33.344,10l-7.221,14.072L10,26.332l11.676,10.957L18.922,52.78l14.422-7.315  l14.424,7.315l-1.992-11.155c13.7,3.516,25.146,12.646,31.666,24.84c-4.509-3.027-9.935-4.798-15.774-4.798  c-6.823,0-13.051,2.447-17.941,6.468L40.84,62.5l-4.643,9.046l-10.363,1.455l7.506,7.041L31.568,90l9.271-4.7L50.11,90l-1.776-9.958  l7.499-7.041l-6.348-0.892c3.471-2.373,7.656-3.776,12.182-3.776c11.969,0,21.666,9.707,21.666,21.667H90  C90,63.535,71.826,41.365,47.291,35.137z M38.852,40.785l-5.508-2.793l-5.518,2.795l1.047-5.889L24.721,31l5.754-0.805l2.861-5.58  l2.855,5.576l5.766,0.811l-4.154,3.9L38.852,40.785z" />
+                  <path d="M90,16.998l-6.907-0.969L80.003,10l-3.092,6.029L70,16.998l5.003,4.695l-1.178,6.641l6.178-3.133l6.182,3.133L85,21.693  L90,16.998z" />
+                  <circle cx="60" cy="18.334" r="3.333" />
+                  <circle cx="20" cy="83.333" r="3.334" />
+                  <path d="M36.666,56.667c0,1.839-1.49,3.333-3.332,3.333C31.49,60,30,58.506,30,56.667c0-1.84,1.49-3.334,3.334-3.334  C35.176,53.333,36.666,54.827,36.666,56.667z" />
+                  <text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Danil Polshin</text>
+                  <text x="0" y="120" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text>
+                </svg>
+                <span>The 2021 Edition</span>
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
+                <use xlink:href="#panel-collapsed"></use>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon open">
+                <use xlink:href="#panel-expanded"></use>
+              </svg>
+            </div>
+          </summary>
+          <div style="padding: 1rem; padding-top: 0">
+            <p>
+              Try the <strong>new 2021 edition</strong>
+              of the book reader!
+              <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
+            </p>
+            <p>
+              <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2019">Use the 2021 edition</a>
+            </p>
+          </div>
+        </details>
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="build-survey-panel">
+    <details class="details--alert details--notice" open="open">
+      <summary style="font-weight: bold; padding-left: 0.25rem;">
+        <div class="summary">
+          <span>How about a survey?</span>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
+            <use xlink:href="#panel-collapsed"></use>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon open">
+            <use xlink:href="#panel-expanded"></use>
+          </svg>
+        </div>
+      </summary>
+      <div>
+        <p>
+          Would you like to participate in a survey to better understand how someone like
+          <em>you</em>
+          avails themselves of the wealth of information at your fingertips?
+        </p>
+        <p>
+          <a href="#">Take our survey!</a>
+        </p>
+      </div>
+    </details>
+  </xsl:template>
+
+  <xsl:template name="list-surveys-alert">
     <xsl:if test="false() or $gLoggedIn = 'YES'">
       <xsl:if test="true() or //Header/ProviderName = 'University of Michigan'">
         <div class="beta--panel">

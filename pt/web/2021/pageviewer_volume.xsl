@@ -76,6 +76,8 @@
 
     <xsl:call-template name="build-access-alert-details" />
 
+    <xsl:call-template name="build-sidebar-toasts" />
+
     <xsl:call-template name="build-sidebar-beta-notice" />
 
     <xsl:call-template name="BuildBackToResultsLink" />
@@ -584,6 +586,49 @@
         <!-- <li><a href="#sidebar">Skip to book options</a></li> -->
       </ul>
     </div>
+    <!-- <xsl:call-template name="build-alert-container-toasts" /> -->
+  </xsl:template>
+
+  <xsl:template name="build-alert-container-toasts">
+    <div id="alert-toast--container">
+
+      <div class="alert alert-notice alert-toast">
+        <div>
+          <p>Would you like to participate in a survey to better understand how someone like <em>you</em> avails themselves of the wealth of information at your fingertips?</p>
+          <p><a href="#">Take our survey!</a></p>
+        </div>
+        <button aria-label="Close banner"><i class="icomoon icomoon-cancel"></i></button>
+      </div>
+
+      <div class="alert alert-toast alert-modal alert-aup">
+        <p>
+          By logging into HathiTrust, you agree to follow our 
+          <a href="#">Acceptable Use Policy.</a>
+        </p>
+        <button class="btn btn-plain">OK</button>
+      </div>
+    </div>
+  </xsl:template>
+
+  <xsl:template name="build-sidebar-toasts">
+    
+    <details class="details--alert details--notice" open="open">
+      <summary style="font-weight: bold; padding-left: 0.25rem;">
+        <div class="summary">
+          <span>How about a survey?</span>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
+            <use xlink:href="#panel-collapsed"></use>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon open">
+            <use xlink:href="#panel-expanded"></use>
+          </svg>
+        </div>
+      </summary>
+      <div>
+        <p>Would you like to participate in a survey to better understand how someone like <em>you</em> avails themselves of the wealth of information at your fingertips?</p>
+        <p><a href="#">Take our survey!</a></p>
+      </div>
+    </details>
   </xsl:template>
 
   <xsl:template name="footer" />

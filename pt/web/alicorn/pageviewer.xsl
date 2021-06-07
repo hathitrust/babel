@@ -268,7 +268,8 @@
         <xsl:text>This work is checked out to you until </xsl:text>
         <span class="expires-display"></span>
         <xsl:text> and may automatically renew. </xsl:text>
-        <xsl:text>Access to this work is provided through the </xsl:text>
+        <xsl:text>Access is provided through the </xsl:text>
+        <!-- <xsl:text>Access to this work is provided through the </xsl:text> -->
         <a href="{$etas_href}">Emergency Temporary Access Service</a>
         <!-- <xsl:text>.</xsl:text> -->
       </p>
@@ -559,4 +560,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-
