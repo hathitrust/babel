@@ -166,7 +166,7 @@
       <div style="padding: 1rem; padding-top: 0">
         <p>
           <xsl:text>You are using the new 2021 edition of the book reader. </xsl:text>
-          <a href="#">Learn more</a>
+          <a href="https://www.hathitrust.org/ws-book-viewer-beta-site">Learn more</a>
         </p>
         <p>
           <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2019">Use the 2019 edition</a>
