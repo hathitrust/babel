@@ -102,4 +102,14 @@ head.ready(function() {
       }
   }
 
+  $("details.details--alert").on('toggle', function(event) {
+    var detail = event.target;
+    var prefs = HT.prefs.get();
+    prefs.pt = prefs.pt || {};
+    prefs.pt.alerts = prefs.pt.alerts || {};
+    prefs.pt.alerts[detail.getAttribute('id')] = detail.open ? 'open' : 'closed';
+    HT.prefs.set(prefs);
+  })
+
+
 })

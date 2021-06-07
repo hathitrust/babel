@@ -856,7 +856,7 @@
               <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
             </p>
             <p>
-              <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2019">Use the 2021 edition</a>
+              <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2021">Use the 2021 edition</a>
             </p>
           </div>
         </details>
@@ -865,7 +865,11 @@
   </xsl:template>
 
   <xsl:template name="build-survey-panel">
-    <details class="details--alert details--notice" open="open">
+    <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
+    <details id="uc-etas-survey" class="details--alert details--notice" data-open="{$state}">
+      <xsl:if test="$state = 'open' or normalize-space($state) = ''">
+        <xsl:attribute name="open">open</xsl:attribute>
+      </xsl:if>
       <summary style="font-weight: bold; padding-left: 0.25rem;">
         <div class="summary">
           <span>How about a survey?</span>

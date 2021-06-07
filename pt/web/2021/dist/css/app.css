@@ -1414,6 +1414,14 @@ html.ie .d--toolbar--reader .output-group input {
   margin-top: 0.5rem;
 }
 
+details.details--notice {
+  background: #fcf8e3;
+  border-color: #664d03;
+  border: 1px solid #664d03;
+  color: #664d03;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35);
+}
+
 html.ie .beta--panel {
   max-width: 18rem;
 }
@@ -3439,66 +3447,4 @@ main[data-view="search"] .form-control[data-view-target~="search"] {
 
 #selection-contents {
   white-space: nowrap;
-}
-
-#alert-toast--container {
-  position: fixed;
-  bottom: 1rem;
-  left: 0.25rem;
-  width: 40vw;
-  display: flex;
-  flex-direction: column;
-  z-index: 2147483645;
-}
-
-.alert-toast {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  box-shadow: 0 0.5rem 1rem RGB(0 0 0/15%);
-  border-radius: 0.25rem;
-  padding: 1.5rem 1rem;
-  text-shadow: none;
-}
-
-.alert-toast button {
-  margin-left: 0.5rem;
-}
-
-.alert-toast button.btn-plain {
-  min-width: inherit;
-}
-
-.alert-toast.alert-aup {
-  background: #333;
-  color: #eee;
-}
-
-.alert-toast.alert-aup a {
-  color: orange;
-}
-
-.alert-toast.alert-aup button {
-  background: #212529;
-  color: #fff;
-  border-color: #ccc;
-}
-
-.alert-toast.alert-aup button:hover {
-  border-color: #fff;
-}
-
-.alert-toast.alert-aup.alert-sidebar button {
-  font-size: 0.875rem;
-}
-
-.alert-toast.alert-notice {
-  border: 1px solid #6f5629;
-}
-
-details.details--notice {
-  background: #fcf8e3;
-  border-color: #664d03;
-  border: 1px solid #664d03;
-  color: #664d03;
 }

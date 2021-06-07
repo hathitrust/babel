@@ -1007,6 +1007,14 @@ html.ie {
   margin-top: 0.5rem;
 }
 
+details.details--notice {
+  background: #fcf8e3;
+  border-color: #664d03;
+  border: 1px solid #664d03;
+  color: #664d03;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35)
+}
+
 html.ie {
   .beta--panel {
     max-width: 18rem;
@@ -1040,4 +1048,3 @@ html[data-debug-status="true"] {
 @import "viewer";
 @import "results";
 @import "download";
-@import "toast";

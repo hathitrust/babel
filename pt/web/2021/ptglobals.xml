@@ -36,6 +36,7 @@
 <ItemIndexStatus><?ITEM_INDEX_STATUS?></ItemIndexStatus>
 <AccessType><?ACCESS_TYPE?></AccessType>
 <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+<InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
 <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
 <Surveys><?PT_SURVEY?></Surveys>
 <Collections><?ITEM_IN_COLLECTIONS?></Collections>
@@ -45,6 +46,3 @@
 <?CACHE_TIMESTAMP href="/pt/2021/dist/css/app.css" ?>
 <?CACHE_TIMESTAMP href="/pt/2021/dist/js/utils.js" ?>
 <?CACHE_TIMESTAMP href="/pt/2021/dist/css/main.css" ?>
-
-
-

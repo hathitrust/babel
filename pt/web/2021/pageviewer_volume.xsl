@@ -612,7 +612,11 @@
 
   <xsl:template name="build-sidebar-toasts">
     
-    <details class="details--alert details--notice" open="open">
+    <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
+    <details id="uc-etas-survey" class="details--alert details--notice" data-open="{$state}">
+      <xsl:if test="$state = 'open' or normalize-space($state) = ''">
+        <xsl:attribute name="open">open</xsl:attribute>
+      </xsl:if>
       <summary style="font-weight: bold; padding-left: 0.25rem;">
         <div class="summary">
           <span>How about a survey?</span>

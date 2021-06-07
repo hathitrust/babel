@@ -165,6 +165,7 @@
       <InItemResultsLink><?IN_ITEM_SEARCH_RESULTS_LINK?></InItemResultsLink>
       <?HEADER_SEARCH_FIELDS?>
     </SearchForm>
+    <Preferences><?APPLICATION_PREFS key="pt"?></Preferences>
 
     <Manifest>
       <!-- DO NOT FORGET READING ORDER -->

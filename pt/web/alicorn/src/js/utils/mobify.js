@@ -75,7 +75,7 @@ head.ready(function() {
     $("html").get(0).dataset.view = state ? 'options' : 'viewer';
 
     document.body.dataset.sidebarNarrowState = state ? 'open' : 'closed';
-    $("action-toggle-sidebar-narrow".attr('aria-expanded', state);
+    $("action-toggle-sidebar-narrow").attr('aria-expanded', state);
 
     // var xlink_href;
     // if ( $trigger.attr('aria-expanded') == 'true' ) {
