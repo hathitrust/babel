@@ -959,6 +959,8 @@ window.xdialog = dialog;
     if ( HT.debug_words ) { words = HT.debug_words; }
     if ( ! words || ! words.length ) { return }
 
+    if ( ! page_div.dataset.coords ) { return ; }
+
     var page_coords = parseCoords(page_div.dataset.coords);
 
     if ( ! this._highlightIndexMap ) {
