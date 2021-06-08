@@ -900,6 +900,9 @@
           <xsl:attribute name="open">true</xsl:attribute>
           <xsl:attribute name="data-interactive">false</xsl:attribute>
         </xsl:if>
+        <xsl:if test="$id = 'panel-search'">
+          <xsl:attribute name="open">open</xsl:attribute>
+        </xsl:if>
         <summary>
           <xsl:if test="$interactive = 'true'">
             <xsl:attribute name="data-css-icon">down</xsl:attribute>
@@ -2139,4 +2142,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-
