@@ -959,7 +959,13 @@ html.ie {
     br {
       margin-bottom: 0.25rem;
     }
+
+    p:last-of-type > a:only-child {
+      font-size: 1rem;
+      font-weight: bold;
+    }
   }
+
 }
 
 .details--alert.special-access {
@@ -1040,6 +1046,12 @@ html[data-debug-status="true"] {
 
 .navigator-range-wrap {
   display: none !important;
+}
+
+html[data-survey-activated="false"] {
+  ._hj-widget-container {
+    display: none !important;
+  }
 }
 
 @import "debug";

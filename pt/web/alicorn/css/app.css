@@ -2470,6 +2470,11 @@ main[data-view="thumb"] button[data-target="thumb"] {
   margin-bottom: 0.25rem;
 }
 
+.details--alert > div p:last-of-type > a:only-child {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
 .details--alert.special-access {
   background: orange;
   border: 1px solid darkorange;
@@ -2535,8 +2540,8 @@ details.details--notice {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-udc3905b9 1s linear alternate infinite;
-          animation: loader12-udc3905b9 1s linear alternate infinite;
+  -webkit-animation: loader12-ud8630c32 1s linear alternate infinite;
+          animation: loader12-ud8630c32 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2545,7 +2550,7 @@ details.details--notice {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-udc3905b9 {
+@-webkit-keyframes loader12-ud8630c32 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2568,7 +2573,7 @@ details.details--notice {
   }
 }
 
-@keyframes loader12-udc3905b9 {
+@keyframes loader12-ud8630c32 {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);

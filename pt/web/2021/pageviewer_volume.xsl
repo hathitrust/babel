@@ -74,9 +74,9 @@
 
   <xsl:template name="build-sidebar-panels">
 
-    <xsl:call-template name="build-access-alert-details" />
+    <!-- <xsl:call-template name="build-survey-panel" /> -->
 
-    <xsl:call-template name="build-sidebar-toasts" />
+    <xsl:call-template name="build-access-alert-details" />
 
     <xsl:call-template name="build-sidebar-beta-notice" />
 
@@ -171,7 +171,15 @@
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site">Learn more</a>
         </p>
         <p>
-          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2019">Use the 2019 edition</a>
+          <xsl:variable name="debug">
+            <xsl:choose>
+              <xsl:when test="//Param[@name='debug'] = 'super'">
+                <xsl:text>;debug=super</xsl:text>
+              </xsl:when>
+              <xsl:otherwise></xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=default" class="action-beta-2019">Use the 2019 edition</a>
         </p>
       </div>
     </details>
@@ -437,6 +445,7 @@
     </xsl:if>
     <xsl:attribute name="data-app">pt</xsl:attribute>
     <xsl:attribute name="data-show-highlights">true</xsl:attribute>
+    <xsl:attribute name="data-survey-activated">false</xsl:attribute>
     <xsl:call-template name="setup-extra-html-attributes" />
   </xsl:template>
 
@@ -586,32 +595,9 @@
         <!-- <li><a href="#sidebar">Skip to book options</a></li> -->
       </ul>
     </div>
-    <!-- <xsl:call-template name="build-alert-container-toasts" /> -->
   </xsl:template>
 
-  <xsl:template name="build-alert-container-toasts">
-    <div id="alert-toast--container">
-
-      <div class="alert alert-notice alert-toast">
-        <div>
-          <p>Would you like to participate in a survey to better understand how someone like <em>you</em> avails themselves of the wealth of information at your fingertips?</p>
-          <p><a href="#">Take our survey!</a></p>
-        </div>
-        <button aria-label="Close banner"><i class="icomoon icomoon-cancel"></i></button>
-      </div>
-
-      <div class="alert alert-toast alert-modal alert-aup">
-        <p>
-          By logging into HathiTrust, you agree to follow our 
-          <a href="#">Acceptable Use Policy.</a>
-        </p>
-        <button class="btn btn-plain">OK</button>
-      </div>
-    </div>
-  </xsl:template>
-
-  <xsl:template name="build-sidebar-toasts">
-    
+  <xsl:template name="build-survey-panel">
     <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
     <details id="uc-etas-survey" class="details--alert details--notice" data-open="{$state}">
       <xsl:if test="$state = 'open' or normalize-space($state) = ''">
@@ -715,6 +701,9 @@
   <xsl:template name="build-hotjar-script-extra">
     <xsl:text>
       hj('trigger', 'test_2021');
+      setTimeout(function() {
+        document.documentElement.dataset.surveyActivated = true;
+      }, 1000 * 30);
     </xsl:text>
   </xsl:template>
 </xsl:stylesheet>

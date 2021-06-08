@@ -1374,6 +1374,11 @@ html.ie .d--toolbar--reader .output-group input {
   margin-bottom: 0.25rem;
 }
 
+.details--alert > div p:last-of-type > a:only-child {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
 .details--alert.special-access {
   background: orange;
   border: 1px solid darkorange;
@@ -1442,6 +1447,10 @@ html[data-debug-status="true"] div[role='status'] {
 }
 
 .navigator-range-wrap {
+  display: none !important;
+}
+
+html[data-survey-activated="false"] ._hj-widget-container {
   display: none !important;
 }
 

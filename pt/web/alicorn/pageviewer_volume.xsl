@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<xsl:stylesheet version="1.0"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:h="http://www.hathitrust.org"
-  xmlns:METS="http://www.loc.gov/METS/"
-  xmlns:PREMIS="http://www.loc.gov/standards/premis"
-  xmlns="http://www.w3.org/1999/xhtml"
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:h="http://www.hathitrust.org" xmlns:METS="http://www.loc.gov/METS/" xmlns:PREMIS="http://www.loc.gov/standards/premis" xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="https://www.w3.org/1999/xlink"
   xmlns:exsl="http://exslt.org/common"
   exclude-result-prefixes="exsl METS PREMIS h"
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
@@ -813,12 +808,16 @@
   </xsl:template>
 
   <xsl:template name="list-surveys">
+    <!-- <xsl:call-template name="build-survey-panel" /> -->
     <xsl:call-template name="build-access-alert-details" />
-    <xsl:call-template name="build-survey-panel" />
+    <xsl:call-template name="build-beta-alert-details" />
+  </xsl:template>
+
+  <xsl:template name="build-beta-alert-details">
     <xsl:if test="false() or $gLoggedIn = 'YES'">
       <xsl:if test="true() or //Header/ProviderName = 'University of Michigan'">
-        <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='beta-notice-2019']/Value" />
-        <details class="details--alert beta" id="beta-notice-2019" data-open="{$state}">
+        <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='beta-notice-2021']/Value" />
+        <details class="details--alert beta" id="beta-notice-2021" data-open="{$state}">
           <xsl:if test="$state = 'open' or normalize-space($state) = ''">
             <xsl:attribute name="open">open</xsl:attribute>
           </xsl:if>
@@ -851,12 +850,21 @@
           </summary>
           <div style="padding: 1rem; padding-top: 0">
             <p>
-              Try the <strong>new 2021 edition</strong>
+              Try the
+              <strong>new 2021 edition</strong>
               of the book reader!
               <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
             </p>
             <p>
-              <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default" class="action-beta-2021">Use the 2021 edition</a>
+              <xsl:variable name="debug">
+                <xsl:choose>
+                  <xsl:when test="//Param[@name='debug'] = 'super'">
+                    <xsl:text>;debug=super</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise></xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=2021" class="action-beta-2021">Use the 2021 edition</a>
             </p>
           </div>
         </details>

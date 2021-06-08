@@ -25235,6 +25235,10 @@ var Base = /*#__PURE__*/function () {
         return;
       }
 
+      if (!page_div.dataset.coords) {
+        return;
+      }
+
       var page_coords = parseCoords(page_div.dataset.coords);
       var word_regexes = {};
       words.forEach(function (word) {

@@ -2319,6 +2319,11 @@ main[data-view="thumb"] {
     br {
       margin-bottom: 0.25rem;
     }
+
+    p:last-of-type > a:only-child {
+      font-size: 1rem;
+      font-weight: bold;
+    }
   }
 }
 
