@@ -2540,8 +2540,8 @@ details.details--notice {
   height: 20px;
   border-radius: 50%;
   position: relative;
-  -webkit-animation: loader12-ud8630c32 1s linear alternate infinite;
-          animation: loader12-ud8630c32 1s linear alternate infinite;
+  -webkit-animation: loader12-u769fe45f 1s linear alternate infinite;
+          animation: loader12-u769fe45f 1s linear alternate infinite;
   top: 50%;
   margin: -50px auto 0;
   position: absolute;
@@ -2550,7 +2550,7 @@ details.details--notice {
           transform: translateX(-50%);
 }
 
-@-webkit-keyframes loader12-ud8630c32 {
+@-webkit-keyframes loader12-u769fe45f {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2573,7 +2573,7 @@ details.details--notice {
   }
 }
 
-@keyframes loader12-ud8630c32 {
+@keyframes loader12-u769fe45f {
   0% {
     -webkit-box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
             box-shadow: -60px 40px 0 2px #EF7C22, -30px 40px 0 0 rgba(239, 124, 34, 0.2), 0 40px 0 0 rgba(239, 124, 34, 0.2), 30px 40px 0 0 rgba(239, 124, 34, 0.2), 60px 40px 0 0 rgba(239, 124, 34, 0.2);
@@ -2637,6 +2637,18 @@ details.details--notice {
   .app--reader--viewer .page .page--toolbar {
     margin-right: 0rem;
   }
+}
+
+html[data-details-polyfilled="true"] summary:first-child ~ * {
+  display: none;
+}
+
+html[data-details-polyfilled="true"] details[open] > * {
+  display: block;
+}
+
+html[data-details-polyfilled="true"] details > summary:first-child {
+  display: block;
 }
 
 @media only screen and (max-width: 521px), only screen and (max-height: 480px) {

@@ -160,6 +160,7 @@
     <xsl:call-template name="setup-extra-header--reader" />
 
     <!-- <script type="text/javascript" src="/pt/alicorn/js/utils.js"></script> -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.prototype.find,Promise,Object.assign,es2015,MutationObserver,CustomEvent,Element.prototype.closest"></script>
     <xsl:call-template name="build-js-link">
       <xsl:with-param name="href">/pt/alicorn/js/utils.js</xsl:with-param>
     </xsl:call-template>

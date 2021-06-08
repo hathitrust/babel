@@ -2461,6 +2461,18 @@ details.details--notice {
 
 }
 
+html[data-details-polyfilled="true"] {
+  summary:first-child~*{
+      display:none
+  }
+  details[open]>*{
+      display:block
+  }
+  details>summary:first-child{
+      display:block
+  }
+}
+
 @media only screen and ( max-width: 521px ), only screen and ( max-height: 480px ) {
   .panel.configure {
     button {
