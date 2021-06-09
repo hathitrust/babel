@@ -71,6 +71,12 @@
       <section class="section-container" id="section" tabindex="0">
 
         <h1 id="main" class="main-section-title">Log in to get the most out of HathiTrust.</h1>
+        <div class="aup-notice-container">
+          <p class="aup-notice">
+            By logging into HathiTrust, you agree to follow our
+            <a href="#">Acceptable Use Policy.</a>
+          </p>
+        </div>
         <xsl:if test="normalize-space(//BackToRefererLink)">
           <div class="back-to-referer">
             <a class="btn" href="{//BackToRefererLink}"><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go back</a>
@@ -273,6 +279,10 @@
             <button class="button continue log-in" type="submit">CONTINUE <i class="icomoon icomoon-arrow-right" aria-hidden="true"></i></button>
           </div>
         </form>
+        <!-- <p class="aup-notice">
+          By logging into HathiTrust, you agree to follow our
+          <a href="#">Acceptable Use Policy.</a>
+        </p> -->
       </xsl:when>
       <xsl:otherwise></xsl:otherwise>
     </xsl:choose>

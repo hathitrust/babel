@@ -53,13 +53,18 @@ h4 {
   @include rem(font-size, 24);
   @include rem(margin-top, 0);
   text-align: center;
-  @include rem(margin-bottom, 20);
+  // @include rem(margin-bottom, 20);
 }
 
 .back-to-referer {
   width: 200px;
   margin: 0.5em auto 1.5em; 
   text-align: center;
+}
+
+.aup-notice-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 .row.versus {
@@ -348,6 +353,14 @@ input.select2-search__field {
   }
   // background: aliceblue;
 }
+
+.aup-notice {
+  text-align: center;
+  // padding: 0.25rem 2rem;
+  // margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
 
 @media all and (max-width: 900px) {
   .container.centered {
