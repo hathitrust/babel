@@ -318,6 +318,12 @@
         </xsl:call-template>
       </button>
 
+      <button class="btn" id="action-help" aria-label="Help" data-tippy-role="tooltip" style="margin-left: 0.25rem">
+        <xsl:call-template name="build-pt-icon">
+          <xsl:with-param name="id">bi-question-circle</xsl:with-param>
+        </xsl:call-template>
+      </button>
+
       <div class="output-group">
         <div class="navigator-range-wrap">
           <input id="range-seq" class="navigator-range" type="range" min="1" max="{$totalSeq}" value="{$currentSeq}" aria-label="Progress">

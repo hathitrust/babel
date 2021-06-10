@@ -563,6 +563,13 @@ reader.controls.minimizer = new Control.Minimizer({
   reader: reader
 });
 
+reader.controls.helpinator = new Control.Helpinator({
+  input: {
+    trigger: '#action-help'
+  },
+  reader: reader
+})
+
 reader.controls.jumpinator = new Control.Jumpinator({
   input: {
     prompt: '#action-jump-to-page',

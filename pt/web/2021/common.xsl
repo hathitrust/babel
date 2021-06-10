@@ -1033,7 +1033,7 @@
           <xsl:call-template name="BuildSchemaOrgUrl"/>
         </div>
 
-    <div class="bibLinks panel">
+    <div class="bibLinks panel" id="panel-bib-links">
 
       <!-- <h3>About this Book</h3> -->
       <!-- <h3 class="offscreen">Catalog Record Details</h3> -->
