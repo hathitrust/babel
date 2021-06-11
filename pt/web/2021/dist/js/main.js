@@ -27372,7 +27372,15 @@ var Helpinator = /*#__PURE__*/function () {
       this.tour = new shepherd_js__WEBPACK_IMPORTED_MODULE_0__.default.Tour({
         defaultStepOptions: {
           classes: 'shadow-md bg-purple-dark',
-          scrollTo: false
+          scrollTo: false,
+          popperOptions: {
+            modifiers: [{
+              name: 'offset',
+              options: {
+                offset: [0, 25]
+              }
+            }]
+          }
         },
         useModalOverlay: true
       }); // fetch data on startup

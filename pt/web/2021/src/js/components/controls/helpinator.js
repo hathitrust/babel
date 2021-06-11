@@ -35,6 +35,16 @@ export var Helpinator = class {
       defaultStepOptions: {
         classes: 'shadow-md bg-purple-dark',
         scrollTo: false,
+        popperOptions: {
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [ 0, 25 ]
+              }
+            }
+          ]
+        },
       },
       useModalOverlay: true
     });
