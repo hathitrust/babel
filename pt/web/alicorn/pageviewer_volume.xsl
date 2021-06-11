@@ -495,7 +495,7 @@
   </xsl:template>
 
   <xsl:template name="action-fullscreen">
-    <div class="btn-group btn-group-vertical action-fullscreen" data-expanded="false">
+    <div class="btn-group btn-group-vertical action-fullscreen" data-expanded="false" id="actions-group-fullscreen">
       <button data-target="enter-fullscreen" id="action-toggle-enter-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="View Full Screen" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-fullscreen"></i></button>
       <button data-target="exit-fullscreen" id="action-toggle-exit-fullscreen" type="button" class="btn square alone" data-toggle="tracking" data-tracking-action="PT Full Screen" aria-label="Exit Full Screen" data-microtip-position="left" data-microtip-size="small" data-role="tooltip"><i class="icomoon icomoon-fullscreen-exit"></i></button>
     </div>
@@ -563,7 +563,7 @@
         <xsl:with-param name="class">mq--wide</xsl:with-param>
       </xsl:call-template>
 
-      <div class="btn-group">
+      <div class="btn-group" id="actions-group-paginator">
         <xsl:call-template name="action-page-navigation" />
       </div>
 
