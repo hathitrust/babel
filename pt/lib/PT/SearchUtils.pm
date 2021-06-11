@@ -466,9 +466,8 @@ sub Solr_search_item {
 
     # Solr paging is zero-relative
     my $start = max($cgi->param('start') - 1, 0);
-    my $rows = $cgi->param('size');
+    my $rows = $cgi->param('size') || $cgi->param("sz");;
     my $sort = $cgi->param('sort') || 'seq';
-
 
     use Digest::SHA;
     use Storable();
