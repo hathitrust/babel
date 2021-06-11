@@ -3495,7 +3495,18 @@ main[data-view="search"] .form-control[data-view-target~="search"] {
 .shepherd-element {
   border: solid 4px #16202D;
   background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  max-width: 25rem;
   z-index: 100000;
+  transform: opacity .3s,visibility .3s;
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.shepherd-element.shepherd-enabled {
+  opacity: 1;
+  visibility: visible;
 }
 
 .shepherd-element,
