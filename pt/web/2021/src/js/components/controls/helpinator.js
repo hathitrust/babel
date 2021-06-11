@@ -4,6 +4,7 @@ import { createNanoEvents } from 'nanoevents';
 export var Helpinator = class {
   constructor(options={}) {
     this.input = options.input;
+    this.reader = options.reader;
     this.steps = [];
     this.emitter = createNanoEvents();
     this.bindEvents();
@@ -28,6 +29,8 @@ export var Helpinator = class {
   }
 
   configureTour(doAlert) {
+    const self = this;
+
     this.tour = new Shepherd.Tour({
       defaultStepOptions: {
         classes: 'shadow-md bg-purple-dark',
@@ -67,12 +70,24 @@ export var Helpinator = class {
             }
           }
 
+          if ( step['attachTo'] && step['attachTo'].element.indexOf('data-action') > -1 ) {
+            step['attachTo'].element = `button[${step.attachTo.element}]`;
+            step['showOn'] = function() {
+              const seq = self.reader.view.currentSeq;
+              const el = document.querySelector(`.page[data-seq="${seq}"] ${step.attachTo.element}`);
+              if ( el ) {
+                return true;
+              }
+              return false;
+            }
+          }
+
           if ( idx < array.length - 1 ) {
             step['buttons'] = [
               {
                 text: 'Exit',
                 secondary: true,
-                action: this.tour.cancel
+                action: self.tour.cancel
               },
               {
                 text: 'Next',

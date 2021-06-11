@@ -27335,6 +27335,7 @@ var Helpinator = /*#__PURE__*/function () {
     _classCallCheck(this, Helpinator);
 
     this.input = options.input;
+    this.reader = options.reader;
     this.steps = [];
     this.emitter = (0,nanoevents__WEBPACK_IMPORTED_MODULE_1__.createNanoEvents)();
     this.bindEvents();
@@ -27367,6 +27368,7 @@ var Helpinator = /*#__PURE__*/function () {
     value: function configureTour(doAlert) {
       var _this2 = this;
 
+      var self = this;
       this.tour = new shepherd_js__WEBPACK_IMPORTED_MODULE_0__.default.Tour({
         defaultStepOptions: {
           classes: 'shadow-md bg-purple-dark',
@@ -27407,11 +27409,26 @@ var Helpinator = /*#__PURE__*/function () {
             };
           }
 
+          if (step['attachTo'] && step['attachTo'].element.indexOf('data-action') > -1) {
+            step['attachTo'].element = "button[".concat(step.attachTo.element, "]");
+
+            step['showOn'] = function () {
+              var seq = self.reader.view.currentSeq;
+              var el = document.querySelector(".page[data-seq=\"".concat(seq, "\"] ").concat(step.attachTo.element));
+
+              if (el) {
+                return true;
+              }
+
+              return false;
+            };
+          }
+
           if (idx < array.length - 1) {
             step['buttons'] = [{
               text: 'Exit',
               secondary: true,
-              action: _this2.tour.cancel
+              action: self.tour.cancel
             }, {
               text: 'Next',
               action: _this2.tour.next
