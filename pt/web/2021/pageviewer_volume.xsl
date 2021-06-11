@@ -398,7 +398,7 @@
         </button>
       </div>
 
-      <div class="btn-group">
+      <div class="btn-group" id="actions-group-paginator">
         <button class="btn" id="action-go-first" aria-label="First Page" data-tippy-role="tooltip">
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-chevron-bar-left</xsl:with-param>
