@@ -339,6 +339,7 @@ sub ValidityChecks {
     }
 
     my $view = $cgi->param( 'view' );
+    my $format = $cgi->param( 'format' );
     my $size = $cgi->param( 'size' );
     my $orient = $cgi->param( 'orient' );
     my $ui = defined $cgi->param('ui') ? $cgi->param('ui') : 'default';
@@ -363,6 +364,15 @@ sub ValidityChecks {
                 # ignore
                 # $prefs = { pt => { view => $PTGlobals::gDefaultView } };
             }
+        }
+    }
+
+    unless ( $format ) {
+        if ( $prefs ) {
+            eval {
+                $format = $$prefs{'pt'}{'format'};
+                $cgi->param('format', $format);
+            };
         }
     }
 
