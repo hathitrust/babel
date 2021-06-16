@@ -30174,6 +30174,7 @@ var usesGrid = window.getComputedStyle(document.documentElement).getPropertyValu
 window.usesGrid = usesGrid;
 var isSafari12 = navigator.userAgent.indexOf('Safari/') > -1 && navigator.userAgent.indexOf('Version/12.1') > -1;
 window.isSafari12 = isSafari12;
+var isEtas = document.querySelector('#access-emergency-access') != null;
 
 var Reader = /*#__PURE__*/function () {
   function Reader() {
@@ -30274,6 +30275,10 @@ var Reader = /*#__PURE__*/function () {
 
       if (params.view == '2up' && this.service.manifest.totalSeq == 1) {
         params.view = '1up';
+      }
+
+      if (isEtas && params.format == 'plaintext') {
+        params.view = 'page';
       }
 
       if (params.view == this.view.name && params.format == this.view.format) {
@@ -30982,6 +30987,10 @@ if (reader.service.manifest.totalSeq == 1) {
   if (HT.params.view == '2up' || HT.params.view == 'thumb') {
     HT.params.view = '1up';
   }
+}
+
+if (isEtas && HT.params.format == 'plaintext' && HT.params.view == '1up') {
+  HT.params.view = 'page';
 }
 
 var validViews = ['1up', '2up', 'thumb', 'page'];

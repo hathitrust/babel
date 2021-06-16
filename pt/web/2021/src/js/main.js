@@ -36,7 +36,9 @@ window.usesGrid = usesGrid;
 
 const isSafari12 = navigator.userAgent.indexOf('Safari/') > -1 && 
          navigator.userAgent.indexOf('Version/12.1') > -1;
-window.isSafari12 = isSafari12;        
+window.isSafari12 = isSafari12;
+
+const isEtas = document.querySelector('#access-emergency-access') != null;
 
 var Reader = class {
   constructor(options={}) {
@@ -106,6 +108,7 @@ var Reader = class {
 
     if ( params.view == this.view.name && params.view == 'plaintext' && params.clicked ) { params.view = '1up'; }
     if ( params.view == '2up' && this.service.manifest.totalSeq == 1 ) { params.view = '1up'; }
+    if ( isEtas && params.format == 'plaintext' ) { params.view = 'page'; }
     if ( params.view == this.view.name && params.format == this.view.format ) { return ; }
 
     // we track format in the reader
@@ -671,6 +674,8 @@ if ( reader.service.manifest.totalSeq == 1 ) {
     HT.params.view = '1up';
   }
 }
+
+if ( isEtas && HT.params.format == 'plaintext' && HT.params.view == '1up' ) { HT.params.view = 'page'; }
 
 var validViews = [ '1up', '2up', 'thumb', 'page' ];
 if ( validViews.indexOf(HT.params.view) < 0 ) { HT.params.view = '1up'; }

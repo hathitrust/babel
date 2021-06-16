@@ -1535,6 +1535,14 @@ sub handle_SETUP_APPLICATION_PARAMS_PI
         }
     }
 
+    my $id = $cgi->param('id');
+    my $rights_attribute = $RightsGlobals::NOOP_ATTRIBUTE;
+    if ( defined $id ) {
+        $rights_attribute = $C->get_object('Access::Rights')->get_rights_attribute($C, $id);
+    }
+
+    push @$xml, qq{HT.params.rightsAttribute = $rights_attribute;};
+
     $xml = join("\n", @$xml);
     return $xml;
 }
