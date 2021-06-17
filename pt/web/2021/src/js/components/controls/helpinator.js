@@ -125,7 +125,7 @@ export var Helpinator = class {
     const mql = window.matchMedia('( max-width: 700px )');
     mql.addEventListener('change', (event) => {
       if ( event.matches ) {
-        if ( this.tour ) {
+        if ( this.tour && this.tour.isActive() ) {
           this.tour.cancel();
         }
       }
