@@ -104,7 +104,14 @@
   left: -35px;
 }
 
-.shepherd-footer{border-bottom-left-radius:5px;border-bottom-right-radius:5px;display:flex;justify-content:flex-end;padding:0 .75rem .75rem}.shepherd-footer .shepherd-button:last-child{margin-right:0}
+.shepherd-footer{
+  border-bottom-left-radius:5px;
+  border-bottom-right-radius:5px;
+  display:flex !important;
+  justify-content:flex-end;
+  padding:0 .75rem .75rem
+}
+.shepherd-footer .shepherd-button:last-child{margin-right:0}
 
 .shepherd-footer {
   padding: 0;

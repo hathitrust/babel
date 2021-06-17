@@ -27352,6 +27352,7 @@ var Helpinator = /*#__PURE__*/function () {
       var _this = this;
 
       this.configureTour();
+      this.watchMediaQuery();
       var action = document.querySelector(this.input.trigger);
       action.addEventListener('click', function (event) {
         if (event.shiftKey) {
@@ -27383,25 +27384,21 @@ var Helpinator = /*#__PURE__*/function () {
           }
         },
         useModalOverlay: true
+      }); // hateful
+
+      this.tour.on('cancel', function (event) {
+        HT.analytics.trackEvent({
+          category: 'PT.walkthrough',
+          action: "".concat(_this2.tour.currentStep.id, ":exit"),
+          label: "".concat(_this2.tour.currentStep.id, ":exit")
+        });
       }); // fetch data on startup
 
-      var sourceUrl = 'https://spreadsheets.google.com/feeds/list/1k2Fx4qKNIvZYhpFVV41CU3zRNRC2VwjugApKq-Ks55M/1/public/full?alt=json';
+      var sourceUrl = '/cgi/pt/walkthrough-config/2021';
       fetch(sourceUrl).then(function (response) {
         return response.json();
       }).then(function (data) {
-        data.feed.entry.forEach(function (entry, idx, array) {
-          var step = {};
-          console.log("AHOY", entry);
-          step['id'] = "step-".concat(entry['gsx$step']['$t']);
-          step['text'] = entry['gsx$comment']['$t'];
-
-          if (entry['gsx$attach']['$t']) {
-            step['attachTo'] = {
-              element: entry['gsx$attach']['$t'],
-              on: entry['gsx$attachto']['$t'] || 'auto'
-            };
-          }
-
+        data.forEach(function (step, idx, array) {
           if (step['attachTo'] && step['attachTo'].element.indexOf('#panel-') > -1) {
             // this is a panel
             step['when'] = {
@@ -27453,6 +27450,20 @@ var Helpinator = /*#__PURE__*/function () {
 
         if (doAlert) {
           window.alert("Tour updated");
+        }
+      });
+    }
+  }, {
+    key: "watchMediaQuery",
+    value: function watchMediaQuery() {
+      var _this3 = this;
+
+      var mql = window.matchMedia('( max-width: 700px )');
+      mql.addEventListener('change', function (event) {
+        if (event.matches) {
+          if (_this3.tour) {
+            _this3.tour.cancel();
+          }
         }
       });
     }

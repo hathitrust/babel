@@ -18,6 +18,8 @@ export var Helpinator = class {
 
     this.configureTour();
 
+    this.watchMediaQuery();
+
     let action = document.querySelector(this.input.trigger);
     action.addEventListener('click', (event) => {
       if ( event.shiftKey ) {
@@ -26,6 +28,7 @@ export var Helpinator = class {
       }
       this.tour.start();
     });
+
   }
 
   configureTour(doAlert) {
@@ -49,23 +52,21 @@ export var Helpinator = class {
       useModalOverlay: true
     });
 
+    // hateful
+    this.tour.on('cancel', (event) => {
+      HT.analytics.trackEvent({
+        category: 'PT.walkthrough',
+        action: `${this.tour.currentStep.id}:exit`,
+        label: `${this.tour.currentStep.id}:exit`
+      })
+    })
+
     // fetch data on startup
-    const sourceUrl = 'https://spreadsheets.google.com/feeds/list/1k2Fx4qKNIvZYhpFVV41CU3zRNRC2VwjugApKq-Ks55M/1/public/full?alt=json';
+    const sourceUrl = '/cgi/pt/walkthrough-config/2021';
     fetch(sourceUrl)
       .then(response => response.json())
       .then(data => {
-        data.feed.entry.forEach((entry, idx, array) => {
-          let step = {};
-          console.log("AHOY", entry);
-          step['id'] = `step-${entry['gsx$step']['$t']}`;
-          step['text'] = entry['gsx$comment']['$t'];
-          if ( entry['gsx$attach']['$t'] ) {
-            step['attachTo'] = {
-              element: entry['gsx$attach']['$t'],
-              on: entry['gsx$attachto']['$t'] || 'auto'
-            };
-          }
-
+        data.forEach((step, idx, array) => {
           if ( step['attachTo'] && step['attachTo'].element.indexOf('#panel-') > -1 ) {
             // this is a panel
             step['when'] = {
@@ -118,5 +119,16 @@ export var Helpinator = class {
           window.alert("Tour updated");
         }
       })
+  }
+
+  watchMediaQuery() {
+    const mql = window.matchMedia('( max-width: 700px )');
+    mql.addEventListener('change', (event) => {
+      if ( event.matches ) {
+        if ( this.tour ) {
+          this.tour.cancel();
+        }
+      }
+    })
   }
 };

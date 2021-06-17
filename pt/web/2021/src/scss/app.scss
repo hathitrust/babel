@@ -49,6 +49,10 @@ img:-moz-loading {
   .mq--wide {
     display: none !important;
   }
+
+  #action-help {
+    display: none;
+  }
 }
 
 @media only screen and ( min-width: 527px ) and ( max-width: $responsive-threshold ) and ( min-height: 491px ) {
@@ -122,6 +126,10 @@ body[data-ui-view="minimal"] {
   }
 
   #actions-group-zoom {
+    display: none;
+  }
+
+  #action-help {
     display: none;
   }
 

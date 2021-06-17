@@ -43,4 +43,16 @@ head.ready(function() {
 
   document.querySelector('title').dataset.title = document.title;
 
+  $("body").on('click', ".shepherd-footer .shepherd-button", function(event) {
+    const $button = $(this);
+    const action = $button.text() == 'Exit' ? 'exit' : 'next';
+    const $modal = $button.parents(".shepherd-element");
+    const stepId = $modal.attr('data-shepherd-step-id');
+    HT.analytics.trackEvent({
+      category: 'PT.walkthrough',
+      action: `${stepId}:${action}`,
+      label: `${stepId}:${action}`
+    })
+  })
+
 })

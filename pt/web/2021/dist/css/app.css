@@ -598,6 +598,9 @@ img:-moz-loading {
   .mq--wide {
     display: none !important;
   }
+  #action-help {
+    display: none;
+  }
 }
 
 @media only screen and (min-width: 527px) and (max-width: 43.75rem) and (min-height: 491px) {
@@ -666,6 +669,10 @@ body[data-ui-view="minimal"] #action-select-view {
 }
 
 body[data-ui-view="minimal"] #actions-group-zoom {
+  display: none;
+}
+
+body[data-ui-view="minimal"] #action-help {
   display: none;
 }
 
@@ -3562,7 +3569,7 @@ main[data-view="search"] .form-control[data-view-target~="search"] {
 .shepherd-footer {
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
-  display: flex;
+  display: flex !important;
   justify-content: flex-end;
   padding: 0 .75rem .75rem;
 }
