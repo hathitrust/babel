@@ -38,6 +38,7 @@
 
   <xsl:template name="build-main-container-drawers">
     <main class="d--container" id="main" data-view="1up">
+      <xsl:call-template name="build-main-container-drawers-toolbar" />
       <xsl:call-template name="build-main-container-drawers-main" />
       <div class="d--sidebar--toggle--container">
         <div class="d--sidebar--toggle--edge mq--wide"></div>
@@ -259,7 +260,7 @@
 
   <xsl:template name="build-main-container-drawers-main">
     <section class="d--reader">
-      <xsl:call-template name="build-main-container-drawers-toolbar" />
+      <!-- <xsl:call-template name="build-main-container-drawers-toolbar" /> -->
       <h2 class="offscreen">Page Scans</h2>
       <div id="reader" class="d--reader--container">
         <section class="d--reader--viewer">
