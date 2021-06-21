@@ -26,6 +26,7 @@ export var Helpinator = class {
         this.configureTour(true);
         return;
       }
+      HT.analytics.trackEvent('')
       this.tour.start();
     });
 
@@ -52,7 +53,15 @@ export var Helpinator = class {
       useModalOverlay: true
     });
 
-    // hateful
+    // event tracking
+    this.tour.on('start', (event) => {
+      HT.analytics.trackEvent({
+        category: 'PT.walkthrough',
+        action: 'start',
+        label: 'start'
+      })
+    })
+
     this.tour.on('cancel', (event) => {
       HT.analytics.trackEvent({
         category: 'PT.walkthrough',
