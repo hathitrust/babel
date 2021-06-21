@@ -68,29 +68,37 @@ my $app = sub {
                               );
     
 
-    my $spreadsheet_data;
-    my $spreadsheet_data_key = 'walkthrough_googls_url_' . $target;
-    if ( $config->has($spreadsheet_data_key) ) {
-        my $walkthrough_google_url = $config->get($spreadsheet_data_key);
-        $spreadsheet_data = get($walkthrough_google_url);
-    } else {
-        $spreadsheet_data = read_file(qq{$ENV{SDRROOT}/pt/var/walkthrough/$target.json});
+    my $spreadsheet_data = '{}';
+
+    my $input_filename = qq{/htapps/babel/etc/walkthrough/$target.json};
+    my $input_filename_dev = qq{$ENV{SDRROOT}/etc/walkthrough/$target.json};
+    $input_filename = $input_filename_dev if ( -f $input_filename_dev );
+    if ( $target && -f $input_filename ) {
+        my $spreadsheet_data_key = 'walkthrough_googls_url_' . $target;
+        if ( $config->has($spreadsheet_data_key) ) {
+            my $walkthrough_google_url = $config->get($spreadsheet_data_key);
+            $spreadsheet_data = get($walkthrough_google_url);
+        } else {
+            $spreadsheet_data = read_file($input_filename);
+        }
     }
 
     $spreadsheet_data = decode_json($spreadsheet_data);
     my $steps = [];
-    foreach my $entry ( @{ $$spreadsheet_data{feed}{entry} } ) {
-        my $step = {};
-        $$step{id} = 'step-' . $$entry{'gsx$step'}{'$t'};
-        $$step{text} = $$entry{'gsx$comment'}{'$t'};
-        if ( $$entry{'gsx$attach'}{'$t'} ) {
-            $$step{attachTo} = {
-                element => $$entry{'gsx$attach'}{'$t'},
-                on => $$entry{'gsx$attachto'}{'$t'} || 'auto'
-            };
+    if ( defined $$spreadsheet_data{feed} ) {
+        foreach my $entry ( @{ $$spreadsheet_data{feed}{entry} } ) {
+            my $step = {};
+            $$step{id} = 'step-' . $$entry{'gsx$step'}{'$t'};
+            $$step{text} = $$entry{'gsx$comment'}{'$t'};
+            if ( $$entry{'gsx$attach'}{'$t'} ) {
+                $$step{attachTo} = {
+                    element => $$entry{'gsx$attach'}{'$t'},
+                    on => $$entry{'gsx$attachto'}{'$t'} || 'auto'
+                };
+            }
+        
+            push @$steps, $step;
         }
-    
-        push @$steps, $step;
     }
 
     my $data = encode_json($steps);
