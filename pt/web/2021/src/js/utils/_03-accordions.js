@@ -66,16 +66,16 @@
 
       this.el.addEventListener('toggle', (event) => {
         if ( this.el.open && this.el.dataset.interactive != 'false' ) {
-          if ( this.el.dataset.ignoreScrollIntoView == 'true' ) {
-            this.el.dataset.ignoreScrollIntoView = false;
-            return;
-          }
           // close the other details
           if ( __openDetails && __openDetails != this.el ) {
             __openDetails.open = false;
           }
           __openDetails = this.el;
           requestAnimationFrame(() => {
+            if ( this.el.dataset.ignoreScrollIntoView == 'true' ) {
+              this.el.dataset.ignoreScrollIntoView = false;
+              return;
+            }
             this.el.scrollIntoView(true);
           })
         }
