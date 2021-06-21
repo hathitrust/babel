@@ -27361,6 +27361,8 @@ var Helpinator = /*#__PURE__*/function () {
           return;
         }
 
+        HT.analytics.trackEvent('');
+
         _this.tour.start();
       });
     }
@@ -27384,8 +27386,15 @@ var Helpinator = /*#__PURE__*/function () {
           }
         },
         useModalOverlay: true
-      }); // hateful
+      }); // event tracking
 
+      this.tour.on('start', function (event) {
+        HT.analytics.trackEvent({
+          category: 'PT.walkthrough',
+          action: 'start',
+          label: 'start'
+        });
+      });
       this.tour.on('cancel', function (event) {
         HT.analytics.trackEvent({
           category: 'PT.walkthrough',
