@@ -1461,6 +1461,10 @@ html[data-survey-activated="false"] ._hj-widget-container {
   display: none !important;
 }
 
+html[data-in-walkthrough="true"] ._hj-widget-container {
+  display: none !important;
+}
+
 .debug-messages {
   position: fixed;
   z-index: 90000;

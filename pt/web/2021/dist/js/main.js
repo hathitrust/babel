@@ -27389,11 +27389,15 @@ var Helpinator = /*#__PURE__*/function () {
       }); // event tracking
 
       this.tour.on('start', function (event) {
+        document.documentElement.dataset.inWalkthrough = true;
         HT.analytics.trackEvent({
           category: 'PT.walkthrough',
           action: 'start',
           label: 'start'
         });
+      });
+      this.tour.on('inactive', function (event) {
+        document.documentElement.dataset.inWalkthrough = false;
       });
       this.tour.on('cancel', function (event) {
         HT.analytics.trackEvent({

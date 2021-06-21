@@ -1062,6 +1062,12 @@ html[data-survey-activated="false"] {
   }
 }
 
+html[data-in-walkthrough="true"] {
+  ._hj-widget-container {
+    display: none !important;
+  }
+}
+
 @import "debug";
 @import "tippy";
 @import "panels";
