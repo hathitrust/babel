@@ -27390,6 +27390,7 @@ var Helpinator = /*#__PURE__*/function () {
 
       this.tour.on('start', function (event) {
         document.documentElement.dataset.inWalkthrough = true;
+        localStorage.setItem('walkthroughStarted', 'true');
         HT.analytics.trackEvent({
           category: 'PT.walkthrough',
           action: 'start',

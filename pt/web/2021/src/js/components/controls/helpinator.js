@@ -56,6 +56,7 @@ export var Helpinator = class {
     // event tracking
     this.tour.on('start', (event) => {
       document.documentElement.dataset.inWalkthrough = true;
+      localStorage.setItem('walkthroughStarted', 'true');
       HT.analytics.trackEvent({
         category: 'PT.walkthrough',
         action: 'start',
