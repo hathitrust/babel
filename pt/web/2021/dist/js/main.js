@@ -27472,13 +27472,16 @@ var Helpinator = /*#__PURE__*/function () {
       var _this3 = this;
 
       var mql = window.matchMedia('( max-width: 700px )');
-      mql.addEventListener('change', function (event) {
-        if (event.matches) {
-          if (_this3.tour && _this3.tour.isActive()) {
-            _this3.tour.cancel();
+
+      if (mql.addEventListener) {
+        mql.addEventListener('change', function (event) {
+          if (event.matches) {
+            if (_this3.tour && _this3.tour.isActive()) {
+              _this3.tour.cancel();
+            }
           }
-        }
-      });
+        });
+      }
     }
   }]);
 

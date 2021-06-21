@@ -137,12 +137,14 @@ export var Helpinator = class {
 
   watchMediaQuery() {
     const mql = window.matchMedia('( max-width: 700px )');
-    mql.addEventListener('change', (event) => {
-      if ( event.matches ) {
-        if ( this.tour && this.tour.isActive() ) {
-          this.tour.cancel();
+    if ( mql.addEventListener ) {
+      mql.addEventListener('change', (event) => {
+        if ( event.matches ) {
+          if ( this.tour && this.tour.isActive() ) {
+            this.tour.cancel();
+          }
         }
-      }
-    })
+      })
+    }
   }
 };
