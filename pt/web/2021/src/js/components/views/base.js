@@ -1031,9 +1031,13 @@ export var Base = class {
     words.forEach((word) => {
       var pattern;
       try {
-        pattern = new RegExp(`(?<=^|\\P{L})(${word})(?=\\P{L}|$)`, 'ig');
+        pattern = new RegExp(`(?<=^|\\P{L})(${word})(?=\\P{L}|$)`, 'igu');
       } catch (error) {
-        pattern = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, 'ig');
+        try {
+          pattern = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, 'igu');
+        } catch (error) {
+          pattern = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, 'ig');
+        }
       }
       word_regexes[word] = pattern;
     })
