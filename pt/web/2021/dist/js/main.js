@@ -27361,10 +27361,9 @@ var Helpinator = /*#__PURE__*/function () {
           return;
         }
 
-        HT.analytics.trackEvent('');
-
         _this.tour.start();
       });
+      this.maybeAutoStart();
     }
   }, {
     key: "configureTour",
@@ -27468,17 +27467,33 @@ var Helpinator = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "maybeAutoStart",
+    value: function maybeAutoStart() {
+      var _this3 = this;
+
+      if (document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2021') < 0) {
+        // probably coming from the 2019ed
+        if (localStorage.getItem('walkthroughStarted') != 'true') {
+          if (!window.matchMedia('( max-width: 700px )').matches) {
+            this.reader.on('ready', function () {
+              _this3.tour.start();
+            });
+          }
+        }
+      }
+    }
+  }, {
     key: "watchMediaQuery",
     value: function watchMediaQuery() {
-      var _this3 = this;
+      var _this4 = this;
 
       var mql = window.matchMedia('( max-width: 700px )');
 
       if (mql.addEventListener) {
         mql.addEventListener('change', function (event) {
           if (event.matches) {
-            if (_this3.tour && _this3.tour.isActive()) {
-              _this3.tour.cancel();
+            if (_this4.tour && _this4.tour.isActive()) {
+              _this4.tour.cancel();
             }
           }
         });
@@ -31493,9 +31508,13 @@ var Base = /*#__PURE__*/function () {
         var pattern;
 
         try {
-          pattern = new RegExp("(?<=^|\\P{L})(".concat(word, ")(?=\\P{L}|$)"), 'ig');
+          pattern = new RegExp("(?<=^|\\P{L})(".concat(word, ")(?=\\P{L}|$)"), 'igu');
         } catch (error) {
-          pattern = new RegExp("(?:^|\\s)".concat(word, "(?:$|\\s)"), 'ig');
+          try {
+            pattern = new RegExp("(?:^|\\s)".concat(word, "(?:$|\\s)"), 'igu');
+          } catch (error) {
+            pattern = new RegExp("(?:^|\\s)".concat(word, "(?:$|\\s)"), 'ig');
+          }
         }
 
         word_regexes[word] = pattern;

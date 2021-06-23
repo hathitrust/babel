@@ -26,9 +26,10 @@ export var Helpinator = class {
         this.configureTour(true);
         return;
       }
-      HT.analytics.trackEvent('')
       this.tour.start();
     });
+
+    this.maybeAutoStart();
 
   }
 
@@ -134,6 +135,19 @@ export var Helpinator = class {
           window.alert("Tour updated");
         }
       })
+  }
+
+  maybeAutoStart() {
+    if ( document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2021') < 0 ) {
+      // probably coming from the 2019ed
+      if ( localStorage.getItem('walkthroughStarted') != 'true' ) {
+        if ( ! window.matchMedia('( max-width: 700px )').matches ) {
+          this.reader.on('ready', () => {
+            this.tour.start();
+          })
+        }
+      }
+    }
   }
 
   watchMediaQuery() {
