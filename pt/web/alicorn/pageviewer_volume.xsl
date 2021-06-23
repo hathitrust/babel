@@ -862,7 +862,7 @@
               <xsl:otherwise></xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
-          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=2021" class="action-beta-2021">Use the 2021 edition</a>
+          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=2021;via=2019" class="action-beta-2021">Use the 2021 edition</a>
         </p>
       </div>
     </details>
