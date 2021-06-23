@@ -1034,9 +1034,9 @@ export var Base = class {
         pattern = new RegExp(`(?<=^|\\P{L})(${word})(?=\\P{L}|$)`, 'igu');
       } catch (error) {
         try {
-          pattern = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, 'igu');
+          pattern = new RegExp(`(?:^|[\\s,\\.:;"'-])${word}(?:$|[\\s,\\.:;"'-])`, 'igu');
         } catch (error) {
-          pattern = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, 'ig');
+          pattern = new RegExp(`(?:^|[\\s,\\.:;"'-])${word}(?:$|[\\s,\\.:;"'-])`, 'ig');
         }
       }
       word_regexes[word] = pattern;

@@ -31511,9 +31511,9 @@ var Base = /*#__PURE__*/function () {
           pattern = new RegExp("(?<=^|\\P{L})(".concat(word, ")(?=\\P{L}|$)"), 'igu');
         } catch (error) {
           try {
-            pattern = new RegExp("(?:^|\\s)".concat(word, "(?:$|\\s)"), 'igu');
+            pattern = new RegExp("(?:^|[\\s,\\.:;\"'-])".concat(word, "(?:$|[\\s,\\.:;\"'-])"), 'igu');
           } catch (error) {
-            pattern = new RegExp("(?:^|\\s)".concat(word, "(?:$|\\s)"), 'ig');
+            pattern = new RegExp("(?:^|[\\s,\\.:;\"'-])".concat(word, "(?:$|[\\s,\\.:;\"'-])"), 'ig');
           }
         }
 
