@@ -75,7 +75,7 @@
 
   <xsl:template name="build-sidebar-panels">
 
-    <!-- <xsl:call-template name="build-survey-panel" /> -->
+    <xsl:call-template name="build-survey-panel" />
 
     <xsl:call-template name="build-access-alert-details" />
 
