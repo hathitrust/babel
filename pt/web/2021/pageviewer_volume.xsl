@@ -630,7 +630,7 @@
             <strong>$50 Amazon Gift Card!</strong>
           </p>
           <p>
-            <a href="#" target="_blank">Take our survey!</a>
+            <a href="https://survey.alchemer.com/s3/6380278/HathiTrust-UC-2021-Survey" target="_blank">Take our survey!</a>
           </p>
           <div style="margin-top: 1rem">
             <span class="offscreen">Sponsored by the University of California</span>
