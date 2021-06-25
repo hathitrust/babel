@@ -606,8 +606,9 @@
 
   <xsl:template name="build-survey-panel">
     <xsl:variable name="inst_id" select="//InstitutionCode" />
-    <xsl:if test="$inst_id = 'universityofcalifornia'">
-      <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:if test="( $inst_id = 'universityofcalifornia' ) and $access-type/Name = 'emergency_access_affiliate'">
+        <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
       <details id="uc-etas-survey" class="details--alert details--notice" data-open="{$state}">
         <xsl:if test="$state = 'open' or normalize-space($state) = ''">
           <xsl:attribute name="open">open</xsl:attribute>
