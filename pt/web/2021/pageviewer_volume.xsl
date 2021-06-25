@@ -722,6 +722,7 @@
     <xsl:text>
       hj('trigger', 'test_2021');
       setTimeout(function() {
+        if ( document.querySelector('#uc-etas-survey') ) { return ; }
         document.documentElement.dataset.surveyActivated = true;
       }, 1000 * 30);
     </xsl:text>
