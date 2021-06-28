@@ -28382,26 +28382,36 @@ var Screeninator = /*#__PURE__*/function () {
   }, {
     key: "bindEvents",
     value: function bindEvents() {
+      var _this = this;
+
       var action = document.querySelector(this.input.fullscreen);
 
       if (action) {
         if ((screenfull__WEBPACK_IMPORTED_MODULE_0___default().isEnabled)) {
-          var el = this.reader.$root; // document.documentElement
+          var el = this.reader.$root.parentNode; // document.documentElement
 
           action.addEventListener('click', function (event) {
             var target = event.target.closest('button');
-            screenfull__WEBPACK_IMPORTED_MODULE_0___default().toggle(el).then(function (args) {
-              target.setAttribute('aria-label', (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen) ? target.dataset.toggledLabel : target.dataset.untoggledLabel);
-
-              target._tippy.setContent(target.getAttribute('aria-label'));
-
-              document.body.dataset.fullscreen = (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen);
+            screenfull__WEBPACK_IMPORTED_MODULE_0___default().toggle(el).then(function (args) {// this._updateState(target);
             });
           });
         } else {
           action.style.display = 'none';
         }
+
+        screenfull__WEBPACK_IMPORTED_MODULE_0___default().on('change', function (event) {
+          document.body.dataset.fullscreen = (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen);
+
+          _this._updateState(action);
+        });
       }
+    }
+  }, {
+    key: "_updateState",
+    value: function _updateState(target) {
+      target.setAttribute('aria-label', (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen) ? target.dataset.toggledLabel : target.dataset.untoggledLabel);
+
+      target._tippy.setContent(target.getAttribute('aria-label'));
     }
   }]);
 

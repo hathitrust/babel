@@ -17,23 +17,31 @@ export var Screeninator = class {
     let action = document.querySelector(this.input.fullscreen);
     if ( action ) {
       if ( screenfull.isEnabled ) {
-        const el = this.reader.$root; // document.documentElement
+        const el = this.reader.$root.parentNode; // document.documentElement
         action.addEventListener('click', (event) => {
           let target = event.target.closest('button');
           screenfull.toggle(el).then((args) => {
-            target.setAttribute('aria-label', 
-              screenfull.isFullscreen ? 
-              target.dataset.toggledLabel :
-              target.dataset.untoggledLabel
-            );
-            target._tippy.setContent(target.getAttribute('aria-label'));
-            document.body.dataset.fullscreen = screenfull.isFullscreen;
+            // this._updateState(target);
           })
         })
       } else {
         action.style.display = 'none';
       }
+
+      screenfull.on('change', (event) => {
+        document.body.dataset.fullscreen = screenfull.isFullscreen;
+        this._updateState(action);
+      })
     }
+  }
+
+  _updateState(target) {
+    target.setAttribute('aria-label', 
+      screenfull.isFullscreen ? 
+      target.dataset.toggledLabel :
+      target.dataset.untoggledLabel
+    );
+    target._tippy.setContent(target.getAttribute('aria-label'));
   }
 
 };

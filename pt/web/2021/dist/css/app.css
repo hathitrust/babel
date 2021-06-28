@@ -704,6 +704,14 @@ body[data-fullscreen="true"] #action-toggle-fullscreen .enter-fullscreen {
   display: none;
 }
 
+body[data-fullscreen="true"] #sidebar {
+  display: none !important;
+}
+
+body[data-fullscreen="true"] .d--sidebar--toggle--container {
+  display: none !important;
+}
+
 button.btn {
   display: flex;
   flex-direction: row;
