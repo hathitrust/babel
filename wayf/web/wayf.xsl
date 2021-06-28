@@ -74,7 +74,7 @@
         <div class="aup-notice-container">
           <p class="aup-notice">
             By logging into HathiTrust, you agree to follow our
-            <a href="#">Acceptable Use Policy.</a>
+            <a href="https://www.hathitrust.org/acceptable-use">Acceptable Use Policy.</a>
           </p>
         </div>
         <xsl:if test="normalize-space(//BackToRefererLink)">
