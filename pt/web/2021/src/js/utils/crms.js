@@ -34,8 +34,11 @@ head.ready(function() {
   })
   $p.removeClass('offscreen');
 
-  document.querySelector('#panel-sections').dataset.ignoreScrollIntoView = true;
-  document.querySelector('#panel-sections').open = true;
+  let panel = document.querySelector('#panel-search');
+  if ( panel ) { panel.open = false; }
+  panel = document.querySelector('#panel-sections');
+  panel.dataset.ignoreScrollIntoView = true;
+  panel.open = true;
 
   // var $link = $("#embedHtml");
   // $link.parent().remove();

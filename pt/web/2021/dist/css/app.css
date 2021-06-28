@@ -556,7 +556,7 @@ html.crms span.blocked strong::first-letter {
 html.crms #panel-get-this-book,
 html.crms #panel-bookmark,
 html.crms #panel-share,
-html.crms #panel-search {
+html.crms #panel-download {
   display: none;
 }
 
