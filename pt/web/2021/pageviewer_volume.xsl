@@ -180,22 +180,10 @@
               <xsl:otherwise></xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
-          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=default" class="action-beta-2019">Use the 2019 edition</a>
+          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=2019" class="action-beta-2019">Use the 2019 edition</a>
         </p>
       </div>
     </details>
-  </xsl:template>
-
-  <xsl:template name="build-sidebar-beta-notice-alert">
-    <div class="beta--panel">
-      <div class="alert">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0" x="0px" y="0px" viewBox="0 0 100 125" enable-background="new 0 0 100 100" xml:space="preserve"><polygon points="66.608,59.075 53.333,56.286 55.247,51.667 "/><polygon points="75.749,44.939 68.333,33.58 72.952,31.666 "/><polygon points="84.167,58.333 81.667,35 86.667,35 "/><polygon points="32.514,65.427 11.912,76.667 10,72.048 "/><polygon points="73.021,77.979 58.581,86.667 56.667,82.048 "/><path d="M47.291,35.137l9.376-8.805l-16.12-2.26L33.344,10l-7.221,14.072L10,26.332l11.676,10.957L18.922,52.78l14.422-7.315  l14.424,7.315l-1.992-11.155c13.7,3.516,25.146,12.646,31.666,24.84c-4.509-3.027-9.935-4.798-15.774-4.798  c-6.823,0-13.051,2.447-17.941,6.468L40.84,62.5l-4.643,9.046l-10.363,1.455l7.506,7.041L31.568,90l9.271-4.7L50.11,90l-1.776-9.958  l7.499-7.041l-6.348-0.892c3.471-2.373,7.656-3.776,12.182-3.776c11.969,0,21.666,9.707,21.666,21.667H90  C90,63.535,71.826,41.365,47.291,35.137z M38.852,40.785l-5.508-2.793l-5.518,2.795l1.047-5.889L24.721,31l5.754-0.805l2.861-5.58  l2.855,5.576l5.766,0.811l-4.154,3.9L38.852,40.785z"/><path d="M90,16.998l-6.907-0.969L80.003,10l-3.092,6.029L70,16.998l5.003,4.695l-1.178,6.641l6.178-3.133l6.182,3.133L85,21.693  L90,16.998z"/><circle cx="60" cy="18.334" r="3.333"/><circle cx="20" cy="83.333" r="3.334"/><path d="M36.666,56.667c0,1.839-1.49,3.333-3.332,3.333C31.49,60,30,58.506,30,56.667c0-1.84,1.49-3.334,3.334-3.334  C35.176,53.333,36.666,54.827,36.666,56.667z"/><text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Danil Polshin</text><text x="0" y="120" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
-        <p><strong>You are using the new 2021 edition of the book reader.</strong> <a href="https://www.hathitrust.org/ws-book-viewer-beta-site">Learn more</a></p>
-      </div>
-      <div>
-        <a class="btn action-beta-2019" data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']};skin=default">Return to the 2019 edition</a>
-      </div>
-    </div>
   </xsl:template>
 
   <xsl:template name="build-search-in-item-panel">

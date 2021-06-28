@@ -37300,7 +37300,8 @@ if (window.hj) {
 }
 
 ;
-document.querySelector('a.action-beta-2019').addEventListener('click', function (event) {
+var betaLink = document.querySelector('a.action-beta-2019');
+if (betaLink) betaLink.addEventListener('click', function (event) {
   if (window.hj) {
     hj('tagRecording', ["PT 2021 -> 2019"]);
   }

@@ -693,7 +693,9 @@ if ( HT.params.format && validFormats.indexOf(HT.params.format) < 0 ) { HT.param
 // BETA HANDLING
 HT.prefs.set({ pt: { skin: '2021' }});
 if ( window.hj ) { hj('tagRecording', [ `PT 2021` ]) };
-document.querySelector('a.action-beta-2019').addEventListener('click', (event) => {
+const betaLink = document.querySelector('a.action-beta-2019');
+if ( betaLink )
+  betaLink.addEventListener('click', (event) => {
   if ( window.hj ) { hj('tagRecording', [ `PT 2021 -> 2019` ]) };
   if ( reader.view.name == 'page' ) {
     HT.prefs.set({ pt: { view: reader.view.format == 'image' ? 'image' : 'plaintext' }});

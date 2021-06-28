@@ -34,6 +34,7 @@ head.ready(function() {
   })
   $p.removeClass('offscreen');
 
+  document.querySelector('#panel-sections').dataset.ignoreScrollIntoView = true;
   document.querySelector('#panel-sections').open = true;
 
   // var $link = $("#embedHtml");

@@ -4,9 +4,9 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
 
-  <xsl:import href="../alicorn/common.xsl" />
+  <xsl:import href="../2021/common.xsl" />
 
-  <xsl:variable name="gSkin" select="'alicorn'" />
+  <xsl:variable name="gSkin" select="'2021'" />
 
   <xsl:template name="build-share-social-links" />
 
