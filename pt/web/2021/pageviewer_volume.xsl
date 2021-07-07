@@ -168,7 +168,7 @@
       </summary>
       <div style="padding: 1rem; padding-top: 0">
         <p>
-          <xsl:text>You are using the new 2021 edition of the book reader. </xsl:text>
+          <xsl:text>This is new edition of the book reader. </xsl:text>
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site">Learn more</a>
         </p>
         <p>

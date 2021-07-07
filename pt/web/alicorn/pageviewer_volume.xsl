@@ -836,7 +836,7 @@
               <text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Danil Polshin</text>
               <text x="0" y="120" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text>
             </svg>
-            <span>The 2021 Edition</span>
+            <span>The 2019 Edition</span>
           </span>
           <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
             <use xlink:href="#panel-collapsed"></use>
@@ -848,11 +848,16 @@
       </summary>
       <div style="padding: 1rem; padding-top: 0">
         <p>
+          The 2019 edition can be accessed until <strong>August 9.</strong>
+          <xsl:text> </xsl:text>
+          <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
+        </p>
+        <!-- <p>
           Try the
           <strong>new 2021 edition</strong>
           of the book reader!
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
-        </p>
+        </p> -->
         <p>
           <xsl:variable name="debug">
             <xsl:choose>
