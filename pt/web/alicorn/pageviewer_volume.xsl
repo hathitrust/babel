@@ -836,7 +836,7 @@
               <text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Danil Polshin</text>
               <text x="0" y="120" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text>
             </svg>
-            <span>The 2019 Edition</span>
+            <span>The 2019 Version</span>
           </span>
           <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
             <use xlink:href="#panel-collapsed"></use>
@@ -848,7 +848,7 @@
       </summary>
       <div style="padding: 1rem; padding-top: 0">
         <p>
-          The 2019 edition can be accessed until <strong>August 9.</strong>
+          The 2019 version can be accessed until <strong>August 9.</strong>
           <xsl:text> </xsl:text>
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
         </p>
@@ -867,7 +867,7 @@
               <xsl:otherwise></xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
-          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=2021;via=2019" class="action-beta-2021">Use the 2021 edition</a>
+          <a data-params-seq="true" href="/cgi/pt?id={$gHtId};seq={//Param[@name='seq']}{$debug};skin=default;via=2019" class="action-beta-2021">Use the 2021 version</a>
         </p>
       </div>
     </details>
