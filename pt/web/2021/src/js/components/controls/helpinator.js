@@ -16,11 +16,12 @@ export var Helpinator = class {
 
   bindEvents() {
 
-    this.configureTour();
+    this.maybeAutoStart();
 
     this.watchMediaQuery();
 
     let action = document.querySelector(this.input.trigger);
+    this.action = action;
     action.addEventListener('click', (event) => {
       if ( event.shiftKey ) {
         this.configureTour(true);
@@ -28,8 +29,9 @@ export var Helpinator = class {
       }
       this.tour.start();
     });
+    action.disabled = true;
 
-    this.maybeAutoStart();
+    this.configureTour();
 
   }
 
@@ -131,6 +133,10 @@ export var Helpinator = class {
           }
           this.tour.addStep(step);
         })
+        
+        // now the tour is ready
+        this.action.disabled = false;
+        this._initialized = true;
         if ( doAlert ) {
           window.alert("Tour updated");
         }
@@ -138,12 +144,19 @@ export var Helpinator = class {
   }
 
   maybeAutoStart() {
-    if ( document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2021') < 0 ) {
+    const self = this;
+    if ( document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2019') >= 0 ) {
       // probably coming from the 2019ed
       if ( localStorage.getItem('walkthroughStarted') != 'true' ) {
         if ( ! window.matchMedia('( max-width: 700px )').matches ) {
-          this.reader.on('ready', () => {
-            this.tour.start();
+          self.reader.on('ready', () => {
+            let interval;
+            interval = setInterval(function() {
+              if ( self._initialized ) {
+                self.tour.start();
+                clearInterval(interval);
+              }
+            }, 50);
           })
         }
       }

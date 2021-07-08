@@ -27351,9 +27351,10 @@ var Helpinator = /*#__PURE__*/function () {
     value: function bindEvents() {
       var _this = this;
 
-      this.configureTour();
+      this.maybeAutoStart();
       this.watchMediaQuery();
       var action = document.querySelector(this.input.trigger);
+      this.action = action;
       action.addEventListener('click', function (event) {
         if (event.shiftKey) {
           _this.configureTour(true);
@@ -27363,7 +27364,8 @@ var Helpinator = /*#__PURE__*/function () {
 
         _this.tour.start();
       });
-      this.maybeAutoStart();
+      action.disabled = true;
+      this.configureTour();
     }
   }, {
     key: "configureTour",
@@ -27459,7 +27461,10 @@ var Helpinator = /*#__PURE__*/function () {
           }
 
           _this2.tour.addStep(step);
-        });
+        }); // now the tour is ready
+
+        _this2.action.disabled = false;
+        _this2._initialized = true;
 
         if (doAlert) {
           window.alert("Tour updated");
@@ -27469,14 +27474,20 @@ var Helpinator = /*#__PURE__*/function () {
   }, {
     key: "maybeAutoStart",
     value: function maybeAutoStart() {
-      var _this3 = this;
+      var self = this;
 
-      if (document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2021') < 0) {
+      if (document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2019') >= 0) {
         // probably coming from the 2019ed
         if (localStorage.getItem('walkthroughStarted') != 'true') {
           if (!window.matchMedia('( max-width: 700px )').matches) {
-            this.reader.on('ready', function () {
-              _this3.tour.start();
+            self.reader.on('ready', function () {
+              var interval;
+              interval = setInterval(function () {
+                if (self._initialized) {
+                  self.tour.start();
+                  clearInterval(interval);
+                }
+              }, 50);
             });
           }
         }
@@ -27485,15 +27496,15 @@ var Helpinator = /*#__PURE__*/function () {
   }, {
     key: "watchMediaQuery",
     value: function watchMediaQuery() {
-      var _this4 = this;
+      var _this3 = this;
 
       var mql = window.matchMedia('( max-width: 700px )');
 
       if (mql.addEventListener) {
         mql.addEventListener('change', function (event) {
           if (event.matches) {
-            if (_this4.tour && _this4.tour.isActive()) {
-              _this4.tour.cancel();
+            if (_this3.tour && _this3.tour.isActive()) {
+              _this3.tour.cancel();
             }
           }
         });
