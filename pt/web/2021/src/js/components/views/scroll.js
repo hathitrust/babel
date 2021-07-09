@@ -244,6 +244,11 @@ export var Scroll = class extends Base {
     return 0;
   }
 
+  isVisible(page) {
+    let percentage = this.visibility(page); // no rootMargin
+    return percentage > 0;
+  }
+
   loadPages() {
     // this.sets.visible = this.debugScrolled();
     if ( setfn.eqSet(this.sets.visible, this.sets.loaded) ) { return; }

@@ -1478,6 +1478,10 @@ html[data-in-walkthrough="true"] ._hj-widget-container {
   display: none !important;
 }
 
+#aup-alert-form + #root .d--toolbar--reader {
+  bottom: 6rem;
+}
+
 .debug-messages {
   position: fixed;
   z-index: 90000;

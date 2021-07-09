@@ -1081,6 +1081,10 @@ html[data-in-walkthrough="true"] {
   }
 }
 
+#aup-alert-form + #root .d--toolbar--reader {
+  bottom: 6rem;
+}
+
 @import "debug";
 @import "tippy";
 @import "panels";

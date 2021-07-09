@@ -33606,6 +33606,13 @@ var Scroll = /*#__PURE__*/function (_Base) {
       return 0;
     }
   }, {
+    key: "isVisible",
+    value: function isVisible(page) {
+      var percentage = this.visibility(page); // no rootMargin
+
+      return percentage > 0;
+    }
+  }, {
     key: "loadPages",
     value: function loadPages() {
       // this.sets.visible = this.debugScrolled();
