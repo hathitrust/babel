@@ -168,7 +168,7 @@
       </summary>
       <div style="padding: 1rem; padding-top: 0">
         <p>
-          <xsl:text>This is new version of the book reader. </xsl:text>
+          <xsl:text>This is the new version of the book reader. </xsl:text>
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site">Learn more</a>
         </p>
         <p>
