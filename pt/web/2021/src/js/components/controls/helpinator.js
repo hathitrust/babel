@@ -151,12 +151,18 @@ export var Helpinator = class {
         if ( ! window.matchMedia('( max-width: 700px )').matches ) {
           self.reader.on('ready', () => {
             let interval;
+            let interval_idx = 0;
             interval = setInterval(function() {
               if ( self._initialized ) {
                 self.tour.start();
                 clearInterval(interval);
               }
-            }, 50);
+              interval_idx += 1;
+              if ( interval_idx >= 50 ) {
+                // just punt
+                clearInterval(interval);
+              }
+            }, 100);
           })
         }
       }
