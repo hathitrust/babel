@@ -355,7 +355,8 @@
         </xsl:when>
         <xsl:otherwise>
 
-          <form class="form-download-metadata" method="POST" action="{//DownloadMetadataAction}">
+          <iframe name="form-sink" style="display: none"></iframe>
+          <form class="form-download-metadata" method="POST" action="{//DownloadMetadataAction}" target="form-sink">
             <input type="hidden" name="c" value="{//Param[@name='c']}" />
             <input type="hidden" name="a" value="download" />
             <xsl:choose>
