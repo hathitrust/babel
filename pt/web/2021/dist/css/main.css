@@ -1,4 +1,38 @@
 @charset "UTF-8";
+html.crms #person-nav {
+  margin-left: auto;
+}
+
+html.crms span.blocked {
+  display: block;
+  margin-top: 4px;
+  /*margin-bottom: 2px;*/
+}
+
+html.crms span.blocked strong {
+  display: block;
+}
+
+html.crms span.blocked strong::first-letter {
+  text-transform: capitalize;
+}
+
+html.crms #panel-get-this-book,
+html.crms #panel-bookmark,
+html.crms #panel-share,
+html.crms #panel-download {
+  display: none;
+}
+
+html.crms main {
+  padding: 0;
+  margin: 0;
+}
+
+html.crms .beta--alert {
+  display: none;
+}
+
 :root {
   --background: #39383a;
 }

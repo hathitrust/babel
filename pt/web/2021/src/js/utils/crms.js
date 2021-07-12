@@ -37,12 +37,8 @@ head.ready(function() {
   let panel = document.querySelector('#panel-search');
   if ( panel ) { panel.open = false; }
   panel = document.querySelector('#panel-sections');
-  panel.dataset.ignoreScrollIntoView = true;
-  panel.open = true;
-
-  // var $link = $("#embedHtml");
-  // $link.parent().remove();
-
-  // $link = $("a[data-toggle='PT Find in a Library']");
-  // $link.parent().remove();
+  if ( panel ) {
+    panel.dataset.ignoreScrollIntoView = true;
+    panel.open = true;
+  }
 })

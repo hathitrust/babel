@@ -24,3 +24,11 @@ span.blocked strong::first-letter {
 .app--panel--contents {
   display: block !important;
 }
+
+#panel-get-this-book,
+#panel-bookmark,
+#panel-share,
+#panel-download
+{
+display: none;
+}
