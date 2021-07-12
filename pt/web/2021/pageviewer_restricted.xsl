@@ -4,6 +4,7 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:METS="http://www.loc.gov/METS/"
   xmlns:PREMIS="http://www.loc.gov/standards/premis"
+  xmlns:xlink="https://www.w3.org/1999/xlink"
   xmlns:exsl="http://exslt.org/common"
   exclude-result-prefixes="exsl str"
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
@@ -106,7 +107,7 @@
 
       </xsl:when>
       <xsl:otherwise>
-        <div class="alert alert-block alert-block alert--emergency-access">      
+        <div class="alert alert-block alert--emergency-access">      
           <p style="margin-right: 1rem">
             <xsl:text>All available copies are currently in use. Try again later. Access to this work is provided through the </xsl:text>
             <a href="{$etas_href}">Emergency Temporary Access Service</a>
@@ -371,4 +372,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-
