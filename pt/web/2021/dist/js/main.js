@@ -28414,15 +28414,14 @@ var Screeninator = /*#__PURE__*/function () {
             screenfull__WEBPACK_IMPORTED_MODULE_0___default().toggle(el).then(function (args) {// this._updateState(target);
             });
           });
+          screenfull__WEBPACK_IMPORTED_MODULE_0___default().on('change', function (event) {
+            document.body.dataset.fullscreen = (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen);
+
+            _this._updateState(action);
+          });
         } else {
           action.style.display = 'none';
         }
-
-        screenfull__WEBPACK_IMPORTED_MODULE_0___default().on('change', function (event) {
-          document.body.dataset.fullscreen = (screenfull__WEBPACK_IMPORTED_MODULE_0___default().isFullscreen);
-
-          _this._updateState(action);
-        });
       }
     }
   }, {

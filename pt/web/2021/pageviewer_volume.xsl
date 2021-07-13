@@ -69,7 +69,7 @@
         </div>
       </div>
     </main>
-    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/2021/js/main.js']/@modtime" />
+    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/2021/dist/js/main.js']/@modtime" />
     <script type="text/javascript" src="/pt/2021/dist/js/main.js?_={$modtime}"></script>
   </xsl:template>
 
@@ -567,7 +567,7 @@
   </xsl:template>
 
   <xsl:template name="setup-extra-header--reader">
-    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/2021/css/app.css']/@modtime" />
+    <xsl:variable name="modtime" select="//Timestamp[@href='/pt/2021/dist/css/app.css']/@modtime" />
 
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&amp;display=swap" rel="stylesheet" />

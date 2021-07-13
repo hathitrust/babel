@@ -24,14 +24,15 @@ export var Screeninator = class {
             // this._updateState(target);
           })
         })
+
+        screenfull.on('change', (event) => {
+          document.body.dataset.fullscreen = screenfull.isFullscreen;
+          this._updateState(action);
+        })
+
       } else {
         action.style.display = 'none';
       }
-
-      screenfull.on('change', (event) => {
-        document.body.dataset.fullscreen = screenfull.isFullscreen;
-        this._updateState(action);
-      })
     }
   }
 
