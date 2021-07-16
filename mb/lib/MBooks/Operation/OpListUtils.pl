@@ -323,7 +323,7 @@ sub get_item_data {
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
-    my $sortkey = $ab->mapurl_param_to_field($C, scalar $cgi->param('sort'));
+    my $sortkey = $ab->mapurl_param_to_field($C, scalar $cgi->param('sort'), 'title_a');
 
     # get direction by munging url sort param
     my $direction = MBooks::Utils::Sort::get_dir_from_sort_param(scalar $cgi->param('sort'));

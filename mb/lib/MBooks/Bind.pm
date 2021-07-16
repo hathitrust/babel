@@ -218,12 +218,12 @@ Mapping for certain URL parameters to database field names
 sub mapurl_param_to_field
 {
     my $self = shift;
-    my ($C, $param) = @_;
+    my ($C, $param, $default_field) = @_;
 
     my $field;
 
-    $field = $Action::Bind::g_url_to_field_name_map{$param};
-    ASSERT($field, qq{failed to map url param="$param" to a database field value.});
+    $field = $Action::Bind::g_url_to_field_name_map{$param} || $default_field;
+    # ASSERT($field, qq{failed to map url param="$param" to a database field value.});
 
     return $field;
 }

@@ -193,7 +193,7 @@ sub replace_bad_sort_keys{
     
     my $cgi = $C->get_object('CGI');
     my $ab = $C->get_object('Bind');
-    my $sort_key = $ab->mapurl_param_to_field($C, scalar $cgi->param('sort'));
+    my $sort_key = $ab->mapurl_param_to_field($C, scalar $cgi->param('sort'), 'title_a');
     my $params_hashref = $ab->get_operation_params_hashref($C, ref($self));
     my $optional_params_hashref = $$params_hashref{'optional'};
 
