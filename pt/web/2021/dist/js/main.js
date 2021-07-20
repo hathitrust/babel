@@ -30474,7 +30474,8 @@ var Base = /*#__PURE__*/function () {
     this._handlers = {};
     this.id = new Date().getTime();
     this.pages = [];
-    this.pagesIndex = {};
+    this.pagesIndex = new Map();
+    this.pagesSeq = new Map();
     this.trackResize = true;
     this.rootMargin = options.rootMargin || 1024; // ( 8 * 16 );
 
@@ -30511,6 +30512,50 @@ var Base = /*#__PURE__*/function () {
       var scale = this.scale;
       var t0 = performance.now();
       var fragment = document.createDocumentFragment();
+      var bgColor = '#F8F8F8';
+      var textColor = '#F0F0F0';
+      var placeholder = simpleSvgPlaceholder({
+        bgColor: bgColor,
+        textColor: textColor,
+        text: "\u2749",
+        fontFamily: "monospace",
+        width: w,
+        height: h
+      });
+
+      if (!this.reader.templates) {
+        this.reader.templates = {};
+      }
+
+      var template = this.reader.templates[this.format];
+
+      if (!template) {
+        if (this.format == 'image') {
+          template = this.reader.templates[this.format] = document.createElement('div');
+          template.setAttribute('tabindex', '-1');
+          template.setAttribute('aria-hidden', true);
+          template.classList.add('page');
+          template.dataset.loaded = false;
+          template.dataset.visible = false;
+          template.dataset.scale = scale;
+          var rotateButtonAction = rotateButton;
+
+          if (this.config().rotate === false) {
+            rotateButtonAction = '';
+          }
+
+          template.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\">".concat(rotateButtonAction, "<span class=\"page-label\"></span></div></div><div class=\"page-text\"></div><div class=\"image\" style=\"\"><img alt=\"\" style=\"\" height=\"\" width=\"\" src=\"").concat(placeholder, "\" data-placeholder-src=\"").concat(placeholder, "\" data-thumbnail-src=\"\" /></div>");
+        } else {
+          template = this.reader.templates[this.format] = document.createElement('div');
+          template.setAttribute('tabindex', '-1');
+          template.setAttribute('aria-hidden', true);
+          template.classList.add('page');
+          template.dataset.loaded = false;
+          template.dataset.visible = false;
+          template.dataset.scale = scale;
+          template.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\"><span class=\"page-label\"></span></div></div><div data-placeholder=\"\" class=\"page-text\"></div>";
+        }
+      }
 
       if (maxHeight) {
         // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
@@ -30533,17 +30578,13 @@ var Base = /*#__PURE__*/function () {
       }
 
       for (var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
-        // var placeholder = '/imgsrv/graphics/1x1b.png';
         var titleCase = function titleCase(str) {
           return str.toLowerCase().split('_').map(function (word) {
             return word.charAt(0).toUpperCase() + word.slice(1);
           }).join(' ');
         };
 
-        var page = document.createElement('div');
-        page.setAttribute('tabindex', '-1');
-        page.setAttribute('aria-hidden', true);
-        page.classList.add('page');
+        var page = template.cloneNode(true);
         page.dataset.seq = seq;
 
         var klass = this._assignSide(seq);
@@ -30551,9 +30592,6 @@ var Base = /*#__PURE__*/function () {
         page.classList.add(klass);
         slice_index = this._slicify(seq);
         page.dataset.slice = slice_index;
-        page.dataset.loaded = false;
-        page.dataset.visible = false;
-        page.dataset.scale = scale;
         var meta = this.service.manifest.meta(seq);
 
         var sizing = this._calculatePageSize(meta, page, minWidth, maxHeight);
@@ -30568,16 +30606,6 @@ var Base = /*#__PURE__*/function () {
           page.classList.add('page--best-fit');
         }
 
-        var bgColor = '#F8F8F8';
-        var textColor = '#F0F0F0';
-        var placeholder = simpleSvgPlaceholder({
-          bgColor: bgColor,
-          textColor: textColor,
-          text: "#".concat(seq),
-          fontFamily: "monospace",
-          width: w,
-          height: h
-        });
         var altText = "Page Scan #".concat(seq);
         var features = [];
 
@@ -30592,42 +30620,38 @@ var Base = /*#__PURE__*/function () {
 
         if (priorityFeature) {
           altText += ' - ' + titleCase(priorityFeature);
-        } // this is the image format
+        }
 
+        var pageNum = this.service.manifest.pageNum(seq) || '';
+
+        if (pageNum) {
+          pageNum = " (".concat(pageNum, ")");
+        }
+
+        page.querySelector('.page-label').innerText = "#".concat(seq).concat(pageNum);
 
         if (this.format == 'image') {
-          var rotateButtonAction = rotateButton;
-
-          if (this.config().rotate === false) {
-            rotateButtonAction = '';
-          }
-
           var thumbnailSrc = this.service.thumbnail({
             seq: seq
           });
-          var pageNum = this.service.manifest.pageNum(seq) || '';
-
-          if (pageNum) {
-            pageNum = " (".concat(pageNum, ")");
-          }
-
-          page.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\">".concat(rotateButtonAction, "<span>#").concat(seq).concat(pageNum, "</span></div></div><div class=\"page-text\"></div><div class=\"image\" style=\"height: ").concat(sizing.frameHeight, "px; width: ").concat(sizing.frameWidth, "px\"><img alt=\"").concat(altText, "\" style=\"height: ").concat(sizing.height, "px; width: ").concat(sizing.width, "px\" height=\"").concat(sizing.height, "\" width=\"").concat(sizing.width, "\" src=\"").concat(placeholder, "\" data-placeholder-src=\"").concat(placeholder, "\" data-thumbnail-src=\"").concat(thumbnailSrc, "\" /></div>");
-        } else {
-          page.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\"><span>#".concat(seq, "</span></div></div><div data-placeholder=\"\" class=\"page-text\"></div>");
-
-          if (this.name == 'thumb') {
-            page.querySelector('.page-text').style.height = "".concat(sizing.frameHeight, "px");
-            page.querySelector('.page-text').style.width = "".concat(sizing.frameWidth, "px");
-          } else {// const height = ( this.container.offsetWidth * 0.85 ) * sizing.ratio;
-            // page.querySelector('.page-text').style.minHeight = `${height}px`;
-          }
-        }
+          var img = page.querySelector('img');
+          img.setAttribute('height', sizing.height);
+          img.setAttribute('width', sizing.width);
+          img.setAttribute('alt', altText);
+          img.setAttribute('data-thumbnail-src', thumbnailSrc);
+          img.style.height = "".concat(sizing.height, "px");
+          img.style.width = "".concat(sizing.width, "px");
+          var frame = img.parentElement;
+          frame.style.width = "".concat(sizing.frameWidth, "px");
+          frame.style.height = "".concat(sizing.frameHeight, "px"); // page.innerHTML = `<div class="page--toolbar"><div class="tag">${rotateButtonAction}<span>#${seq}${pageNum}</span></div></div><div class="page-text"></div><div class="image" style="height: ${sizing.frameHeight}px; width: ${sizing.frameWidth}px"><img alt="${altText}" style="height: ${sizing.height}px; width: ${sizing.width}px" height="${sizing.height}" width="${sizing.width}" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="${thumbnailSrc}" /></div>`;
+        } else {}
 
         this._renderr(page);
 
         fragment.appendChild(page);
         this.pages.push(page);
-        this.pagesIndex[seq] = page;
+        this.pagesIndex.set(seq, page);
+        this.pagesSeq.set(page, seq);
       }
 
       var endSeq = this.service.manifest.totalSeq;
@@ -30643,10 +30667,9 @@ var Base = /*#__PURE__*/function () {
       }
 
       this.container.appendChild(fragment);
-      var pages = this.container.querySelectorAll('.page');
 
-      for (var i = 0; i < pages.length; i++) {
-        this.bindPageEvents(pages[i]);
+      for (var i = 0; i < this.pages.length; i++) {
+        this.bindPageEvents(this.pages[i]);
       }
 
       if (this._initialSeq) {
@@ -30745,14 +30768,12 @@ var Base = /*#__PURE__*/function () {
         var self = _this2;
 
         var _process = function _process(seq, loadImage) {
-          var page = self.pagesIndex[seq] ? self.pagesIndex[seq] : null;
+          var page = self.pagesIndex.has(seq) ? self.pagesIndex.get(seq) : null;
 
           if (page && page.dataset.loaded == 'false') {
-            var img = page.querySelector('img'); // img.src.indexOf(img.dataset.thumbnailSrc) < 0 
-            // img.src == img.dataset.placeHolderSrc
+            var img = page.querySelector('img');
 
             if (page.dataset.reframed != 'true' && self.format == 'image') {
-              self._tracker.thumbnails[seq] = self._tracker.thumbnails[seq] ? self._tracker.thumbnails[seq] + 1 : 1;
               self.service.loaders.thumbnails.queue({
                 src: img.dataset.thumbnailSrc,
                 page: page
@@ -30791,7 +30812,7 @@ var Base = /*#__PURE__*/function () {
 
         var pages = Array.isArray(page) ? page : [page];
         var page = pages[0];
-        var seq = parseInt(page.dataset.seq, 10);
+        var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
         if (Math.abs(seq - self.currentSeq) > 5) {
           self.service.loaders.thumbnails.stop(true);
@@ -30802,7 +30823,7 @@ var Base = /*#__PURE__*/function () {
 
         for (var i = 0; i < pages.length; i++) {
           var page = pages[i];
-          var seq = parseInt(page.dataset.seq, 10);
+          var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
           _process(seq, true);
         } // now queue thumbnails
@@ -30810,7 +30831,7 @@ var Base = /*#__PURE__*/function () {
 
         if (options.lazy !== false) {
           var page = pages[0];
-          var seq = parseInt(page.dataset.seq, 10);
+          var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
           for (var ii = seq - 2; ii < seq; ii++) {
             _process(ii, true);
@@ -30823,7 +30844,7 @@ var Base = /*#__PURE__*/function () {
 
         if (options.lazy !== false) {
           var page = pages[pages.length - 1];
-          var seq = parseInt(page.dataset.seq, 10);
+          var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
           for (var ii = seq + 2; ii > seq; ii--) {
             _process(ii, true);
@@ -30913,6 +30934,7 @@ var Base = /*#__PURE__*/function () {
         img.dataset.height = frameWidth * r;
         img.style.height = "".concat(img.dataset.width, "px");
         img.style.height = "".concat(img.dataset.height, "px");
+        page.dataset.height = page.offsetHeight;
 
         if (this._checkForFoldouts(image, page)) {
           var altText = img.getAttribute('alt');
@@ -31015,8 +31037,9 @@ var Base = /*#__PURE__*/function () {
       var img = page.querySelector('img');
 
       if (img) {
-        console.log("<< unloading", page.dataset.seq);
-        img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+        console.log("<< unloading", page.dataset.seq); // img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+
+        img.src = img.dataset.placeholderSrc;
       }
 
       var page_text = page.querySelector('.page-text');
@@ -31036,7 +31059,7 @@ var Base = /*#__PURE__*/function () {
         var element = params;
         params = {};
         params.seq = element.dataset.seq;
-        params.width = element.offsetWidth || 680;
+        params.width = element.dataset.width || 680; // element.offsetWidth
       } // if ( this.reader.pagedetails.rotate[params.seq] ) {
       //   params.rotation = this.reader.pagedetails.rotate[params.seq];
       // }
@@ -31102,7 +31125,13 @@ var Base = /*#__PURE__*/function () {
   }, {
     key: "getPage",
     value: function getPage(seq) {
-      return this.pagesIndex[seq];
+      seq = Number(seq);
+      return this.pagesIndex.get(seq);
+    }
+  }, {
+    key: "getPageSeq",
+    value: function getPageSeq(page) {
+      return this.pagesSeq.get(page);
     }
   }, {
     key: "bindEvents",
@@ -31137,9 +31166,16 @@ var Base = /*#__PURE__*/function () {
 
           if (_this3._lastScale != _this3.scale) {
             _this3._lastScale = _this3.scale;
+          } // this._resizePages();
+
+
+          if (_this3._resizePageTimer) {
+            clearTimeout(_this3._resizePageTimer);
           }
 
-          _this3._resizePages();
+          _this3._resizePageTimer = setTimeout(function () {
+            _this3._resizePages();
+          }, 100);
         });
       }
 
@@ -31150,7 +31186,9 @@ var Base = /*#__PURE__*/function () {
     value: function unloadPages() {
       var _this4 = this;
 
-      var pages = this.container.querySelectorAll('.page[data-loaded="true"]');
+      var pages = this.pages.filter(function (page) {
+        return page.dataset.loaded == 'true';
+      });
       var possibles = new Set();
       pages.forEach(function (page) {
         return possibles.add(page.dataset.seq);
@@ -31202,10 +31240,32 @@ var Base = /*#__PURE__*/function () {
       } else {
         pages.forEach(function (page) {
           if (page.dataset.seq) {
-            _this5.sets.visible.add(parseInt(page.dataset.seq, 10));
+            // this.sets.visible.add(parseInt(page.dataset.seq, 10));
+            _this5.sets.visible.add(_this5.getPageSeq(page));
           }
         });
       }
+    }
+  }, {
+    key: "viewport",
+    value: function viewport() {
+      if (!this._viewport) {
+        this.updateViewport();
+      }
+
+      return this._viewport;
+    }
+  }, {
+    key: "updateViewport",
+    value: function updateViewport() {
+      this._viewport = this._viewport || {};
+
+      if (!this._viewport.widowHeight) {
+        this._viewport.windowHeight = this.container.parentNode.offsetHeight;
+      }
+
+      this._viewport.windowTop = this.container.parentNode.scrollTop;
+      this._viewport.windowBottom = this._viewport.windowTop + this._viewport.windowHeight;
     }
   }, {
     key: "bindPageEvents",
@@ -31390,10 +31450,36 @@ var Base = /*#__PURE__*/function () {
       }
     }
   }, {
+    key: "_resizePage",
+    value: function _resizePage(_ref3) {
+      var page = _ref3.page,
+          frame = _ref3.frame,
+          img = _ref3.img,
+          w = _ref3.w,
+          h = _ref3.h,
+          sizing = _ref3.sizing,
+          is_dirty = _ref3.is_dirty,
+          isCurrentSeq = _ref3.isCurrentSeq,
+          index = _ref3.index;
+      page.dataset.width = w;
+      page.dataset.height = h;
+      frame.style.width = "".concat(sizing.frameWidth, "px");
+      frame.style.height = "".concat(sizing.frameHeight, "px");
+      img.style.width = "".concat(w, "px");
+      img.style.height = "".concat(h, "px");
+
+      if (is_dirty) {
+        this.redrawPage(page);
+      }
+
+      page.dataset.height = page.offsetHeight;
+    }
+  }, {
     key: "_resizePages",
     value: function _resizePages() {
       var _this6 = this;
 
+      var self = this;
       this._scrollPause = true;
       var minWidth = this.minWidth();
       var maxHeight = this.maxHeight();
@@ -31401,10 +31487,12 @@ var Base = /*#__PURE__*/function () {
       var currentSeq;
 
       if (this._currentPage) {
-        currentSeq = this._currentPage.dataset.seq; // this.currentLocation();
+        currentSeq = this.getPageSeq(this._currentPage); // .dataset.seq; // this.currentLocation();
       } else {
         currentSeq = this.currentLocation();
       }
+
+      var currentPage = this.getPage(currentSeq);
 
       if (maxHeight) {
         // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
@@ -31413,11 +31501,36 @@ var Base = /*#__PURE__*/function () {
 
       HT.log("__RESIZE__ start", currentSeq);
       var dirty = false;
-      this.pages.forEach(function (page) {
-        var seq = parseInt(page.dataset.seq, 10);
+      var queue = [currentSeq];
+      var N = 25;
 
-        var meta = _this6.service.manifest.meta(seq); // var ratio = meta.height / meta.width;
+      var _enqueue = function _enqueue(start, end) {
+        var delta = start < end ? 1 : -1;
 
+        var fn = function fn(idx, end) {
+          return delta == 1 ? idx <= end : idx >= end;
+        };
+
+        for (var seq = start; fn(seq, end); seq += delta) {
+          if (seq != currentSeq && self.pagesIndex.has(seq)) {
+            queue.push(seq);
+          }
+        }
+      };
+
+      _enqueue(currentSeq - N, currentSeq + N);
+
+      _enqueue(currentSeq - N - 1, 1);
+
+      _enqueue(currentSeq + N + 1, this.service.manifest.totalSeq);
+
+      var fragment = document.createDocumentFragment();
+      var parentEl = this.container.parentElement;
+      fragment.appendChild(this.container);
+      queue.forEach(function (seq) {
+        var page = _this6.getPage(seq);
+
+        var meta = _this6.service.manifest.meta(seq);
 
         var h;
         var w;
@@ -31433,46 +31546,34 @@ var Base = /*#__PURE__*/function () {
 
         h = sizing.height;
         w = sizing.width;
-        dirty = dirty || img.offsetHeight != h;
-        requestAnimationFrame(function () {
-          page.dataset.width = w;
-          page.dataset.height = h;
-          frame.style.width = "".concat(sizing.frameWidth, "px");
-          frame.style.height = "".concat(sizing.frameHeight, "px");
-          img.style.width = "".concat(w, "px");
-          img.style.height = "".concat(h, "px");
-        });
+        var is_dirty = (page.dataset.loaded == 'true' || page.dataset.visible == 'true') && img.dataset.height != h;
         page.dataset.bestFit = scale <= 1 ? 'true' : 'false';
 
         if (scale <= 1) {
           page.classList.add('page--best-fit');
-        } // this._resizePageByPages(page);
-
-      });
-
-      if (dirty) {
-        if (this._redrawPageImagesTimer) {
-          clearTimeout(this._redrawPageImagesTimer);
         }
 
-        this._redrawPageImagesTimer = setTimeout(function () {
-          _this6.redrawPageImages();
+        var isCurrentSeq = currentSeq == seq;
 
-          _this6.display(currentSeq);
-
-          _this6._scrollPause = false;
-          HT.log("__RESIZE__ end/dirty", currentSeq);
-
-          _this6._adjustContainer();
-        }, 100);
-        return;
-      }
-
-      HT.log("__RESIZE__ end", currentSeq);
-      this.display(currentSeq);
-      this._scrollPause = false;
+        _this6._resizePage({
+          page: page,
+          frame: frame,
+          img: img,
+          w: w,
+          h: h,
+          sizing: sizing,
+          is_dirty: is_dirty,
+          isCurrentSeq: isCurrentSeq
+        });
+      });
 
       this._adjustContainer();
+
+      parentEl.appendChild(this.container); // this.display(currentSeq);
+
+      currentPage.scrollIntoView(); // have to do this because display(currentSeq) will be a no-op
+
+      this._scrollPause = false;
     }
   }, {
     key: "_calculatePageSize",
@@ -31990,12 +32091,20 @@ var Flip = /*#__PURE__*/function (_Base) {
       var targetPages;
 
       if (this.currentSeq) {
-        var currentSlice = this._slicify(this.currentSeq);
+        var currentSlice = this._slicify(this.currentSeq); // currentPages = this.container.querySelectorAll(`.page[data-slice="${currentSlice}"]`);
 
-        currentPages = this.container.querySelectorAll(".page[data-slice=\"".concat(currentSlice, "\"]"));
-      }
 
-      var targetPages = this.container.querySelectorAll(".page[data-slice=\"".concat(this._slicify(seq), "\"]"));
+        currentPages = this.pages.filter(function (page) {
+          return page.dataset.slice == currentSlice;
+        });
+      } // var targetPages = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
+
+
+      var targetSlice = this._slicify(seq);
+
+      targetPages = this.pages.filter(function (page) {
+        return page.dataset.slice == targetSlice;
+      });
 
       if (!targetPages.length) {
         return;
@@ -32041,8 +32150,11 @@ var Flip = /*#__PURE__*/function (_Base) {
       var delta = tuple[3];
       targetPages.forEach(function (page) {
         page.dataset.visible = true;
+      }); // currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
+
+      currentPages = this.pages.filter(function (page) {
+        return page.dataset.visible == 'true';
       });
-      currentPages = document.querySelectorAll('.page[data-visible="true"]');
 
       if (!currentPages || !currentPages.length || !this._initialized) {
         targetPages.forEach(function (page) {
@@ -32136,7 +32248,10 @@ var Flip = /*#__PURE__*/function (_Base) {
       var maxWidth = 0;
 
       for (var sliceIdx = 1; sliceIdx <= this._sliceMax; sliceIdx++) {
-        var pages = this.container.querySelectorAll(".page[data-slice=\"".concat(sliceIdx, "\"]"));
+        // var pages = this.container.querySelectorAll(`.page[data-slice="${sliceIdx}"]`);
+        var pages = this.pages.filter(function (page) {
+          return page.dataset.slice == sliceIdx;
+        });
         var width = pages[0].offsetWidth;
 
         if (pages[1]) {
@@ -32834,10 +32949,10 @@ var Page = /*#__PURE__*/function (_Base) {
       var targetPage;
 
       if (this.currentSeq) {
-        currentPage = this.container.querySelector(".page[data-seq=\"".concat(this.currentSeq, "\"]"));
+        currentPage = this.getPage(this.currentSeq);
       }
 
-      var targetPage = this.container.querySelector(".page[data-seq=\"".concat(seq, "\"]"));
+      var targetPage = this.getPage(seq);
 
       if (!targetPage) {
         return;
@@ -32881,7 +32996,9 @@ var Page = /*#__PURE__*/function (_Base) {
       var targetPage = tuple[2];
       var delta = tuple[3];
       targetPage.dataset.visible = true;
-      var currentPages = document.querySelectorAll('.page[data-visible="true"]');
+      var currentPages = this.pages.filter(function (page) {
+        return page.dataset.visible == 'true';
+      });
 
       if (!currentPages || !currentPages.length || !this._initialized) {
         self.focus(targetPage);
@@ -32991,7 +33108,7 @@ var Page = /*#__PURE__*/function (_Base) {
       this._handlers.rotate = this.reader.on('rotate', function (delta) {
         var seq = self.currentSeq; // self.currentLocation();
 
-        var page = self.pagesIndex[seq];
+        var page = self.getPage(seq);
         var image_frame = page.querySelector('.image');
         var rotated = parseInt(page.dataset.rotated || 360, 10);
         rotated += delta;
@@ -33352,16 +33469,22 @@ var Scroll = /*#__PURE__*/function (_Base) {
   }, {
     key: "display",
     value: function display(seq) {
-      seq = parseInt(seq, 10);
-      var target = this.pagesIndex[seq];
+      var target = this.getPage(seq);
 
       if (!target) {
         return;
       }
 
       target.dataset.visible = true;
-      target.classList.add('page--visible');
-      this.container.parentNode.scrollTop = target.offsetTop;
+      target.classList.add('page--visible'); // this.container.parentNode.scrollTop = target.offsetTop;
+      // let scrollOptions = this.reader.options.prefersReducedMotion ? true : { behavior: 'smooth' };
+      // try {
+      //   target.scrollIntoView(scrollOptions);
+      // } catch(error) {
+      //   target.scrollIntoView();
+      // }
+
+      target.scrollIntoView();
       this.emitter.emit('scrolled');
     }
   }, {
@@ -33390,7 +33513,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
     key: "currentLocation",
     value: function currentLocation() {
       var page = this.currentPage();
-      return page ? page.dataset.seq : null;
+      return page ? this.getPageSeq(page) : null;
     }
   }, {
     key: "currentPage",
@@ -33418,15 +33541,11 @@ var Scroll = /*#__PURE__*/function (_Base) {
   }, {
     key: "next",
     value: function next() {
-      // var scrollTop = this.container.scrollTop;
-      // this.container.scrollTop += this.container.offsetHeight;
       this.display(this.currentSeq + 1);
     }
   }, {
     key: "prev",
     value: function prev() {
-      // if ( this.container.scrollTop == 0 ) { return ; }
-      // this.container.scrollTop -= this.container.offsetHeight;
       this.display(this.currentSeq - 1);
     } // _postResizePage(page, bounds, rect) {
     //   if ( this._scrollPause ) { return ; }
@@ -33498,6 +33617,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
         return;
       }
 
+      this.updateViewport();
       this.loadPages();
       var page = this.currentPage();
       HT.log("-- scrollHandler", page, this.currentSeq);
@@ -33558,14 +33678,18 @@ var Scroll = /*#__PURE__*/function (_Base) {
     key: "visibility",
     value: function visibility(page) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var windowTop = this.container.parentNode.scrollTop;
-      var windowHeight = this.container.parentNode.offsetHeight;
-      var windowBottom = windowTop + windowHeight;
+
+      var _this$viewport = this.viewport(),
+          windowTop = _this$viewport.windowTop,
+          windowHeight = _this$viewport.windowHeight,
+          windowBottom = _this$viewport.windowBottom;
+
       options.percentage = options.percentage || 0; // var rootMargin = this.rootMargin;
 
       var rootMargin = options.rootMargin === undefined ? this.rootMargin : options.rootMargin;
       var top = page.offsetTop;
-      var height = page.offsetHeight;
+      var height = parseInt(page.dataset.height, 10); // ppage.offsetHeight;
+
       var bottom = top + height;
       var containerTop = windowTop;
       var containerBottom = windowBottom;
@@ -33628,7 +33752,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
 
       for (var i = 0; i < tmp.length; i++) {
         var seq = tmp[i];
-        var page = this.pagesIndex[seq];
+        var page = this.getPage(seq);
 
         if (this.isVisible(page)) {
           // console.log("//", seq);
@@ -36759,6 +36883,15 @@ var Reader = /*#__PURE__*/function () {
       if (!usesGrid || isSafari12) {
         this.on('resize', function () {
           _this._updateViewports();
+        });
+      }
+
+      var mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      this.options.prefersReducedMotion = !mediaQuery || mediaQuery.matches;
+
+      if (mediaQuery) {
+        mediaQuery.addEventListener('change', function () {
+          _this.options.prefersReducedMotion = mediaQuery.matches;
         });
       }
 

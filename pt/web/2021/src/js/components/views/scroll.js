@@ -24,12 +24,21 @@ export var Scroll = class extends Base {
   }
 
   display(seq) {
-    seq = parseInt(seq, 10);
-    var target = this.pagesIndex[seq];
+    var target = this.getPage(seq);
 
     if ( ! target ) { return; }
     target.dataset.visible = true; target.classList.add('page--visible');
-    this.container.parentNode.scrollTop = target.offsetTop;
+    // this.container.parentNode.scrollTop = target.offsetTop;
+
+    // let scrollOptions = this.reader.options.prefersReducedMotion ? true : { behavior: 'smooth' };
+    // try {
+    //   target.scrollIntoView(scrollOptions);
+    // } catch(error) {
+    //   target.scrollIntoView();
+    // }
+
+    target.scrollIntoView();
+
     this.emitter.emit('scrolled');
   }
 
@@ -53,7 +62,7 @@ export var Scroll = class extends Base {
 
   currentLocation() {
     var page = this.currentPage();
-    return page ? page.dataset.seq : null;
+    return page ? this.getPageSeq(page) : null;
   }
 
   currentPage() {
@@ -69,14 +78,10 @@ export var Scroll = class extends Base {
   }
 
   next() {
-    // var scrollTop = this.container.scrollTop;
-    // this.container.scrollTop += this.container.offsetHeight;
     this.display(this.currentSeq + 1);
   }
 
   prev() {
-    // if ( this.container.scrollTop == 0 ) { return ; }
-    // this.container.scrollTop -= this.container.offsetHeight;
     this.display(this.currentSeq - 1);
   }
 
@@ -149,6 +154,7 @@ export var Scroll = class extends Base {
 
   scrollHandler() {
     if ( this._scrollPause ) { return ; }
+    this.updateViewport();
     this.loadPages();
     var page = this.currentPage();
     HT.log("-- scrollHandler", page, this.currentSeq);
@@ -192,9 +198,8 @@ export var Scroll = class extends Base {
   }
 
   visibility(page, options={}) {
-    var windowTop = this.container.parentNode.scrollTop;
-    var windowHeight = this.container.parentNode.offsetHeight;
-    var windowBottom = windowTop + windowHeight;
+
+    let { windowTop, windowHeight, windowBottom } = this.viewport();
 
     options.percentage = options.percentage || 0;
 
@@ -202,7 +207,7 @@ export var Scroll = class extends Base {
     var rootMargin = options.rootMargin === undefined ? this.rootMargin : options.rootMargin;
 
     var top = page.offsetTop;
-    var height = page.offsetHeight;
+    var height = parseInt(page.dataset.height, 10); // ppage.offsetHeight;
     var bottom = top + height;
 
     var containerTop = windowTop; var containerBottom = windowBottom;
@@ -261,7 +266,7 @@ export var Scroll = class extends Base {
 
     for(var i = 0; i < tmp.length; i++) {
       var seq = tmp[i];
-      var page = this.pagesIndex[seq];
+      var page = this.getPage(seq);
       if ( this.isVisible(page) ) {
         // console.log("//", seq);
         this.loadImage(page);

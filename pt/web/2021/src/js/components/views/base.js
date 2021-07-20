@@ -102,7 +102,8 @@ export var Base = class {
     this._handlers = {};
     this.id = (new Date()).getTime();
     this.pages = [];
-    this.pagesIndex = {};
+    this.pagesIndex = new Map();
+    this.pagesSeq = new Map();
     this.trackResize = true;
 
     this.rootMargin = options.rootMargin || 1024; // ( 8 * 16 );
@@ -140,6 +141,46 @@ export var Base = class {
     var t0 = performance.now();
     var fragment = document.createDocumentFragment();
 
+    var bgColor = '#F8F8F8';
+    var textColor = '#F0F0F0';
+    var placeholder = simpleSvgPlaceholder({
+      bgColor: bgColor,
+      textColor: textColor,
+      text: `❉`,
+      fontFamily: `monospace`,
+      width: w,
+      height: h,
+    });
+
+    if ( ! this.reader.templates ) { this.reader.templates = {}; }
+    var template = this.reader.templates[this.format];
+    if ( ! template ) {
+      if ( this.format == 'image' ) {
+        template = this.reader.templates[this.format] = document.createElement('div');
+        template.setAttribute('tabindex', '-1');
+        template.setAttribute('aria-hidden', true);
+        template.classList.add('page');
+        template.dataset.loaded = false;
+        template.dataset.visible = false;
+        template.dataset.scale = scale;
+
+        var rotateButtonAction = rotateButton;
+        if ( this.config().rotate === false ) { rotateButtonAction = ''; }
+        template.innerHTML = `<div class="page--toolbar"><div class="tag">${rotateButtonAction}<span class="page-label"></span></div></div><div class="page-text"></div><div class="image" style=""><img alt="" style="" height="" width="" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="" /></div>`;
+      } else {
+        template = this.reader.templates[this.format] = document.createElement('div');
+        template.setAttribute('tabindex', '-1');
+        template.setAttribute('aria-hidden', true);
+        template.classList.add('page');
+        template.dataset.loaded = false;
+        template.dataset.visible = false;
+        template.dataset.scale = scale;
+
+        template.innerHTML = `<div class="page--toolbar"><div class="tag"><span class="page-label"></span></div></div><div data-placeholder="" class="page-text"></div>`;
+
+      }
+    }
+
     if ( maxHeight ) {
       // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
       document.documentElement.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
@@ -165,11 +206,7 @@ export var Base = class {
 
     for(var seq = 1; seq <= this.service.manifest.totalSeq; seq++) {
 
-      var page = document.createElement('div');
-      page.setAttribute('tabindex', '-1');
-      page.setAttribute('aria-hidden', true);
-
-      page.classList.add('page');
+      var page = template.cloneNode(true);
       page.dataset.seq = seq;
 
       var klass = this._assignSide(seq);
@@ -178,10 +215,6 @@ export var Base = class {
       slice_index = this._slicify(seq);
 
       page.dataset.slice = slice_index;
-      page.dataset.loaded = false;
-
-      page.dataset.visible = false;
-      page.dataset.scale = scale;
 
       var meta = this.service.manifest.meta(seq);
 
@@ -196,20 +229,6 @@ export var Base = class {
       if ( scale <= 1 ) {
         page.classList.add('page--best-fit');
       }
-
-      var bgColor = '#F8F8F8';
-      var textColor = '#F0F0F0';
-
-      var placeholder = simpleSvgPlaceholder({
-        bgColor: bgColor,
-        textColor: textColor,
-        text: `#${seq}`,
-        fontFamily: `monospace`,
-        width: w,
-        height: h,
-      });
-
-      // var placeholder = '/imgsrv/graphics/1x1b.png';
 
       function titleCase(str) {
         return str.toLowerCase().split('_').map(function(word) {
@@ -242,32 +261,35 @@ export var Base = class {
         altText += ' - ' + titleCase(priorityFeature);
       }
 
-      // this is the image format
+      var pageNum = this.service.manifest.pageNum(seq) || '';
+      if ( pageNum ) {
+        pageNum = ` (${pageNum})`;
+      }
+      page.querySelector('.page-label').innerText = `#${seq}${pageNum}`;
       if ( this.format == 'image' ) {
-        var rotateButtonAction = rotateButton;
-        if ( this.config().rotate === false ) { rotateButtonAction = ''; }
         var thumbnailSrc = this.service.thumbnail({ seq: seq });
-        var pageNum = this.service.manifest.pageNum(seq) || '';
-        if ( pageNum ) {
-          pageNum = ` (${pageNum})`;
-        }
-        page.innerHTML = `<div class="page--toolbar"><div class="tag">${rotateButtonAction}<span>#${seq}${pageNum}</span></div></div><div class="page-text"></div><div class="image" style="height: ${sizing.frameHeight}px; width: ${sizing.frameWidth}px"><img alt="${altText}" style="height: ${sizing.height}px; width: ${sizing.width}px" height="${sizing.height}" width="${sizing.width}" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="${thumbnailSrc}" /></div>`;
+        let img = page.querySelector('img');
+        img.setAttribute('height', sizing.height);
+        img.setAttribute('width', sizing.width);
+        img.setAttribute('alt', altText);
+        img.setAttribute('data-thumbnail-src', thumbnailSrc);
+        img.style.height = `${sizing.height}px`;
+        img.style.width = `${sizing.width}px`;
+
+        let frame = img.parentElement;
+        frame.style.width = `${sizing.frameWidth}px`;
+        frame.style.height = `${sizing.frameHeight}px`;
+
+        // page.innerHTML = `<div class="page--toolbar"><div class="tag">${rotateButtonAction}<span>#${seq}${pageNum}</span></div></div><div class="page-text"></div><div class="image" style="height: ${sizing.frameHeight}px; width: ${sizing.frameWidth}px"><img alt="${altText}" style="height: ${sizing.height}px; width: ${sizing.width}px" height="${sizing.height}" width="${sizing.width}" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="${thumbnailSrc}" /></div>`;
       } else {
-        page.innerHTML = `<div class="page--toolbar"><div class="tag"><span>#${seq}</span></div></div><div data-placeholder="" class="page-text"></div>`;
-        if ( this.name == 'thumb' ) {
-          page.querySelector('.page-text').style.height = `${sizing.frameHeight}px`;
-          page.querySelector('.page-text').style.width = `${sizing.frameWidth}px`;
-        } else {
-          // const height = ( this.container.offsetWidth * 0.85 ) * sizing.ratio;
-          // page.querySelector('.page-text').style.minHeight = `${height}px`;
-        }
       }
 
       this._renderr(page);
 
       fragment.appendChild(page);
       this.pages.push(page);
-      this.pagesIndex[seq] = page;
+      this.pagesIndex.set(seq, page);
+      this.pagesSeq.set(page, seq);
     }
 
     var endSeq = this.service.manifest.totalSeq;
@@ -283,10 +305,8 @@ export var Base = class {
 
     this.container.appendChild(fragment);
 
-    var pages = this.container.querySelectorAll('.page');
-
-    for(var i = 0; i < pages.length; i++) {
-      this.bindPageEvents(pages[i]);
+    for(var i = 0; i < this.pages.length; i++) {
+      this.bindPageEvents(this.pages[i]);
     }
 
     if ( this._initialSeq ) {
@@ -354,15 +374,12 @@ export var Base = class {
     var self = this;
 
     var _process = function(seq, loadImage) {
-      var page = self.pagesIndex[seq] ? self.pagesIndex[seq] : null;
+      var page = self.pagesIndex.has(seq) ? self.pagesIndex.get(seq) : null;
       if ( page && page.dataset.loaded == 'false' ) {
 
         var img = page.querySelector('img');
 
-        // img.src.indexOf(img.dataset.thumbnailSrc) < 0 
-        // img.src == img.dataset.placeHolderSrc
         if ( page.dataset.reframed != 'true' && self.format == 'image' ) {
-          self._tracker.thumbnails[seq] = self._tracker.thumbnails[seq] ? self._tracker.thumbnails[seq] + 1 : 1;
           self.service.loaders.thumbnails.queue({ src: img.dataset.thumbnailSrc, page: page });          
         }
 
@@ -388,7 +405,7 @@ export var Base = class {
     var pages = Array.isArray(page) ? page : [ page ];
     var page = pages[0];
 
-    var seq = parseInt(page.dataset.seq, 10);
+    var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
     if ( Math.abs(seq - self.currentSeq ) > 5 ) {
       self.service.loaders.thumbnails.stop(true);
       self.service.loaders.images.stop(true);
@@ -399,14 +416,14 @@ export var Base = class {
     // first queue the immediate pages
     for(var i = 0; i < pages.length; i++) {
       var page = pages[i];
-      var seq = parseInt(page.dataset.seq, 10);
+      var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
       _process(seq, true);
     }
 
     // now queue thumbnails
     if ( options.lazy !== false ) {
       var page = pages[0];
-      var seq = parseInt(page.dataset.seq, 10);
+      var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
       for(var ii = seq - 2; ii < seq; ii++) {
         _process(ii, true);
@@ -418,7 +435,7 @@ export var Base = class {
 
     if ( options.lazy !== false ) {
       var page = pages[pages.length - 1];
-      var seq = parseInt(page.dataset.seq, 10);
+      var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
       for(var ii = seq + 2; ii > seq; ii--) {
         _process(ii, true);
       }
@@ -498,6 +515,8 @@ export var Base = class {
 
       img.style.height = `${img.dataset.width}px`;
       img.style.height = `${img.dataset.height}px`;
+      
+      page.dataset.height = page.offsetHeight;
 
       if ( this._checkForFoldouts(image, page) ) {
         var altText = img.getAttribute('alt');
@@ -603,7 +622,8 @@ export var Base = class {
     var img = page.querySelector('img');
     if ( img ) {
       console.log("<< unloading", page.dataset.seq);
-      img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+      // img.src = img.dataset.thumbnailSrc || img.dataset.placeholderSrc;
+      img.src = img.dataset.placeholderSrc;
     }
 
     var page_text = page.querySelector('.page-text');
@@ -621,7 +641,7 @@ export var Base = class {
     if ( params instanceof HTMLElement ) {
       var element = params; params = {};
       params.seq = element.dataset.seq;
-      params.width = element.offsetWidth || 680;
+      params.width = element.dataset.width || 680; // element.offsetWidth
     }
     // if ( this.reader.pagedetails.rotate[params.seq] ) {
     //   params.rotation = this.reader.pagedetails.rotate[params.seq];
@@ -671,7 +691,12 @@ export var Base = class {
   }
 
   getPage(seq) {
-    return this.pagesIndex[seq];
+    seq = Number(seq);
+    return this.pagesIndex.get(seq);
+  }
+
+  getPageSeq(page) {
+    return this.pagesSeq.get(page);
   }
 
   bindEvents() {
@@ -701,7 +726,11 @@ export var Base = class {
           this._lastScale = this.scale;
         }
 
-        this._resizePages();
+        // this._resizePages();
+        if ( this._resizePageTimer ) { clearTimeout(this._resizePageTimer); }
+        this._resizePageTimer = setTimeout(() => {
+          this._resizePages();
+        }, 100);
       })
     }
 
@@ -710,7 +739,7 @@ export var Base = class {
 
   unloadPages() {
 
-    var pages = this.container.querySelectorAll('.page[data-loaded="true"]');
+    var pages = this.pages.filter((page) => page.dataset.loaded == 'true');
     var possibles = new Set();
     pages.forEach((page) => possibles.add(page.dataset.seq));
     if ( setfn.eqSet(this.sets.unloaded, possibles )) { return ; }
@@ -746,10 +775,27 @@ export var Base = class {
     } else {
       pages.forEach((page) => {
         if ( page.dataset.seq ) {
-          this.sets.visible.add(parseInt(page.dataset.seq, 10));
+          // this.sets.visible.add(parseInt(page.dataset.seq, 10));
+          this.sets.visible.add(this.getPageSeq(page));
         }
       })
     }
+  }
+
+  viewport() {
+    if ( ! this._viewport ) {
+      this.updateViewport();
+    }
+    return this._viewport;
+  }
+
+  updateViewport() {
+    this._viewport = this._viewport || {};
+    if ( ! this._viewport.widowHeight ) {
+      this._viewport.windowHeight = this.container.parentNode.offsetHeight;
+    }
+    this._viewport.windowTop = this.container.parentNode.scrollTop;
+    this._viewport.windowBottom = this._viewport.windowTop + this._viewport.windowHeight;
   }
 
   bindPageEvents(page) {
@@ -911,7 +957,26 @@ export var Base = class {
     }
   }
 
+  _resizePage({page, frame, img, w, h, sizing, is_dirty, isCurrentSeq, index}) {
+    
+    page.dataset.width = w;
+    page.dataset.height = h;
+
+    frame.style.width = `${sizing.frameWidth}px`;
+    frame.style.height = `${sizing.frameHeight}px`;
+
+    img.style.width = `${w}px`;
+    img.style.height = `${h}px`;
+
+    if ( is_dirty ) {
+      this.redrawPage(page);
+    }
+    page.dataset.height = page.offsetHeight;
+  }
+
   _resizePages() {
+    var self = this;
+
     this._scrollPause = true;
     var minWidth = this.minWidth();
     var maxHeight = this.maxHeight();
@@ -919,10 +984,11 @@ export var Base = class {
     var scale = this.scale;
     var currentSeq;
     if ( this._currentPage ) {
-      currentSeq = this._currentPage.dataset.seq; // this.currentLocation();
+      currentSeq = this.getPageSeq(this._currentPage) // .dataset.seq; // this.currentLocation();
     } else {
       currentSeq = this.currentLocation();
     }
+    let currentPage = this.getPage(currentSeq);
 
     if ( maxHeight ) {
       // this.container.style.setProperty('--max-page-height', `${maxHeight * scale}px`);
@@ -932,11 +998,30 @@ export var Base = class {
     HT.log("__RESIZE__ start", currentSeq);
 
     var dirty = false;
-    this.pages.forEach((page) => {
+    var queue = [ currentSeq ];
 
-      var seq = parseInt(page.dataset.seq, 10);
+    var N = 25;
+    var _enqueue = function(start, end) {
+      var delta = ( start < end ) ? 1 : -1;
+      var fn = function(idx, end) { return ( delta == 1 ) ? idx <= end : idx >= end }
+      for(let seq = start; fn(seq, end); seq += delta) {
+        if ( seq != currentSeq && self.pagesIndex.has(seq) ) {
+          queue.push(seq);
+        }
+      }
+    }
+
+    _enqueue(currentSeq - N, currentSeq + N);
+    _enqueue(currentSeq - N - 1, 1);
+    _enqueue(currentSeq + N + 1, this.service.manifest.totalSeq);
+
+    let fragment = document.createDocumentFragment();
+    let parentEl = this.container.parentElement;
+    fragment.appendChild(this.container);
+
+    queue.forEach((seq) => {
+      var page = this.getPage(seq);
       var meta = this.service.manifest.meta(seq);
-      // var ratio = meta.height / meta.width;
 
       var h; var w;
 
@@ -950,44 +1035,22 @@ export var Base = class {
       h = sizing.height;
       w = sizing.width;
 
-      dirty = dirty || ( img.offsetHeight != h );
-
-      requestAnimationFrame(() => {
-        page.dataset.width = w;
-        page.dataset.height = h;
-
-        frame.style.width = `${sizing.frameWidth}px`;
-        frame.style.height = `${sizing.frameHeight}px`;
-
-        img.style.width = `${w}px`;
-        img.style.height = `${h}px`;        
-      })
+      let is_dirty = ( page.dataset.loaded == 'true' || page.dataset.visible == 'true' ) && ( img.dataset.height != h );
 
       page.dataset.bestFit = ( scale <= 1 ) ? 'true' : 'false';
       if ( scale <= 1 ) {
         page.classList.add('page--best-fit');
       }
 
-      // this._resizePageByPages(page);
+      let isCurrentSeq = currentSeq == seq;
+      this._resizePage({page, frame, img, w, h, sizing, is_dirty, isCurrentSeq});
     })
 
-    if ( dirty ) {
-      if ( this._redrawPageImagesTimer ) { clearTimeout(this._redrawPageImagesTimer); }
-      this._redrawPageImagesTimer = setTimeout(() => {
-        this.redrawPageImages();
-        this.display(currentSeq);
-        this._scrollPause = false;
-        HT.log("__RESIZE__ end/dirty", currentSeq);
-        this._adjustContainer();
-      }, 100);
-      return;
-    }
-
-    HT.log("__RESIZE__ end", currentSeq);
-
-    this.display(currentSeq);
-    this._scrollPause = false;
     this._adjustContainer();
+    parentEl.appendChild(this.container);
+    // this.display(currentSeq);
+    currentPage.scrollIntoView(); // have to do this because display(currentSeq) will be a no-op
+    this._scrollPause = false;
   }
 
   _calculatePageSize(meta, page, minWidth, maxHeight) {

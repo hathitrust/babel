@@ -23,10 +23,10 @@ export var Page = class extends Base {
 
     var currentPage; var targetPage;
     if ( this.currentSeq ) {
-      currentPage = this.container.querySelector(`.page[data-seq="${this.currentSeq}"]`);
+      currentPage = this.getPage(this.currentSeq);
     }
 
-    var targetPage = this.container.querySelector(`.page[data-seq="${seq}"]`);
+    var targetPage = this.getPage(seq);
     if ( ! targetPage ) { return; }
 
     this.loadImage(targetPage);
@@ -61,7 +61,7 @@ export var Page = class extends Base {
 
     targetPage.dataset.visible = true;
 
-    var currentPages = document.querySelectorAll('.page[data-visible="true"]');
+    var currentPages = this.pages.filter((page) => page.dataset.visible == 'true');
 
     if ( ! currentPages || ! currentPages.length || ! this._initialized ) { 
       self.focus(targetPage);
@@ -154,7 +154,7 @@ export var Page = class extends Base {
 
     this._handlers.rotate = this.reader.on('rotate', function(delta) {
       var seq = self.currentSeq; // self.currentLocation();
-      var page = self.pagesIndex[seq];
+      var page = self.getPage(seq);
       var image_frame = page.querySelector('.image');
 
       var rotated = parseInt(page.dataset.rotated || 360, 10);

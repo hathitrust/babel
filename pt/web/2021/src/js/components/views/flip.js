@@ -153,10 +153,13 @@ export var Flip = class extends Base {
     var currentPages; var targetPages;
     if ( this.currentSeq ) {
       var currentSlice = this._slicify(this.currentSeq);
-      currentPages = this.container.querySelectorAll(`.page[data-slice="${currentSlice}"]`);
+      // currentPages = this.container.querySelectorAll(`.page[data-slice="${currentSlice}"]`);
+      currentPages = this.pages.filter((page) => page.dataset.slice == currentSlice);
     }
 
-    var targetPages = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
+    // var targetPages = this.container.querySelectorAll(`.page[data-slice="${this._slicify(seq)}"]`);
+    var targetSlice = this._slicify(seq);
+    targetPages = this.pages.filter((page) => page.dataset.slice == targetSlice);
     if ( ! targetPages.length ) { return; }
 
     this.loadImage(Array.prototype.slice.call(targetPages));
@@ -192,7 +195,8 @@ export var Flip = class extends Base {
 
     targetPages.forEach((page) => { page.dataset.visible = true; })
 
-    currentPages = document.querySelectorAll('.page[data-visible="true"]');
+    // currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
+    currentPages = this.pages.filter((page) => page.dataset.visible == 'true');
 
     if ( ! currentPages || ! currentPages.length || ! this._initialized ) { 
       targetPages.forEach((page) => { self.focus(page); })
@@ -258,7 +262,8 @@ export var Flip = class extends Base {
   _maxSliceWidth() {
     var maxWidth = 0;
     for(var sliceIdx = 1; sliceIdx <= this._sliceMax; sliceIdx++) {
-      var pages = this.container.querySelectorAll(`.page[data-slice="${sliceIdx}"]`);
+      // var pages = this.container.querySelectorAll(`.page[data-slice="${sliceIdx}"]`);
+      var pages = this.pages.filter((page) => page.dataset.slice == sliceIdx);
       var width = pages[0].offsetWidth;
       if ( pages[1] ) { width += pages[1].offsetWidth; }
       if ( width > maxWidth ) {

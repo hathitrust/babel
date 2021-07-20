@@ -242,6 +242,14 @@ var Reader = class {
       })
     }
 
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    this.options.prefersReducedMotion = ( ! mediaQuery || mediaQuery.matches );
+    if ( mediaQuery ) {
+      mediaQuery.addEventListener('change', () => {
+        this.options.prefersReducedMotion = mediaQuery.matches;
+      })
+    }
+
     this._resizer = debounce(function() {
       // DO NOT emit resize events if we're pinch-zooming??
       if ( window.visualViewport && window.visualViewport.scale > 1 ) { 
