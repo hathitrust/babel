@@ -142,7 +142,7 @@ export var Base = class {
     var fragment = document.createDocumentFragment();
 
     var bgColor = '#F8F8F8';
-    var textColor = '#F0F0F0';
+    var textColor = '#DDD'; // '#F0F0F0';
     var placeholder = simpleSvgPlaceholder({
       bgColor: bgColor,
       textColor: textColor,
@@ -379,7 +379,8 @@ export var Base = class {
 
         var img = page.querySelector('img');
 
-        if ( page.dataset.reframed != 'true' && self.format == 'image' ) {
+        // if ( page.dataset.reframed != 'true' && self.format == 'image' ) {
+        if ( self.format == 'image' ) {
           self.service.loaders.thumbnails.queue({ src: img.dataset.thumbnailSrc, page: page });          
         }
 
