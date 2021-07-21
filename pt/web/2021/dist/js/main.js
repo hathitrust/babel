@@ -30522,17 +30522,16 @@ var Base = /*#__PURE__*/function () {
         fontFamily: "monospace",
         width: w,
         height: h
-      });
+      }); // // -- is it necessary to cache the template?
+      // // -- the cache key would have to be view + format, to account for config()
+      // if ( ! this.reader.templates ) { this.reader.templates = {}; }
 
-      if (!this.reader.templates) {
-        this.reader.templates = {};
-      }
-
-      var template = this.reader.templates[this.format];
+      var template; //  = this.reader.templates[this.format];
 
       if (!template) {
         if (this.format == 'image') {
-          template = this.reader.templates[this.format] = document.createElement('div');
+          // template = this.reader.templates[this.format] = document.createElement('div');
+          template = document.createElement('div');
           template.setAttribute('tabindex', '-1');
           template.setAttribute('aria-hidden', true);
           template.classList.add('page');
@@ -30547,7 +30546,8 @@ var Base = /*#__PURE__*/function () {
 
           template.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\">".concat(rotateButtonAction, "<span class=\"page-label\"></span></div></div><div class=\"page-text\"></div><div class=\"image\" style=\"\"><img alt=\"\" style=\"\" height=\"\" width=\"\" src=\"").concat(placeholder, "\" data-placeholder-src=\"").concat(placeholder, "\" data-thumbnail-src=\"\" /></div>");
         } else {
-          template = this.reader.templates[this.format] = document.createElement('div');
+          // template = this.reader.templates[this.format] = document.createElement('div');
+          template = document.createElement('div');
           template.setAttribute('tabindex', '-1');
           template.setAttribute('aria-hidden', true);
           template.classList.add('page');
