@@ -91,6 +91,9 @@ export var Page = class extends Base {
       targetPage.classList.remove(inClass);
       self.focus(targetPage);
 
+      // setTimeout(() => self.container.parentNode.scrollTop = 0);
+      requestAnimationFrame(() => targetPage.scrollIntoView());
+
       HT.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
 
       self.container.classList.remove('animating');
@@ -129,12 +132,10 @@ export var Page = class extends Base {
   }
 
   next() {
-    this.container.scrollTop = 0;
     this.display(this.currentSeq + 1);
   }
 
   prev() {
-    this.container.scrollTop = 0;
     this.display(this.currentSeq - 1);
   }
 
