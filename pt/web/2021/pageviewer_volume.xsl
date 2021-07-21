@@ -643,7 +643,7 @@
       </AccessType>
     </xsl:variable>
     <xsl:variable name="access-type" select="exsl:node-set($access-type-tmp)//AccessType" /> -->
-    <xsl:if test="( $gFinalAccessStatus='allow' and $gInCopyright='true' )">
+    <xsl:if test="( $gFinalAccessStatus='allow' and $gInCopyright='true' and normalize-space($access-type) )">
       <xsl:variable name="alert-tmp">
         <xsl:if test="$access-type/Name = 'emergency_access_affiliate'">
           <xsl:call-template name="build-emergency-access-affiliate-header" />

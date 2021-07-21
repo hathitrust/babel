@@ -30513,7 +30513,8 @@ var Base = /*#__PURE__*/function () {
       var t0 = performance.now();
       var fragment = document.createDocumentFragment();
       var bgColor = '#F8F8F8';
-      var textColor = '#F0F0F0';
+      var textColor = '#DDD'; // '#F0F0F0';
+
       var placeholder = simpleSvgPlaceholder({
         bgColor: bgColor,
         textColor: textColor,
@@ -30771,9 +30772,9 @@ var Base = /*#__PURE__*/function () {
           var page = self.pagesIndex.has(seq) ? self.pagesIndex.get(seq) : null;
 
           if (page && page.dataset.loaded == 'false') {
-            var img = page.querySelector('img');
+            var img = page.querySelector('img'); // if ( page.dataset.reframed != 'true' && self.format == 'image' ) {
 
-            if (page.dataset.reframed != 'true' && self.format == 'image') {
+            if (self.format == 'image') {
               self.service.loaders.thumbnails.queue({
                 src: img.dataset.thumbnailSrc,
                 page: page
@@ -33031,7 +33032,11 @@ var Page = /*#__PURE__*/function (_Base) {
         targetPage.classList.remove(inClass);
         targetPage.dataset.visible = true;
         targetPage.classList.remove(inClass);
-        self.focus(targetPage);
+        self.focus(targetPage); // setTimeout(() => self.container.parentNode.scrollTop = 0);
+
+        requestAnimationFrame(function () {
+          return targetPage.scrollIntoView();
+        });
         HT.log("-- onEndAnimation", self._queue.length, currentPages, targetPages);
         self.container.classList.remove('animating');
         self.isAnimating = false;
@@ -33082,13 +33087,11 @@ var Page = /*#__PURE__*/function (_Base) {
   }, {
     key: "next",
     value: function next() {
-      this.container.scrollTop = 0;
       this.display(this.currentSeq + 1);
     }
   }, {
     key: "prev",
     value: function prev() {
-      this.container.scrollTop = 0;
       this.display(this.currentSeq - 1);
     }
   }, {
@@ -33878,7 +33881,7 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
     _this.format = 'image'; // force image
     // this.rootMargin = options.rootMargin || 256;
 
-    _this.unloadNearestThreshold = 20;
+    _this.unloadNearestThreshold = 150;
     return _this;
   }
 
@@ -33897,13 +33900,11 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
         var self = _this2;
 
         var _process = function _process(seq, loadImage) {
-          var page = self.pagesIndex[seq] ? self.pagesIndex[seq] : null;
+          var page = self.pagesIndex.has(seq) ? self.pagesIndex.get(seq) : null;
 
           if (page && page.dataset.loaded == 'false') {
             // img.src.indexOf(img.dataset.thumbnailSrc) < 0 
-            if (page.dataset.reframed != 'true') {
-              self._tracker.thumbnails[seq] = self._tracker.thumbnails[seq] ? self._tracker.thumbnails[seq] + 1 : 1;
-
+            if (true) {
               if (self.format == 'image') {
                 var img = page.querySelector('img');
                 self.service.loaders.thumbnails.queue({
@@ -33940,14 +33941,17 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
 
         for (var i = 0; i < pages.length; i++) {
           var page = pages[i];
-          var seq = parseInt(page.dataset.seq, 10);
+          var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
           _process(seq, true);
         }
 
+        HT.log(pages);
+        self.service.loaders.thumbnails.start();
+
         if (options.lazy !== false) {
           var page = pages[0];
-          var seq = parseInt(page.dataset.seq, 10);
+          var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
           for (var ii = seq - 20; ii < seq; ii++) {
             _process(ii, false);
@@ -33955,7 +33959,7 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
 
           if (pages.length > 1) {
             page = pages[pages.length - 1];
-            seq = parseInt(page.dataset.seq, 10);
+            var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
 
             for (var ii = seq + 20; ii > seq; ii--) {
               _process(ii, false);
@@ -33996,7 +34000,7 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
           continue;
         }
 
-        var page = this.pagesIndex[seq];
+        var page = this.getPage(seq);
 
         if (this.isVisible(page)) {
           possibles.push(page);
@@ -34140,7 +34144,7 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
         var focused = this.container.querySelector('.page[tabindex="0"]');
         var currentSeq = parseInt(focused.dataset.seq, 10);
 
-        if (!this.pagesIndex[currentSeq + 1]) {
+        if (!this.pagesIndex.has(currentSeq)) {
           return;
         }
 
@@ -34154,9 +34158,15 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
           this.focus(this.getPage(currentSeq));
           return;
         }
-      }
+      } // var lastSeq = parseInt(visible.pop(), 10);
 
-      var lastSeq = parseInt(visible.pop(), 10);
+
+      var actuallyVisible = this._actuallyVisible(visible);
+
+      var lastPage = actuallyVisible.pop();
+      console.log("AHOY FOUND", lastPage);
+      var lastSeq = this.getPageSeq(lastPage); // parseInt(visible[0], 10);
+
       this.display(lastSeq + 1);
     }
   }, {
@@ -34175,7 +34185,7 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
         var focused = this.container.querySelector('.page[tabindex="0"]');
         var currentSeq = parseInt(focused.dataset.seq, 10);
 
-        if (!this.pagesIndex[currentSeq - 1]) {
+        if (!this.pagesIndex.has(currentSeq - 1)) {
           return;
         }
 
@@ -34192,9 +34202,32 @@ var Thumbnail = /*#__PURE__*/function (_Scroll) {
         }
       }
 
-      var firstSeq = parseInt(visible[0], 10);
+      var actuallyVisible = this._actuallyVisible(visible);
+
+      var firstSeq = this.getPageSeq(actuallyVisible[0]); // parseInt(visible[0], 10);
+
       this._targetSeq = targetSeq;
-      this.display(firstSeq - visible.length);
+      this.display(firstSeq - actuallyVisible.length);
+    }
+  }, {
+    key: "_actuallyVisible",
+    value: function _actuallyVisible(visible) {
+      // what's really the first visible?
+      var actuallyVisible = [];
+
+      for (var i = 0; i < visible.length; i++) {
+        var pg = this.getPage(visible[i]);
+        var p = this.visibility(pg, {
+          rootMargin: 0
+        });
+        console.log("== visibility check", visible[i], pg, p);
+
+        if (p >= 0.75) {
+          actuallyVisible.push(pg);
+        }
+      }
+
+      return actuallyVisible;
     }
   }, {
     key: "destroy",
