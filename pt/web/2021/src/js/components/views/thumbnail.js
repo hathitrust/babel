@@ -14,7 +14,7 @@ export var Thumbnail = class extends Scroll {
     this.format = 'image'; // force image
 
     // this.rootMargin = options.rootMargin || 256;
-    this.unloadNearestThreshold = 20;
+    this.unloadNearestThreshold = 150;
 
   }
 
@@ -26,11 +26,10 @@ export var Thumbnail = class extends Scroll {
     var self = this;
 
     var _process = function(seq, loadImage) {
-      var page = self.pagesIndex[seq] ? self.pagesIndex[seq] : null;
+      var page = self.pagesIndex.has(seq) ? self.pagesIndex.get(seq) : null;
       if ( page && page.dataset.loaded == 'false' ) {
         // img.src.indexOf(img.dataset.thumbnailSrc) < 0 
-        if ( page.dataset.reframed != 'true' ) {
-          self._tracker.thumbnails[seq] = self._tracker.thumbnails[seq] ? self._tracker.thumbnails[seq] + 1 : 1;
+        if ( true || page.dataset.reframed != 'true' ) {
           if ( self.format == 'image' ) {
             var img = page.querySelector('img');
             self.service.loaders.thumbnails.queue({ src: img.dataset.thumbnailSrc, page: page });          
@@ -54,20 +53,23 @@ export var Thumbnail = class extends Scroll {
 
     for(var i = 0; i < pages.length; i++) {
       var page = pages[i];
-      var seq = parseInt(page.dataset.seq, 10);
+      var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
       _process(seq, true);
     }
 
+    HT.log(pages);
+    self.service.loaders.thumbnails.start();
+
     if ( options.lazy !== false ) {
       var page = pages[0];
-      var seq = parseInt(page.dataset.seq, 10);
+      var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
       for(var ii = seq - 20; ii < seq; ii++) {
         _process(ii, false);
       }
 
       if ( pages.length > 1 ) {
         page = pages[pages.length - 1];
-        seq = parseInt(page.dataset.seq, 10);
+        var seq = self.getPageSeq(page); // parseInt(page.dataset.seq, 10);
         for(var ii = seq + 20; ii > seq; ii--) {
           _process(ii, false);
         }
@@ -96,7 +98,7 @@ export var Thumbnail = class extends Scroll {
     for(var i = 0; i < tmp.length; i++) {
       var seq = tmp[i];
       if ( ! seq ) { continue; }
-      var page = this.pagesIndex[seq];
+      var page = this.getPage(seq);
       if ( this.isVisible(page) ) {
         possibles.push(page);
       } else {
@@ -205,7 +207,7 @@ export var Thumbnail = class extends Scroll {
     if ( params.eventReferrer == 'accesskey' && document.activeElement && document.activeElement.closest(".page") ) {
       var focused = this.container.querySelector('.page[tabindex="0"]');
       var currentSeq = parseInt(focused.dataset.seq, 10);
-      if ( ! this.pagesIndex[currentSeq + 1] ) { return ; }
+      if ( ! this.pagesIndex.has(currentSeq) ) { return ; }
 
       this.unfocus(focused);
       HT.log("-- next", currentSeq, visible.indexOf(currentSeq + 1), visible.join(" : "));
@@ -217,7 +219,13 @@ export var Thumbnail = class extends Scroll {
         return;
       }
     }
-    var lastSeq = parseInt(visible.pop(), 10);
+    // var lastSeq = parseInt(visible.pop(), 10);
+    var actuallyVisible = this._actuallyVisible(visible);
+    var lastPage = actuallyVisible.pop();
+    console.log("AHOY FOUND", lastPage);
+
+    var lastSeq = this.getPageSeq(lastPage); // parseInt(visible[0], 10);
+
     this.display(lastSeq + 1);
   }
 
@@ -230,7 +238,7 @@ export var Thumbnail = class extends Scroll {
     if ( params.eventReferrer == 'accesskey' && document.activeElement && document.activeElement.closest(".page") ) {
       var focused = this.container.querySelector('.page[tabindex="0"]');
       var currentSeq = parseInt(focused.dataset.seq, 10);
-      if ( ! this.pagesIndex[currentSeq - 1] ) { return ; }
+      if ( ! this.pagesIndex.has(currentSeq - 1) ) { return ; }
 
       this.unfocus(focused);
       HT.log("-- prev", currentSeq, visible.indexOf(currentSeq - 1), visible.join(" : "));
@@ -244,9 +252,24 @@ export var Thumbnail = class extends Scroll {
       }
     }
 
-    var firstSeq = parseInt(visible[0], 10);
+    var actuallyVisible = this._actuallyVisible(visible);
+
+    var firstSeq = this.getPageSeq(actuallyVisible[0]); // parseInt(visible[0], 10);
     this._targetSeq = targetSeq;
-    this.display(firstSeq - visible.length);
+
+    this.display(firstSeq - actuallyVisible.length);
+  }
+
+  _actuallyVisible(visible) {
+    // what's really the first visible?
+    var actuallyVisible = [];
+    for(let i = 0; i < visible.length; i++) {
+      var pg = this.getPage(visible[i]);
+      var p = this.visibility(pg, { rootMargin: 0 });
+      console.log("== visibility check", visible[i], pg, p);
+      if ( p >= 0.75 ) { actuallyVisible.push(pg); }
+    }
+    return actuallyVisible;
   }
 
   destroy() {
