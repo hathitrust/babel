@@ -244,7 +244,7 @@ var Reader = class {
 
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     this.options.prefersReducedMotion = ( ! mediaQuery || mediaQuery.matches );
-    if ( mediaQuery ) {
+    if ( mediaQuery && mediaQuery.addEventListener ) {
       mediaQuery.addEventListener('change', () => {
         this.options.prefersReducedMotion = mediaQuery.matches;
       })

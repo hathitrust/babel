@@ -37,7 +37,14 @@ export var Scroll = class extends Base {
     //   target.scrollIntoView();
     // }
 
-    target.scrollIntoView();
+    // target.scrollIntoView();
+    let parentEl = this.container.parentElement;
+    if ( parentEl.scroll ) {
+      parentEl.scroll(0, target.offsetTop);
+    } else {
+      parentEl.scrollTop = target.offsetTop;
+    }
+    
 
     this.emitter.emit('scrolled');
   }

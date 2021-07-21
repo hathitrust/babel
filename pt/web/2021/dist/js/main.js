@@ -33486,8 +33486,16 @@ var Scroll = /*#__PURE__*/function (_Base) {
       // } catch(error) {
       //   target.scrollIntoView();
       // }
+      // target.scrollIntoView();
 
-      target.scrollIntoView();
+      var parentEl = this.container.parentElement;
+
+      if (parentEl.scroll) {
+        parentEl.scroll(0, target.offsetTop);
+      } else {
+        parentEl.scrollTop = target.offsetTop;
+      }
+
       this.emitter.emit('scrolled');
     }
   }, {
@@ -36922,7 +36930,7 @@ var Reader = /*#__PURE__*/function () {
       var mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
       this.options.prefersReducedMotion = !mediaQuery || mediaQuery.matches;
 
-      if (mediaQuery) {
+      if (mediaQuery && mediaQuery.addEventListener) {
         mediaQuery.addEventListener('change', function () {
           _this.options.prefersReducedMotion = mediaQuery.matches;
         });
