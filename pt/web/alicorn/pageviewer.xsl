@@ -529,6 +529,12 @@
 
   <xsl:template name="build-hotjar-script">
     <script>
+      window.hj = function() { }
+    </script>
+  </xsl:template>
+
+  <xsl:template name="build-hotjar-script-actual">
+    <script>
         (function(h,o,t,j,a,r){
             h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
             h._hjSettings={hjid:2109672,hjsv:6};

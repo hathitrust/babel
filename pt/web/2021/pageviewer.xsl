@@ -500,6 +500,10 @@
   <xsl:template name="get-tracking-category">PT</xsl:template>
 
   <xsl:template name="build-hotjar-script">
+    <script>window.hj = function() { }</script>
+  </xsl:template>
+
+  <xsl:template name="build-hotjar-script-actual">
     <script>
         (function(h,o,t,j,a,r){
             h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
