@@ -1007,15 +1007,18 @@ body.hide-highlights {
 
 @keyframes pulsate {
   0% {
-    border: 1px solid #ddd;
+    // border: 1px solid #ddd;
+    opacity: 1.0;
   }
 
   50% {
-   border: 1px solid #666; // #c6c6c6; 
+   // border: 1px solid #666; // #c6c6c6; 
+   opacity: 0.5;
   }
 
   100% {
-    border: 1px solid #ddd;
+    // border: 1px solid #ddd;
+    opacity: 1.0;;
   }
 }
 

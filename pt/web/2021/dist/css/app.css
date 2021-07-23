@@ -2809,25 +2809,25 @@ body.hide-highlights .page-text .highlight--plaintext {
 
 @-webkit-keyframes pulsate {
   0% {
-    border: 1px solid #ddd;
+    opacity: 1.0;
   }
   50% {
-    border: 1px solid #666;
+    opacity: 0.5;
   }
   100% {
-    border: 1px solid #ddd;
+    opacity: 1.0;
   }
 }
 
 @keyframes pulsate {
   0% {
-    border: 1px solid #ddd;
+    opacity: 1.0;
   }
   50% {
-    border: 1px solid #666;
+    opacity: 0.5;
   }
   100% {
-    border: 1px solid #ddd;
+    opacity: 1.0;
   }
 }
 
