@@ -896,6 +896,7 @@
         </xsl:if>
         <xsl:if test="$id = 'panel-search'">
           <xsl:attribute name="open">open</xsl:attribute>
+          <xsl:attribute name="data-has-results">false</xsl:attribute>
           <xsl:attribute name="data-ignore-scroll-into-view">true</xsl:attribute>
         </xsl:if>
         <summary>

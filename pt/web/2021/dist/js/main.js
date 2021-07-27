@@ -28497,6 +28497,7 @@ var Searchinator = /*#__PURE__*/function () {
       }, 0);
       this.searchInput.value = '';
       this.searchStart = 1;
+      this.searchPanel.dataset.hasResults = false;
       this.emit('update', {
         q1: null
       });
@@ -28548,7 +28549,7 @@ var Searchinator = /*#__PURE__*/function () {
           self.emit('update', {
             q1: _this2.searchInput.value
           });
-        } else {
+          self.searchPanel.dataset.hasResults = true;
           self.emit('update', {
             q1: null
           });
@@ -28573,7 +28574,7 @@ var Searchinator = /*#__PURE__*/function () {
       this.searchInput = searchForm.querySelector('input[name="q1"]');
       this.submitButton = searchForm.querySelector('button[data-action="submit-search"]');
       this.clearButton = searchForm.querySelector('button[data-action="clear-search"]');
-      this.searchPanel = searchForm.parentElement;
+      this.searchPanel = document.querySelector(this.input.panel);
       this.searchResultsContainer.addEventListener('click', function (event) {
         if (event.target.closest('a[data-seq]')) {
           event.preventDefault();
@@ -37350,7 +37351,8 @@ if (reader.service.hasOcr) {
   reader.controls.searchinator = new _components_controls__WEBPACK_IMPORTED_MODULE_194__.Control.Searchinator({
     input: {
       form: '.d--search-form',
-      container: '#panel-search .results-container'
+      container: '#panel-search .results-container',
+      panel: '#panel-search'
     },
     reader: reader
   });

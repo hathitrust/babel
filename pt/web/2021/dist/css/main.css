@@ -630,6 +630,10 @@ html[data-details-polyfilled="true"] details > summary:first-child {
   align-items: center;
 }
 
+.d--panels summary:focus {
+  border-radius: 0;
+}
+
 .d--panels summary div.summary {
   width: 100%;
   display: flex;
@@ -687,6 +691,10 @@ html[data-details-polyfilled="true"] details > summary:first-child {
 
 .d--panels #panel-bookmark .bi-bookmark-fill.listed {
   fill: black;
+}
+
+.d--panels #panel-search[data-has-results="false"] {
+  background: #fdd116;
 }
 
 nav.pagination-container {

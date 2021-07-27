@@ -27,6 +27,8 @@ export var Searchinator = class {
     }, 0);
     this.searchInput.value = '';
     this.searchStart = 1;
+    this.searchPanel.dataset.hasResults = false;
+
     this.emit('update', { q1: null });
   }
 
@@ -68,7 +70,7 @@ export var Searchinator = class {
         })
         if ( self.searchResultsContainer.querySelectorAll('article').length > 0 ) {
           self.emit('update', { q1: this.searchInput.value });
-        } else {
+          self.searchPanel.dataset.hasResults = true;
           self.emit('update', { q1: null });
         }
 
@@ -89,7 +91,7 @@ export var Searchinator = class {
     this.searchInput = searchForm.querySelector('input[name="q1"]');
     this.submitButton = searchForm.querySelector('button[data-action="submit-search"]');
     this.clearButton = searchForm.querySelector('button[data-action="clear-search"]');
-    this.searchPanel = searchForm.parentElement;
+    this.searchPanel = document.querySelector(this.input.panel);
 
     this.searchResultsContainer.addEventListener('click', (event) => {
       if ( event.target.closest('a[data-seq]') ) {

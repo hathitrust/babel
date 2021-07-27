@@ -590,7 +590,8 @@ if ( reader.service.hasOcr ) {
   reader.controls.searchinator = new Control.Searchinator({
     input: {
       form: '.d--search-form',
-      container: '#panel-search .results-container'
+      container: '#panel-search .results-container',
+      panel: '#panel-search'
     },
     reader: reader
   });  
