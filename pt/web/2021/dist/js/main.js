@@ -28518,6 +28518,28 @@ var Searchinator = /*#__PURE__*/function () {
         search_url += "&debug=".concat(HT.params.debug);
       }
 
+      if (this.searchTarget.checked) {
+        // we have to make a form
+        this.searchResultsContainer.innerHTML = '';
+        var form = document.createElement('form');
+        form.style.display = 'none';
+        form.setAttribute('action', '/cgi/pt/search');
+        form.setAttribute('method', 'GET');
+        form.setAttribute('target', '_blank');
+        form.innerHTML = "\n        <input type=\"hidden\" name=\"id\" value=\"".concat(HT.params.id, "\" />\n        <input type=\"hidden\" name=\"q1\" value=\"").concat(this.searchInput.value, "\" />\n        <input type=\"hidden\" name=\"sz\" value=\"25\" />\n        <input type=\"hidden\" name=\"start\" value=\"").concat(this.searchStart, "\" />\n        <input type=\"hidden\" name=\"sort\" value=\"").concat(this.searchSort, "\" />\n        <input type=\"hidden\" name=\"hl\" value=\"").concat(this.showHighlights, "\" />\n      ");
+
+        if (HT.params.debug) {
+          form.innerHTML += "<input type=\"hidden\" name=\"debug\" value=\"".concat(HT.params.debug, "\" />");
+        }
+
+        document.body.appendChild(form);
+        form.addEventListener('submit', function (event) {
+          document.body.removeChild(form);
+        });
+        form.submit();
+        return;
+      }
+
       this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
       HT.update_status(this.searchResultsContainer.innerText);
       this.clearButton.style.display = 'none';
@@ -28570,10 +28592,11 @@ var Searchinator = /*#__PURE__*/function () {
 
       var self = this;
       this.searchResultsContainer = document.querySelector(this.input.container);
-      var searchForm = document.querySelector(this.input.form);
+      var searchForm = this.searchForm = document.querySelector(this.input.form);
       this.searchInput = searchForm.querySelector('input[name="q1"]');
       this.submitButton = searchForm.querySelector('button[data-action="submit-search"]');
       this.clearButton = searchForm.querySelector('button[data-action="clear-search"]');
+      this.searchTarget = searchForm.querySelector('input[name="target"]');
       this.searchPanel = document.querySelector(this.input.panel);
       this.searchResultsContainer.addEventListener('click', function (event) {
         if (event.target.closest('a[data-seq]')) {
@@ -28642,6 +28665,13 @@ var Searchinator = /*#__PURE__*/function () {
         var target = event.target.closest('button');
 
         _this3.clear();
+      });
+      this.searchTarget.addEventListener('change', function (event) {
+        HT.prefs.set({
+          pt: {
+            submitTarget: _this3.searchTarget.checked
+          }
+        });
       });
       this.searchResultsContainer.addEventListener('change', function (event) {
         var target = event.target.closest('input#action-start-jump');

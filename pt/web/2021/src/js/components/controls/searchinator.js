@@ -42,6 +42,33 @@ export var Searchinator = class {
     if ( HT.params.debug ) {
       search_url += `&debug=${HT.params.debug}`;
     }
+
+    if ( this.searchTarget.checked ) {
+      // we have to make a form
+      this.searchResultsContainer.innerHTML = '';
+      const form = document.createElement('form');
+      form.style.display = 'none';
+      form.setAttribute('action', '/cgi/pt/search');
+      form.setAttribute('method', 'GET');
+      form.setAttribute('target', '_blank');
+      form.innerHTML = `
+        <input type="hidden" name="id" value="${HT.params.id}" />
+        <input type="hidden" name="q1" value="${this.searchInput.value}" />
+        <input type="hidden" name="sz" value="25" />
+        <input type="hidden" name="start" value="${this.searchStart}" />
+        <input type="hidden" name="sort" value="${this.searchSort}" />
+        <input type="hidden" name="hl" value="${this.showHighlights}" />
+      `;
+      if ( HT.params.debug ) {
+        form.innerHTML += `<input type="hidden" name="debug" value="${HT.params.debug}" />`;
+      }
+      document.body.appendChild(form);
+      form.addEventListener('submit', (event) => {
+        document.body.removeChild(form);
+      })
+      form.submit();
+      return;
+    }
     
     this.searchResultsContainer.innerHTML = '<div class="alert alert-info">Searching...</div>';
     HT.update_status(this.searchResultsContainer.innerText);
@@ -87,10 +114,11 @@ export var Searchinator = class {
     var self = this;
 
     this.searchResultsContainer = document.querySelector(this.input.container);
-    const searchForm = document.querySelector(this.input.form);
+    const searchForm = this.searchForm = document.querySelector(this.input.form);
     this.searchInput = searchForm.querySelector('input[name="q1"]');
     this.submitButton = searchForm.querySelector('button[data-action="submit-search"]');
     this.clearButton = searchForm.querySelector('button[data-action="clear-search"]');
+    this.searchTarget = searchForm.querySelector('input[name="target"]');
     this.searchPanel = document.querySelector(this.input.panel);
 
     this.searchResultsContainer.addEventListener('click', (event) => {
@@ -159,6 +187,10 @@ export var Searchinator = class {
       event.stopPropagation();
       var target = event.target.closest('button');
       this.clear();
+    })
+
+    this.searchTarget.addEventListener('change', (event) => {
+      HT.prefs.set({ pt: { submitTarget: this.searchTarget.checked }});
     })
 
     this.searchResultsContainer.addEventListener('change', (event) => {

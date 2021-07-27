@@ -288,12 +288,22 @@ html[data-details-polyfilled="true"] {
 
     form.d--search-form {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       .input-group-text {
         flex-grow: 1;
+        flex-basis: 50%;
         margin-right: 0.5rem;
       }
+      
+      .d--search-form-target {
+        flex-basis: 100%;
+        label {
+          font-size: 0.875rem;
+        }
+      }
+
     }
   }
 

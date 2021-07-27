@@ -667,13 +667,23 @@ html[data-details-polyfilled="true"] details > summary:first-child {
 
 .d--panels .panel form.d--search-form {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
 }
 
 .d--panels .panel form.d--search-form .input-group-text {
   flex-grow: 1;
+  flex-basis: 50%;
   margin-right: 0.5rem;
+}
+
+.d--panels .panel form.d--search-form .d--search-form-target {
+  flex-basis: 100%;
+}
+
+.d--panels .panel form.d--search-form .d--search-form-target label {
+  font-size: 0.875rem;
 }
 
 .d--panels .versionContainer.panel {

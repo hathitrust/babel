@@ -212,6 +212,15 @@
             <xsl:with-param name="id">bi-x-circle</xsl:with-param>
           </xsl:call-template>
         </button>
+        <div class="d--search-form-target">
+          <xsl:variable name="state" select="//Preferences/Key[@name='submitTarget']/Value" />
+          <input type="checkbox" name="target" id="search-form-target">
+            <xsl:if test="$state = 'true'">
+              <xsl:attribute name="checked">checked</xsl:attribute>
+            </xsl:if>
+          </input>
+          <label for="search-form-target">Open results in a new window</label>
+        </div>
       </form>
 
       <xsl:call-template name="build-search-results-toolbar" />
