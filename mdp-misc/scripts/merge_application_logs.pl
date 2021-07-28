@@ -15,7 +15,7 @@ GetOptions("yyyymmdd=i" => \$yyyymmdd,
            "hh=i" => \$hh,
            "debug" => \$debug);
 
-my $pattern = qq{*$yyyymmdd*$hh};
+my $pattern = qq{.*-$yyyymmdd.log.[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+.$hh\$};
 
 my $possibles = {};
 
@@ -25,7 +25,7 @@ my $logdir = "$ENV{SDRROOT}/logs";
 opendir my $dh, $logdir or die "Could not open $logdir - $!";
 my @dirs = grep { $_ ne '.' and $_ ne '..' and $_ ne 'tmp' and -d "$logdir/$_" } readdir $dh;
 foreach my $dir ( @dirs ) {
-    my $in = new IO::File qq{find "$logdir/$dir" -type f -name '$pattern' | };
+    my $in = new IO::File qq{find "$logdir/$dir" -type f -regex '$pattern' | };
     while ( my $input_filename = <$in> ) {
         chomp $input_filename;
         my $target_filename = $input_filename;
