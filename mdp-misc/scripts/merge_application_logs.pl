@@ -19,6 +19,8 @@ my $pattern = qq{*$yyyymmdd*$hh};
 
 my $possibles = {};
 
+umask(0000);
+
 my $logdir = "$ENV{SDRROOT}/logs";
 opendir my $dh, $logdir or die "Could not open $logdir - $!";
 my @dirs = grep { $_ ne '.' and $_ ne '..' and $_ ne 'tmp' and -d "$logdir/$_" } readdir $dh;
@@ -29,6 +31,7 @@ foreach my $dir ( @dirs ) {
         my $target_filename = $input_filename;
         # remove the PID + HH
         $target_filename =~ s,\.\d+\.$hh$,,;
+        touch($target_filename);
         my $cmd = [ "/bin/cat", $input_filename ];
         run $cmd, ">>", $target_filename;
         unless ( $debug ) {
@@ -39,3 +42,10 @@ foreach my $dir ( @dirs ) {
     }
 }
 
+sub touch {
+    my ( $filename ) = @_;
+    if ( ! -f $filename ) {
+        open(my $fh, ">>", $filename);
+        close($fh);
+    }
+}
