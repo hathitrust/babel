@@ -5,6 +5,7 @@ use IO::File;
 use Data::Dumper;
 use Date::Manip;
 use IPC::Run qw(run);
+use File::Basename qw(basename);
 use Getopt::Long;
 
 my $yyyymmdd = UnixDate('now', '%Y-%m-%d');
@@ -15,7 +16,7 @@ GetOptions("yyyymmdd=i" => \$yyyymmdd,
            "hh=i" => \$hh,
            "debug" => \$debug);
 
-my $pattern = qq{.*-$yyyymmdd.log.[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+.$hh\$};
+my $pattern = qq{.*-$yyyymmdd.log.[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+\$};
 
 my $possibles = {};
 
@@ -25,13 +26,16 @@ my $logdir = "$ENV{SDRROOT}/logs";
 opendir my $dh, $logdir or die "Could not open $logdir - $!";
 my @dirs = grep { $_ ne '.' and $_ ne '..' and $_ ne 'tmp' and -d "$logdir/$_" } readdir $dh;
 foreach my $dir ( @dirs ) {
-    my $in = new IO::File qq{find "$logdir/$dir" -type f -regex '$pattern' | };
+    next unless ( -d "$logdir/$dir/$hh" );
+    my $in = new IO::File qq{find "$logdir/$dir/$hh" -type f -regex '$pattern' | };
     while ( my $input_filename = <$in> ) {
         chomp $input_filename;
-        my $target_filename = $input_filename;
+        my $target_filename = basename($input_filename);
         # remove the PID + HH
-        $target_filename =~ s,\.\d+\.$hh$,,;
+        $target_filename =~ s,\.\d+$,,;
+        $target_filename = "$logdir/$dir/$target_filename";
         touch($target_filename);
+
         my $cmd = [ "/bin/cat", $input_filename ];
         run $cmd, ">>", $target_filename;
         unless ( $debug ) {
