@@ -465,7 +465,11 @@ export var Base = class {
     if ( page.dataset.loaded != 'true' ) {
       var img = page.querySelector('img');
       img.src = image.src;
-      this.service.manifest.update(page.dataset.seq, { width: image.width, height: image.height });
+      this.service.manifest.update(page.dataset.seq, { width: image.width, height: image.height, resolution: datum.resolution, size: datum.size });
+      console.log("postImage", page.dataset.seq, this.currentSeq, page.dataset.seq == this.currentSeq);
+      if ( page.dataset.seq == this.currentSeq ) {
+        this.reader.emit('updateSource', { seq: page.dataset.seq, resolution: datum.resolution, size: datum.size });
+      }
       this._reframePage(image, page);
       page.dataset.loaded = true;
       URL.revokeObjectURL(img.src); 

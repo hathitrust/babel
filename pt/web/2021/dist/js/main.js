@@ -28571,12 +28571,16 @@ var Searchinator = /*#__PURE__*/function () {
           self.emit('update', {
             q1: _this2.searchInput.value
           });
+<<<<<<< HEAD
           self.searchPanel.dataset.hasResults = true;
         } else {
           self.searchPanel.dataset.hasResults = false;
           self.emit('update', {
             q1: null
           });
+=======
+          self.searchPanel.dataset.hasResults = true; // self.emit('update', { q1: null });
+>>>>>>> e249ad4... add more options for image download
         }
 
         _this2.submitButton.classList.remove('btn-loading');
@@ -29550,6 +29554,11 @@ var Manifest = /*#__PURE__*/function () {
         // just updating rotation
         this.manifest[seq].rotation = meta.rotation;
         return;
+      }
+
+      if (meta.resolution != null && meta.width === undefined) {
+        this.manifest[seq].resolution = meta.resolution;
+        return;
       } // ... which will help with switching lanes and rotating
 
 
@@ -29562,7 +29571,9 @@ var Manifest = /*#__PURE__*/function () {
         width: this.defaultImage.width,
         height: meta.height * ratio,
         rotation: meta.rotation || 0,
-        ratio: meta.height / meta.width
+        ratio: meta.height / meta.width,
+        resolution: meta.resolution,
+        size: meta.size
       };
     }
   }, {
@@ -30204,6 +30215,22 @@ var Loader = /*#__PURE__*/function () {
 
         var chokeAllowed = response.headers.get('x-choke-allowed');
         var chokeDebt = response.headers.get('x-choke-debt');
+        var resolution = response.headers.get('x-image-resolution');
+
+        if (resolution && _typeof(src) === 'object') {
+          src.resolution = resolution;
+        }
+
+        var size = response.headers.get('x-image-size');
+
+        if (size && _typeof(src) === 'object') {
+          var tmp = size.split('x');
+          src.size = {
+            width: tmp[0],
+            height: tmp[1]
+          };
+        }
+
         return response.blob();
       }).then(function (blob) {
         if (image.dataset.restricted == 'true' && blob.text) {
@@ -30908,8 +30935,19 @@ var Base = /*#__PURE__*/function () {
         img.src = image.src;
         this.service.manifest.update(page.dataset.seq, {
           width: image.width,
-          height: image.height
+          height: image.height,
+          resolution: datum.resolution,
+          size: datum.size
         });
+        console.log("postImage", page.dataset.seq, this.currentSeq, page.dataset.seq == this.currentSeq);
+
+        if (page.dataset.seq == this.currentSeq) {
+          this.reader.emit('updateSource', {
+            seq: page.dataset.seq,
+            resolution: datum.resolution,
+            size: datum.size
+          });
+        }
 
         this._reframePage(image, page);
 
@@ -36939,6 +36977,11 @@ var Reader = /*#__PURE__*/function () {
           _this._updateHistoryUrl({});
         }
       });
+      this.on('updateSource', function (params) {
+        console.log("-- updateSource", params);
+
+        _this._updateImageResolution(params.seq, params);
+      });
 
       this._updateViewports = function () {
         if (!usesGrid) {
@@ -37070,6 +37113,8 @@ var Reader = /*#__PURE__*/function () {
         if (span) {
           span.innerText = seq;
         }
+
+        this._updateImageResolution(seq);
       }
 
       self._updateLinkSeq(document.querySelector("#pageURL"), seq);
@@ -37088,6 +37133,27 @@ var Reader = /*#__PURE__*/function () {
 
       if (HT.downloader && HT.downloader.updateDownloadFormatRangeOptions) {
         HT.downloader.updateDownloadFormatRangeOptions();
+      }
+    }
+  }, {
+    key: "_updateImageResolution",
+    value: function _updateImageResolution(seq, meta) {
+      if (meta == undefined) {
+        meta = this.service.manifest.meta(seq);
+      }
+
+      var span = document.querySelector('#sidebar [data-slot="image-full-resolution"]');
+
+      if (span && meta.resolution) {
+        span.innerText = "".concat(meta.size.width, "x").concat(meta.size.height, " - ").concat(meta.resolution);
+      }
+
+      span = document.querySelector('#sidebar [data-slot="image-screen-resolution"]');
+
+      if (span && meta.resolution) {
+        var r = 300 / parseInt(meta.resolution, 10);
+        var size150 = "".concat(Math.ceil(meta.size.width * r), "x").concat(Math.ceil(meta.size.height * r));
+        span.innerText = "".concat(size150, " - 300 dpi");
       }
     }
   }, {

@@ -457,6 +457,7 @@ head.ready(function() {
     }
     downloadFormatOptions.forEach(function(option) {
       option.addEventListener('change', function(event) {
+        downloadForm.dataset.format = this.value;
         updateDownloadFormatRangeOptions(this);
       })
     })

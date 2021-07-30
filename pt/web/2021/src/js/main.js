@@ -218,6 +218,11 @@ var Reader = class {
       }
     })
 
+    this.on('updateSource', (params) => {
+      console.log("-- updateSource", params);
+      this._updateImageResolution(params.seq, params);
+    })
+
     this._updateViewports = function() {
       if ( ! usesGrid ) {
         $main.style.height = `${window.innerHeight - $header.clientHeight - 25}px`;
@@ -333,6 +338,8 @@ var Reader = class {
     } else {
       var span = document.querySelector('#sidebar [data-slot="current-seq"]');
       if ( span ) { span.innerText = seq; }
+
+      this._updateImageResolution(seq);
     }
     self._updateLinkSeq(document.querySelector("#pageURL"), seq);
     self._updateLinkSeq(document.querySelector("input[name=seq]"), seq);
@@ -346,6 +353,19 @@ var Reader = class {
 
     if ( HT.downloader && HT.downloader.updateDownloadFormatRangeOptions ) {
       HT.downloader.updateDownloadFormatRangeOptions();
+    }
+  }
+
+  _updateImageResolution(seq, meta) {
+    if ( meta == undefined ) { meta = this.service.manifest.meta(seq); }
+    var span = document.querySelector('#sidebar [data-slot="image-full-resolution"]');
+    if ( span && meta.resolution ) { span.innerText = `${meta.size.width}x${meta.size.height} - ${meta.resolution}`; }
+
+    span = document.querySelector('#sidebar [data-slot="image-screen-resolution"]');
+    if ( span && meta.resolution ) { 
+      var r = 300 / parseInt(meta.resolution, 10);
+      var size150 = `${Math.ceil(meta.size.width * r)}x${Math.ceil(meta.size.height * r)}`;
+      span.innerText = `${size150} - 300 dpi`; 
     }
   }
 

@@ -3413,6 +3413,14 @@ main[data-view][data-format="plaintext"] li[data-view-target~="page"] {
   align-items: center;
 }
 
+.form-download-module fieldset[data-download-format-target] {
+  display: none;
+}
+
+.form-download-module[data-format="image"] fieldset[data-download-format-target~="image"] {
+  display: block;
+}
+
 .form-control[data-view-target] {
   display: none;
 }

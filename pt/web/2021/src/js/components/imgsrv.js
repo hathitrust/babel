@@ -36,6 +36,10 @@ export var Manifest = class {
       this.manifest[seq].rotation = meta.rotation;
       return;
     }
+    if ( meta.resolution != null && meta.width === undefined ) {
+      this.manifest[seq].resolution = meta.resolution;
+      return;
+    }
     // ... which will help with switching lanes and rotating
     if ( this.manifest[seq] && this.manifest[seq].width ) { return ; }
     var ratio = this.defaultImage.width / meta.width;
@@ -43,7 +47,9 @@ export var Manifest = class {
       width: this.defaultImage.width,
       height: meta.height * ratio,
       rotation: meta.rotation || 0,
-      ratio: meta.height / meta.width
+      ratio: meta.height / meta.width,
+      resolution: meta.resolution,
+      size: meta.size
     }
   }
 
@@ -528,6 +534,16 @@ export var Loader = class {
 
         var chokeAllowed = response.headers.get('x-choke-allowed');
         var chokeDebt = response.headers.get('x-choke-debt');
+
+        var resolution = response.headers.get('x-image-resolution');
+        if ( resolution && ( typeof src === 'object' )) {
+          src.resolution = resolution;
+        }
+        var size = response.headers.get('x-image-size');
+        if ( size && ( typeof src === 'object' )) {
+          let tmp = size.split('x');
+          src.size = { width: tmp[0], height: tmp[1] }
+        }
 
         return response.blob();
       })
