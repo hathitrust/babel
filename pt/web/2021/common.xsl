@@ -1302,16 +1302,25 @@
         </fieldset>
 
         <fieldset data-download-format-target="image">
+          <xsl:variable name="state" select="//Preferences/Key[@name='dl']/Key[@name='imageResolution']/Value" />
           <legend>Image Resolution</legend>
           <div class="form-control">
-            <input name="target-ppi" type="radio" id="option-image-target-ppi-300" value="300" checked="checked" />
+            <input name="target-ppi" type="radio" id="option-image-target-ppi-300" value="300">
+              <xsl:if test="normalize-space($state) = '' or $state = '300'">
+                <xsl:attribute name="checked">checked</xsl:attribute>
+              </xsl:if>
+            </input>
             <label for="option-image-target-ppi-300">
               <xsl:text>High / </xsl:text>
               <span data-slot="image-screen-resolution">300 ppi</span>
             </label>
           </div>
           <div class="form-control">
-            <input name="target-ppi" type="radio" id="option-image-target-ppi-original" value="0" />
+            <input name="target-ppi" type="radio" id="option-image-target-ppi-original" value="0">
+              <xsl:if test="$state = '0'">
+                <xsl:attribute name="checked">checked</xsl:attribute>
+              </xsl:if>
+            </input>
             <label for="option-image-target-ppi-original">
               <xsl:text>Full / </xsl:text>
               <span data-slot="image-full-resolution">max 600 ppi</span>
