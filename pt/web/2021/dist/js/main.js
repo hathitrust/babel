@@ -28572,6 +28572,8 @@ var Searchinator = /*#__PURE__*/function () {
             q1: _this2.searchInput.value
           });
           self.searchPanel.dataset.hasResults = true;
+        } else {
+          self.searchPanel.dataset.hasResults = false;
           self.emit('update', {
             q1: null
           });
@@ -31779,7 +31781,11 @@ var Base = /*#__PURE__*/function () {
           highlight.style.width = "".concat(highlight_w / scaling.width * 100.0, "%");
           highlight.style.height = "".concat(highlight_h / scaling.height * 100.0, "%");
           highlight.style.top = "".concat((coords[1] - (highlight_h - highlight_h0) / 2) / scaling.height * 100.0, "%");
-          highlight.style.left = "".concat((coords[0] - (highlight_w - highlight_w0) / 2) / scaling.width * 100.0, "%");
+          highlight.style.left = "".concat((coords[0] - (highlight_w - highlight_w0) / 2) / scaling.width * 100.0, "%"); // if ( self.name == '2up' ) {
+          //   var prefix = page.classList.contains('recto') ? -1 : 1;
+          //   highlight.style.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;
+          // }
+
           image_frame.appendChild(highlight);
         } else {
           // span.classList.add('highlight--plaintext', `highlight_${highlight_idx}`);

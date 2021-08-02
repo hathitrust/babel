@@ -98,6 +98,8 @@ export var Searchinator = class {
         if ( self.searchResultsContainer.querySelectorAll('article').length > 0 ) {
           self.emit('update', { q1: this.searchInput.value });
           self.searchPanel.dataset.hasResults = true;
+        } else {
+          self.searchPanel.dataset.hasResults = false;
           self.emit('update', { q1: null });
         }
 
