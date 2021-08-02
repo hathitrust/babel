@@ -1005,6 +1005,10 @@ main[data-view][data-format="plaintext"] li[data-view-target~="page"] {
   display: block;
 }
 
+.download-image-resolution {
+  color: #4f5a65;
+}
+
 .form-control[data-view-target] {
   display: none;
 }

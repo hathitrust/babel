@@ -537,7 +537,7 @@ export var Loader = class {
 
         var resolution = response.headers.get('x-image-resolution');
         if ( resolution && ( typeof src === 'object' )) {
-          src.resolution = resolution;
+          src.resolution = resolution.replace("/1", "");
         }
         var size = response.headers.get('x-image-size');
         if ( size && ( typeof src === 'object' )) {

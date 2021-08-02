@@ -329,6 +329,8 @@ var Reader = class {
         if ( page && page.dataset.seq ) {
           span.innerText = page.dataset.seq;
           span.parentNode.previousElementSibling.disabled = false;
+          span.parentNode.previousElementSibling.dataset.seq = page.dataset.seq;
+          self._updateImageResolution(page.dataset.seq);
         } else {
           span.innerText = '-';
           span.parentNode.previousElementSibling.disabled = true;
@@ -359,13 +361,16 @@ var Reader = class {
   _updateImageResolution(seq, meta) {
     if ( meta == undefined ) { meta = this.service.manifest.meta(seq); }
     var span = document.querySelector('#sidebar [data-slot="image-full-resolution"]');
-    if ( span && meta.resolution ) { span.innerText = `${meta.size.width}x${meta.size.height} - ${meta.resolution}`; }
+    if ( span && meta.resolution ) { 
+      span.innerHTML = `${meta.resolution} <span class="download-image-resolution">(${meta.size.width}x${meta.size.height})</span>`; 
+      // document.querySelector('#option-image-target-ppi-original').value = meta.resolution;
+    }
 
     span = document.querySelector('#sidebar [data-slot="image-screen-resolution"]');
     if ( span && meta.resolution ) { 
       var r = 300 / parseInt(meta.resolution, 10);
       var size150 = `${Math.ceil(meta.size.width * r)}x${Math.ceil(meta.size.height * r)}`;
-      span.innerText = `${size150} - 300 dpi`; 
+      span.innerHTML = `300 dpi <span class="download-image-resolution">(${size150})</span>`; 
     }
   }
 

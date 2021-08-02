@@ -1236,7 +1236,7 @@
 
     <xsl:if test="$show-download-module = 'true'">
 
-      <form id="form-download-module" class="form-download-module v2" data-full-pdf-access="{$gFullPdfAccess}" data-format="pdf">
+      <form id="form-download-module" class="form-download-module v2" data-full-pdf-access="{$gFullPdfAccess}" data-format="pdf" autocomplete="off">
         <xsl:choose>
           <xsl:when test="//UserHasRoleToggles[@activated='enhancedTextProxy'] = 'TRUE'"></xsl:when>
           <xsl:otherwise>
@@ -1281,13 +1281,22 @@
         </fieldset>
 
         <fieldset data-download-format-target="image">
+          <xsl:variable name="state" select="//Preferences/Key[@name='dl']/Key[@name='imageFormat']/Value" />
           <legend>Image Format</legend>
           <div class="form-control">
-            <input name="image-format" type="radio" id="option-image-format-jpeg" value="jpeg" checked="checked" />
+            <input name="image-format" type="radio" id="option-image-format-jpeg" value="image/jpeg">
+              <xsl:if test="normalize-space($state) = '' or $state = 'image/jpeg'">
+                <xsl:attribute name="checked">checked</xsl:attribute>
+              </xsl:if>
+            </input>
             <label for="option-image-format-jpeg">JPEG</label>
           </div>
           <div class="form-control">
-            <input name="image-format" type="radio" id="option-image-format-tiff" value="tiff" />
+            <input name="image-format" type="radio" id="option-image-format-tiff" value="image/tiff">
+              <xsl:if test="$state = 'image/tiff'">
+                <xsl:attribute name="checked">checked</xsl:attribute>
+              </xsl:if>
+            </input>
             <label for="option-image-format-tiff">TIFF</label>
           </div>
         </fieldset>
@@ -1297,17 +1306,15 @@
           <div class="form-control">
             <input name="target-ppi" type="radio" id="option-image-target-ppi-300" value="300" checked="checked" />
             <label for="option-image-target-ppi-300">
-              <xsl:text>High (</xsl:text>
+              <xsl:text>High / </xsl:text>
               <span data-slot="image-screen-resolution">300 ppi</span>
-              <xsl:text>)</xsl:text>
             </label>
           </div>
           <div class="form-control">
-            <input name="target-ppi" type="radio" id="option-image-target-ppi-original" value="original" />
+            <input name="target-ppi" type="radio" id="option-image-target-ppi-original" value="0" />
             <label for="option-image-target-ppi-original">
-              <xsl:text>Full (</xsl:text>
-              <span data-slot="image-full-resolution">600 ppi</span>
-              <xsl:text>)</xsl:text>
+              <xsl:text>Full / </xsl:text>
+              <span data-slot="image-full-resolution">max 600 ppi</span>
             </label>
           </div>
         </fieldset>

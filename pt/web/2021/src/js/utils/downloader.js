@@ -103,8 +103,8 @@ HT.Downloader = {
 
         switch (self.$config.downloadFormat) {
             case 'image':
-                data['format'] = 'image/jpeg';
-                data['target_ppi'] = 300;
+                data['format'] = self.$config.imageFormat; // 'image/jpeg';
+                data['target_ppi'] = self.$config.imageResolution; // 300;
                 data['bundle_format'] = 'zip';
                 break;
             case 'plaintext-zip':
@@ -425,7 +425,7 @@ head.ready(function() {
 
     // non-jquery?
     downloadFormatOptions = Array.prototype.slice.call(downloadForm.querySelectorAll('input[name="download_format"]'));
-    rangeOptions = Array.prototype.slice.call(downloadForm.querySelectorAll('[data-download-format-target]'));
+    rangeOptions = Array.prototype.slice.call(downloadForm.querySelectorAll('.form-control[data-download-format-target]'));
 
     var downloadSubmit = downloadForm.querySelector('[type="submit"]');
 
@@ -468,6 +468,10 @@ head.ready(function() {
             downloadFormatOptions.forEach(function(formatOption) {
                 formatOption.disabled = ! ( div.dataset.downloadFormatTarget.indexOf(formatOption.value) > -1 );
             })
+            if ( this.value.indexOf('current-page') > -1 && HT.reader ) {
+                var seq = this.dataset.seq;
+                HT.reader._updateImageResolution(seq);
+            }
         })
     })
 
@@ -491,6 +495,11 @@ head.ready(function() {
     downloadForm.addEventListener('submit', function(event) {
         var formatOption = downloadForm.querySelector('input[name="download_format"]:checked');
         var rangeOption = downloadForm.querySelector('input[name="range"]:checked:not(:disabled)');
+
+        var image_format_option = downloadForm.querySelector('input[name="image-format"]:checked');
+        var image_resolution_option = downloadForm.querySelector('input[name="target-ppi"]:checked');
+
+        HT.prefs.set({ pt: { dl: { imageFormat: image_format_option.value, imageRes: image_resolution_option.value }}});
 
         var printable;
 
@@ -565,12 +574,13 @@ head.ready(function() {
             if ( formatOption.value == 'image' ) {
                 var size_attr = "target_ppi";
                 var image_format_attr = 'format';
-                var size_value = "300";
+
+                var size_value = image_resolution_option.value;
                 if ( selection.pages.length == 1 ) {
                     // slight difference
                     action = '/cgi/imgsrv/image';
                     size_attr = "size";
-                    size_value = "ppi:300";
+                    size_value = size_value == '0' ? 'full' : `ppi:${size_value}`;
                 }
 
                 var input = document.createElement('input');
@@ -582,7 +592,7 @@ head.ready(function() {
                 var input = document.createElement('input');
                 input.setAttribute("type", "hidden");
                 input.setAttribute("name", image_format_attr);
-                input.setAttribute("value", 'image/jpeg');
+                input.setAttribute("value", image_format_option.value);
                 tunnelForm.appendChild(input);
             } else if ( formatOption.value == 'plaintext-zip' ) {
                 var input = document.createElement('input');
@@ -658,7 +668,8 @@ head.ready(function() {
         _format_titles.epub = 'EPUB';
         _format_titles.plaintext = 'Text (.txt)';
         _format_titles['plaintext-zip'] = 'Text (.zip)';
-        _format_titles.image = 'Image (JPEG)';
+        _format_titles.image = `Image (${image_format_option.value == 'image/jpeg' ? 'JPEG' : 'TIFF'})`;
+        // _format_titles.image = 'Image (JPEG)';
 
         // invoke the downloader
         HT.downloader.downloadPdf({
@@ -666,7 +677,9 @@ head.ready(function() {
             item_title: _format_titles[formatOption.value],
             selection: selection,
             downloadFormat: formatOption.value,
-            trackingAction: rangeOption.value
+            trackingAction: rangeOption.value,
+            imageFormat: image_format_option.value,
+            imageResolution: image_resolution_option.value
         });
 
         return false;

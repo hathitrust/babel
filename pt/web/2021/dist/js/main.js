@@ -28571,16 +28571,12 @@ var Searchinator = /*#__PURE__*/function () {
           self.emit('update', {
             q1: _this2.searchInput.value
           });
-<<<<<<< HEAD
           self.searchPanel.dataset.hasResults = true;
         } else {
           self.searchPanel.dataset.hasResults = false;
           self.emit('update', {
             q1: null
           });
-=======
-          self.searchPanel.dataset.hasResults = true; // self.emit('update', { q1: null });
->>>>>>> e249ad4... add more options for image download
         }
 
         _this2.submitButton.classList.remove('btn-loading');
@@ -30218,7 +30214,7 @@ var Loader = /*#__PURE__*/function () {
         var resolution = response.headers.get('x-image-resolution');
 
         if (resolution && _typeof(src) === 'object') {
-          src.resolution = resolution;
+          src.resolution = resolution.replace("/1", "");
         }
 
         var size = response.headers.get('x-image-size');
@@ -37102,6 +37098,9 @@ var Reader = /*#__PURE__*/function () {
           if (page && page.dataset.seq) {
             span.innerText = page.dataset.seq;
             span.parentNode.previousElementSibling.disabled = false;
+            span.parentNode.previousElementSibling.dataset.seq = page.dataset.seq;
+
+            self._updateImageResolution(page.dataset.seq);
           } else {
             span.innerText = '-';
             span.parentNode.previousElementSibling.disabled = true;
@@ -37145,7 +37144,7 @@ var Reader = /*#__PURE__*/function () {
       var span = document.querySelector('#sidebar [data-slot="image-full-resolution"]');
 
       if (span && meta.resolution) {
-        span.innerText = "".concat(meta.size.width, "x").concat(meta.size.height, " - ").concat(meta.resolution);
+        span.innerHTML = "".concat(meta.resolution, " <span class=\"download-image-resolution\">(").concat(meta.size.width, "x").concat(meta.size.height, ")</span>"); // document.querySelector('#option-image-target-ppi-original').value = meta.resolution;
       }
 
       span = document.querySelector('#sidebar [data-slot="image-screen-resolution"]');
@@ -37153,7 +37152,7 @@ var Reader = /*#__PURE__*/function () {
       if (span && meta.resolution) {
         var r = 300 / parseInt(meta.resolution, 10);
         var size150 = "".concat(Math.ceil(meta.size.width * r), "x").concat(Math.ceil(meta.size.height * r));
-        span.innerText = "".concat(size150, " - 300 dpi");
+        span.innerHTML = "300 dpi <span class=\"download-image-resolution\">(".concat(size150, ")</span>");
       }
     }
   }, {
