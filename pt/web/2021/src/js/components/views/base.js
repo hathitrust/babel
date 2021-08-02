@@ -1194,10 +1194,10 @@ export var Base = class {
         highlight.style.top = `${( coords[1] - ( ( highlight_h - highlight_h0 ) / 2 ) ) / scaling.height * 100.0}%`;
         highlight.style.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;
 
-        // if ( self.name == '2up' ) {
-        //   var prefix = page.classList.contains('recto') ? -1 : 1;
-        //   highlight.style.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;
-        // }
+        if ( self.name == '2up' ) {
+          var prefix = page.classList.contains('recto') ? -1 : 1;
+          highlight.style.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / image_frame.offsetWidth * 100.0}%`;
+        }
 
         image_frame.appendChild(highlight);
 
