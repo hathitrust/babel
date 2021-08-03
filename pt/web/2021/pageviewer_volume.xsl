@@ -521,28 +521,19 @@
 
   <xsl:template name="build-search-results-toolbar">
     <div class="results-container">
-      <xsl:if test="//Param[@name='q1']">
+      <xsl:if test="//Param[@name='q1'] and //ItemIndexStatus = 'INDEXED'">
         <div class="alert alert-block results-options" style="justify-content: flex-end">
           <div class="btn-toolbar">
-            <xsl:if test="//ItemIndexStatus = 'INDEXED'">
-              <button aria-pressed="true" class="btn active" data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
-                <xsl:call-template name="build-pt-icon">
-                  <xsl:with-param name="id">bi-brightness-high-fill</xsl:with-param>
-                  <xsl:with-param name="class">toggled</xsl:with-param>
-                </xsl:call-template>
-                <xsl:call-template name="build-pt-icon">
-                  <xsl:with-param name="id">bi-brightness-low</xsl:with-param>
-                  <xsl:with-param name="class">untoggled</xsl:with-param>
-                </xsl:call-template>
-              </button>
-            </xsl:if>
-            <xsl:if test="false()">
-              <button class="btn" aria-label="Clear search" data-tippy-role="tooltip" data-action="clear-search">
-                <xsl:call-template name="build-pt-icon">
-                  <xsl:with-param name="id">bi-x-circle</xsl:with-param>
-                </xsl:call-template>
-              </button>
-            </xsl:if>
+            <button aria-pressed="true" class="btn active" data-action="toggle-highlights" aria-label="Hide Highlights" data-toggled-label="Hide Highlights" data-untoggled-label="Show Highlights" data-tippy-role="tooltip">
+              <xsl:call-template name="build-pt-icon">
+                <xsl:with-param name="id">bi-brightness-high-fill</xsl:with-param>
+                <xsl:with-param name="class">toggled</xsl:with-param>
+              </xsl:call-template>
+              <xsl:call-template name="build-pt-icon">
+                <xsl:with-param name="id">bi-brightness-low</xsl:with-param>
+                <xsl:with-param name="class">untoggled</xsl:with-param>
+              </xsl:call-template>
+            </button>
           </div>
         </div>
       </xsl:if>

@@ -3417,7 +3417,11 @@ main[data-view][data-format="plaintext"] li[data-view-target~="page"] {
   display: none;
 }
 
-.form-download-module[data-format="image"] fieldset[data-download-format-target~="image"] {
+.form-download-module[data-format="image-jpeg"] fieldset[data-download-format-target~="image-jpeg"] {
+  display: block;
+}
+
+.form-download-module[data-format="image-tiff"] fieldset[data-download-format-target~="image-tiff"] {
   display: block;
 }
 

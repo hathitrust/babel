@@ -1274,13 +1274,18 @@
           </xsl:if>
 
           <div class="form-control">
-            <input name="download_format" type="radio" id="format-image" value="image" /> 
-            <label for="format-image">Image</label>
+            <input name="download_format" type="radio" id="format-image-jpeg" value="image-jpeg" /> 
+            <label for="format-image-jpeg">Image (JPEG)</label>
+          </div>
+
+          <div class="form-control">
+            <input name="download_format" type="radio" id="format-image-tiff" value="image-tiff" />
+            <label for="format-image-tiff">Image (TIFF)</label>
           </div>
 
         </fieldset>
 
-        <fieldset data-download-format-target="image">
+        <fieldset data-download-format-target="ximage-ignore">
           <xsl:variable name="state" select="//Preferences/Key[@name='dl']/Key[@name='imageFormat']/Value" />
           <legend>Image Format</legend>
           <div class="form-control">
@@ -1301,7 +1306,7 @@
           </div>
         </fieldset>
 
-        <fieldset data-download-format-target="image">
+        <fieldset data-download-format-target="image-jpeg image-tiff">
           <xsl:variable name="state" select="//Preferences/Key[@name='dl']/Key[@name='imageResolution']/Value" />
           <legend>Image Resolution</legend>
           <div class="form-control">
@@ -1331,7 +1336,7 @@
         <fieldset>
           <legend>Range</legend>
 
-          <div class="form-control" data-view-target="1up page" data-download-format-target="pdf plaintext image">
+          <div class="form-control" data-view-target="1up page" data-download-format-target="pdf plaintext image-tiff image-jpeg">
             <input name="range" type="radio" id="range-current-page" value="current-page" data-is-partial="true">
               <xsl:if test="$gFullPdfAccess != 'allow'">
                 <xsl:attribute name="checked">checked</xsl:attribute>
@@ -1343,7 +1348,7 @@
             </label>
           </div>
 
-          <div class="form-control" data-view-target="2up" data-download-format-target="pdf plaintext image">
+          <div class="form-control" data-view-target="2up" data-download-format-target="pdf plaintext image-tiff image-jpeg">
             <input name="range" type="radio" id="range-current-page-verso" value="current-page-verso" data-is-partial="true"/> 
             <label for="range-current-page-verso">
               <xsl:text>Left page scan #</xsl:text>
@@ -1351,7 +1356,7 @@
             </label>
           </div>
 
-          <div class="form-control" data-view-target="2up" data-download-format-target="pdf plaintext image">
+          <div class="form-control" data-view-target="2up" data-download-format-target="pdf plaintext image-tiff image-jpeg">
             <input name="range" type="radio" id="range-current-page-recto" value="current-page-recto" data-is-partial="true" /> 
             <label for="range-current-page-recto">
               <xsl:text>Right page scan #</xsl:text>
@@ -1360,7 +1365,7 @@
           </div>
 
           <xsl:if test="$gFullPdfAccess = 'allow'">
-            <div class="form-control" data-view-target="1up 2up page thumb search" data-download-format-target="pdf epub plaintext plaintext-zip image">
+            <div class="form-control" data-view-target="1up 2up page thumb search" data-download-format-target="pdf epub plaintext plaintext-zip image-tiff image-jpeg">
               <input name="range" type="radio" id="download-volume" value="volume">
                 <xsl:attribute name="checked">checked</xsl:attribute>
               </input> 
@@ -1368,7 +1373,7 @@
             </div>
 
             <xsl:if test="$gUsingSearch = 'false'">
-              <div class="form-control" data-view-target="1up 2up page thumb" data-download-format-target="pdf plaintext plaintext-zip image">
+              <div class="form-control" data-view-target="1up 2up page thumb" data-download-format-target="pdf plaintext plaintext-zip image-tiff image-jpeg">
                 <input name="range" type="radio" id="download-selected-pages" value="selected-pages" data-is-partial="true" /> 
                 <label for="download-selected-pages" style="white-space: nowrap">Selected page scans</label>
                 <!-- <button id="action-clear-selection" aria-label="Clear selection" class="btn btn-mini"><i class="icomoon icomoon-cancel"></i></button> -->

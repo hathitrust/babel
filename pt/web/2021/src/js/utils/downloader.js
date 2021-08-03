@@ -102,8 +102,10 @@ HT.Downloader = {
         }
 
         switch (self.$config.downloadFormat) {
-            case 'image':
-                data['format'] = self.$config.imageFormat; // 'image/jpeg';
+            case 'image-jpeg':
+            case 'image-tiff':
+                // data['format'] = self.$config.imageFormat; // 'image/jpeg';
+                data['format'] = self.$config.downloadFormat == 'image-tiff' ? 'image/tiff' : 'image/jpeg';
                 data['target_ppi'] = self.$config.imageResolution; // 300;
                 data['bundle_format'] = 'zip';
                 break;
@@ -496,10 +498,11 @@ head.ready(function() {
         var formatOption = downloadForm.querySelector('input[name="download_format"]:checked');
         var rangeOption = downloadForm.querySelector('input[name="range"]:checked:not(:disabled)');
 
-        var image_format_option = downloadForm.querySelector('input[name="image-format"]:checked');
+        // var image_format_option = downloadForm.querySelector('input[name="image-format"]:checked');
         var image_resolution_option = downloadForm.querySelector('input[name="target-ppi"]:checked');
 
-        HT.prefs.set({ pt: { dl: { imageFormat: image_format_option.value, imageRes: image_resolution_option.value }}});
+        // HT.prefs.set({ pt: { dl: { imageFormat: image_format_option.value, imageRes: image_resolution_option.value }}});
+        HT.prefs.set({ pt: { dl: { imageRes: image_resolution_option.value }}});
 
         var printable;
 
@@ -513,7 +516,8 @@ head.ready(function() {
             return false;
         }
 
-        var action = tunnelForm.dataset.actionTemplate + ( formatOption.value == 'plaintext-zip' ? 'plaintext' : formatOption.value );
+        var action = tunnelForm.dataset.actionTemplate + (formatOption.value.split('-'))[0];
+        // var action = tunnelForm.dataset.actionTemplate + ( formatOption.value == 'plaintext-zip' ? 'plaintext' : formatOption.value );
 
         var selection = { pages: [] };
         if ( rangeOption.value == 'selected-pages' ) {
@@ -571,7 +575,7 @@ head.ready(function() {
                 tunnelForm.removeChild(input);
             })
 
-            if ( formatOption.value == 'image' ) {
+            if ( formatOption.value == 'image-tiff' || formatOption.value == 'image-jpeg' ) {
                 var size_attr = "target_ppi";
                 var image_format_attr = 'format';
 
@@ -592,7 +596,7 @@ head.ready(function() {
                 var input = document.createElement('input');
                 input.setAttribute("type", "hidden");
                 input.setAttribute("name", image_format_attr);
-                input.setAttribute("value", image_format_option.value);
+                input.setAttribute("value", (formatOption.value.split('-')[1]));
                 tunnelForm.appendChild(input);
             } else if ( formatOption.value == 'plaintext-zip' ) {
                 var input = document.createElement('input');
@@ -668,7 +672,9 @@ head.ready(function() {
         _format_titles.epub = 'EPUB';
         _format_titles.plaintext = 'Text (.txt)';
         _format_titles['plaintext-zip'] = 'Text (.zip)';
-        _format_titles.image = `Image (${image_format_option.value == 'image/jpeg' ? 'JPEG' : 'TIFF'})`;
+        _format_titles['image-jpeg'] = 'Image (JPEG)';
+        _format_titles['image-tiff'] = 'Image (TIFF)';
+        // _format_titles.image = `Image (${image_format_option.value == 'image/jpeg' ? 'JPEG' : 'TIFF'})`;
         // _format_titles.image = 'Image (JPEG)';
 
         // invoke the downloader
@@ -678,7 +684,6 @@ head.ready(function() {
             selection: selection,
             downloadFormat: formatOption.value,
             trackingAction: rangeOption.value,
-            imageFormat: image_format_option.value,
             imageResolution: image_resolution_option.value
         });
 
