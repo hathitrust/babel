@@ -12,7 +12,7 @@ my $yyyymmdd = UnixDate('now', '%Y-%m-%d');
 my $hh = UnixDate('1 hour ago', "%H");
 my $debug;
 
-GetOptions("yyyymmdd=i" => \$yyyymmdd,
+GetOptions("yyyymmdd=s" => \$yyyymmdd,
            "hh=i" => \$hh,
            "debug" => \$debug);
 
