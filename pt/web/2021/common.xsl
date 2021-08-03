@@ -1681,7 +1681,7 @@
       <xsl:choose>
         <xsl:when test="$gFullPdfAccessMessage='RESTRICTED_SOURCE'">
           <xsl:text>Download whole book (</xsl:text><xsl:value-of select="$type" /><xsl:text>)</xsl:text>
-          <br />
+          <!-- <br /> -->
           <i>Not available</i> (<a href="https://www.hathitrust.org/help_digital_library#FullPDF" target="_blank">why not?</a>)
         </xsl:when>
         <xsl:otherwise>
@@ -1730,7 +1730,7 @@
             </p>
             <p>
             <em>If you are not a member of a partner institution,
-              <br />
+              <!-- <br /> -->
               whole book download is not available.
               (<a href="https://www.hathitrust.org/help_digital_library#Download" target="_blank">why not?</a>)</em>
             </p>
