@@ -505,6 +505,11 @@ export var Base = class {
     var page = datum.page;
     if ( page.dataset.loaded != 'true' ) {
       var img = page.querySelector('img');
+      this.service.manifest.update(page.dataset.seq, { width: image.width, height: image.height, resolution: datum.resolution, size: datum.size });
+      console.log("postImage", page.dataset.seq, this.currentSeq, page.dataset.seq == this.currentSeq);
+      if ( page.dataset.seq == this.currentSeq ) {
+        this.reader.emit('updateSource', { seq: page.dataset.seq, resolution: datum.resolution, size: datum.size });
+      }
       this._reframePage(image, page);
       img.src = image.src;
     }
