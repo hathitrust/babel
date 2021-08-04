@@ -3437,6 +3437,22 @@ main[data-view="thumb"] .form-control[data-view-target~="thumb"] {
   display: flex;
 }
 
+.alert[data-full-pdf-access="deny"][data-view-target="thumb"] {
+  display: none;
+}
+
+main[data-view="thumb"] .form-download-module[data-full-pdf-access="deny"] fieldset {
+  display: none;
+}
+
+main[data-view="thumb"] .form-download-module[data-full-pdf-access="deny"] button[type="submit"] {
+  display: none;
+}
+
+main[data-view="thumb"] .form-download-module[data-full-pdf-access="deny"] .alert[data-full-pdf-access="deny"][data-view-target="thumb"] {
+  display: block;
+}
+
 main[data-view="1up"] .form-control[data-view-target~="1up"] {
   display: flex;
 }

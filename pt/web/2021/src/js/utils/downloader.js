@@ -104,7 +104,6 @@ HT.Downloader = {
         switch (self.$config.downloadFormat) {
             case 'image-jpeg':
             case 'image-tiff':
-                // data['format'] = self.$config.imageFormat; // 'image/jpeg';
                 data['format'] = self.$config.downloadFormat == 'image-tiff' ? 'image/tiff' : 'image/jpeg';
                 data['target_ppi'] = self.$config.imageResolution; // 300;
                 data['bundle_format'] = 'zip';
@@ -498,10 +497,8 @@ head.ready(function() {
         var formatOption = downloadForm.querySelector('input[name="download_format"]:checked');
         var rangeOption = downloadForm.querySelector('input[name="range"]:checked:not(:disabled)');
 
-        // var image_format_option = downloadForm.querySelector('input[name="image-format"]:checked');
         var image_resolution_option = downloadForm.querySelector('input[name="target-ppi"]:checked');
 
-        // HT.prefs.set({ pt: { dl: { imageFormat: image_format_option.value, imageRes: image_resolution_option.value }}});
         HT.prefs.set({ pt: { dl: { imageRes: image_resolution_option.value }}});
 
         var printable;

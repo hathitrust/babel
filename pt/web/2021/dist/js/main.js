@@ -30935,7 +30935,6 @@ var Base = /*#__PURE__*/function () {
           resolution: datum.resolution,
           size: datum.size
         });
-        console.log("postImage", page.dataset.seq, this.currentSeq, page.dataset.seq == this.currentSeq);
 
         if (page.dataset.seq == this.currentSeq) {
           this.reader.emit('updateSource', {
@@ -30989,7 +30988,6 @@ var Base = /*#__PURE__*/function () {
           resolution: datum.resolution,
           size: datum.size
         });
-        console.log("postImage", page.dataset.seq, this.currentSeq, page.dataset.seq == this.currentSeq);
 
         if (page.dataset.seq == this.currentSeq) {
           this.reader.emit('updateSource', {

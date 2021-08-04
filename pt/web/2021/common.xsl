@@ -1244,6 +1244,10 @@
           </xsl:otherwise>
         </xsl:choose>
 
+        <div class="alert alert-info" data-full-pdf-access="deny" data-view-target="thumb">
+          Please choose another view to download individual pages.
+        </div>
+
         <fieldset>
           <legend>Format</legend>
 
@@ -1283,27 +1287,6 @@
             <label for="format-image-tiff">Image (TIFF)</label>
           </div>
 
-        </fieldset>
-
-        <fieldset data-download-format-target="ximage-ignore">
-          <xsl:variable name="state" select="//Preferences/Key[@name='dl']/Key[@name='imageFormat']/Value" />
-          <legend>Image Format</legend>
-          <div class="form-control">
-            <input name="image-format" type="radio" id="option-image-format-jpeg" value="image/jpeg">
-              <xsl:if test="normalize-space($state) = '' or $state = 'image/jpeg'">
-                <xsl:attribute name="checked">checked</xsl:attribute>
-              </xsl:if>
-            </input>
-            <label for="option-image-format-jpeg">JPEG</label>
-          </div>
-          <div class="form-control">
-            <input name="image-format" type="radio" id="option-image-format-tiff" value="image/tiff">
-              <xsl:if test="$state = 'image/tiff'">
-                <xsl:attribute name="checked">checked</xsl:attribute>
-              </xsl:if>
-            </input>
-            <label for="option-image-format-tiff">TIFF</label>
-          </div>
         </fieldset>
 
         <fieldset data-download-format-target="image-jpeg image-tiff">
