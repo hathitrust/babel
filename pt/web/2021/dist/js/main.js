@@ -30214,7 +30214,7 @@ var Loader = /*#__PURE__*/function () {
         var resolution = response.headers.get('x-image-resolution');
 
         if (resolution && _typeof(src) === 'object') {
-          src.resolution = resolution.replace("/1", "").replace(/\.0+$/, '');
+          src.resolution = resolution.replace("/1", "").replace(/\.0+ /, ' ');
         }
 
         var size = response.headers.get('x-image-size');

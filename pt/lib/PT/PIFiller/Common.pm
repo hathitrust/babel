@@ -1657,6 +1657,26 @@ sub handle_ITEM_INDEX_STATUS
     return $retval;
 }
 
+sub handle_ITEM_CHECK_EXISTENCE
+    : PI_handler(ITEM_CHECK_EXISTENCE)
+{
+
+    my ($C, $act, $piParamHashRef) = @_;
+    my $mimetype = $$piParamHashRef{mimetype};
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $pageinfo_sequence = $mdpItem->Get('pageinfo')->{'sequence'};
+    my @pages = sort { int($a) <=> int($b) } keys %{ $pageinfo_sequence };
+
+    foreach my $seq ( @pages ) {
+        my $filetype = $mdpItem->GetStoredFileType($seq);
+        if ( "image/$filetype" eq $mimetype ) {
+            return 'TRUE'
+        }
+    }
+    return 'FALSE';
+}
+
 sub ExtractLSParams {
     my ( $referer ) = @_;
     my ( $q1, $searchtype, $ft );

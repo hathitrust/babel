@@ -1234,6 +1234,9 @@
       </xsl:choose>
     </xsl:variable>
 
+    <xsl:variable name="has-tiffs" select="//ItemHasTIFF" />
+    <xsl:variable name="has-jp2s" select="//ItemHasJP2" />
+
     <xsl:if test="$show-download-module = 'true'">
 
       <form id="form-download-module" class="form-download-module v2" data-full-pdf-access="{$gFullPdfAccess}" data-format="pdf" autocomplete="off">
@@ -1311,7 +1314,20 @@
             </input>
             <label for="option-image-target-ppi-original">
               <xsl:text>Full / </xsl:text>
-              <span data-slot="image-full-resolution">max 600 ppi</span>
+              <span data-slot="image-full-resolution">
+                <xsl:choose>
+                  <xsl:when test="$has-tiffs = 'TRUE' and $has-jp2s = 'TRUE'">
+                    <xsl:text>~400/600 dpi</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$has-jp2s = 'TRUE'">
+                    <xsl:text>~400 dpi</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <!-- only TIFFs -->
+                    <xsl:text>600 dpi</xsl:text>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </span>
             </label>
           </div>
         </fieldset>

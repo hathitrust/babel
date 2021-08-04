@@ -40,6 +40,9 @@
 <SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
 <Surveys><?PT_SURVEY?></Surveys>
 <Collections><?ITEM_IN_COLLECTIONS?></Collections>
+<ItemHasJP2><?ITEM_CHECK_EXISTENCE mimetype="image/jp2" ?></ItemHasJP2>
+<ItemHasTIFF><?ITEM_CHECK_EXISTENCE mimetype="image/tiff" ?></ItemHasTIFF>
+<Message>AHOY</Message>
 <?CACHE_TIMESTAMP href="/common/alicorn/css/main.201910.css" ?>
 <?CACHE_TIMESTAMP href="/common/alicorn/js/utils.201910.js" ?>
 <?CACHE_TIMESTAMP href="/pt/2021/dist/js/main.js" ?>
