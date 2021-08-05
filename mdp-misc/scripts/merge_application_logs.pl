@@ -11,10 +11,12 @@ use Getopt::Long;
 my $yyyymmdd = UnixDate('now', '%Y-%m-%d');
 my $hh = UnixDate('1 hour ago', "%H");
 my $debug;
+my $verbose;
 
 GetOptions("yyyymmdd=s" => \$yyyymmdd,
-           "hh=i" => \$hh,
-           "debug" => \$debug);
+           "hh=s" => \$hh,
+           "debug" => \$debug,
+           "v" => \$verbose);
 
 my $pattern = qq{.*-$yyyymmdd.log.[0-9]+.[0-9]+.[0-9]+.[0-9]+.[0-9]+\$};
 
@@ -27,7 +29,8 @@ opendir my $dh, $logdir or die "Could not open $logdir - $!";
 my @dirs = grep { $_ ne '.' and $_ ne '..' and $_ ne 'tmp' and -d "$logdir/$_" } readdir $dh;
 foreach my $dir ( @dirs ) {
     next unless ( -d "$logdir/$dir/$hh" );
-    my $in = new IO::File qq{find "$logdir/$dir/$hh" -type f -regex '$pattern' | };
+    say "= $logdir/$dir/$hh - $pattern" if ( $verbose );
+    my $in = new IO::File qq{find "$logdir/$dir/$hh" -type f -regex '$pattern' 2>/dev/null | };
     while ( my $input_filename = <$in> ) {
         chomp $input_filename;
         my $target_filename = basename($input_filename);
@@ -40,7 +43,9 @@ foreach my $dir ( @dirs ) {
         run $cmd, ">>", $target_filename;
         unless ( $debug ) {
             unlink $input_filename;
-        } else {
+        }
+        
+        if ( $verbose ) {
             say $input_filename;
         }
     }
