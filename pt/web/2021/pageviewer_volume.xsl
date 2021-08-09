@@ -79,7 +79,7 @@
 
     <xsl:call-template name="build-access-alert-details" />
 
-    <xsl:call-template name="build-sidebar-beta-notice" />
+    <!-- <xsl:call-template name="build-sidebar-beta-notice" /> -->
 
     <xsl:call-template name="BuildBackToResultsLink" />
 

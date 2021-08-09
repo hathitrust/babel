@@ -848,7 +848,7 @@
       </summary>
       <div style="padding: 1rem; padding-top: 0">
         <p>
-          The 2019 version can be accessed until <strong>August 9.</strong>
+          The 2019 version can be accessed until the <strong id="deadline-2019">end of summer</strong>.
           <xsl:text> </xsl:text>
           <a href="https://www.hathitrust.org/ws-book-viewer-beta-site" style="color: black; font-size: 0.875rem">Learn more</a>
         </p>
