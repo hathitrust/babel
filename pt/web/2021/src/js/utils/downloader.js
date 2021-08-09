@@ -246,10 +246,14 @@ HT.Downloader = {
                 $download_btn.appendTo(self.$dialog.find(".modal__footer")).on('click', function(e) {
                     // self.$link.trigger("click.google");
 
+                    var analyticsAction = `PT Download - ${self.$config.downloadFormat.toUpperCase()} - ${self.$config.trackingAction}`;
+                    if ( self.$config.downloadFormat.indexOf('image-') > -1 ) {
+                        analyticsAction += ' - ' + ( self.$config.imageResolution == 0 ? 'full' : self.$config.imageResolution );
+                    }
                     HT.analytics.trackEvent({ 
                         label : '-', 
                         category : 'PT', 
-                        action : `PT Download - ${self.$config.downloadFormat.toUpperCase()} - ${self.$config.trackingAction}` 
+                        action : analyticsAction
                     });
                     if ( window.hj ) { hj('tagRecording', [ `PT Download - ${self.$config.downloadFormat.toUpperCase()} - ${self.$config.trackingAction}` ]) };
 
@@ -652,10 +656,14 @@ head.ready(function() {
             }, 100);
 
 
+            var analyticsAction = `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}`;
+            if ( formatOption.value.indexOf('image-') > -1 ) {
+                analyticsAction += ' - ' + ( image_resolution_option.value == '0' ? 'full' : image_resolution_option.value );
+            }
             HT.analytics.trackEvent({ 
                 label : '-', 
                 category : 'PT', 
-                action : `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}` 
+                action : analyticsAction
             });
             if ( window.hj ) { hj('tagRecording', [ `PT Download - ${formatOption.value.toUpperCase()} - ${rangeOption.value}` ]) };
 
