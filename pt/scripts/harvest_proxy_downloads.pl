@@ -140,6 +140,10 @@ while ( scalar @filenames ) {
             $$user_map{$$datum{remote_user_processed}} = $$check{email};
         }
         $email = $$user_map{$$datum{remote_user_processed}};
+        unless ( $email ) {
+            $email = $$datum{remote_user_processed};
+            print STDERR "USING REMOTE USER $$datum{remote_user_processed}";
+        }
 
         my @params = (
             # parameters for data
