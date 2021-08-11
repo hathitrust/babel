@@ -68,8 +68,9 @@ export var Scroll = class extends Base {
   };
 
   currentLocation() {
-    var page = this.currentPage();
-    return page ? this.getPageSeq(page) : null;
+    return this.currentSeq;
+    // var page = this.currentPage();
+    // return page ? this.getPageSeq(page) : null;
   }
 
   currentPage() {

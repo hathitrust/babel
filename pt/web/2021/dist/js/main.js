@@ -33609,8 +33609,8 @@ var Scroll = /*#__PURE__*/function (_Base) {
   }, {
     key: "currentLocation",
     value: function currentLocation() {
-      var page = this.currentPage();
-      return page ? this.getPageSeq(page) : null;
+      return this.currentSeq; // var page = this.currentPage();
+      // return page ? this.getPageSeq(page) : null;
     }
   }, {
     key: "currentPage",

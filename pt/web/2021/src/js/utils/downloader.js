@@ -230,7 +230,7 @@ HT.Downloader = {
 
         self.$dialog.find(".bar").css({ width : percent + '%'});
 
-        if ( percent == 100 ) {
+        if ( percent == 100 && status.done ) {
             self.$dialog.find(".progress").hide();
             var download_key = navigator.userAgent.indexOf('Mac OS X') != -1 ? 'RETURN' : 'ENTER';
             self.$dialog.find(".initial").html(`<p>All done! Your ${self.item_title} is ready for download. <span class="offscreen">Select ${download_key} to download.</span></p>`);
@@ -271,7 +271,8 @@ HT.Downloader = {
             // self.updateStatusText(`Your ${self.item_title} is ready for download. Press return to download.`);
             // still could cancel
         } else {
-            self.$dialog.find(".initial").text(`Please wait while we build your ${self.item_title} (${Math.ceil(percent)}% completed).`);
+            var message = data.message ? data.message : `Please wait while we build your ${self.item_title}`;
+            self.$dialog.find(".initial").text(`${message} (${Math.ceil(percent)}% completed).`);
             self.updateStatusText(`${Math.ceil(percent)}% completed`);
         }
 
@@ -597,7 +598,7 @@ head.ready(function() {
                 var input = document.createElement('input');
                 input.setAttribute("type", "hidden");
                 input.setAttribute("name", image_format_attr);
-                input.setAttribute("value", (formatOption.value.split('-')[1]));
+                input.setAttribute("value", 'image/' + (formatOption.value.split('-')[1]));
                 tunnelForm.appendChild(input);
             } else if ( formatOption.value == 'plaintext-zip' ) {
                 var input = document.createElement('input');
