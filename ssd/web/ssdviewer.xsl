@@ -204,7 +204,7 @@
                 <xsl:value-of select="$gCurrentPageSeq" />
               </xsl:if>
             </xsl:attribute>
-            View this item in the fully-styled HathiTrust interface.
+            View this item in the Book Viewer
           </a>
         </p>
 
