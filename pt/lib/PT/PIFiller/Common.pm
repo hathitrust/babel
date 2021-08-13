@@ -1573,9 +1573,13 @@ sub handle_GOOGLE_BOOK_LINK
 {
     my ($C, $act, $piParamHashRef) = @_;
     my $id = $C->get_object('CGI')->param('id');
-    my $book_id = Namespaces::get_google_id_by_namespace($C, $id);
-    if ( $book_id ) {
-        return qq{<Link service="google" href="https://books.google.com/books?vid=$book_id">Google Books</Link>};
+    my $mdpItem = $C->get_object('MdpItem');
+    my $digitization_source = $mdpItem->Get('digitization_source');
+    if ( $digitization_source eq 'google' ) {
+        my $book_id = Namespaces::get_google_id_by_namespace($C, $id);
+        if ( $book_id ) {
+            return qq{<Link service="google" href="https://books.google.com/books?vid=$book_id">Google Books</Link>};
+        }
     }
     return '';
 }
