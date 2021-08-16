@@ -343,7 +343,7 @@ var Reader = class {
 
       this._updateImageResolution(seq);
     }
-    self._updateLinkSeq(document.querySelector("#pageURL"), seq);
+    self._updateLinkSeq(document.querySelector("#pageURL"), seq, true);
     self._updateLinkSeq(document.querySelector("input[name=seq]"), seq);
     self._updateLinkSeq(document.querySelector("#login-link"), seq);
     self._updateLinkSeq(document.querySelector("#ssd-link"), seq);
@@ -386,9 +386,9 @@ var Reader = class {
     this._updateHistoryUrl({ view: view });
   }
 
-  _updateLinkSeq($link, seq, disabled) {
+  _updateLinkSeq($link, seq, options={}) {
     if ( ! $link ) { return ; }
-    if ( seq == null || disabled == true ) {
+    if ( seq == null || options.disabled == true ) {
       $link.setAttribute('disabled', 'disabled');
       $link.setAttribute('tabindex', -1);
       // $link.classList.add('disabled');
@@ -405,10 +405,25 @@ var Reader = class {
         }
       }
       if ( $link.tagName.toLowerCase() == 'input' && $link.getAttribute("name") == "seq" ) {
-          $link.value = seq;
+        $link.value = seq;
       } else if ( $link.tagName.toLowerCase() == 'input' ) {
-          var href = $link.value;
-          $link.value = href.replace(/seq=\d+/, "seq=" + seq);
+        var href; var ownerid;
+        if ( $link.dataset.baseHref ) {
+          href = $link.dataset.baseHref;
+          if ( href.indexOf('hdl.handle.net') > -1 ) {
+            // handle URL
+            href += '?urlappend=%3Bseq=' + seq;
+            if ( ownerid = this.service.manifest.ownerid(seq) ) {
+              href += '%3Bownerid=' + ownerid;
+            }
+          }
+        } else {
+          href = $link.value.replace(/seq=\d+/, "seq=" + seq);
+        }
+        $link.value = href;
+        if ( $link.dataset.trackingLabel ) {
+          $link.dataset.trackingLabel = href;
+        }
       } else {
           this._updateLinkAttribute($link, "seq", seq);
       }

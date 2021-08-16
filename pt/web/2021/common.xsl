@@ -1887,6 +1887,7 @@
           <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
           <xsl:attribute name="readonly">readonly</xsl:attribute>
           <xsl:attribute name="data-tracking-label"><xsl:value-of select="$pageLink" /></xsl:attribute>
+          <xsl:attribute name="data-base-href"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
           <xsl:attribute name="value"><xsl:value-of select="$pageLink" /></xsl:attribute>
         </xsl:element>
         </xsl:if>

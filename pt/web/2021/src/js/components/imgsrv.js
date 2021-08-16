@@ -84,6 +84,14 @@ export var Manifest = class {
     return false;
   }
 
+  ownerid(seq) {
+    var data = this.featureMap[seq];
+    if ( data && data.ownerid ) {
+      return data.ownerid;
+    }
+    return null;
+  }
+
   pageNum(seq, prefixed=true) {
     var value = this._seq2num[seq];
     if ( value ) { 

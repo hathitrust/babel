@@ -31,6 +31,7 @@ use Survey;
 use base qw(PIFiller);
 
 use PT::PIFiller::Common;
+use PT::PageTurnerUtils;
 
 use HTML::Entities qw();
 use JSON::XS qw(encode_json);
@@ -1046,7 +1047,8 @@ sub handle_FEATURE_LIST_JSON
     my $mdpItem = $C->get_object('MdpItem');
 
     my $ignore_existing_cache = $cgi->param('newsid') || 0;
-    my $cache_key = qq{featureList};
+    my $cache_key_version = 2; # increment when we need to rebuild the cache
+    my $cache_key = qq{featureList_$cache_key_version};
     my $cache_max_age = 0;
     my $cache_dir = Utils::get_true_cache_dir($C, 'mdpitem_cache_dir');
     my $cache = Utils::Cache::JSON->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
@@ -1054,6 +1056,8 @@ sub handle_FEATURE_LIST_JSON
     my $featureList;
     $featureList = $cache->Get($mdpItem->GetId(), $cache_key) unless ( $ignore_existing_cache );
     return '[' . join(',', @$featureList) . ']' if ( ref($featureList) );
+
+    my $owner_id_map = PT::PageTurnerUtils::GetOwnerIDMap($C, $mdpItem->GetId());
 
     $mdpItem->InitFeatureIterator();
     my $featureRef;
@@ -1118,7 +1122,9 @@ sub handle_FEATURE_LIST_JSON
             }
         }
 
-        next unless ( scalar @$features || $pageNum );
+        my $ownerid = $$owner_id_map{$seq};
+
+        next unless ( scalar @$features || $pageNum || $ownerid );
 
         if ( $pageNum ) {
             $pageNum = HTML::Entities::encode_entities($pageNum);
@@ -1129,6 +1135,7 @@ sub handle_FEATURE_LIST_JSON
         push @$feature_json, q{"features":} . $json->encode($features) if ( scalar @$features );
         push @$feature_json, q{"label":} . $json->encode($label) if ( $label );
         push @$feature_json, q{"pageNum":} . $json->encode($pageNum) if ( $pageNum );
+        push @$feature_json, q{"ownerid":} . $json->encode($ownerid) if ( $ownerid );
 
         push @{$featureList}, '{' . join(',', @$feature_json) . '}';
     }

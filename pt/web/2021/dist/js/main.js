@@ -29641,6 +29641,17 @@ var Manifest = /*#__PURE__*/function () {
       return false;
     }
   }, {
+    key: "ownerid",
+    value: function ownerid(seq) {
+      var data = this.featureMap[seq];
+
+      if (data && data.ownerid) {
+        return data.ownerid;
+      }
+
+      return null;
+    }
+  }, {
     key: "pageNum",
     value: function pageNum(seq) {
       var prefixed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -37143,7 +37154,7 @@ var Reader = /*#__PURE__*/function () {
         this._updateImageResolution(seq);
       }
 
-      self._updateLinkSeq(document.querySelector("#pageURL"), seq);
+      self._updateLinkSeq(document.querySelector("#pageURL"), seq, true);
 
       self._updateLinkSeq(document.querySelector("input[name=seq]"), seq);
 
@@ -37207,12 +37218,14 @@ var Reader = /*#__PURE__*/function () {
     }
   }, {
     key: "_updateLinkSeq",
-    value: function _updateLinkSeq($link, seq, disabled) {
+    value: function _updateLinkSeq($link, seq) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (!$link) {
         return;
       }
 
-      if (seq == null || disabled == true) {
+      if (seq == null || options.disabled == true) {
         $link.setAttribute('disabled', 'disabled');
         $link.setAttribute('tabindex', -1); // $link.classList.add('disabled');
 
@@ -37233,8 +37246,29 @@ var Reader = /*#__PURE__*/function () {
         if ($link.tagName.toLowerCase() == 'input' && $link.getAttribute("name") == "seq") {
           $link.value = seq;
         } else if ($link.tagName.toLowerCase() == 'input') {
-          var href = $link.value;
-          $link.value = href.replace(/seq=\d+/, "seq=" + seq);
+          var href;
+          var ownerid;
+
+          if ($link.dataset.baseHref) {
+            href = $link.dataset.baseHref;
+
+            if (href.indexOf('hdl.handle.net') > -1) {
+              // handle URL
+              href += '?urlappend=%3Bseq=' + seq;
+
+              if (ownerid = this.service.manifest.ownerid(seq)) {
+                href += '%3Bownerid=' + ownerid;
+              }
+            }
+          } else {
+            href = $link.value.replace(/seq=\d+/, "seq=" + seq);
+          }
+
+          $link.value = href;
+
+          if ($link.dataset.trackingLabel) {
+            $link.dataset.trackingLabel = href;
+          }
         } else {
           this._updateLinkAttribute($link, "seq", seq);
         }

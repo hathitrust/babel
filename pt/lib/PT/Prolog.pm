@@ -166,8 +166,8 @@ sub Run {
     # to catalog searches
     SetBackToResultsReferer($cgi, $ses);
 
-    # Emit OWNERID if debug=ownerid. No-op otherwise
-    PT::PageTurnerUtils::_get_OWNERID($C, $id);
+    # # Emit OWNERID if debug=ownerid. No-op otherwise
+    # PT::PageTurnerUtils::_get_OWNERID($C, $id);
 }
 
 
