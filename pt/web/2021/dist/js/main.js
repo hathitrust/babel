@@ -29308,13 +29308,17 @@ var Viewinator = /*#__PURE__*/function () {
       }
 
       if (!(this.reader.service.manifest.totalSeq > 1)) {
-        self.disable('flip');
+        self.disable('2up');
         self.disable('thumb');
       }
     }
   }, {
     key: "enable",
     value: function enable(view) {
+      if (!this.possibles[key][view]) {
+        return;
+      }
+
       this.possibles.view[view].classList.remove('disabled');
       this.possibles.view[view].setAttribute('aria-disabled', false);
     }
@@ -29322,6 +29326,11 @@ var Viewinator = /*#__PURE__*/function () {
     key: "disable",
     value: function disable(view) {
       var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'view';
+
+      if (!this.possibles[key][view]) {
+        return;
+      }
+
       this.possibles[key][view].classList.add('disabled');
       this.possibles[key][view].setAttribute('aria-disabled', true);
     }
