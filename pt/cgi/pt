@@ -367,7 +367,7 @@ sub ValidityChecks {
         }
     }
 
-    unless ( $format ) {
+    unless ( $format || $ui eq 'embed' ) {
         if ( $prefs ) {
             eval {
                 $format = $$prefs{'pt'}{'format'};
