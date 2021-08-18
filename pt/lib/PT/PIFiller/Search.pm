@@ -112,6 +112,7 @@ sub BuildPrevNextHitsLink_XML {
     my $sliceSize  = $cgi->param('sz');
     my $focus = $cgi->param('start');
 
+    my $start = -1;
     my $href = '';
     my $tempCgi = new CGI($cgi);
 
@@ -122,6 +123,7 @@ sub BuildPrevNextHitsLink_XML {
         {
             $tempCgi->param('start', $prevFocus);
             $href = $tempCgi->self_url();
+            $start = $prevFocus;
         }
     }
     elsif ($direction eq 'next')
@@ -131,10 +133,11 @@ sub BuildPrevNextHitsLink_XML {
 	{
             $tempCgi->param('start', $nextFocus);
             $href = $tempCgi->self_url();
+            $start = $nextFocus;
         }
     }
 
-    return $href;
+    return ( $start, $href );
 }
 
 # ---------------------------------------------------------------------
@@ -254,8 +257,8 @@ sub BuildFisheyeString_XML {
     my $sliceSize = $cgi->param('sz');
     my $focus     = $cgi->param('start');
 
-    my $prevHitsLink = '';
-    my $nextHitsLink = '';
+    my $prevHitsLink = ''; my $prevHitsStart;
+    my $nextHitsLink = ''; my $nextHitsStart;
     my $fisheyeLinks = '';
     my $toReturn;
 
@@ -265,16 +268,19 @@ sub BuildFisheyeString_XML {
     if ($numOccurrences > $sliceSize) {
       $fisheyeLinks =
         _BuildFisheyeLinks_XML($focus, $numOccurrences, $sliceSize, $cgi);
-      $prevHitsLink
+      ( $prevHitsStart, $prevHitsLink )
         = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'prev');
     }
     unless (noLastLinkNecessary($focus, $numOccurrences, $sliceSize)) {
-      $nextHitsLink
+      ( $nextHitsStart, $nextHitsLink )
         = BuildPrevNextHitsLink_XML($cgi, $numOccurrences, 'next');
     }
 
     wrap_string_in_tag_by_ref(\$nextHitsLink, 'NextHitsLink');
+    add_attribute(\$nextHitsLink, 'start', $nextHitsStart);
+
     wrap_string_in_tag_by_ref(\$prevHitsLink, 'PrevHitsLink');
+    add_attribute(\$prevHitsLink, 'start', $prevHitsStart);
 
     $toReturn = join(qq{\n}, $matchesString, $fisheyeLinks, $nextHitsLink, $prevHitsLink);
 

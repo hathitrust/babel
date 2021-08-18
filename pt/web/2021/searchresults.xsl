@@ -348,7 +348,7 @@
     <xsl:if test="End >= Start and ( PrevHitsLink != '' or NextHitsLink != '' )">
       <nav class="pagination-container" aria-label="Pagination" data-total-pages="{End}" data-current-page="{Start}">
         <div class="page-previous-link">
-          <a class="page-previous-link" href="{PrevHitsLink}" data-start="{FisheyeLinks/FisheyeLink[Href=current()/PrevHitsLink]/@start}">
+          <a class="page-previous-link" href="{PrevHitsLink}" data-start="{PrevHitsLink/@start}">
             <xsl:if test="PrevHitsLink = ''">
               <xsl:attribute name="style">visibility: hidden; white-space: nowrap; text-decoration: underline</xsl:attribute>
               <xsl:attribute name="aria-hidden">true</xsl:attribute>
@@ -372,7 +372,7 @@
         </span>
 
         <div class="page-advance-link">
-          <a class="page-advance-link" href="{NextHitsLink}" data-start="{FisheyeLinks/FisheyeLink[Href=current()/NextHitsLink]/@start}">
+          <a class="page-advance-link" href="{NextHitsLink}" data-start="{NextHitsLink/@start}">
             <xsl:if test="NextHitsLink = ''">
               <xsl:attribute name="style">visibility: hidden; white-space: nowrap; text-decoration: underline</xsl:attribute>
               <xsl:attribute name="aria-hidden">true</xsl:attribute>
