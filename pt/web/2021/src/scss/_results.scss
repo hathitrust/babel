@@ -127,6 +127,10 @@ article.result + article.result {
   background: #0099cc;
 }
 
+mark {
+  font-weight: bold;
+}
+
 mark::before,
 mark::after {
   clip-path: inset(100%);
