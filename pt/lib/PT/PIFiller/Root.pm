@@ -1045,10 +1045,11 @@ sub handle_FEATURE_LIST_JSON
 
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
+    my $owner_id_map = $mdpItem->GetSequence2OwnerIdMap();
 
     my $ignore_existing_cache = $cgi->param('newsid') || 0;
-    my $cache_key_version = 2; # increment when we need to rebuild the cache
-    my $cache_key = qq{featureList_$cache_key_version};
+    my $cache_key_version = scalar keys %$owner_id_map; # increment when we need to rebuild the cache
+    my $cache_key = qq{featureList-$cache_key_version};
     my $cache_max_age = 0;
     my $cache_dir = Utils::get_true_cache_dir($C, 'mdpitem_cache_dir');
     my $cache = Utils::Cache::JSON->new($cache_dir, $cache_max_age, $mdpItem->get_modtime);
@@ -1057,9 +1058,6 @@ sub handle_FEATURE_LIST_JSON
     $featureList = $cache->Get($mdpItem->GetId(), $cache_key) unless ( $ignore_existing_cache );
     return '[' . join(',', @$featureList) . ']' if ( ref($featureList) );
 
-    my $owner_id_map = PT::PageTurnerUtils::GetOwnerIDMap($C, $mdpItem->GetId());
-
-    $mdpItem->InitFeatureIterator();
     my $featureRef;
 
     my $seenFirstTOC = 0;

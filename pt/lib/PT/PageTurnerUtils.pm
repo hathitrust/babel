@@ -146,55 +146,15 @@ being viewed.
 =cut
 
 # ---------------------------------------------------------------------
-sub GetOwnerIDMap {
-    my ($C, $id) = @_;
-    my $MdpItem = $C->get_object('MdpItem');
-    my $root = $MdpItem->_GetMetsRoot();
-    my $source_mets = $root->findvalue(q{//METS:fileGrp[@USE='source METS']//METS:FLocat/@xlink:href});
-    my $zipfile = $MdpItem->Get('zipfile');
-
-    my $map = {};
-
-    if (defined $zipfile && defined $source_mets) {
-        # Get the source METS to disk --  should
-        # <strike>there's only on in the zip but we don't know its name</strike>
-        my $file_sys_location = Identifier::get_item_location($id);
-
-        my $source_METS_filename = Utils::Extract::extract_file_to_temp_cache($id, $file_sys_location, $source_mets);
-
-        # If there is a Google METS, read and parse and get OWNERID
-        # attribute value
-
-        if ($source_METS_filename) {
-            my $metsXmlRef = Utils::read_file($source_METS_filename, 1);
-            if ($$metsXmlRef) {
-                my $parser = XML::LibXML->new();
-                my $tree = $parser->parse_string($$metsXmlRef);
-                my $root = $tree->getDocumentElement();
-
-                foreach my $file ( $root->findnodes(qq{//METS:file[\@OWNERID]}) ) {
-                    my $ownerid = $file->getAttribute('OWNERID');
-                    next unless ( $ownerid );
-                    my $fileid = $file->getAttribute('ID');
-                    my $seq = $root->findvalue(qq{//METS:structMap[\@TYPE="physical"]//METS:div[METS:fptr[\@FILEID="$fileid"]]/\@ORDER});
-                    $$map{$seq} = $ownerid;
-                }
-            }
-        }
-    }
-    return $map;
-}
 
 sub _get_OWNERID {
     my ($C, $id) = @_;
 
     return unless (DEBUG('ownerid'));
 
-    my $OWNERID = 'item lacks OWNERID attribute';
-
     my $seq = $C->get_object('CGI')->param( 'seq' );
-    my $map = GetOwnerIDMap($C, $id);
-    $OWNERID = $$map{$seq} || $OWNERID;
+    my $mdpItem = $C->get_object('MdpItem');
+    my $OWNERID = $mdpItem->GetOwnerIdForSequence($seq) || 'item lacks OWNERID attribute';
 
     DEBUG('ownerid', qq{OWNERID='$OWNERID', SEQ='$seq', id=$id});
 }

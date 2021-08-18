@@ -322,7 +322,8 @@ sub ValidityChecks {
 
     my $seq = $cgi->param( 'seq' );
     my $num = $cgi->param( 'num' );
-    if (! ($seq || $num) )
+    my $ownerid = $cgi->param('ownerid');
+    if (! ($seq || $num || $ownerid) )
     {
         # Support for starting at the title page
         $rc |= PT::Prolog::ST_SEQ_NOT_SUPPLIED;

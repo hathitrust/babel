@@ -7,6 +7,7 @@
      'orient'   => '[0-3]',
      'page'     => 'root|search',
      'seq'      => '\d+',
+     'ownerid'  => '.*',
      'size'     => '\d+',
      'sz'     => '\d+',
      'view'     => 'image|text|1up|2up|thumb|plaintext|search|default|page|flip|scroll',

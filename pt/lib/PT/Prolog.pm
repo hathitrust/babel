@@ -145,6 +145,13 @@ sub Run {
     $mdpItem = PT::PageTurnerUtils::GetMdpItem($C, $id, $itemFileSystemLocation);
     $C->set_object('MdpItem', $mdpItem);
 
+    if ( my $ownerid = $cgi->param('ownerid') ) {
+        my $ownerid_seq = $mdpItem->GetSequenceForOwnerId($ownerid);
+        if ( $ownerid_seq ) {
+            $cgi->param('seq', $ownerid_seq);
+        }
+    }
+
     # Support for starting at the title page
     if ( $validityCheckStatus & PT::Prolog::ST_SEQ_NOT_SUPPLIED ) {
         SetDefaultPage( $cgi, $mdpItem );
