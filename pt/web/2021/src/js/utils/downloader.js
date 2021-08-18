@@ -461,9 +461,11 @@ head.ready(function() {
     var hasFullPdfAccess = downloadForm.dataset.fullPdfAccess == 'allow';
 
     var updateDownloadFormatRangeOptions = function(option) {
+
+      var current_view = ( HT.reader && HT.reader.view ) ?  HT.reader.view.name : 'search'; // pick a default
       rangeOptions.forEach(function(rangeOption) {
         var input = rangeOption.querySelector('input');
-        input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"]`);
+        input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"][data-view-target~="${current_view}"]`);
       })
       
       // if ( ! hasFullPdfAccess ) {
@@ -475,7 +477,6 @@ head.ready(function() {
       //   }
       // }
 
-      var current_view = ( HT.reader && HT.reader.view ) ?  HT.reader.view.name : 'search'; // pick a default
       var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${current_view}"] input:checked`);
       if ( ! checked ) {
           // check the first one
