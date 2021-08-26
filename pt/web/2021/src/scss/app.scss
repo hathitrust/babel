@@ -597,6 +597,10 @@ $sidebar-buffer: 1.0rem;
       text-decoration: underline;
       text-decoration-color: #ddd;
       padding: 0.5rem 0.25rem;
+
+      &:focus {
+        outline-color: $outline-color-inverse;
+      }
     }
   }
 

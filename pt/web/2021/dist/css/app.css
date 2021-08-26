@@ -1092,6 +1092,10 @@ body {
   padding: 0.5rem 0.25rem;
 }
 
+.d--toolbar--reader .output-group input:focus {
+  outline-color: #EEE;
+}
+
 @media only screen and (max-width: 60rem) {
   .d--toolbar--reader .btn {
     padding: 0.5rem;
@@ -2786,12 +2790,12 @@ body.hide-highlights .page-text .highlight--plaintext {
 }
 
 .page[tabindex="0"]:focus .image {
-  outline: 4px solid #EF7C22;
+  outline: 4px solid #333;
   outline-offset: 4px;
 }
 
 .page[tabindex="0"]:focus .page-text[data-placeholder] {
-  outline: 4px solid #EF7C22;
+  outline: 4px solid #333;
   outline-offset: 4px;
 }
 
@@ -3238,6 +3242,10 @@ article.result + article.result {
 
 .highlight_6, .solr_highlight_6 {
   background: #0099cc;
+}
+
+mark {
+  font-weight: bold;
 }
 
 mark::before,

@@ -126,6 +126,8 @@ HT.Downloader = {
                 if ( self.$dialog ) { self.$dialog.closeModal(); }
                 if ( req.status == 429 ) {
                     self.displayWarning(req);
+                } else if ( req.status == 403 ) {
+                    self.display403(req);
                 } else {
                     self.displayError(req);
                 }
@@ -362,6 +364,27 @@ HT.Downloader = {
         console.log(req);
     },
 
+    display403: function(req) {
+        var responseText = req.responseText;
+        responseText = responseText.replace('<html><body>', '').replace('</body></html>', '');
+        var html =
+            '<p>' +
+                responseText +
+            '</p>';
+
+        // bootbox.alert(html);
+        bootbox.dialog(
+            html,
+            [
+                {
+                    label : 'OK',
+                    'class' : 'btn-dismiss btn-inverse'
+                }
+            ],
+            { classes : 'error' }
+        );
+    },
+
     displayError: function(req) {
         var html =
             '<p>' +
@@ -438,9 +461,11 @@ head.ready(function() {
     var hasFullPdfAccess = downloadForm.dataset.fullPdfAccess == 'allow';
 
     var updateDownloadFormatRangeOptions = function(option) {
+
+      var current_view = ( HT.reader && HT.reader.view ) ?  HT.reader.view.name : 'search'; // pick a default
       rangeOptions.forEach(function(rangeOption) {
         var input = rangeOption.querySelector('input');
-        input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"]`);
+        input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"][data-view-target~="${current_view}"]`);
       })
       
       // if ( ! hasFullPdfAccess ) {
@@ -452,7 +477,6 @@ head.ready(function() {
       //   }
       // }
 
-      var current_view = ( HT.reader && HT.reader.view ) ?  HT.reader.view.name : 'search'; // pick a default
       var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${current_view}"] input:checked`);
       if ( ! checked ) {
           // check the first one
@@ -505,6 +529,9 @@ head.ready(function() {
         var image_resolution_option = downloadForm.querySelector('input[name="target-ppi"]:checked');
 
         HT.prefs.set({ pt: { dl: { imageRes: image_resolution_option.value }}});
+
+        // log 
+        HT.analytics.logAction(undefined, 'download');
 
         var printable;
 
@@ -570,7 +597,9 @@ head.ready(function() {
                  selection.pages;
         }
 
-        if ( rangeOption.dataset.isPartial == 'true' && selection.pages.length <= 10 ) {
+        // image-tiff is slow enough that it should fall to the modal sooner
+        var partialUpperLmit = formatOption.value == 'image-tiff' ? 1 : 10;
+        if ( rangeOption.dataset.isPartial == 'true' && selection.pages.length <= partialUpperLmit ) {
 
             // delete any existing inputs
             tunnelForm.querySelectorAll('input:not([data-fixed])').forEach(function(input) {

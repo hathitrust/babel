@@ -12,6 +12,7 @@
     <xsl:choose>
       <!-- <xsl:when test="$gFinalAccessStatus != 'allow'">thumb</xsl:when> -->
       <xsl:when test="$currentView = 'text'">plaintext</xsl:when>
+      <xsl:when test="$currentView = 'default'">1up</xsl:when>
       <xsl:otherwise>
         <xsl:value-of select="$currentView" />
       </xsl:otherwise>

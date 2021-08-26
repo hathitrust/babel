@@ -62,6 +62,16 @@ head.ready(function() {
   $("#action-start-jump").on('change', function() {
     var sz = parseInt($(this).data('sz'), 10);
     var value = parseInt($(this).val(), 10);
+
+    const max = parseInt(this.max);
+    const min = parseInt(this.min);
+      
+    if ( isNaN(value) || value > max || value < min ) {
+      this.value = this.dataset.value;
+      alert(`Please enter a number between ${min} - ${max}`);
+      return;
+    }
+
     var start = ( value - 1 ) * sz + 1;
     $input_start.val(start);
     $form.submit();
