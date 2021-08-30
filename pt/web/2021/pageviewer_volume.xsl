@@ -599,6 +599,9 @@
   <xsl:template name="build-survey-panel">
     <xsl:variable name="inst_id" select="//InstitutionCode" />
     <xsl:variable name="access-type" select="//AccessType" />
+
+    <xsl:call-template name="build-last-2021-survey" />
+
     <xsl:if test="false() and ( $inst_id = 'universityofcalifornia' ) and $access-type/Name = 'emergency_access_affiliate'">
       <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='uc-etas-survey']/Value" />
       <details id="uc-etas-survey" class="details--alert details--notice" data-open="{$state}">
@@ -631,6 +634,34 @@
         </div>
       </details>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="build-last-2021-survey">
+    <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='last-2021-survey']/Value" />
+    <details id="last-2021-survey" class="details--alert details--notice" data-open="{$state}">
+      <xsl:if test="$state = 'open' or normalize-space($state) = ''">
+        <xsl:attribute name="open">open</xsl:attribute>
+      </xsl:if>
+      <summary style="font-weight: bold; padding-left: 0.75rem;">
+        <div class="summary">
+          <span>Tell us how we're doing</span>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
+            <use xlink:href="#panel-collapsed"></use>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon open">
+            <use xlink:href="#panel-expanded"></use>
+          </svg>
+        </div>
+      </summary>
+      <div>
+        <p>
+          <xsl:text>We want to provide you with the best experience using the HathiTrust Digital Library, so your feedback is very valuable to us.</xsl:text>
+        </p>
+        <p>
+          <a href="https://umich.qualtrics.com/jfe/form/SV_bk3rny1OQwxwY8C" target="_blank">Take our short survey!</a>
+        </p>
+      </div>
+    </details>
   </xsl:template>
 
   <xsl:template name="footer" />
