@@ -28557,15 +28557,14 @@ var Searchinator = /*#__PURE__*/function () {
 
         var doc = parser.parseFromString(html, 'text/html');
         var resultsContainer = doc.querySelector('.results-container');
-        self.searchResultsContainer.innerHTML = ''; // should also copy 'nav'
+        self.searchResultsContainer.innerHTML = ''; // use a combined querySelectorAll so all the classes are captured in document order
 
-        ['.alert', 'article', 'nav'].forEach(function (expr) {
-          var tmp = resultsContainer.querySelectorAll(expr);
+        var expr = '.alert,article,nav';
+        var tmp = resultsContainer.querySelectorAll(expr);
 
-          for (var ix = 0; ix < tmp.length; ix++) {
-            self.searchResultsContainer.appendChild(tmp[ix]);
-          }
-        });
+        for (var ix = 0; ix < tmp.length; ix++) {
+          self.searchResultsContainer.appendChild(tmp[ix]);
+        }
 
         if (self.searchResultsContainer.querySelectorAll('article').length > 0) {
           self.emit('update', {
@@ -28581,7 +28580,8 @@ var Searchinator = /*#__PURE__*/function () {
 
         _this2.submitButton.classList.remove('btn-loading');
 
-        _this2.clearButton.style.display = null;
+        _this2.clearButton.style.display = null; // this will always match the first .alert
+
         var alertEl = self.searchResultsContainer.querySelector('.alert--summary,.alert-error');
         HT.update_status(alertEl.innerText);
         alertEl.focus();
@@ -28686,6 +28686,7 @@ var Searchinator = /*#__PURE__*/function () {
 
           if (isNaN(value) || value > max || value < min) {
             target.value = target.dataset.value;
+            alert("Please enter a number between ".concat(min, " - ").concat(max));
             return;
           }
 

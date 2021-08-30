@@ -65,9 +65,10 @@ head.ready(function() {
 
     const max = parseInt(this.max);
     const min = parseInt(this.min);
-      
+
     if ( isNaN(value) || value > max || value < min ) {
       this.value = this.dataset.value;
+      $("#action-start-jump-error").show();
       alert(`Please enter a number between ${min} - ${max}`);
       return;
     }

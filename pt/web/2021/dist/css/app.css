@@ -730,6 +730,17 @@ button.btn svg + span:not(.sr-only) {
   margin-left: 0.5rem;
 }
 
+@media screen and (max-width: 20em) {
+  button.btn {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+  button.btn svg {
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+}
+
 nav button.btn {
   min-height: 0;
   display: inline-block;
@@ -986,6 +997,9 @@ body {
   body[data-sidebar-toggle-state="open"] .d--reader {
     z-index: 1 !important;
   }
+  body[data-sidebar-toggle-state="open"] .d--toolbar--reader {
+    display: none;
+  }
 }
 
 #action-tweak-sidebar {
@@ -1112,6 +1126,13 @@ body {
   .d--toolbar--reader .output-group input[type="text"] {
     padding: 0.5rem 0.25rem;
     font-size: 0.75rem;
+  }
+}
+
+@media only screen and (max-height: 22rem) {
+  .d--toolbar--reader .dropup .dropdown-menu.show {
+    max-height: 75vh;
+    overflow: auto;
   }
 }
 

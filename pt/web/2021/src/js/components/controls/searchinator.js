@@ -88,13 +88,13 @@ export var Searchinator = class {
         var doc = parser.parseFromString(html, 'text/html');
         var resultsContainer = doc.querySelector('.results-container');
         self.searchResultsContainer.innerHTML = '';
-        // should also copy 'nav'
-        [ '.alert', 'article', 'nav' ].forEach((expr) => {
-          let tmp = resultsContainer.querySelectorAll(expr);
-          for(var ix = 0; ix < tmp.length; ix++ ) {
-            self.searchResultsContainer.appendChild(tmp[ix]);
-          }
-        })
+        // use a combined querySelectorAll so all the classes are captured in document order
+        const expr = '.alert,article,nav';
+        let tmp = resultsContainer.querySelectorAll(expr);
+        for(var ix = 0; ix < tmp.length; ix++ ) {
+          self.searchResultsContainer.appendChild(tmp[ix]);
+        }
+
         if ( self.searchResultsContainer.querySelectorAll('article').length > 0 ) {
           self.emit('update', { q1: this.searchInput.value });
           self.searchPanel.dataset.hasResults = true;
@@ -106,6 +106,7 @@ export var Searchinator = class {
         this.submitButton.classList.remove('btn-loading');
         this.clearButton.style.display = null;
 
+        // this will always match the first .alert
         const alertEl = self.searchResultsContainer.querySelector('.alert--summary,.alert-error');
         HT.update_status(alertEl.innerText);
         alertEl.focus();
@@ -197,6 +198,7 @@ export var Searchinator = class {
 
     this.searchResultsContainer.addEventListener('change', (event) => {
       const target = event.target.closest('input#action-start-jump');
+
       if ( target ) {
         const max = parseInt(target.max);
         const min = parseInt(target.min);
@@ -205,6 +207,7 @@ export var Searchinator = class {
 
         if ( isNaN(value) || value > max || value < min ) {
           target.value = target.dataset.value;
+          alert(`Please enter a number between ${min} - ${max}`);
           return;
         }
 

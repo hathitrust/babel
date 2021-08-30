@@ -195,6 +195,16 @@ button.btn {
     display: inline-block;
     margin-left: 0.5rem;
   }
+
+  @media screen and (max-width: 20em) {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+
+    svg {
+      height: 1.25rem;
+      width: 1.25rem;
+    }
+  }
 }
 
 nav button.btn {
@@ -456,10 +466,14 @@ html.ie {
     .d--reader {
       z-index: 1 !important;
     }
+
+    .d--toolbar--reader {
+      display: none;
+    }
+
   }
 
   body[data-sidebar-toggle-state="closed"] {
-
   }
 }
 
@@ -625,6 +639,13 @@ $sidebar-buffer: 1.0rem;
       }
 
       font-size: 0.75rem;
+    }
+  }
+
+  @media only screen and (max-height: 22rem) {
+    .dropup .dropdown-menu.show {
+      max-height: 75vh;
+      overflow: auto;
     }
   }
 
