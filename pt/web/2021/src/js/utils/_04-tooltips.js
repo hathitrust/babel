@@ -3,6 +3,7 @@ head.ready(function() {
   // initialize tooltips
   tippy.delegate('#root', {
     target: '[data-tippy-role="tooltip"]',
+    interactive: true,
     content: (reference) => {
       // reference.dataset.untoggledLabel = reference.getAttribute('aria-label');
       // return reference.dataset.untoggledLabel;
