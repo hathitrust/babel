@@ -70,8 +70,8 @@ sub format_OCR_text {
     Utils::map_chars_to_cers($OCR_text_ref, [q{"}, q{'}], 1);
 
     # $$OCR_text_ref =~ s,{lt:}(.*?){gt:},<$1>,go;
-    $$OCR_text_ref =~ s,{lt:}strong class="(.*?)"{gt:},<mark class="$1">,go;
-    $$OCR_text_ref =~ s,{lt:}/strong{gt:},</mark>,go;
+    $$OCR_text_ref =~ s,\{lt:}strong class="(.*?)"\{gt:},<mark class="$1">,go;
+    $$OCR_text_ref =~ s,\{lt:}/strong\{gt:},</mark>,go;
 
     $$OCR_text_ref =~ s!^([^\n]+)\n!$1<br />\n!gsm
       if ($full_page);
