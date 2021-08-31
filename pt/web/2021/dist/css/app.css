@@ -2382,6 +2382,10 @@ body.hide-highlights .page-text .highlight--plaintext {
   display: none;
 }
 
+.d--reader--container:focus {
+  outline-offset: -4px;
+}
+
 .d--reader--viewer {
   width: 100%;
   min-height: 0;

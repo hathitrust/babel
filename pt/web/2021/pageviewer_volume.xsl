@@ -263,7 +263,7 @@
     <section class="d--reader">
       <!-- <xsl:call-template name="build-main-container-drawers-toolbar" /> -->
       <h2 class="offscreen">Page Scans</h2>
-      <div id="reader" class="d--reader--container">
+      <div id="reader" class="d--reader--container" tabindex="0">
         <section class="d--reader--viewer">
           <xsl:call-template name="build-main-container-data-attributes" />
         </section>

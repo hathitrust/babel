@@ -524,6 +524,13 @@ body.hide-highlights {
   }
 }
 
+.d--reader--container {
+  &:focus {
+    // this makes it visible
+    outline-offset: -4px;
+  }
+}
+
 .d--reader--viewer {
   width: 100%;
   min-height: 0;

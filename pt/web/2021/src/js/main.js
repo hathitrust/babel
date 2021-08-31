@@ -814,6 +814,16 @@ document.addEventListener("visibilitychange", handleVisibilityChange, false);
 window.addEventListener("focus", handleWindowFocus, false);
 window.addEventListener("blur", handleWindowBlur, false);
 
+const skipLink = document.querySelector('#skiplinks a[href="#reader"]');
+if ( skipLink ) {
+  skipLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    document.querySelector('#reader').focus();
+  })
+}
+
+
 window.addEventListener('error', function(event) {
   if ( event.message.toLowerCase().indexOf('script error') > -1 ) {
     return;
