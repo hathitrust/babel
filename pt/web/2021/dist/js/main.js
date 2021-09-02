@@ -30965,7 +30965,7 @@ var Base = /*#__PURE__*/function () {
     value: function postText(text, datum) {
       var page = datum.page;
       var page_text = page.querySelector('.page-text');
-      page_text.innerHTML = text; // adjust the text
+      page_text.innerHTML = text.replace(/<span class="ocr_line"/g, '<span class="ocr_line" role="text"'); // adjust the text
 
       if (page_text.textContent.trim() == "" || !page_text.textContent.trim().match(/\w+/)) {
         page_text.innerHTML = "<div class=\"alert alert-block alert-info alert-headline\"><p>NO TEXT ON PAGE</p></div><p>This page does not contain any text recoverable by the OCR engine.</p>";

@@ -479,7 +479,7 @@ export var Base = class {
     var page = datum.page;
 
     var page_text = page.querySelector('.page-text');
-    page_text.innerHTML = text;
+    page_text.innerHTML = text.replace(/<span class="ocr_line"/g, '<span class="ocr_line" role="text"');
 
     // adjust the text
     if ( page_text.textContent.trim() == "" || ! page_text.textContent.trim().match(/\w+/) ) {
