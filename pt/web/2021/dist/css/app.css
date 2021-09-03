@@ -2351,12 +2351,12 @@ body.hide-highlights .page-text .highlight--plaintext {
   width: 100%;
 }
 
-.d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"] .page-text {
+.d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"][data-visible="true"] .page-text {
   -webkit-animation: pulsate 1.5s ease infinite;
           animation: pulsate 1.5s ease infinite;
 }
 
-.d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"] .page-text::before {
+.d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"][data-visible="true"] .page-text::before {
   align-items: center;
   justify-content: center;
   position: absolute;
@@ -2372,7 +2372,7 @@ body.hide-highlights .page-text .highlight--plaintext {
 }
 
 @media (prefers-reduced-motion) {
-  .d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"] .page-text {
+  .d--reader[data-view][data-format="plaintext"] .page[data-loaded="false"][data-visible="true"] .page-text {
     -webkit-animation-duration: 0s;
             animation-duration: 0s;
   }
@@ -2510,13 +2510,13 @@ body.hide-highlights .page-text .highlight--plaintext {
   visibility: hidden;
 }
 
-.d--reader--viewer .page[data-loaded="false"].loading .image img {
+.d--reader--viewer .page[data-loaded="false"][data-visible="true"].loading .image img {
   -webkit-animation: pulsate 1.5s ease infinite;
           animation: pulsate 1.5s ease infinite;
 }
 
 @media (prefers-reduced-motion) {
-  .d--reader--viewer .page[data-loaded="false"].loading .image img {
+  .d--reader--viewer .page[data-loaded="false"][data-visible="true"].loading .image img {
     -webkit-animation-duration: 0s;
             animation-duration: 0s;
   }

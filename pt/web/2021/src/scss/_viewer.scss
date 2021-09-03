@@ -488,7 +488,7 @@ body.hide-highlights {
 
       }
 
-      &[data-loaded="false"] {
+      &[data-loaded="false"][data-visible="true"] {
         .page-text {
           &::before {
             align-items: center;
@@ -675,7 +675,7 @@ body.hide-highlights {
 
     }
 
-    &[data-loaded="false"].loading {
+    &[data-loaded="false"][data-visible="true"].loading {
       .image {
         img {
           animation: pulsate 1.5s ease infinite;
