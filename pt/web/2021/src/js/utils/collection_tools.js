@@ -61,14 +61,14 @@ head.ready(function() {
                     '<label class="control-label" for="edit-cn">Collection Name</label>' +
                     '<div class="controls">' +
                         '<input type="text" class="input-large" maxlength="100" name="cn" id="edit-cn" value="" placeholder="Your collection name" required />' +
-                        '<span class="label counter" id="edit-cn-count">100</span>' +
+                        '<span class="label counter" id="edit-cn-count">100 <span class="offscreen">characters remaining</span></span>' +
                     '</div>' +
                 '</div>' +
                 '<div class="control-group">' +
                     '<label class="control-label" for="edit-desc">Description</label>' +
                     '<div class="controls">' +
                         '<textarea id="edit-desc" name="desc" rows="4" maxlength="255" class="input-large" placeholder="Add your collection description."></textarea>' +
-                        '<span class="label counter" id="edit-desc-count">255</span>' +
+                        '<span class="label counter" id="edit-desc-count">255 <span class="offscreen">characters remaining</span></span>' +
                     '</div>' +
                 '</div>' +
                 '<div class="control-group">' +
@@ -156,10 +156,18 @@ head.ready(function() {
             var $count = $("#" + $this.attr('id') + "-count");
             var limit = $this.attr("maxlength");
 
-            $count.text(limit - $this.val().length);
+            var num_remaining = limit - $this.val().length;
+            $count.html(`${num_remaining} <span class="offscreen">characters remaining</span>`);
 
             $this.bind('keyup', function() {
-                $count.text(limit - $this.val().length);
+                num_remaining = limit - $this.val().length;
+                $count.html(`${num_remaining} <span class="offscreen">characters remaining</span>`);
+                if ( num_remaining <= 0 ) {
+                    var $label = $this.parents(".control-group").find("label");
+                    HT.update_status(`${$.trim($label.text())} has a maximum size of ${limit}.`);
+                }
+
+                // $count.text(limit - $this.val().length);
             });
         })
     }
