@@ -374,7 +374,19 @@
                       <xsl:text> active</xsl:text>
                     </xsl:if>
                   </xsl:variable>
-                  <button type="button" class="dropdown-item{$active}" href="#{@href}" data-role="{@role}" data-value="{@href}">
+                  <xsl:variable name="group-label">
+                    <xsl:if test="@role = 'view'">
+                      <xsl:text>View Mode</xsl:text>
+                    </xsl:if>
+                    <xsl:if test="@role = 'format'">
+                      <xsl:text>Format</xsl:text>
+                    </xsl:if>
+                  </xsl:variable>
+
+                  <button type="button" class="dropdown-item{$active}" href="#{@href}" data-role="{@role}" data-value="{@href}" aria-label="{$group-label}: {@label}">
+                    <xsl:if test="@href = $gCurrentView or @href = $gCurrentFormat">
+                      <xsl:attribute name="aria-current">true</xsl:attribute>
+                    </xsl:if>
                     <xsl:call-template name="build-pt-icon">
                       <xsl:with-param name="id"><xsl:value-of select="@icon" /></xsl:with-param>
                     </xsl:call-template>

@@ -67,8 +67,14 @@ export var Viewinator = class {
 
         possibles.view[currentView].classList.remove('active');
         possibles.format[currentFormat].classList.remove('active');
+        possibles.view[currentView].setAttribute('aria-current', false);
+        possibles.format[currentFormat].setAttribute('aria-current', false);
+
         possibles.view[targetView].classList.add('active');
         possibles.format[targetFormat].classList.add('active');
+        possibles.view[targetView].setAttribute('aria-current', true);
+        possibles.format[targetFormat].setAttribute('aria-current', true);
+
 
         reader.options.format = targetFormat;
 
