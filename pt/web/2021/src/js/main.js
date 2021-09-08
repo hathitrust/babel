@@ -356,6 +356,8 @@ var Reader = class {
     if ( HT.downloader && HT.downloader.updateDownloadFormatRangeOptions ) {
       HT.downloader.updateDownloadFormatRangeOptions();
     }
+
+    self._updateOwnerId(seq);
   }
 
   _updateImageResolution(seq, meta) {
@@ -427,6 +429,15 @@ var Reader = class {
       } else {
           this._updateLinkAttribute($link, "seq", seq);
       }
+    }
+  }
+
+  _updateOwnerId(seq) {
+    var ownerid;
+    if ( ownerid = this.service.manifest.ownerid(seq) ) {
+      document.querySelector('.ownerid-label').innerText = `OwnerID: ${ownerid}`;
+    } else {
+      document.querySelector('.ownerid-label').innerText = '';
     }
   }
 

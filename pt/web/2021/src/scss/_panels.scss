@@ -317,6 +317,14 @@ html[data-details-polyfilled="true"] {
       padding-bottom: 0;
       margin-bottom: 0.25rem;
     }
+
+    span.ownerid-label {
+      display: block;
+
+      &:empty {
+        display: none;;
+      }
+    }
   }
 
 

@@ -1934,6 +1934,7 @@
       </h3>
       <p>
         <span class="version-label"><xsl:value-of select="$gVersionLabel" /></span>
+        <span class="ownerid-label"></span>
         <br />
         <a id="versionIcon" href="#">About the version <i class="icomoon icomoon-help" aria-hidden="true"></i></a>
       </p>

@@ -699,6 +699,14 @@ html[data-details-polyfilled="true"] details > summary:first-child {
   margin-bottom: 0.25rem;
 }
 
+.d--panels .versionContainer.panel span.ownerid-label {
+  display: block;
+}
+
+.d--panels .versionContainer.panel span.ownerid-label:empty {
+  display: none;
+}
+
 .d--panels #panel-bookmark .bi-bookmark-fill.listed {
   fill: black;
 }

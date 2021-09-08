@@ -37171,6 +37171,8 @@ var Reader = /*#__PURE__*/function () {
       if (HT.downloader && HT.downloader.updateDownloadFormatRangeOptions) {
         HT.downloader.updateDownloadFormatRangeOptions();
       }
+
+      self._updateOwnerId(seq);
     }
   }, {
     key: "_updateImageResolution",
@@ -37272,6 +37274,17 @@ var Reader = /*#__PURE__*/function () {
         } else {
           this._updateLinkAttribute($link, "seq", seq);
         }
+      }
+    }
+  }, {
+    key: "_updateOwnerId",
+    value: function _updateOwnerId(seq) {
+      var ownerid;
+
+      if (ownerid = this.service.manifest.ownerid(seq)) {
+        document.querySelector('.ownerid-label').innerText = "OwnerID: ".concat(ownerid);
+      } else {
+        document.querySelector('.ownerid-label').innerText = '';
       }
     }
   }, {
