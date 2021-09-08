@@ -37282,7 +37282,7 @@ var Reader = /*#__PURE__*/function () {
       var ownerid;
 
       if (ownerid = this.service.manifest.ownerid(seq)) {
-        document.querySelector('.ownerid-label').innerText = "OwnerID: ".concat(ownerid);
+        document.querySelector('.ownerid-label').innerText = "OwnerID: ".concat(ownerid, " / Seq: ").concat(seq);
       } else {
         document.querySelector('.ownerid-label').innerText = '';
       }

@@ -291,6 +291,8 @@ html[data-details-polyfilled="true"] {
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
+      max-width: 100%;
+      
       .input-group-text {
         flex-grow: 1;
         flex-basis: 50%;

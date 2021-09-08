@@ -1857,6 +1857,7 @@ html[data-details-polyfilled="true"] details > summary:first-child {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  max-width: 100%;
 }
 
 .d--panels .panel form.d--search-form .input-group-text {
