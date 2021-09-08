@@ -1048,7 +1048,9 @@ sub handle_FEATURE_LIST_JSON
     my $mdpItem = $C->get_object('MdpItem');
     my $owner_id_map = $mdpItem->GetSequence2OwnerIdMap();
 
-    my $ignore_existing_cache = ( defined $cgi->param('newsid') ) || ( $config->get('ignore_featurelist_cache', 1) eq 'true' );
+    my $ignore_existing_cache = 
+        ( defined $cgi->param('newsid') ) || 
+        ( $config->has('ignore_featurelist_cache') && $config->get('ignore_featurelist_cache') eq 'true' );
 
     my $cache_key_version = scalar keys %$owner_id_map; # increment when we need to rebuild the cache
     my $cache_key = qq{featureList-$cache_key_version};
