@@ -435,7 +435,7 @@ var Reader = class {
   _updateOwnerId(seq) {
     var ownerid;
     if ( ownerid = this.service.manifest.ownerid(seq) ) {
-      document.querySelector('.ownerid-label').innerText = `OwnerID: ${ownerid} / Seq: ${seq}`;
+      document.querySelector('.ownerid-label').innerText = `OwnerID: ${ownerid} / Seq: ${this.service.manifest.physicalSeq(seq)}`;
     } else {
       document.querySelector('.ownerid-label').innerText = '';
     }

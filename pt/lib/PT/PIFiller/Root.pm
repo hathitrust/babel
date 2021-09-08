@@ -1124,7 +1124,8 @@ sub handle_FEATURE_LIST_JSON
             }
         }
 
-        my $ownerid = $$owner_id_map{$seq};
+        my $physical_seq = $mdpItem->GetPhysicalPageSequence($seq);
+        my $ownerid = $$owner_id_map{$physical_seq};
 
         next unless ( scalar @$features || $pageNum || $ownerid );
 
@@ -1138,6 +1139,7 @@ sub handle_FEATURE_LIST_JSON
         push @$feature_json, q{"label":} . $json->encode($label) if ( $label );
         push @$feature_json, q{"pageNum":} . $json->encode($pageNum) if ( $pageNum );
         push @$feature_json, q{"ownerid":} . $json->encode($ownerid) if ( $ownerid );
+        push @$feature_json, q{"pseq":} . $json->encode($physical_seq) if ( $physical_seq != $seq );
 
         push @{$featureList}, '{' . join(',', @$feature_json) . '}';
     }

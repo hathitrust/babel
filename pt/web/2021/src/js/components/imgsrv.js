@@ -92,6 +92,14 @@ export var Manifest = class {
     return null;
   }
 
+  physicalSeq(seq) {
+    var data = this.featureMap[seq];
+    if ( data && data.pseq ) {
+      return data.pseq;
+    }
+    return seq;
+  }
+
   pageNum(seq, prefixed=true) {
     var value = this._seq2num[seq];
     if ( value ) { 

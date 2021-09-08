@@ -29652,6 +29652,17 @@ var Manifest = /*#__PURE__*/function () {
       return null;
     }
   }, {
+    key: "physicalSeq",
+    value: function physicalSeq(seq) {
+      var data = this.featureMap[seq];
+
+      if (data && data.pseq) {
+        return data.pseq;
+      }
+
+      return seq;
+    }
+  }, {
     key: "pageNum",
     value: function pageNum(seq) {
       var prefixed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -37282,7 +37293,7 @@ var Reader = /*#__PURE__*/function () {
       var ownerid;
 
       if (ownerid = this.service.manifest.ownerid(seq)) {
-        document.querySelector('.ownerid-label').innerText = "OwnerID: ".concat(ownerid, " / Seq: ").concat(seq);
+        document.querySelector('.ownerid-label').innerText = "OwnerID: ".concat(ownerid, " / Seq: ").concat(this.service.manifest.physicalSeq(seq));
       } else {
         document.querySelector('.ownerid-label').innerText = '';
       }
