@@ -1044,10 +1044,12 @@ sub handle_FEATURE_LIST_JSON
     my ($C, $act, $piParamHashRef) = @_;
 
     my $cgi = $C->get_object('CGI');
+    my $config = $C->get_object('MdpConfig');
     my $mdpItem = $C->get_object('MdpItem');
     my $owner_id_map = $mdpItem->GetSequence2OwnerIdMap();
 
-    my $ignore_existing_cache = $cgi->param('newsid') || 0;
+    my $ignore_existing_cache = ( defined $cgi->param('newsid') ) || ( $config->get('ignore_featurelist_cache') eq 'true' );
+
     my $cache_key_version = scalar keys %$owner_id_map; # increment when we need to rebuild the cache
     my $cache_key = qq{featureList-$cache_key_version};
     my $cache_max_age = 0;
