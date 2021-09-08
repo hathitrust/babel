@@ -174,7 +174,7 @@ sub Run {
     SetBackToResultsReferer($cgi, $ses);
 
     # # Emit OWNERID if debug=ownerid. No-op otherwise
-    # PT::PageTurnerUtils::_get_OWNERID($C, $id);
+    PT::PageTurnerUtils::_get_OWNERID($C, $id);
 }
 
 
