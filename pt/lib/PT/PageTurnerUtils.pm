@@ -154,9 +154,11 @@ sub _get_OWNERID {
 
     my $seq = $C->get_object('CGI')->param( 'seq' );
     my $mdpItem = $C->get_object('MdpItem');
+
+    my $physical_seq = $mdpItem->GetPhysicalPageSequence($seq);
     my $OWNERID = $mdpItem->GetOwnerIdForSequence($seq) || 'item lacks OWNERID attribute';
 
-    DEBUG('ownerid', qq{OWNERID='$OWNERID', SEQ='$seq', id=$id});
+    DEBUG( 'ownerid', qq{OWNERID='$OWNERID', SEQ='$physical_seq', id=$id} );
 }
 
 
