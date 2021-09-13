@@ -4,11 +4,11 @@
 // Configuration
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
-$link-color: #924a0b;
-@import "bootstrap/scss/mixins";
-@import "bootstrap/scss/utilities";
-@import "bootstrap/scss/dropdown";
-@import "bootstrap/scss/button-group";
+// $link-color: #924a0b;
+// @import "bootstrap/scss/mixins";
+// @import "bootstrap/scss/utilities";
+// @import "bootstrap/scss/dropdown";
+// @import "bootstrap/scss/button-group";
 
 @import "tippy.js/dist/tippy";
 
@@ -723,6 +723,13 @@ $sidebar-buffer: 1.0rem;
   border: 0;
   font-size: 1rem;
   cursor: default;
+}
+
+.dropdown-item {
+  cursor: pointer;
+  span {
+    cursor: pointer;
+  }
 }
 
 .dropdown-menu-dark {

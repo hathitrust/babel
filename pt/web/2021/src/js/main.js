@@ -10,9 +10,6 @@ import {Service, Loader} from './components/imgsrv';
 import {View} from './components/views';
 import debounce from 'lodash/debounce';
 
-// -- bootstrap
-import Dropdown from 'bootstrap/js/dist/dropdown';
-
 const $main = document.querySelector('main'); window.$main = $main;
 var $header = document.querySelector('header');
 

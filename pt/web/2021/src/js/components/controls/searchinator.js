@@ -1,5 +1,4 @@
 import { createNanoEvents } from 'nanoevents';
-import Dropdown from 'bootstrap/js/dist/dropdown';
 
 export var Searchinator = class {
   constructor(options={}) {
