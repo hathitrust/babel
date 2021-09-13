@@ -209,36 +209,86 @@
 
   <xsl:template name="navbar-site-links">
     <ul id="nav" class="nav">
-      <li>
-        <a class="home-link" href="https://www.hathitrust.org">
+      <li class="nav-item">
+        <a class="nav-link home-link" href="https://www.hathitrust.org">
           <span class="offscreen-for-narrowest">Home</span>
         </a>
       </li>
-      <li class="menu nav-links">
-        <a aria-expanded="false" class="menu" href="#" id="burger-menu"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
-        <ul>
-          <li class="menu">
-            <a href="#" class="menu" aria-expanded="false" aria-haspopup="true" id="about-menu">About <span class="caret" aria-hidden="true"></span></a>
-            <ul role="menu" aria-labelledby="about-menu" aria-hidden="true">
-              <li><a href="https://www.hathitrust.org/about">Welcome to HathiTrust</a></li>
-              <li><a href="https://www.hathitrust.org/partnership">Our Partnership</a></li>
-              <li><a href="https://www.hathitrust.org/digital_library">Our Digital Library</a></li>
-              <li><a href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a></li>
-              <li><a href="https://www.hathitrust.org/htrc">Our Research Center</a></li>
-              <li><a href="https://www.hathitrust.org/news_publications">News &amp; Publications</a></li>
-            </ul>
+      <li class="nav-item dropdown" id="burger-menu-container">
+        <a id="burger-menu-trigger" href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
+        <ul id="burger-menu" class="dropdown-menu">
+          <li class="fixed">
+            <span class="dropdown-header">About</span>
           </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/about">Welcome to HathiTrust</a>
+          </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/partnership">Our Partnership</a>
+          </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/digital_library">Our Digital Library</a>
+          </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a>
+          </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/htrc">Our Research Center</a>
+          </li>
+          <li class="nested">
+            <a class="dropdown-item" href="https://www.hathitrust.org/news_publications">News &amp; Publications</a>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
           <xsl:if test="$gLoggedIn = 'YES'">
-            <li><a href="{//Header/PrivCollLink}">My Collections</a></li>
+            <li class=""><a class="dropdown-item" href="{//Header/PrivCollLink}">My Collections</a></li>
           </xsl:if>
-          <li><a href="/cgi/mb">Collections</a></li>
-          <li class="help"><a href="https://www.hathitrust.org/help">Help</a></li>
-          <xsl:call-template name="li-feedback" />
-          <xsl:if test="false() and $gLoggedIn = 'YES'">
-            <li class="on-for-narrowest"><a class="logout-link" href="{//Header/LoginLink}">Log out</a></li>
-          </xsl:if>
+          <li class="">
+            <a class="dropdown-item" href="/cgi/mb">Collections</a>
+          </li>
+          <li class="help">
+            <a class="dropdown-item" href="https://www.hathitrust.org/help">Help</a>
+          </li>
+          <xsl:call-template name="li-feedback">
+            <xsl:with-param name="a-class">dropdown-item</xsl:with-param>
+          </xsl:call-template>
         </ul>
       </li>
+      <li class="nav-item" id="about-menu-container">
+        <a id="about-menu" href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button">About</a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/about">Welcome to HathiTrust</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/partnership">Our Partnership</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/digital_library">Our Digital Library</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/htrc">Our Research Center</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="https://www.hathitrust.org/news_publications">News &amp; Publications</a>
+          </li>
+        </ul>
+      </li>
+      <xsl:if test="$gLoggedIn = 'YES'">
+        <li class="nav-item"><a class="nav-link" href="{//Header/PrivCollLink}">My Collections</a></li>
+      </xsl:if>
+      <li class="nav-item">
+        <a class="nav-link" href="/cgi/mb">Collections</a>
+      </li>
+      <li class="nav-item help">
+        <a class="nav-link" href="https://www.hathitrust.org/help">Help</a>
+      </li>
+      <xsl:call-template name="li-feedback">
+        <xsl:with-param name="li-class">nav-item</xsl:with-param>
+        <xsl:with-param name="a-class">nav-link</xsl:with-param>
+      </xsl:call-template>
     </ul>
   </xsl:template>
 
@@ -441,13 +491,15 @@
   </xsl:template>
 
   <xsl:template name="li-feedback">
+    <xsl:param name="li-class" />
+    <xsl:param name="a-class" />
     <xsl:variable name="feedback-id">
       <xsl:call-template name="get-feedback-id" />
     </xsl:variable>
     <xsl:variable name="feedback-m">
       <xsl:call-template name="get-feedback-m" />
     </xsl:variable>
-    <li><a href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a></li>
+    <li class="{$li-class}"><a class="{$a-class}" href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a></li>
   </xsl:template>
 
   <xsl:template name="get-feedback-id">HathiTrust (babel)</xsl:template>
