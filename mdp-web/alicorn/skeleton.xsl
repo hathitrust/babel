@@ -277,16 +277,16 @@
         </ul>
       </li>
       <xsl:if test="$gLoggedIn = 'YES'">
-        <li class="nav-item"><a class="nav-link" href="{//Header/PrivCollLink}">My Collections</a></li>
+        <li class="nav-item wide"><a class="nav-link" href="{//Header/PrivCollLink}">My Collections</a></li>
       </xsl:if>
-      <li class="nav-item">
+      <li class="nav-item wide">
         <a class="nav-link" href="/cgi/mb">Collections</a>
       </li>
-      <li class="nav-item help">
+      <li class="nav-item help wide">
         <a class="nav-link" href="https://www.hathitrust.org/help">Help</a>
       </li>
       <xsl:call-template name="li-feedback">
-        <xsl:with-param name="li-class">nav-item</xsl:with-param>
+        <xsl:with-param name="li-class">nav-item wide</xsl:with-param>
         <xsl:with-param name="a-class">nav-link</xsl:with-param>
       </xsl:call-template>
     </ul>
