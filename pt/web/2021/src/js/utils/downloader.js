@@ -115,6 +115,10 @@ HT.Downloader = {
                 data['bundle_format'] = 'text';
                 break;
         }
+        
+        if ( self.options.superuser ) {
+            data['debug'] = 'super';
+        }
 
         $.ajax({
             url: self.src.replace(/;/g, '&') + '&callback=HT.downloader.startDownloadMonitor',
@@ -521,6 +525,14 @@ head.ready(function() {
     updateDownloadFormatRangeOptions(pdfFormatOption);
 
     var tunnelForm = document.querySelector('#tunnel-download-module');
+    if ( HT.params.debug && HT.params.debug.indexOf('super') > -1 ) {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'hidden');
+        input.setAttribute('name', 'debug');
+        input.setAttribute('value', 'super');
+        input.setAttribute('data-fixed', 'true');
+        tunnelForm.appendChild(input);
+    }
 
     downloadForm.addEventListener('submit', function(event) {
         var formatOption = downloadForm.querySelector('input[name="download_format"]:checked');
