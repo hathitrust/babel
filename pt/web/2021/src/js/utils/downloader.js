@@ -9,6 +9,7 @@ HT.Downloader = {
         this.options = $.extend({}, this.options, options);
         this.id = this.options.params.id;
         this.pdf = {};
+        this.options.superuser = ( this.options.params.debug && this.options.params.debug.indexOf('super') > -1 );
         return this;
     },
 
@@ -156,6 +157,10 @@ HT.Downloader = {
         self.pdf.progress_url = progress_url;
         self.pdf.download_url = download_url;
         self.pdf.total = total;
+        
+        if ( self.options.superuser ) {
+            self.pdf.download_url += ';debug=super';
+        }
 
         self.is_running = true;
         self.num_processed = 0;
