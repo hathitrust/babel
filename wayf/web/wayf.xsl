@@ -179,9 +179,14 @@
           <div style="margin-top: 16px; position: relative">
             <h3>Log in with:</h3>
 
-            <div class="alert alert-warning alert-block">
+            <!-- <div class="alert alert-warning alert-block">
               <h4 style="margin-top: 0; font-size: 1rem; color: #000">Yahoo login has been removed as of June 30, 2020.</h4>
               <p style="margin-top: 1rem"><a href="https://www.hathitrust.org/yahoo-login">Find out how</a> to access collections previously created with your Yahoo email.</p>
+            </div> -->
+
+            <div class="alert alert-warning alert-block">
+              <h4 style="margin-top: 0; font-size: 1rem; color: #000">Facebook login has been disabled as of October 18, 2021.</h4>
+              <p style="margin-top: 1rem">We are investigating the situation.</p>
             </div>
 
             <ul class="unstyled">
