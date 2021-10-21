@@ -476,6 +476,10 @@ head.ready(function() {
         var input = rangeOption.querySelector('input');
         input.disabled = ! rangeOption.matches(`[data-download-format-target~="${option.value}"][data-view-target~="${current_view}"]`);
       })
+
+      if ( option.value == 'epub' ) {
+          rangeOptions.find(input => input.value == 'volume' ).checked = true;
+      }
       
       // if ( ! hasFullPdfAccess ) {
       //   var checked = downloadForm.querySelector(`[data-download-format-target][data-view-target~="${HT.reader.view.name}"] input:checked`);
@@ -520,8 +524,14 @@ head.ready(function() {
     }
 
     HT.downloader.selectRangeOption = function(option) {
+        var formatOption = downloadFormatOptions.find(input => input.checked);
+        if ( formatOption.value == 'epub' ) { return ; }
         var rangeOption = downloadForm.querySelector(`input[name="range"][value="${option}"]`);
         rangeOption.checked = true;
+        var div = rangeOption.parentElement;
+        downloadFormatOptions.forEach(function(formatOption) {
+            formatOption.disabled = ! ( div.dataset.downloadFormatTarget.indexOf(formatOption.value) > -1 );
+        })
     }
 
     // default to PDF
