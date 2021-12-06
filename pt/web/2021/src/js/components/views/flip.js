@@ -217,15 +217,15 @@ export var Flip = class extends Base {
 
       if ( delta > 0 ) {
         if ( currentPages[1] ) { currentPages[1].classList.add(outClass); }
+        else { endCurrentPage = true; }
         targetPages[0].classList.add(inClass);
-        if (!currentPages[1]) { onEndAnimation(currentPages, targetPages); }
         // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
       } else {
         currentPages[0].classList.add(outClass);
         if (targetPages[1]) {
           targetPages[1].classList.add(inClass);
         } else {
-          onEndAnimation(currentPages, targetPages);
+          endTargetPage = true;
         }
         // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
       }      
