@@ -27807,11 +27807,25 @@ var Flip = /*#__PURE__*/function (_Base) {
         });
 
         if (delta > 0) {
-          currentPages[1].classList.add(outClass);
-          targetPages[0].classList.add(inClass); // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
+          if (currentPages[1]) {
+            currentPages[1].classList.add(outClass);
+          }
+
+          targetPages[0].classList.add(inClass);
+
+          if (!currentPages[1]) {
+            onEndAnimation(currentPages, targetPages);
+          } // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
+
         } else {
           currentPages[0].classList.add(outClass);
-          targetPages[1].classList.add(inClass); // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
+
+          if (targetPages[1]) {
+            targetPages[1].classList.add(inClass);
+          } else {
+            onEndAnimation(currentPages, targetPages);
+          } // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
+
         }
       }
 
