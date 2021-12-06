@@ -98,41 +98,9 @@ export var Flip = class extends Base {
 
     var frameWidth = w + ( maxEdgeWidth * sliceFraction );
 
+    // console.log("--", seq, sliceIndex, sliceFraction, w + (sliceMax - sliceIndex) / sliceMax, w + ( sliceIndex / sliceMax ) );
+
     return { height: h, width: w, frameHeight: frameHeight, frameWidth: frameWidth };
-  }
-
-  _calculatePageSizeXX(meta, page, minWidth, maxHeight) {
-
-    var seq = page.dataset.seq;
-
-    if ( meta == null ) {
-      meta = this.service.manifest.meta(seq);
-    }
-    if ( minWidth == null ) {
-      minWidth = this.minWidth();
-      maxHeight = this.maxHeight();
-    }
-
-    var ratio = meta.ratio;
-    var scale = this.scale;
-
-    var h = Math.ceil(Math.min(minWidth * ratio * scale, maxHeight * scale));
-    var w = h / ratio;
-
-    var containerWidth = this.container.offsetWidth / 2;
-    var slice_index = parseInt(page.dataset.slice, 10);
-    var slice_max = this._slicify(this.service.manifest.totalSeq);
-    var slice_fraction;
-    if ( page.classList.contains('verso') ) {
-      slice_fraction = slice_index / slice_max;
-    } else {
-      slice_fraction = ( slice_max - slice_index ) / slice_max;
-    }
-    var edgeWidth = ( containerWidth - w ) * slice_fraction;
-
-    var frameWidth = ( w + Math.max(edgeWidth, 0) );
-
-    return { height: h, width: w, frameHeight: h, frameWidth: frameWidth };
   }
 
   render(cb) {
@@ -191,12 +159,12 @@ export var Flip = class extends Base {
     var seq = tuple[0];
     var currentPages = tuple[1];
     var targetPages = tuple[2];
+
     var delta = tuple[3];
 
-    targetPages.forEach((page) => { page.dataset.visible = true; })
-
-    // currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
+    // get the most up to date currentPages
     currentPages = this.pages.filter((page) => page.dataset.visible == 'true');
+    targetPages.forEach((page) => { page.dataset.visible = true; })
 
     if ( ! currentPages || ! currentPages.length || ! this._initialized ) { 
       targetPages.forEach((page) => { self.focus(page); })
@@ -250,9 +218,11 @@ export var Flip = class extends Base {
       if ( delta > 0 ) {
         currentPages[1].classList.add(outClass);
         targetPages[0].classList.add(inClass);
+        // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
       } else {
         currentPages[0].classList.add(outClass);
         targetPages[1].classList.add(inClass);
+        // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
       }      
     }
 
@@ -298,8 +268,6 @@ export var Flip = class extends Base {
 
       var r = image.width / image.height;
 
-      // with view=2up we only care about reframing the *image*
-
       if ( this._checkForFoldouts(image, page) ) {
         // foldouts
         var w = img.offsetWidth; // frame.offsetWidth;
@@ -327,9 +295,13 @@ export var Flip = class extends Base {
 
       } else {
         // normal
-        var w = img.offsetHeight * r;
-        img.style.width = `${w}px`;
+        var newImageWidth = img.offsetHeight * r;
+        var currentImageWidth = parseInt(img.style.width, 10);
+        img.style.width = `${newImageWidth}px`;
         img.style.backgroundColor = 'chartreuse';
+
+        var r2 = newImageWidth / currentImageWidth;
+        frame.style.width = `${frame.offsetWidth * r2}px`;
       }
 
       page.dataset.reframed = 'true';
@@ -461,10 +433,10 @@ export var Flip = class extends Base {
   _clickHandlerPage(page, event) {
     if ( page.classList.contains('verso') ) {
       // navigating back
-      this.prev();
+      this.isRTL ? this.next() : this.prev();
     } else {
       // navigating next
-      this.next();
+      this.isRTL ? this.prev() : this.next();
     }
   }
 
@@ -478,13 +450,25 @@ export var Flip = class extends Base {
     var totalSeq = this.service.manifest.totalSeq;
     var targetSeq;
 
-    // TEST WITH RTL
+    var pageSide;
+    var offsetDelta;
+    var offsetPercentage;
+
     if ( page.classList.contains('recto') ) {
-      targetSeq = Math.ceil(( totalSeq - seq ) * ( ( offsetX - img.offsetWidth ) / edgeWidth )) + seq;
+      pageSide = 'recto';
+      offsetDelta = this.isRTL ? 0 : img.offsetWidth;
+      offsetPercentage = (offsetX - offsetDelta) / edgeWidth;
+      if ( this.isRTL ) { offsetPercentage = 1.0 - offsetPercentage; }
+      targetSeq = Math.ceil(( totalSeq - seq ) * offsetPercentage) + seq;
     } else {
-      targetSeq = Math.ceil(seq * ( offsetX / edgeWidth ) );
+      pageSide = 'verso';
+      offsetDelta = this.isRTL ? img.offsetWidth : 0;
+      offsetPercentage = (offsetX - offsetDelta) / edgeWidth;
+      if (this.isRTL) { offsetPercentage = 1.0 - offsetPercentage; }
+      targetSeq = Math.ceil(seq * offsetPercentage  );
     }
-    // console.log("_clickHandlerEdge", seq, offsetX, page.classList.contains('recto'), targetSeq);
+    // console.log("-- clickHandlerEdge", pageSide, offsetX, offsetDelta, offsetPercentage, `${(totalSeq - seq)} / ${seq}`, targetSeq);
+
     if ( targetSeq < 1 ) { targetSeq = 1; }
     else if ( targetSeq > totalSeq ) { targetSeq = totalSeq; }
     this.display(targetSeq);

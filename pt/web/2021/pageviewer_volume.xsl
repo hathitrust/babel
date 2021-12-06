@@ -413,22 +413,46 @@
       </div>
 
       <div class="btn-group" id="actions-group-paginator">
-        <button class="btn" id="action-go-first" aria-label="First Page" data-tippy-role="tooltip">
+        <button class="btn" id="action-go-first" data-tippy-role="tooltip">
+          <xsl:attribute name="aria-label">
+            <xsl:choose>
+              <xsl:when test="$readingOrder = 'right-to-left'">Last Page</xsl:when>
+              <xsl:otherwise>First Page</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-chevron-bar-left</xsl:with-param>
           </xsl:call-template>
         </button>
-        <button class="btn" id="action-go-prev" aria-label="Previous Page" data-tippy-role="tooltip">
+        <button class="btn" id="action-go-prev" data-tippy-role="tooltip">
+          <xsl:attribute name="aria-label">
+            <xsl:choose>
+              <xsl:when test="$readingOrder = 'right-to-left'">Next Page</xsl:when>
+              <xsl:otherwise>Previous Page</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-chevron-left</xsl:with-param>
           </xsl:call-template>
         </button>
-        <button class="btn" id="action-go-next" aria-label="Next Page" data-tippy-role="tooltip">
+        <button class="btn" id="action-go-next" data-tippy-role="tooltip">
+          <xsl:attribute name="aria-label">
+            <xsl:choose>
+              <xsl:when test="$readingOrder = 'right-to-left'">Previous Page</xsl:when>
+              <xsl:otherwise>Next Page</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-chevron-right</xsl:with-param>
           </xsl:call-template>
         </button>
-        <button class="btn" id="action-go-last" aria-label="Last Page" data-tippy-role="tooltip">
+        <button class="btn" id="action-go-last" data-tippy-role="tooltip">
+          <xsl:attribute name="aria-label">
+            <xsl:choose>
+              <xsl:when test="$readingOrder = 'right-to-left'">First Page</xsl:when>
+              <xsl:otherwise>Last Page</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:call-template name="build-pt-icon">
             <xsl:with-param name="id">bi-chevron-bar-right</xsl:with-param>
           </xsl:call-template>

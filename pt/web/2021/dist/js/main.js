@@ -27630,51 +27630,12 @@ var Flip = /*#__PURE__*/function (_Base) {
         sliceFraction = (sliceMax - sliceIndex) / sliceMax;
       }
 
-      var frameWidth = w + maxEdgeWidth * sliceFraction;
+      var frameWidth = w + maxEdgeWidth * sliceFraction; // console.log("--", seq, sliceIndex, sliceFraction, w + (sliceMax - sliceIndex) / sliceMax, w + ( sliceIndex / sliceMax ) );
+
       return {
         height: h,
         width: w,
         frameHeight: frameHeight,
-        frameWidth: frameWidth
-      };
-    }
-  }, {
-    key: "_calculatePageSizeXX",
-    value: function _calculatePageSizeXX(meta, page, minWidth, maxHeight) {
-      var seq = page.dataset.seq;
-
-      if (meta == null) {
-        meta = this.service.manifest.meta(seq);
-      }
-
-      if (minWidth == null) {
-        minWidth = this.minWidth();
-        maxHeight = this.maxHeight();
-      }
-
-      var ratio = meta.ratio;
-      var scale = this.scale;
-      var h = Math.ceil(Math.min(minWidth * ratio * scale, maxHeight * scale));
-      var w = h / ratio;
-      var containerWidth = this.container.offsetWidth / 2;
-      var slice_index = parseInt(page.dataset.slice, 10);
-
-      var slice_max = this._slicify(this.service.manifest.totalSeq);
-
-      var slice_fraction;
-
-      if (page.classList.contains('verso')) {
-        slice_fraction = slice_index / slice_max;
-      } else {
-        slice_fraction = (slice_max - slice_index) / slice_max;
-      }
-
-      var edgeWidth = (containerWidth - w) * slice_fraction;
-      var frameWidth = w + Math.max(edgeWidth, 0);
-      return {
-        height: h,
-        width: w,
-        frameHeight: h,
         frameWidth: frameWidth
       };
     }
@@ -27761,13 +27722,13 @@ var Flip = /*#__PURE__*/function (_Base) {
       var seq = tuple[0];
       var currentPages = tuple[1];
       var targetPages = tuple[2];
-      var delta = tuple[3];
-      targetPages.forEach(function (page) {
-        page.dataset.visible = true;
-      }); // currentPages = this.container.querySelectorAll('.page[data-visible="true"]');
+      var delta = tuple[3]; // get the most up to date currentPages
 
       currentPages = this.pages.filter(function (page) {
         return page.dataset.visible == 'true';
+      });
+      targetPages.forEach(function (page) {
+        page.dataset.visible = true;
       });
 
       if (!currentPages || !currentPages.length || !this._initialized) {
@@ -27847,10 +27808,10 @@ var Flip = /*#__PURE__*/function (_Base) {
 
         if (delta > 0) {
           currentPages[1].classList.add(outClass);
-          targetPages[0].classList.add(inClass);
+          targetPages[0].classList.add(inClass); // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
         } else {
           currentPages[0].classList.add(outClass);
-          targetPages[1].classList.add(inClass);
+          targetPages[1].classList.add(inClass); // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
         }
       }
 
@@ -27911,7 +27872,7 @@ var Flip = /*#__PURE__*/function (_Base) {
       if (page.dataset.reframed != 'true') {
         var frame = page.querySelector('.image');
         var img = frame.querySelector('img');
-        var r = image.width / image.height; // with view=2up we only care about reframing the *image*
+        var r = image.width / image.height;
 
         if (this._checkForFoldouts(image, page)) {
           // foldouts
@@ -27938,9 +27899,12 @@ var Flip = /*#__PURE__*/function (_Base) {
           }
         } else {
           // normal
-          var w = img.offsetHeight * r;
-          img.style.width = "".concat(w, "px");
+          var newImageWidth = img.offsetHeight * r;
+          var currentImageWidth = parseInt(img.style.width, 10);
+          img.style.width = "".concat(newImageWidth, "px");
           img.style.backgroundColor = 'chartreuse';
+          var r2 = newImageWidth / currentImageWidth;
+          frame.style.width = "".concat(frame.offsetWidth * r2, "px");
         }
 
         page.dataset.reframed = 'true';
@@ -28108,10 +28072,10 @@ var Flip = /*#__PURE__*/function (_Base) {
     value: function _clickHandlerPage(page, event) {
       if (page.classList.contains('verso')) {
         // navigating back
-        this.prev();
+        this.isRTL ? this.next() : this.prev();
       } else {
         // navigating next
-        this.next();
+        this.isRTL ? this.prev() : this.next();
       }
     }
   }, {
@@ -28123,13 +28087,32 @@ var Flip = /*#__PURE__*/function (_Base) {
       var edgeWidth = frame.offsetWidth - img.offsetWidth;
       var seq = parseInt(page.dataset.seq, 10);
       var totalSeq = this.service.manifest.totalSeq;
-      var targetSeq; // TEST WITH RTL
+      var targetSeq;
+      var pageSide;
+      var offsetDelta;
+      var offsetPercentage;
 
       if (page.classList.contains('recto')) {
-        targetSeq = Math.ceil((totalSeq - seq) * ((offsetX - img.offsetWidth) / edgeWidth)) + seq;
+        pageSide = 'recto';
+        offsetDelta = this.isRTL ? 0 : img.offsetWidth;
+        offsetPercentage = (offsetX - offsetDelta) / edgeWidth;
+
+        if (this.isRTL) {
+          offsetPercentage = 1.0 - offsetPercentage;
+        }
+
+        targetSeq = Math.ceil((totalSeq - seq) * offsetPercentage) + seq;
       } else {
-        targetSeq = Math.ceil(seq * (offsetX / edgeWidth));
-      } // console.log("_clickHandlerEdge", seq, offsetX, page.classList.contains('recto'), targetSeq);
+        pageSide = 'verso';
+        offsetDelta = this.isRTL ? img.offsetWidth : 0;
+        offsetPercentage = (offsetX - offsetDelta) / edgeWidth;
+
+        if (this.isRTL) {
+          offsetPercentage = 1.0 - offsetPercentage;
+        }
+
+        targetSeq = Math.ceil(seq * offsetPercentage);
+      } // console.log("-- clickHandlerEdge", pageSide, offsetX, offsetDelta, offsetPercentage, `${(totalSeq - seq)} / ${seq}`, targetSeq);
 
 
       if (targetSeq < 1) {
