@@ -2208,12 +2208,6 @@ body.hide-highlights .page-text .highlight--plaintext {
   }
 }
 
-.d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="left-to-right"] .page.recto.page--flippingToLeft {
-  z-index: 1;
-  visibility: visible;
-  opacity: 1;
-}
-
 .d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="left-to-right"] .page.recto .image {
   justify-content: flex-start;
 }
@@ -2230,12 +2224,6 @@ body.hide-highlights .page-text .highlight--plaintext {
     position: absolute;
     left: 0;
   }
-}
-
-.d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="left-to-right"] .page.verso.page--flippingToRight {
-  z-index: 2;
-  visibility: visible;
-  opacity: 1;
 }
 
 .d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="left-to-right"] .page.verso.page--flipToRight {
@@ -2317,12 +2305,6 @@ body.hide-highlights .page-text .highlight--plaintext {
   }
 }
 
-.d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="right-to-left"] .page.recto.page--flippingToRight {
-  z-index: 1;
-  visibility: visible;
-  opacity: 1;
-}
-
 .d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="right-to-left"] .page.verso {
   grid-area: verso;
   transform-origin: 0% 0%;
@@ -2364,12 +2346,6 @@ body.hide-highlights .page-text .highlight--plaintext {
     -webkit-animation-duration: 0s;
             animation-duration: 0s;
   }
-}
-
-.d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="right-to-left"] .page.verso.page--flippingToLeft {
-  z-index: 1;
-  visibility: visible;
-  opacity: 1;
 }
 
 .d--reader[data-view="2up"] .d--reader--viewer[data-reading-order="right-to-left"] .page.verso .page--toolbar {
@@ -2452,7 +2428,7 @@ body.hide-highlights .page-text .highlight--plaintext {
   from {
     visibility: visible;
     opacity: 1;
-    z-index: 3;
+    z-index: 2;
     transform: rotateY(180deg);
   }
   to {
@@ -2465,7 +2441,7 @@ body.hide-highlights .page-text .highlight--plaintext {
   from {
     visibility: visible;
     opacity: 1;
-    z-index: 3;
+    z-index: 2;
     transform: rotateY(180deg);
   }
   to {
@@ -2476,20 +2452,16 @@ body.hide-highlights .page-text .highlight--plaintext {
 
 @-webkit-keyframes flip-hide-verso {
   from {
-    z-index: 10;
   }
   to {
-    z-index: 1;
     transform: rotateY(180deg);
   }
 }
 
 @keyframes flip-hide-verso {
   from {
-    z-index: 10;
   }
   to {
-    z-index: 1;
     transform: rotateY(180deg);
   }
 }

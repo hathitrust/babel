@@ -27743,7 +27743,6 @@ var Flip = /*#__PURE__*/function (_Base) {
       }
 
       var inClass = delta > 0 ? 'page--flipToLeft' : 'page--flipToRight';
-      var otherClass = delta > 0 ? 'page--flippingToLeft' : 'page--flippingToRight';
       var outClass = inClass;
       var endCurrentPage = false;
       var endTargetPage = false;
@@ -27752,7 +27751,7 @@ var Flip = /*#__PURE__*/function (_Base) {
         endTargetPage = false;
         endCurrentPage = false;
         currentPages.forEach(function (page) {
-          page.classList.remove(outClass, otherClass);
+          page.classList.remove(outClass);
 
           if (page.dataset.slice == self.currentSlice) {
             return;
@@ -27763,7 +27762,7 @@ var Flip = /*#__PURE__*/function (_Base) {
         });
         targetPages.forEach(function (page) {
           page.dataset.visible = true;
-          page.classList.remove(inClass, otherClass);
+          page.classList.remove(inClass);
           self.focus(page);
         });
         self.container.classList.remove('animating');
@@ -27813,7 +27812,7 @@ var Flip = /*#__PURE__*/function (_Base) {
             endCurrentPage = true;
           }
 
-          targetPages[0].classList.add(inClass); // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
+          targetPages[0].classList.add(inClass);
         } else {
           currentPages[0].classList.add(outClass);
 
@@ -27821,8 +27820,7 @@ var Flip = /*#__PURE__*/function (_Base) {
             targetPages[1].classList.add(inClass);
           } else {
             endTargetPage = true;
-          } // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
-
+          }
         }
       }
 

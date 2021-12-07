@@ -817,12 +817,6 @@ body.hide-highlights {
             }
           }
 
-          &.page--flippingToLeft {
-            z-index: 1;
-            visibility: visible;
-            opacity: 1;
-          }
-
           .image {
             justify-content: flex-start;
           }
@@ -839,15 +833,6 @@ body.hide-highlights {
 
           transform-origin: 100% 0%;
           margin-right: 0;
-
-          &.page--flippingToRight {
-            z-index: 2;
-            visibility: visible;
-            opacity: 1;
-          }
-
-          &.page--flipToRight--outgoing {
-          }
 
           &.page--flipToRight {
             animation: flip-hide-verso $flip-animation-delay forwards ease;
@@ -912,18 +897,6 @@ body.hide-highlights {
             }
           }
 
-          // &.page--flippingToLeft {
-          //   z-index: 0;
-          //   visibility: visible;
-          //   opacity: 0;
-          // }
-
-          &.page--flippingToRight {
-            z-index: 1;
-            visibility: visible;
-            opacity: 1;
-          }
-
         }
 
         &.verso {
@@ -957,24 +930,12 @@ body.hide-highlights {
             }
           }
 
-          &.page--flippingToLeft {
-            z-index: 1;
-            visibility: visible;
-            opacity: 1;
-          }
-
           .page--toolbar {
             justify-content: flex-start;
             .tag {
               flex-direction: row-reverse;
             }
           }
-
-          // &.page--flippingToRight {
-          //   z-index: 0;
-          //   visibility: visible;
-          //   opacity: 0;
-          // }
 
         }
       }
@@ -1039,13 +1000,13 @@ body.hide-highlights {
 
 // VIEW=2up ANIMATIONS
 @keyframes flip-show-recto {
-  from { visibility: visible; opacity: 1; z-index: 3; transform: rotateY(180deg) }
+  from { visibility: visible; opacity: 1; z-index: 2; transform: rotateY(180deg) }
   to { z-index: 2; transform: rotateY(0deg); }
 }
 
 @keyframes flip-hide-verso {
-  from { z-index: 10;  }
-  to { z-index: 1; transform: rotateY(180deg); }
+  from { }
+  to { transform: rotateY(180deg); }
 }
 
 @keyframes flip-hide-recto {

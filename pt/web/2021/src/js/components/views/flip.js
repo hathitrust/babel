@@ -174,7 +174,6 @@ export var Flip = class extends Base {
     }
 
     var inClass = delta > 0 ? 'page--flipToLeft' : 'page--flipToRight';
-    var otherClass = delta > 0 ? 'page--flippingToLeft' : 'page--flippingToRight';
     var outClass = inClass;
 
     var endCurrentPage = false;
@@ -184,12 +183,12 @@ export var Flip = class extends Base {
       endTargetPage = false;
       endCurrentPage = false;
       currentPages.forEach((page) => { 
-        page.classList.remove(outClass, otherClass); 
+        page.classList.remove(outClass); 
         if ( page.dataset.slice == self.currentSlice ) { return ; }
         page.dataset.visible = false; 
         self.unfocus(page);
       })      
-      targetPages.forEach((page) => { page.dataset.visible = true; page.classList.remove(inClass, otherClass); self.focus(page); })
+      targetPages.forEach((page) => { page.dataset.visible = true; page.classList.remove(inClass); self.focus(page); })
 
       self.container.classList.remove('animating');
       self.isAnimating = false;
@@ -219,15 +218,10 @@ export var Flip = class extends Base {
         if ( currentPages[1] ) { currentPages[1].classList.add(outClass); }
         else { endCurrentPage = true; }
         targetPages[0].classList.add(inClass);
-        // console.log(currentPages[1], outClass, "/", targetPages[0], inClass);
       } else {
         currentPages[0].classList.add(outClass);
-        if (targetPages[1]) {
-          targetPages[1].classList.add(inClass);
-        } else {
-          endTargetPage = true;
-        }
-        // console.log(currentPages[0], currentPages[1], outClass, "/", targetPages[0], targetPages[1], inClass);
+        if (targetPages[1]) { targetPages[1].classList.add(inClass); } 
+        else { endTargetPage = true; }
       }      
     }
 
