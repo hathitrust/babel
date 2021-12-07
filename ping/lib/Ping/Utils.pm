@@ -39,15 +39,19 @@ sub identify_user {
     $$retval{x} = $auth->affiliation_has_emergency_access($C);
 
     $$retval{r} = undef;
-    my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
-    if ( $check ) {
-        $$retval{r} = {};
-        # $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) || 0;
-        $$retval{r}{enhancedTextProxy} = $auth->user_is_print_disabled_proxy($C) ? 
-            $Types::Serialiser::true: 
-            $Types::Serialiser::false;
-    }
 
+    foreach my $config ( $auth->get_switchable_roles($C) ) {
+        my $method = $$config{method};
+        my $check  = $auth->$method( $C, 1 );
+        if ( $check ) {
+            $$retval{r} = {};
+            $$retval{r}{$$config{role}} =
+                $auth->$method($C) ?
+            $Types::Serialiser::true : 
+            $Types::Serialiser::false;
+        }
+    }
+    
     $check = $auth->affiliation_is_enhanced_text_user($C);
     if ( $check ) {
         $$retval{r} = {} unless ( ref($$retval{r}) );

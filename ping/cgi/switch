@@ -116,7 +116,17 @@ my $app = sub {
 
     if ( $role ) {
 
-        my $check = ( $role eq 'default') || Auth::ACL::a_Authorized( {role => $role} );
+        my $check = 0;
+        if ( $role eq 'default' ) {
+            $check = 1;
+        } else {
+            foreach my $config ( $auth->get_switchable_roles($C) ) {
+                if ( $$config{role} eq $role ) {
+                    $check = 1;
+                    last;
+                }
+            }
+        }
 
         if ( $request->param('debug') eq 'status' ) {
             $response = Plack::Response->new(200);
@@ -130,9 +140,6 @@ my $app = sub {
             }
 
             $response = Plack::Response->new(302);
-            # my $referer = $ses->get_persistent('activated_redirect');
-            # $ses->set_persistent('activated_redirect', undef);
-            # $response->redirect($referer);
             $response->redirect($request->param("referer"));
         }
 
@@ -142,18 +149,16 @@ my $app = sub {
         my $html = Utils::read_file("../web/switch.html");
 
         my $roles_list = [];
-        my $check = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
 
-        if ( $check ) {
-            # push @$roles_list, qq{<p><a class="btn btn-default" href="/cgi/ping/toggle/default">Member</a></p>};
-            # push @$roles_list, qq{<p><a class="btn btn-primary" href="/cgi/ping/toggle/ssdproxy">Accessible Text Request Service (ATRS) Provider</a></p>};
+        my $activated_role = $ses->get_persistent('activated_role') || 'default';
+        my $check = 0;
+        my $config;
 
-            # push @$roles_list, qq{<ul>};
-            # push @$roles_list, qq{<li><label><input type="radio" name="role" value="default" /> Member</label></li>};
-            # push @$roles_list, qq{<li><label><input type="radio" name="role" value="ssdproxy" /> Accessible Text Request Service (ATRS) Provider</label></li>};
-            # push @$roles_list, qq{</ul>};
+        my @switchable_roles = $auth->get_switchable_roles($C);
 
-            my $activated_role = $ses->get_persistent('activated_role') || 'default';
+        if ( scalar @switchable_roles ) {
+
+            # set up the default state
             my $checked = ( $activated_role eq 'default' ) ? 'checked="checked"' : '';
             push @$roles_list, <<DIV;
 <div class="control">
@@ -167,28 +172,13 @@ my $app = sub {
 </div>
 DIV
 
-            $checked = ( $activated_role eq 'ssdproxy' ) ? 'checked="checked"' : '';
-            push @$roles_list, <<DIV;
-<div class="control">
-    <input type="radio" name="role" value="ssdproxy" id="role--ssdproxy" $checked />
-    <label class="radio" for="role--ssdproxy">Accessible Text Request Service (ATRS) Provider</label>
-    <div class="control--help" style="margin-left: 0.25rem; font-size: 90%">
-        <p style="margin-bottom: 1rem">
-            Download copyrighted books, in order to provide them to eligible patrons with print disabilities.
-        </p>        
-        <p style="margin-bottom: 1rem">
-            The following terms of use apply when accessing books as an ATRS provider. Per the agreement you signed to become an ATRS provider, you must confirm with eligible patrons that they understand:
-        </p>
-        <ul>
-            <li>The copyrighted nature of the content</li>
-            <li>Why they are being granted special access to the work</li>
-            <li>That the cover sheet indicating the copyright status and terms of use must remain with the work at all times</li>
-            <li>That the accessible copies are for personal use only and may not be reproduced, distributed, or made available to anyone else other than to facilitate the Eligible Patron’s personal use</li>
-            <li>That if the Eligible Patrons have any questions about proper use of the material or suspect unauthorized access to the material, they should contact the DSP immediately</li>
-        </ul>
-    </div>
-</div>
-DIV
+            foreach my $config_ ( $auth->get_switchable_roles($C) ) {
+                $checked = ( $activated_role eq $$config_{role} ) ? 'checked="checked"' : '';
+                my $snippet = Utils::read_file("../web/_switch_$$config_{role}.html");
+                $$snippet =~ s,data-checked,$checked,;
+
+                push @$roles_list, $$snippet;
+            }
 
         }
 
@@ -206,7 +196,7 @@ DIV
 
         $response = Plack::Response->new(200);
         $response->content_type('text/html');
-        $response->body($$html);
+        $response->body(Encode::encode('UTF-8', $$html));
 
     }
 
