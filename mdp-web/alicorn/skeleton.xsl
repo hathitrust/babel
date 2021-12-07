@@ -306,7 +306,7 @@
                 <xsl:if test="//Param[@name='debug']">?debug=<xsl:value-of select="//Param[@name='debug']" /></xsl:if>
               </xsl:variable>
               <a href="/cgi/ping/switch{$debug}" class="action-switch-role">
-                <xsl:value-of select="//Header/UserAffiliation" />
+                <xsl:apply-templates select="//Header/UserAffiliation" mode="copy-guts" />
                 <xsl:text> </xsl:text>
                 <xsl:text>⚡</xsl:text>
               </a>
