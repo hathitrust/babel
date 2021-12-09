@@ -23578,18 +23578,23 @@ var Navigator = /*#__PURE__*/function () {
           _this._updateRange();
         }
       });
+      this.reader.on('ready', function (params) {
+        _this._updateNavigationLabels(params);
+      });
     }
   }, {
     key: "_bindNavigation",
     value: function _bindNavigation() {
       var _this2 = this;
 
-      document.querySelector(this.input.next).addEventListener('click', function (event) {
+      this.nextEl = document.querySelector(this.input.next);
+      this.nextEl.addEventListener('click', function (event) {
         _this2.reader.trigger.push('action-go-next');
 
         _this2.reader.next();
       });
-      document.querySelector(this.input.prev).addEventListener('click', function (event) {
+      this.prevEl = document.querySelector(this.input.prev);
+      this.prevEl.addEventListener('click', function (event) {
         _this2.reader.trigger.push('action-go-prev');
 
         _this2.reader.prev();
@@ -23608,9 +23613,45 @@ var Navigator = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "_updateNavigationLabels",
+    value: function _updateNavigationLabels(view) {
+      var _this3 = this;
+
+      if (!this.reader.isRTL) {
+        return;
+      }
+
+      [this.firstEl, this.nextEl, this.prevEl, this.lastEl].forEach(function (el) {
+        var currentLabel = el.getAttribute('aria-label');
+        var newLabel;
+
+        if (_this3.reader.view.isRTL && currentLabel != el.dataset.labelRtl) {
+          if (!el.dataset.unflippedLabel) {
+            el.dataset.unflippedLabel = currentLabel;
+          }
+
+          newLabel = el.dataset.labelRtl;
+        } else {
+          if (el.dataset.unflippedLabel && currentLabel != el.dataset.unflippedLabel) {
+            newLabel = el.dataset.unflippedLabel;
+          }
+        }
+
+        if (newLabel) {
+          el.setAttribute('aria-label', newLabel);
+
+          if (el._tippy) {
+            el._tippy.setContent(newLabel);
+          }
+
+          ;
+        }
+      });
+    }
+  }, {
     key: "_bindRange",
     value: function _bindRange() {
-      var _this3 = this;
+      var _this4 = this;
 
       var rangeEl = this.rangeEl = document.querySelector(this.input.range);
       var isIE = window.navigator.userAgent.indexOf("Trident/") > -1;
@@ -23624,7 +23665,7 @@ var Navigator = /*#__PURE__*/function () {
           return;
         }
 
-        _this3.updateLocation(rangeEl);
+        _this4.updateLocation(rangeEl);
       });
       rangeEl.addEventListener('input', function (event) {
         if (self._keyDown) {
@@ -23632,7 +23673,7 @@ var Navigator = /*#__PURE__*/function () {
           return;
         }
 
-        _this3._updateRange();
+        _this4._updateRange();
       });
       rangeEl.addEventListener("mousedown", function (event) {
         self._mouseDown = true;
@@ -23730,7 +23771,7 @@ var Navigator = /*#__PURE__*/function () {
   }, {
     key: "_bindResize",
     value: function _bindResize() {
-      var _this4 = this;
+      var _this5 = this;
 
       if (window.ResizeObserver) {
         var toolbar = document.querySelector(this.input.toolbar);
@@ -23745,25 +23786,25 @@ var Navigator = /*#__PURE__*/function () {
               var offsetWidth = entry.target.offsetWidth;
 
               if (offsetWidth >= 770) {
-                if (_this4.rangeEl) {
-                  _this4.rangeEl.parentElement.style.display = null;
+                if (_this5.rangeEl) {
+                  _this5.rangeEl.parentElement.style.display = null;
                 }
 
-                _this4.firstEl.style.display = null;
-                _this4.lastEl.style.display = null;
+                _this5.firstEl.style.display = null;
+                _this5.lastEl.style.display = null;
               } else if (offsetWidth < 550) {
-                _this4.firstEl.style.display = 'none';
-                _this4.lastEl.style.display = 'none';
+                _this5.firstEl.style.display = 'none';
+                _this5.lastEl.style.display = 'none';
 
-                if (_this4.rangeEl) {
-                  _this4.rangeEl.parentElement.style.display = 'none';
+                if (_this5.rangeEl) {
+                  _this5.rangeEl.parentElement.style.display = 'none';
                 }
               } else if (offsetWidth < 770) {
-                _this4.firstEl.style.display = null;
-                _this4.lastEl.style.display = null;
+                _this5.firstEl.style.display = null;
+                _this5.lastEl.style.display = null;
 
-                if (_this4.rangeEl) {
-                  _this4.rangeEl.parentElement.style.display = 'none';
+                if (_this5.rangeEl) {
+                  _this5.rangeEl.parentElement.style.display = 'none';
                 }
               }
             }
@@ -32922,6 +32963,7 @@ reader = new Reader({
 });
 reader.$root = $root;
 reader.service = service;
+reader.isRTL = service.manifest.options.readingOrder == 'right-to-left';
 HT.reader = reader;
 HT.View = _components_views__WEBPACK_IMPORTED_MODULE_196__.View; // initiate loaders
 

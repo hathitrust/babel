@@ -534,6 +534,7 @@ HT.service = service;
 reader = new Reader({ identifier: HT.params.id });
 reader.$root = $root;
 reader.service = service;
+reader.isRTL = service.manifest.options.readingOrder == 'right-to-left';
 HT.reader = reader;
 HT.View = View;
 

@@ -27,15 +27,21 @@ export var Navigator = class {
         this._updateRange();
       }
     })
+
+    this.reader.on('ready', (params) => {
+      this._updateNavigationLabels(params);
+    })
   }
 
   _bindNavigation() {
-    document.querySelector(this.input.next).addEventListener('click', (event) => {
+    this.nextEl = document.querySelector(this.input.next);
+    this.nextEl.addEventListener('click', (event) => {
       this.reader.trigger.push('action-go-next');
       this.reader.next();      
     })
 
-    document.querySelector(this.input.prev).addEventListener('click', (event) => {
+    this.prevEl = document.querySelector(this.input.prev);
+    this.prevEl.addEventListener('click', (event) => {
       this.reader.trigger.push('action-go-prev');
       this.reader.prev();
     })
@@ -51,6 +57,29 @@ export var Navigator = class {
       this.reader.trigger.push('action-go-last');
       this.reader.last();
     })
+  }
+
+  _updateNavigationLabels(view) {
+    if ( ! this.reader.isRTL ) { return ; }
+    [ this.firstEl, this.nextEl, this.prevEl, this.lastEl ].forEach((el) => {
+      let currentLabel = el.getAttribute('aria-label');
+      let newLabel;
+      if (this.reader.view.isRTL && currentLabel != el.dataset.labelRtl) {
+        if ( ! el.dataset.unflippedLabel ) {
+          el.dataset.unflippedLabel = currentLabel;
+        }
+        newLabel = el.dataset.labelRtl;
+      } else {
+        if (el.dataset.unflippedLabel && currentLabel != el.dataset.unflippedLabel) {
+          newLabel = el.dataset.unflippedLabel;
+        }
+      }
+      if ( newLabel ) {
+        el.setAttribute('aria-label', newLabel);
+        if (el._tippy) { el._tippy.setContent(newLabel) };
+      }
+    })
+
   }
 
   _bindRange() {
