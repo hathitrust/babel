@@ -57,29 +57,33 @@ export var Navigator = class {
       this.reader.trigger.push('action-go-last');
       this.reader.last();
     })
+
+    this.controlEls = [this.firstEl, this.nextEl, this.prevEl, this.lastEl]
+    this._setupDefaultNavigationLabels();
+  }
+
+  _setupDefaultNavigationLabels() {
+    if ( ! this.reader.isRTL ) { return ; }
+    this.controlEls.forEach((el) => {
+      el.dataset.defaultLabel = el.getAttribute('aria-label');
+    })
   }
 
   _updateNavigationLabels(view) {
     if ( ! this.reader.isRTL ) { return ; }
-    [ this.firstEl, this.nextEl, this.prevEl, this.lastEl ].forEach((el) => {
+    this.controlEls.forEach((el) => {
       let currentLabel = el.getAttribute('aria-label');
       let newLabel;
-      if (this.reader.view.isRTL && currentLabel != el.dataset.labelRtl) {
-        if ( ! el.dataset.unflippedLabel ) {
-          el.dataset.unflippedLabel = currentLabel;
-        }
+      if ( this.reader.view.isRTL && currentLabel != el.dataset.labelRtl ) {
         newLabel = el.dataset.labelRtl;
-      } else {
-        if (el.dataset.unflippedLabel && currentLabel != el.dataset.unflippedLabel) {
-          newLabel = el.dataset.unflippedLabel;
-        }
+      } else if ( currentLabel != el.dataset.defaultLabel ) {
+        newLabel = el.dataset.defaultLabel;
       }
       if ( newLabel ) {
         el.setAttribute('aria-label', newLabel);
         if (el._tippy) { el._tippy.setContent(newLabel) };
       }
     })
-
   }
 
   _bindRange() {

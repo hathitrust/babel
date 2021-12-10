@@ -23611,6 +23611,20 @@ var Navigator = /*#__PURE__*/function () {
 
         _this2.reader.last();
       });
+      this.controlEls = [this.firstEl, this.nextEl, this.prevEl, this.lastEl];
+
+      this._setupDefaultNavigationLabels();
+    }
+  }, {
+    key: "_setupDefaultNavigationLabels",
+    value: function _setupDefaultNavigationLabels() {
+      if (!this.reader.isRTL) {
+        return;
+      }
+
+      this.controlEls.forEach(function (el) {
+        el.dataset.defaultLabel = el.getAttribute('aria-label');
+      });
     }
   }, {
     key: "_updateNavigationLabels",
@@ -23621,20 +23635,14 @@ var Navigator = /*#__PURE__*/function () {
         return;
       }
 
-      [this.firstEl, this.nextEl, this.prevEl, this.lastEl].forEach(function (el) {
+      this.controlEls.forEach(function (el) {
         var currentLabel = el.getAttribute('aria-label');
         var newLabel;
 
         if (_this3.reader.view.isRTL && currentLabel != el.dataset.labelRtl) {
-          if (!el.dataset.unflippedLabel) {
-            el.dataset.unflippedLabel = currentLabel;
-          }
-
           newLabel = el.dataset.labelRtl;
-        } else {
-          if (el.dataset.unflippedLabel && currentLabel != el.dataset.unflippedLabel) {
-            newLabel = el.dataset.unflippedLabel;
-          }
+        } else if (currentLabel != el.dataset.defaultLabel) {
+          newLabel = el.dataset.defaultLabel;
         }
 
         if (newLabel) {
