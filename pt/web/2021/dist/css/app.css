@@ -1475,6 +1475,10 @@ html[data-details-polyfilled="true"] details > summary:first-child {
   margin-bottom: 0;
 }
 
+.d--panels #panel-share .form-control-row button {
+  padding: 0.5rem;
+}
+
 .d--panels #panel-share .form-control-row button:hover {
   fill: #fff;
 }

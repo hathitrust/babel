@@ -52,16 +52,23 @@ head.ready(function() {
   })
 
   tippy('button[data-action="action-copy"]', {
-    trigger: 'click',
+    trigger: 'mouseenter focus click',
     arrow: false,
-    content: (reference) => {
-      return 'Copied';
-    },
-    onShown: (instance) => {
-      HT.update_status("Copied");
-      setTimeout(() => {
+    onTrigger: (instance, event) => {
+      if ( event.type == 'click' ) {
         instance.hide();
-      }, 1000);
+        instance.setContent('Copied');
+        setTimeout(() => {
+          instance.show();
+          setTimeout(() => {
+            instance.hide();
+          }, 1000);
+        }, 0);
+        instance.__clicked = true;
+        HT.update_status("Copied");
+      } else {
+        instance.setContent(instance.reference.getAttribute('aria-label'));
+      }
     },
     placement: 'right',
     theme: 'hathitrust'
