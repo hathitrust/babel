@@ -53,7 +53,7 @@ head.ready(function() {
 
   tippy('button[data-action="action-copy"]', {
     trigger: 'mouseenter focus click',
-    arrow: false,
+    arrow: true,
     onTrigger: (instance, event) => {
       if ( event.type == 'click' ) {
         instance.hide();
