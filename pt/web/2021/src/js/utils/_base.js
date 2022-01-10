@@ -43,10 +43,28 @@ head.ready(function() {
     var trigger = 'out' + $(this).attr('href');
     HT.analytics.logAction(undefined, trigger);
   })
+
   $("body").on('click', 'button[data-action="action-copy"]', function(event) {
     event.preventDefault();
     var $button = $(this);
     document.urlForm[$button.data('for')].select();
+    document.execCommand("copy");
+  })
+
+  tippy('button[data-action="action-copy"]', {
+    trigger: 'click',
+    arrow: false,
+    content: (reference) => {
+      return 'Copied';
+    },
+    onShown: (instance) => {
+      HT.update_status("Copied");
+      setTimeout(() => {
+        instance.hide();
+      }, 1000);
+    },
+    placement: 'right',
+    theme: 'hathitrust'
   })
 
 })
