@@ -716,6 +716,23 @@ html[data-details-polyfilled="true"] details > summary:first-child {
   background: #fdd116;
 }
 
+.d--panels #panel-share #urlForm > div {
+  margin-bottom: 1rem;
+}
+
+.d--panels #panel-share .form-control-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.d--panels #panel-share .form-control-row input[type="text"] {
+  margin-bottom: 0;
+}
+
+.d--panels #panel-share .form-control-row button:hover {
+  fill: #fff;
+}
+
 nav.pagination-container {
   display: flex;
   justify-content: space-around;

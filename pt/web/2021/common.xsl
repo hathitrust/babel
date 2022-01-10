@@ -1853,43 +1853,68 @@
       </xsl:call-template>
 
       <form action="" name="urlForm" id="urlForm">
-        <label class="smaller" for="permURL">Permanent link to this item</label>
-        <!-- <input type="text" name="permURL_link" id="permURL" class="email-permURL" onclick="document.urlForm.permURL_link.select();" readonly="readonly = true;" value="http://hdl.handle.net/2027/mdp.39015015394847" /> -->
-        <xsl:element name="input">
-          <xsl:attribute name="type">text</xsl:attribute>
-          <xsl:attribute name="name">permURL_link</xsl:attribute>
-          <xsl:attribute name="id">permURL</xsl:attribute>
-          <xsl:attribute name="class">email-permURL</xsl:attribute>
-          <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
-          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT Link to this Book</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
-          <xsl:attribute name="readonly">readonly</xsl:attribute>
-          <xsl:attribute name="value">
-            <xsl:value-of select="$gItemHandle"/>
-          </xsl:attribute>
-        </xsl:element>
+        <div>
+          <label class="smaller" for="permURL">Permanent link to this item</label>
+          <div class="form-control-row">
+            <xsl:element name="input">
+              <xsl:attribute name="type">text</xsl:attribute>
+              <xsl:attribute name="name">permURL_link</xsl:attribute>
+              <xsl:attribute name="id">permURL</xsl:attribute>
+              <xsl:attribute name="class">email-permURL</xsl:attribute>
+              <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
+              <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+              <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+              <xsl:attribute name="data-tracking-action">PT Link to this Book</xsl:attribute>
+              <xsl:attribute name="data-tracking-label">
+                <xsl:value-of select="$gItemHandle" />
+              </xsl:attribute>
+              <xsl:attribute name="readonly">readonly</xsl:attribute>
+              <xsl:attribute name="value">
+                <xsl:value-of select="$gItemHandle" />
+              </xsl:attribute>
+            </xsl:element>
+            <button data-action="action-copy" data-for="permURL" aria-label="Copy Permanent Link" data-tippy-role="tooltip">
+              <xsl:call-template name="build-pt-icon">
+                <xsl:with-param name="id">mat-copy-content</xsl:with-param>
+              </xsl:call-template>
+              <span class="offscreen">Copy permanent link</span>
+            </button>
+          </div>
+        </div>
 
         <xsl:if test="$gUsingSearch = 'false'">
-        <br />
 
-        <label class="smaller" for="pageURL">Link to this page</label>
-
-        <xsl:element name="input">
-          <xsl:attribute name="type">text</xsl:attribute>
-          <xsl:attribute name="name">pageURL_link</xsl:attribute>
-          <xsl:attribute name="id">pageURL</xsl:attribute>
-          <xsl:attribute name="class">email-permURL</xsl:attribute>
-          <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();</xsl:attribute>
-          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
-          <xsl:attribute name="readonly">readonly</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$pageLink" /></xsl:attribute>
-          <xsl:attribute name="data-base-href"><xsl:value-of select="$gItemHandle" /></xsl:attribute>
-          <xsl:attribute name="value"><xsl:value-of select="$pageLink" /></xsl:attribute>
-        </xsl:element>
+          <div>
+            <label class="smaller" for="pageURL">Link to this page</label>
+            <div class="form-control-row">
+              <xsl:element name="input">
+                <xsl:attribute name="type">text</xsl:attribute>
+                <xsl:attribute name="name">pageURL_link</xsl:attribute>
+                <xsl:attribute name="id">pageURL</xsl:attribute>
+                <xsl:attribute name="class">email-permURL</xsl:attribute>
+                <xsl:attribute name="onclick">document.urlForm.pageURL_link.select();</xsl:attribute>
+                <xsl:attribute name="data-toggle">tracking</xsl:attribute>
+                <xsl:attribute name="data-tracking-category">PT</xsl:attribute>
+                <xsl:attribute name="data-tracking-action">PT Link to this Page</xsl:attribute>
+                <xsl:attribute name="readonly">readonly</xsl:attribute>
+                <xsl:attribute name="data-tracking-label">
+                  <xsl:value-of select="$pageLink" />
+                </xsl:attribute>
+                <xsl:attribute name="data-base-href">
+                  <xsl:value-of select="$gItemHandle" />
+                </xsl:attribute>
+                <xsl:attribute name="value">
+                  <xsl:value-of select="$pageLink" />
+                </xsl:attribute>
+              </xsl:element>
+              <button data-action="action-copy" data-for="pageURL" aria-label="Copy Link to This Page" data-tippy-role="tooltip">
+                <xsl:call-template name="build-pt-icon">
+                  <xsl:with-param name="id">mat-copy-content</xsl:with-param>
+                </xsl:call-template>
+                <span class="offscreen">Copy permanent link</span>
+              </button>
+            </div>
+          </div>
         </xsl:if>
       </form>
 

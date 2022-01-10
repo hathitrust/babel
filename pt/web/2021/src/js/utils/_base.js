@@ -43,5 +43,10 @@ head.ready(function() {
     var trigger = 'out' + $(this).attr('href');
     HT.analytics.logAction(undefined, trigger);
   })
+  $("body").on('click', 'button[data-action="action-copy"]', function(event) {
+    event.preventDefault();
+    var $button = $(this);
+    document.urlForm[$button.data('for')].select();
+  })
 
 })
