@@ -26541,6 +26541,8 @@ var Base = /*#__PURE__*/function () {
 
       if (this.format == 'plaintext') {
         datum.page.dataset.loaded = true;
+
+        this._reframePageText(page);
       } else {
         if (datum.redraw) {
           page.querySelectorAll('.highlight').forEach(function (span) {
@@ -26578,6 +26580,9 @@ var Base = /*#__PURE__*/function () {
         img.src = image.src;
       }
     }
+  }, {
+    key: "_reframePageText",
+    value: function _reframePageText(page) {}
   }, {
     key: "_reframePage",
     value: function _reframePage(image, page) {
@@ -29111,18 +29116,20 @@ var Scroll = /*#__PURE__*/function (_Base) {
     _this.pageOptions = {};
     _this.embedHtml = true;
     _this._debugLog = [];
+    _this.sets.expandable = new Map();
     return _this;
   }
 
   _createClass(Scroll, [{
-    key: "_renderr",
-    value: function _renderr(page) {// var button = document.createElement('button');
-      // button.classList.add('button', 'btn-sm', 'action-load-page');
-      // button.dataset.seq = page.dataset.seq;
-      // button.innerText = 'Load page';
-      // button.setAttribute('tabindex', '-1');
-      // page.appendChild(button);
+    key: "attachTo",
+    value: function attachTo(element, cb) {
+      this.root = element.parentElement;
+
+      _get(_getPrototypeOf(Scroll.prototype), "attachTo", this).call(this, element, cb);
     }
+  }, {
+    key: "_renderr",
+    value: function _renderr(page) {}
   }, {
     key: "display",
     value: function display(seq) {
@@ -29133,16 +29140,8 @@ var Scroll = /*#__PURE__*/function (_Base) {
       }
 
       target.dataset.visible = true;
-      target.classList.add('page--visible'); // this.container.parentNode.scrollTop = target.offsetTop;
-      // let scrollOptions = this.reader.options.prefersReducedMotion ? true : { behavior: 'smooth' };
-      // try {
-      //   target.scrollIntoView(scrollOptions);
-      // } catch(error) {
-      //   target.scrollIntoView();
-      // }
-      // target.scrollIntoView();
-
-      var parentEl = this.container.parentElement;
+      target.classList.add('page--visible');
+      var parentEl = this.root;
 
       if (parentEl.scroll) {
         parentEl.scroll(0, target.offsetTop);
@@ -29151,6 +29150,67 @@ var Scroll = /*#__PURE__*/function (_Base) {
       }
 
       this.emitter.emit('scrolled');
+    }
+  }, {
+    key: "_reframePageText",
+    value: function _reframePageText(page) {
+      if (page.dataset.reframed != 'true') {
+        var frame = page.querySelector('.page-text');
+        var seq = this.getPageSeq(page);
+        var offsetHeight = frame.offsetHeight;
+        var scrollHeight = frame.scrollHeight;
+        var check = offsetHeight > scrollHeight ? scrollHeight / offsetHeight : offsetHeight / scrollHeight;
+        console.log("AHOY _reframePageText", seq, this.currentSeq, "/", offsetHeight, scrollHeight, check);
+
+        if (offsetHeight < scrollHeight) {
+          if (check <= 0.90 && seq < this.currentSeq) {
+            page.dataset.expandableHeight = scrollHeight;
+            this.sets.expandable.set(seq, page);
+          } else {
+            frame.style.height = "".concat(scrollHeight, "px");
+          }
+        }
+
+        page.dataset.reframed = true;
+      }
+    }
+  }, {
+    key: "_reframePage",
+    value: function _reframePage(image, page) {
+      if (page.dataset.reframed != 'true') {
+        var frame = page.querySelector('.image');
+        var img = frame.querySelector('img');
+        var seq = this.getPageSeq(page);
+        var r = image.height / image.width;
+        var frameWidth = parseFloat(frame.style.width);
+        var frameHeight = parseFloat(frame.style.height);
+        var newFrameHeight = frameWidth * r;
+        var check = frameHeight > newFrameHeight ? newFrameHeight / frameHeight : frameHeight / newFrameHeight;
+
+        if (check <= 0.90 && seq < this.currentSeq) {
+          page.dataset.expandableHeight = newFrameHeight;
+          this.sets.expandable.set(seq, page);
+        } else {
+          frame.style.height = "".concat(frameWidth * r, "px");
+        }
+
+        img.dataset.width = frameWidth;
+        img.dataset.height = frameWidth * r;
+        img.style.height = "".concat(img.dataset.width, "px");
+        img.style.height = "".concat(img.dataset.height, "px");
+        page.dataset.height = page.offsetHeight;
+
+        if (this._checkForFoldouts(image, page)) {
+          var altText = img.getAttribute('alt');
+
+          if (altText.indexOf('Foldout') < 0) {
+            altText += '; Foldout';
+            img.setAttribute('alt', altText);
+          }
+        }
+
+        page.dataset.reframed = 'true';
+      }
     }
   }, {
     key: "handleObserver",
@@ -29248,7 +29308,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
       _get(_getPrototypeOf(Scroll.prototype), "bindEvents", this).call(this);
 
       this.observer = new IntersectionObserver(this.handleObserver.bind(this), {
-        root: this.container.parentNode,
+        root: this.root,
         rootMargin: "".concat(this.rootMargin, "px"),
         threshold: 0
       });
@@ -29272,12 +29332,17 @@ var Scroll = /*#__PURE__*/function (_Base) {
         page.dataset.rotated = rotated; // self.service.manifest.rotateBy(seq, delta);
         // self.redrawPage(self.getPage(seq));
       });
-      this._handlers.scrolled = this.on('scrolled', lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this.scrollHandler.bind(this), 50)); // this._handlers.click = this.clickHandler.bind(this);
+      this._lastKnownScrollPosition = this.root.scrollTop;
+      this._ticking = false;
+      this._handlers.scrolled = this.on('scrolled', lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this.scrollHandler.bind(this), 50));
+      this._handlers.expanded = lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this._expandableScrollHandler.bind(this), 50);
+      this.root.addEventListener('scroll', this._handlers.expanded); // this._handlers.click = this.clickHandler.bind(this);
       // this.container.addEventListener('click', this._handlers.click);
     }
   }, {
     key: "scrollHandler",
     value: function scrollHandler() {
+      // this._lastKnownScrollPosition = this.container.parentElement.scrollTop;
       if (this._scrollPause) {
         return;
       }
@@ -29306,7 +29371,90 @@ var Scroll = /*#__PURE__*/function (_Base) {
         }
 
         this._currentPage = page;
+      } // if ( ! this._ticking ) {
+      //   window.requestAnimationFrame(() => {
+      //     this._resizeOffscreen();
+      //     this._ticking = false;
+      //   })
+      // }
+
+    }
+  }, {
+    key: "_expandableScrollHandler",
+    value: function _expandableScrollHandler() {
+      var _this3 = this;
+
+      this._lastKnownScrollPosition = this.root.scrollTop; // if (!this._ticking && this._expandable.size > 0) {
+      //   console.log("AHOY _expandableScrollHandler ::", this._lastKnownScrollPosition);
+      //   window.requestAnimationFrame(() => {
+      //     this._resizeOffscreen();
+      //     this._ticking = false;
+      //   })
+      //   this._ticking = true;
+      // }
+
+      if (this._tickingTimer) {
+        console.log("AHOY _expandableScrollHandler :: resetting timer", this._expandable.size);
       }
+
+      if (this._tickingTimer) {
+        clearTimeout(this._tickingTimer);
+      }
+
+      if (this.sets.expandable.size == 0) {
+        return;
+      }
+
+      this._tickingTimer = setTimeout(function () {
+        _this3._resizeOffscreen();
+
+        _this3._tickingTimer = null;
+      }, 250);
+    }
+  }, {
+    key: "_resizeOffscreen",
+    value: function _resizeOffscreen() {
+      var _this4 = this;
+
+      var root = this.root;
+      var delta = 0;
+
+      if (this.sets.expandable.size == 0) {
+        return;
+      } // let fragment = document.createDocumentFragment();
+      // fragment.appendChild(this.container);
+
+
+      var sequences = _toConsumableArray(this.sets.expandable.keys()).sort(function (a, b) {
+        return a - b;
+      });
+
+      sequences.forEach(function (seq) {
+        var page = _this4.sets.expandable.get(seq);
+
+        if (page.dataset.expandableHeight == 'resolved') {
+          return;
+        }
+
+        var frame = _this4.format == 'plaintext' ? page.querySelector('.page-text') : page.querySelector('.image');
+        var height1 = frame.offsetHeight; // arseFloat(frame.style.height, 10);
+
+        var height2 = parseFloat(page.dataset.expandableHeight, 10);
+        console.log("AHOY _resizeOffScreen ->", seq, height1, height2);
+
+        if (seq < _this4.currentSeq) {
+          delta += height2 - height1;
+        }
+
+        frame.style.height = _this4.format == 'plaintext' ? 'auto' : "".concat(height2, "px");
+        page.dataset.expandableHeight = 'resolved';
+
+        _this4.sets.expandable.delete(seq);
+      }); // root.appendChild(this.container);
+
+      console.log("AHOY _resizeOffScreen", this._lastKnownScrollPosition, delta, this.currentSeq);
+      root.scrollTop = this._lastKnownScrollPosition + delta;
+      this._lastKnownScrollPosition = root.scrollTop;
     }
   }, {
     key: "bindPageEvents",
@@ -29454,6 +29602,11 @@ var Scroll = /*#__PURE__*/function (_Base) {
       _get(_getPrototypeOf(Scroll.prototype), "destroy", this).call(this);
 
       this.observer = null;
+      this.root.removeEventListener('scroll', this._handlers.expanded);
+
+      if (this._tickingTimer) {
+        clearTimeout(this._tickingTimer);
+      }
     }
   }, {
     key: "_destroy_page",

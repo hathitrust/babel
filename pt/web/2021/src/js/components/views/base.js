@@ -490,6 +490,7 @@ export var Base = class {
   
     if ( this.format == 'plaintext' ) {
       datum.page.dataset.loaded = true;
+      this._reframePageText(page);
     } else {
       if ( datum.redraw ) {
         page.querySelectorAll('.highlight').forEach((span) => {
@@ -511,6 +512,10 @@ export var Base = class {
       this._reframePage(image, page);
       img.src = image.src;
     }
+  }
+
+  _reframePageText(page) {
+
   }
 
   _reframePage(image, page) {
