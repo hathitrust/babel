@@ -29186,19 +29186,56 @@ var Scroll = /*#__PURE__*/function (_Base) {
         var frameHeight = parseFloat(frame.style.height);
         var newFrameHeight = frameWidth * r;
         var check = frameHeight > newFrameHeight ? newFrameHeight / frameHeight : frameHeight / newFrameHeight;
+        var isAdjusting = true;
+        var message;
 
-        if (check <= 0.90 && seq < this.currentSeq) {
-          page.dataset.expandableHeight = newFrameHeight;
-          this.sets.expandable.set(seq, page);
+        if (check <= 0.90) {
+          if (seq < this.currentSeq) {
+            // delay this resize
+            page.dataset.expandableHeight = newFrameHeight;
+            this.sets.expandable.set(seq, page);
+            message = 'QUEUED';
+          } else {
+            frame.style.height = "".concat(newFrameHeight, "px");
+            page.dataset.unaltered = false;
+            message = 'ALTERED';
+          }
         } else {
-          frame.style.height = "".concat(frameWidth * r, "px");
+          // ignore this
+          page.dataset.unaltered = 'true';
+          isAdjusting = false;
+          message = 'UNALTERED';
         }
 
-        img.dataset.width = frameWidth;
-        img.dataset.height = frameWidth * r;
-        img.style.height = "".concat(img.dataset.width, "px");
-        img.style.height = "".concat(img.dataset.height, "px");
-        page.dataset.height = page.offsetHeight;
+        console.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check); // if ( check <= 0.90 && seq < this.currentSeq ) {
+        //   page.dataset.expandableHeight = newFrameHeight;
+        //   this.sets.expandable.set(seq, page);
+        // } else {
+        //   frame.style.height = `${frameWidth * r}px`;
+        // }
+
+        if (isAdjusting) {
+          img.dataset.width = frameWidth;
+          img.dataset.height = newFrameHeight; // frameWidth * r;
+
+          img.style.height = "".concat(img.dataset.width, "px");
+          img.style.height = "".concat(img.dataset.height, "px");
+          page.dataset.height = page.offsetHeight;
+        } else {
+          // we're not adjusting the height, which means we should 
+          // change the _width_
+          // image.height * r = image.width
+          // r = image.width / image.height
+          // frameWidth = frameHeight * r
+          img.dataset.naturalWidth = image.width;
+          img.dataset.naturalHeight = image.height;
+          img.dataset.naturalRatio = r;
+          img.dataset.width = frameHeight / r;
+          img.dataset.height = frameHeight;
+          img.dataset.check = check;
+          img.style.width = "".concat(img.dataset.width, "px");
+          frame.style.width = "".concat(img.dataset.width, "px");
+        }
 
         if (this._checkForFoldouts(image, page)) {
           var altText = img.getAttribute('alt');
@@ -29335,14 +29372,16 @@ var Scroll = /*#__PURE__*/function (_Base) {
       this._lastKnownScrollPosition = this.root.scrollTop;
       this._ticking = false;
       this._handlers.scrolled = this.on('scrolled', lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this.scrollHandler.bind(this), 50));
-      this._handlers.expanded = lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this._expandableScrollHandler.bind(this), 50);
-      this.root.addEventListener('scroll', this._handlers.expanded); // this._handlers.click = this.clickHandler.bind(this);
+      this._handlers.expanded = lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this._expandableScrollHandler.bind(this), 50); // this.root.addEventListener('scroll', this._handlers.expanded);
+      // this._handlers.click = this.clickHandler.bind(this);
       // this.container.addEventListener('click', this._handlers.click);
     }
   }, {
     key: "scrollHandler",
     value: function scrollHandler() {
       // this._lastKnownScrollPosition = this.container.parentElement.scrollTop;
+      console.log("-> scolling", new Date().getTime());
+
       if (this._scrollPause) {
         return;
       }
@@ -29371,7 +29410,9 @@ var Scroll = /*#__PURE__*/function (_Base) {
         }
 
         this._currentPage = page;
-      } // if ( ! this._ticking ) {
+      }
+
+      this._expandableScrollHandler(); // if ( ! this._ticking ) {
       //   window.requestAnimationFrame(() => {
       //     this._resizeOffscreen();
       //     this._ticking = false;
@@ -29409,7 +29450,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
         _this3._resizeOffscreen();
 
         _this3._tickingTimer = null;
-      }, 250);
+      }, 100);
     }
   }, {
     key: "_resizeOffscreen",

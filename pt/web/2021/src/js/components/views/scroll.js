@@ -35,7 +35,6 @@ export var Scroll = class extends Base {
       parentEl.scrollTop = target.offsetTop;
     }
     
-
     this.emitter.emit('scrolled');
   }
 
@@ -71,21 +70,59 @@ export var Scroll = class extends Base {
       var newFrameHeight = frameWidth * r;
 
       var check = frameHeight > newFrameHeight ? newFrameHeight / frameHeight : frameHeight / newFrameHeight;
-      if ( check <= 0.90 && seq < this.currentSeq ) {
-        page.dataset.expandableHeight = newFrameHeight;
-        this.sets.expandable.set(seq, page);
+      var isAdjusting = true;
+      var message;
+      if ( check <= 0.90 ) {
+        if ( seq < this.currentSeq ) {
+          // delay this resize
+          page.dataset.expandableHeight = newFrameHeight;
+          this.sets.expandable.set(seq, page);
+          message = 'QUEUED';
+        } else {
+          frame.style.height = `${newFrameHeight}px`;
+          page.dataset.unaltered = false;
+          message = 'ALTERED';
+        }
       } else {
-        frame.style.height = `${frameWidth * r}px`;
+        // ignore this
+        page.dataset.unaltered = 'true';
+        isAdjusting = false;
+        message = 'UNALTERED';
       }
 
+      console.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check);
 
-      img.dataset.width = frameWidth;
-      img.dataset.height = frameWidth * r;
+      // if ( check <= 0.90 && seq < this.currentSeq ) {
+      //   page.dataset.expandableHeight = newFrameHeight;
+      //   this.sets.expandable.set(seq, page);
+      // } else {
+      //   frame.style.height = `${frameWidth * r}px`;
+      // }
 
-      img.style.height = `${img.dataset.width}px`;
-      img.style.height = `${img.dataset.height}px`;
 
-      page.dataset.height = page.offsetHeight;
+      if ( isAdjusting ) {
+        img.dataset.width = frameWidth;
+        img.dataset.height = newFrameHeight; // frameWidth * r;
+
+        img.style.height = `${img.dataset.width}px`;
+        img.style.height = `${img.dataset.height}px`;
+
+        page.dataset.height = page.offsetHeight;
+      } else {
+        // we're not adjusting the height, which means we should 
+        // change the _width_
+        // image.height * r = image.width
+        // r = image.width / image.height
+        // frameWidth = frameHeight * r
+        img.dataset.naturalWidth = image.width;
+        img.dataset.naturalHeight = image.height;
+        img.dataset.naturalRatio = r;
+        img.dataset.width = frameHeight / r;
+        img.dataset.height = frameHeight;
+        img.dataset.check = check;
+        img.style.width = `${img.dataset.width}px`;
+        frame.style.width = `${img.dataset.width}px`;
+      }
 
       if (this._checkForFoldouts(image, page)) {
         var altText = img.getAttribute('alt');
@@ -209,7 +246,7 @@ export var Scroll = class extends Base {
     this._handlers.scrolled = this.on('scrolled', debounce(this.scrollHandler.bind(this), 50));
 
     this._handlers.expanded = debounce(this._expandableScrollHandler.bind(this), 50);
-    this.root.addEventListener('scroll', this._handlers.expanded);
+    // this.root.addEventListener('scroll', this._handlers.expanded);
 
     // this._handlers.click = this.clickHandler.bind(this);
     // this.container.addEventListener('click', this._handlers.click);
@@ -218,6 +255,7 @@ export var Scroll = class extends Base {
 
   scrollHandler() {
     // this._lastKnownScrollPosition = this.container.parentElement.scrollTop;
+    console.log("-> scolling", (new Date).getTime());
     if ( this._scrollPause ) { return ; }
     this.updateViewport();
     this.loadPages();
@@ -238,6 +276,8 @@ export var Scroll = class extends Base {
       }
       this._currentPage = page;
     }
+
+    this._expandableScrollHandler();
 
     // if ( ! this._ticking ) {
     //   window.requestAnimationFrame(() => {
@@ -264,7 +304,7 @@ export var Scroll = class extends Base {
     this._tickingTimer = setTimeout(() => {
       this._resizeOffscreen();
       this._tickingTimer = null;
-    }, 250);
+    }, 100);
   }
 
   _resizeOffscreen() {
