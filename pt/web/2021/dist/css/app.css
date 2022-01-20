@@ -1535,41 +1535,6 @@ body.hide-highlights .page-text .highlight--plaintext {
   }
 }
 
-.d--reader[data-view="1up"] .page[data-expandable-height] .image {
-  overflow: hidden;
-  border: 4px solid orange;
-}
-
-.d--reader[data-view="1up"] .page[data-expandable-height="resolved"] .image {
-  filter: invert(1);
-}
-
-.d--reader[data-view="1up"] .page[data-unaltered="false"] .image::after {
-  content: '';
-  display: block;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  position: absolute;
-  pointer-events: none;
-  opacity: 0.125;
-  background: orange;
-}
-
-.d--reader[data-view="1up"] .page[data-unaltered="true"] .image::after {
-  content: '';
-  display: block;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  position: absolute;
-  pointer-events: none;
-  opacity: 0.125;
-  background: greenyellow;
-}
-
 .d--reader[data-view="thumb"] .d--reader--viewer {
   flex-direction: row;
   flex-wrap: wrap;
@@ -2436,6 +2401,41 @@ body.hide-highlights .page-text .highlight--plaintext {
 .page[tabindex="0"]:focus .page-text[data-placeholder] {
   outline: 4px solid #333;
   outline-offset: 4px;
+}
+
+html[data-is-dev="true"] .d--reader[data-view="1up"] .page[data-expandable-height] .image {
+  overflow: hidden;
+  border: 4px solid orange;
+}
+
+html[data-is-dev="true"] .d--reader[data-view="1up"] .page[data-expandable-height="resolved"] .image {
+  filter: invert(1);
+}
+
+html[data-is-dev="true"] .d--reader[data-view="1up"] .page[data-unaltered="false"] .image::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.125;
+  background: orange;
+}
+
+html[data-is-dev="true"] .d--reader[data-view="1up"] .page[data-unaltered="true"] .image::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.125;
+  background: greenyellow;
 }
 
 @-webkit-keyframes pulsate-chasing-border {

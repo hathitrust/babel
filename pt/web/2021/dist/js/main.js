@@ -29149,6 +29149,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
         parentEl.scrollTop = target.offsetTop;
       }
 
+      this._lastKnownScrollPosition = this.root.scrollTop;
       this.emitter.emit('scrolled');
     }
   }, {
@@ -29160,7 +29161,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
         var offsetHeight = frame.offsetHeight;
         var scrollHeight = frame.scrollHeight;
         var check = offsetHeight > scrollHeight ? scrollHeight / offsetHeight : offsetHeight / scrollHeight;
-        console.log("AHOY _reframePageText", seq, this.currentSeq, "/", offsetHeight, scrollHeight, check);
+        HT.log("AHOY _reframePageText", seq, this.currentSeq, "/", offsetHeight, scrollHeight, check);
 
         if (offsetHeight < scrollHeight) {
           if (check <= 0.90 && seq < this.currentSeq) {
@@ -29207,12 +29208,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
           message = 'UNALTERED';
         }
 
-        console.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check); // if ( check <= 0.90 && seq < this.currentSeq ) {
-        //   page.dataset.expandableHeight = newFrameHeight;
-        //   this.sets.expandable.set(seq, page);
-        // } else {
-        //   frame.style.height = `${frameWidth * r}px`;
-        // }
+        HT.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check);
 
         if (isAdjusting) {
           img.dataset.width = frameWidth;
@@ -29224,9 +29220,6 @@ var Scroll = /*#__PURE__*/function (_Base) {
         } else {
           // we're not adjusting the height, which means we should 
           // change the _width_
-          // image.height * r = image.width
-          // r = image.width / image.height
-          // frameWidth = frameHeight * r
           img.dataset.naturalWidth = image.width;
           img.dataset.naturalHeight = image.height;
           img.dataset.naturalRatio = r;
@@ -29366,22 +29359,15 @@ var Scroll = /*#__PURE__*/function (_Base) {
           page.style.setProperty('--margin-rotated', null);
         }
 
-        page.dataset.rotated = rotated; // self.service.manifest.rotateBy(seq, delta);
-        // self.redrawPage(self.getPage(seq));
+        page.dataset.rotated = rotated;
       });
       this._lastKnownScrollPosition = this.root.scrollTop;
       this._ticking = false;
       this._handlers.scrolled = this.on('scrolled', lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this.scrollHandler.bind(this), 50));
-      this._handlers.expanded = lodash_debounce__WEBPACK_IMPORTED_MODULE_1___default()(this._expandableScrollHandler.bind(this), 50); // this.root.addEventListener('scroll', this._handlers.expanded);
-      // this._handlers.click = this.clickHandler.bind(this);
-      // this.container.addEventListener('click', this._handlers.click);
     }
   }, {
     key: "scrollHandler",
     value: function scrollHandler() {
-      // this._lastKnownScrollPosition = this.container.parentElement.scrollTop;
-      console.log("-> scolling", new Date().getTime());
-
       if (this._scrollPause) {
         return;
       }
@@ -29412,30 +29398,22 @@ var Scroll = /*#__PURE__*/function (_Base) {
         this._currentPage = page;
       }
 
-      this._expandableScrollHandler(); // if ( ! this._ticking ) {
-      //   window.requestAnimationFrame(() => {
-      //     this._resizeOffscreen();
-      //     this._ticking = false;
-      //   })
-      // }
-
+      this._setupExpandableTimer();
     }
   }, {
-    key: "_expandableScrollHandler",
-    value: function _expandableScrollHandler() {
+    key: "_setupExpandableTimer",
+    value: function _setupExpandableTimer() {
       var _this3 = this;
 
-      this._lastKnownScrollPosition = this.root.scrollTop; // if (!this._ticking && this._expandable.size > 0) {
-      //   console.log("AHOY _expandableScrollHandler ::", this._lastKnownScrollPosition);
-      //   window.requestAnimationFrame(() => {
-      //     this._resizeOffscreen();
-      //     this._ticking = false;
-      //   })
-      //   this._ticking = true;
-      // }
+      this._lastKnownScrollPosition = this.root.scrollTop;
+
+      if (this._expanding) {
+        HT.log("AHOY _expandableScrollHandler IN PROGRESS");
+        return;
+      }
 
       if (this._tickingTimer) {
-        console.log("AHOY _expandableScrollHandler :: resetting timer", this._expandable.size);
+        HT.log("AHOY _expandableScrollHandler :: resetting timer", this._expandable.size);
       }
 
       if (this._tickingTimer) {
@@ -29447,14 +29425,14 @@ var Scroll = /*#__PURE__*/function (_Base) {
       }
 
       this._tickingTimer = setTimeout(function () {
-        _this3._resizeOffscreen();
+        _this3._resizeExpandablePages();
 
         _this3._tickingTimer = null;
-      }, 100);
+      }, 0);
     }
   }, {
-    key: "_resizeOffscreen",
-    value: function _resizeOffscreen() {
+    key: "_resizeExpandablePages",
+    value: function _resizeExpandablePages() {
       var _this4 = this;
 
       var root = this.root;
@@ -29462,9 +29440,9 @@ var Scroll = /*#__PURE__*/function (_Base) {
 
       if (this.sets.expandable.size == 0) {
         return;
-      } // let fragment = document.createDocumentFragment();
-      // fragment.appendChild(this.container);
+      }
 
+      this._expanding = true;
 
       var sequences = _toConsumableArray(this.sets.expandable.keys()).sort(function (a, b) {
         return a - b;
@@ -29481,7 +29459,7 @@ var Scroll = /*#__PURE__*/function (_Base) {
         var height1 = frame.offsetHeight; // arseFloat(frame.style.height, 10);
 
         var height2 = parseFloat(page.dataset.expandableHeight, 10);
-        console.log("AHOY _resizeOffScreen ->", seq, height1, height2);
+        HT.log("AHOY _resizeExpandablePages ->", seq, height1, height2);
 
         if (seq < _this4.currentSeq) {
           delta += height2 - height1;
@@ -29491,11 +29469,15 @@ var Scroll = /*#__PURE__*/function (_Base) {
         page.dataset.expandableHeight = 'resolved';
 
         _this4.sets.expandable.delete(seq);
-      }); // root.appendChild(this.container);
+      }); // in theory we'd use _lastKnownScrollPosition, but it 
+      // seems to drift further in Safari/WebKit
 
-      console.log("AHOY _resizeOffScreen", this._lastKnownScrollPosition, delta, this.currentSeq);
-      root.scrollTop = this._lastKnownScrollPosition + delta;
-      this._lastKnownScrollPosition = root.scrollTop;
+      window.requestAnimationFrame(function () {
+        HT.log("AHOY _resizeExpandablePages SCROLLING", root.scrollTop, _this4._lastKnownScrollPosition, delta, _this4.currentSeq);
+        root.scrollTop = root.scrollTop + delta;
+        _this4._lastKnownScrollPosition = root.scrollTop;
+      });
+      this._expanding = false;
     }
   }, {
     key: "bindPageEvents",
@@ -29643,7 +29625,6 @@ var Scroll = /*#__PURE__*/function (_Base) {
       _get(_getPrototypeOf(Scroll.prototype), "destroy", this).call(this);
 
       this.observer = null;
-      this.root.removeEventListener('scroll', this._handlers.expanded);
 
       if (this._tickingTimer) {
         clearTimeout(this._tickingTimer);
@@ -32486,6 +32467,7 @@ window.usesGrid = usesGrid;
 var isSafari12 = navigator.userAgent.indexOf('Safari/') > -1 && navigator.userAgent.indexOf('Version/12.1') > -1;
 window.isSafari12 = isSafari12;
 var isEtas = document.querySelector('#access-emergency-access') != null;
+document.documentElement.dataset.isDev = HT.is_dev;
 
 var Reader = /*#__PURE__*/function () {
   function Reader() {

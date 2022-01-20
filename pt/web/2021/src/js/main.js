@@ -37,6 +37,8 @@ window.isSafari12 = isSafari12;
 
 const isEtas = document.querySelector('#access-emergency-access') != null;
 
+document.documentElement.dataset.isDev = HT.is_dev;
+
 var Reader = class {
   constructor(options={}) {
     this.options = Object.assign({ scale: 1.0 }, options);

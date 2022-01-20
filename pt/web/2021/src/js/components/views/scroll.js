@@ -34,7 +34,7 @@ export var Scroll = class extends Base {
     } else {
       parentEl.scrollTop = target.offsetTop;
     }
-    
+    this._lastKnownScrollPosition = this.root.scrollTop;    
     this.emitter.emit('scrolled');
   }
 
@@ -45,7 +45,7 @@ export var Scroll = class extends Base {
       var offsetHeight = frame.offsetHeight;
       var scrollHeight = frame.scrollHeight;
       var check = offsetHeight > scrollHeight ? scrollHeight / offsetHeight : offsetHeight / scrollHeight;
-      console.log("AHOY _reframePageText", seq, this.currentSeq, "/", offsetHeight, scrollHeight, check);
+      HT.log("AHOY _reframePageText", seq, this.currentSeq, "/", offsetHeight, scrollHeight, check);
       if ( offsetHeight < scrollHeight ) {
         if ( check <= 0.90 && seq < this.currentSeq ) {
           page.dataset.expandableHeight = scrollHeight;
@@ -90,15 +90,7 @@ export var Scroll = class extends Base {
         message = 'UNALTERED';
       }
 
-      console.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check);
-
-      // if ( check <= 0.90 && seq < this.currentSeq ) {
-      //   page.dataset.expandableHeight = newFrameHeight;
-      //   this.sets.expandable.set(seq, page);
-      // } else {
-      //   frame.style.height = `${frameWidth * r}px`;
-      // }
-
+      HT.log("AHOY _reframePage", message, seq, this.currentSeq, "/", frameHeight, newFrameHeight, check);
 
       if ( isAdjusting ) {
         img.dataset.width = frameWidth;
@@ -111,9 +103,6 @@ export var Scroll = class extends Base {
       } else {
         // we're not adjusting the height, which means we should 
         // change the _width_
-        // image.height * r = image.width
-        // r = image.width / image.height
-        // frameWidth = frameHeight * r
         img.dataset.naturalWidth = image.width;
         img.dataset.naturalHeight = image.height;
         img.dataset.naturalRatio = r;
@@ -235,27 +224,15 @@ export var Scroll = class extends Base {
       }
 
       page.dataset.rotated = rotated;
-
-      // self.service.manifest.rotateBy(seq, delta);
-      // self.redrawPage(self.getPage(seq));
     });
 
     this._lastKnownScrollPosition = this.root.scrollTop;
     this._ticking = false;
 
     this._handlers.scrolled = this.on('scrolled', debounce(this.scrollHandler.bind(this), 50));
-
-    this._handlers.expanded = debounce(this._expandableScrollHandler.bind(this), 50);
-    // this.root.addEventListener('scroll', this._handlers.expanded);
-
-    // this._handlers.click = this.clickHandler.bind(this);
-    // this.container.addEventListener('click', this._handlers.click);
-
   }
 
   scrollHandler() {
-    // this._lastKnownScrollPosition = this.container.parentElement.scrollTop;
-    console.log("-> scolling", (new Date).getTime());
     if ( this._scrollPause ) { return ; }
     this.updateViewport();
     this.loadPages();
@@ -277,42 +254,28 @@ export var Scroll = class extends Base {
       this._currentPage = page;
     }
 
-    this._expandableScrollHandler();
-
-    // if ( ! this._ticking ) {
-    //   window.requestAnimationFrame(() => {
-    //     this._resizeOffscreen();
-    //     this._ticking = false;
-    //   })
-    // }
+    this._setupExpandableTimer();
   }
 
-  _expandableScrollHandler() {
+  _setupExpandableTimer() {
     this._lastKnownScrollPosition = this.root.scrollTop;
-    // if (!this._ticking && this._expandable.size > 0) {
-    //   console.log("AHOY _expandableScrollHandler ::", this._lastKnownScrollPosition);
-    //   window.requestAnimationFrame(() => {
-    //     this._resizeOffscreen();
-    //     this._ticking = false;
-    //   })
-    //   this._ticking = true;
-    // }
 
-    if ( this._tickingTimer ) { console.log("AHOY _expandableScrollHandler :: resetting timer", this._expandable.size); }
+    if ( this._expanding ) { HT.log("AHOY _expandableScrollHandler IN PROGRESS"); return; }
+    if ( this._tickingTimer ) { HT.log("AHOY _expandableScrollHandler :: resetting timer", this._expandable.size); }
     if ( this._tickingTimer ) { clearTimeout(this._tickingTimer); }
     if ( this.sets.expandable.size == 0 ) { return ; }
     this._tickingTimer = setTimeout(() => {
-      this._resizeOffscreen();
+      this._resizeExpandablePages();
       this._tickingTimer = null;
-    }, 100);
+    }, 0);
   }
 
-  _resizeOffscreen() {
+  _resizeExpandablePages() {
     let root = this.root;
     let delta = 0;
     if ( this.sets.expandable.size == 0 ) { return ; }
-    // let fragment = document.createDocumentFragment();
-    // fragment.appendChild(this.container);
+    this._expanding = true;
+
     let sequences = [...this.sets.expandable.keys()].sort((a, b) => { return a - b });
     sequences.forEach((seq) => {
       let page = this.sets.expandable.get(seq);
@@ -320,7 +283,7 @@ export var Scroll = class extends Base {
       let frame = this.format == 'plaintext' ? page.querySelector('.page-text') : page.querySelector('.image');
       let height1 = frame.offsetHeight; // arseFloat(frame.style.height, 10);
       let height2 = parseFloat(page.dataset.expandableHeight, 10);
-      console.log("AHOY _resizeOffScreen ->", seq, height1, height2);
+      HT.log("AHOY _resizeExpandablePages ->", seq, height1, height2);
       if ( seq < this.currentSeq ) {
         delta += ( height2 - height1 );
       }
@@ -328,10 +291,15 @@ export var Scroll = class extends Base {
       page.dataset.expandableHeight = 'resolved';
       this.sets.expandable.delete(seq);
     })
-    // root.appendChild(this.container);
-    console.log("AHOY _resizeOffScreen", this._lastKnownScrollPosition, delta, this.currentSeq);
-    root.scrollTop = this._lastKnownScrollPosition + delta;
-    this._lastKnownScrollPosition = root.scrollTop;
+
+    // in theory we'd use _lastKnownScrollPosition, but it 
+    // seems to drift further in Safari/WebKit
+    window.requestAnimationFrame(() => {
+      HT.log("AHOY _resizeExpandablePages SCROLLING", root.scrollTop, this._lastKnownScrollPosition, delta, this.currentSeq);
+      root.scrollTop = root.scrollTop + delta
+      this._lastKnownScrollPosition = root.scrollTop;
+    })
+    this._expanding = false;
   }
 
   bindPageEvents(page) {
@@ -457,7 +425,6 @@ export var Scroll = class extends Base {
     super.destroy();
     this.observer = null;
 
-    this.root.removeEventListener('scroll', this._handlers.expanded);
     if ( this._tickingTimer ) { clearTimeout(this._tickingTimer); }
   }
 

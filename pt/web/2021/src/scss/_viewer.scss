@@ -59,57 +59,6 @@ body.hide-highlights {
     }
   }
 
-  &[data-view="1up"] {
-    .page[data-expandable-height] {
-      .image {
-        overflow: hidden;
-        border: 4px solid orange;
-      }
-    }
-
-    .page[data-expandable-height="resolved"] {
-      .image {
-        filter: invert(1);
-      }
-    }
-
-    .page[data-unaltered="false"] {
-      .image {
-        &::after {
-          content: '';
-          display: block;
-          height: 100%;
-          width: 100%;
-          top: 0;
-          left: 0;
-          position: absolute;
-          pointer-events: none;
-          opacity: 0.125;
-          background: orange;
-        }
-      }
-    }
-
-    .page[data-unaltered="true"] {
-      .image {
-
-        &::after {
-          content: '';
-          display: block;
-          height: 100%;
-          width: 100%;
-          top: 0;
-          left: 0;
-          position: absolute;
-          pointer-events: none;
-          opacity: 0.125;
-          background: greenyellow;
-        }
-
-      }
-    }
-  }
-
   &[data-view="thumb"] {
     .d--reader--viewer {
       flex-direction: row;
@@ -1023,6 +972,62 @@ body.hide-highlights {
   .page-text[data-placeholder] {
     outline: 4px solid $outline-color;
     outline-offset: 4px;    
+  }
+}
+
+// DEBUGGING PAGE REFRAMING
+html[data-is-dev="true"] {
+  .d--reader {
+    &[data-view="1up"] {
+      .page[data-expandable-height] {
+        .image {
+          overflow: hidden;
+          border: 4px solid orange;
+        }
+      }
+
+      .page[data-expandable-height="resolved"] {
+        .image {
+          filter: invert(1);
+        }
+      }
+
+      .page[data-unaltered="false"] {
+        .image {
+          &::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.125;
+            background: orange;
+          }
+        }
+      }
+
+      .page[data-unaltered="true"] {
+        .image {
+
+          &::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.125;
+            background: greenyellow;
+          }
+
+        }
+      }
+    }
   }
 }
 
