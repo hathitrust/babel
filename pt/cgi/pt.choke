@@ -49,10 +49,16 @@ $app = builder {
     enable 'Choke::Cache::Filesystem';
 
     enable
+        match_if param('a'),
+            'Choke::Null'
+            ;
+
+    enable
         match_if any( param('view', 'plaintext'), param('view', 'text') ),
             'Choke::Requests',
                 %{ $$settings{choke}{plaintext} }
             ;
+
 
     # probably do some generous throttling
     enable
