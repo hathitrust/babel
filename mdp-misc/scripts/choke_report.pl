@@ -2,16 +2,25 @@
 
 use IO::File;
 use Date::Manip;
+use Data::Dumper;
 
-# my $LOGDIR = qq{$ENV{SDRROOT}/logs/choke/};
-my $LOGFILE = shift @ARGV;
+# aggregate and sort log data
+my @lines = ();
+while ( my $LOGFILE = shift @ARGV ) {
+    print STDERR "== $LOGFILE\n";
+    my $in = new IO::File $LOGFILE or die "Could not open $LOGFILE - $!";
+    while ( my $line = <$in> ) {
+        chomp $line;
+        next if ( $line =~ m,^\s*$, );
+        push @lines, [ split( /\|/, $line ) ];
+    }
+}
+
+@lines = sort { $$a[1] cmp $$b[1] } @lines;
 
 my %map = ();
-
-my $in = new IO::File $LOGFILE or die "Could not open $LOGFILE - $!";
 my $last;
-while ( my $line = <$in> ) {
-    chomp $line;
+while ( my $row = shift @lines ) {
     my ( 
         $remote_addr,
         $ts,
@@ -22,18 +31,19 @@ while ( my $line = <$in> ) {
         $choke_debt,
         $choke_max,
         $choke_until
-    ) = split(/\|/, $line);
-    
+    ) = @$row;
+
+    if ( qq{$remote_addr,$choke_until} eq $last ) {
+        next;
+    }
+
     unless ( ref($map{$remote_addr,$cache_key}) ) {
         $map{$remote_addr,$cache_key} = [];
     }
     
-    if ( qq{$remote_addr,$choke_until} eq $last ) {
-        next;
-    }
     $last = qq{$remote_addr,$choke_until};
     
-    push @{ $map{$remote_addr,$cache_key} }, [ $remote_addr, $ts, $previous_ts, $client_idtype, $cache_key, $choke, $choke_debt, $choke_max, $choke_until ];
+    push @{ $map{$remote_addr,$cache_key} }, $row;
     
 }
 
@@ -77,10 +87,7 @@ foreach my $key ( sort keys %map ) {
             $max_dims[1] = 20;
         }
 
-        $events{$cache_key} += 1;
-        
-        # print "\t$ts\t$delta\t$choke_debt\t$choke_max\t$choke_until\n";
-        
+        $events{$cache_key} += 1;        
     }
     
     my $row = shift @table;
