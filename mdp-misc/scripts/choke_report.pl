@@ -7,7 +7,6 @@ use Data::Dumper;
 # aggregate and sort log data
 my @lines = ();
 while ( my $LOGFILE = shift @ARGV ) {
-    print STDERR "== $LOGFILE\n";
     my $in = new IO::File $LOGFILE or die "Could not open $LOGFILE - $!";
     while ( my $line = <$in> ) {
         chomp $line;
