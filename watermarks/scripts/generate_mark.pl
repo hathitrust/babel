@@ -10,6 +10,10 @@ use FindBin qw($Bin);
 
 my %gSizes =
     (
+        '1000'  => 10.00,
+        '800'  => 8.00,
+        '600'  => 6.00,
+        '500'  => 5.00,
         '400'  => 4.00,
         '300'  => 3.00,
         '200'  => 2.00,
@@ -32,11 +36,12 @@ my %PARTS = (
     Dig  => "digitization",
 );
 
-my ( $op_original, $op_digitize, $code, $organization );
+my ( $op_original, $op_digitize, $code, $organization, $do_skip );
 GetOptions(
     "original" => \$op_original,
     "digitized" => \$op_digitize,
     "code=s" => \$code,
+    "skip" => \$do_skip,
     "organization=s" => \$organization,
     "digitized_label=s" => \$LABELS{Dig},
     "original_label=s" => \$LABELS{Orig},
@@ -77,6 +82,9 @@ foreach my $prefix ( @parts ) {
         my $label_pointsize = int($target_pointsize * 0.85);
         $target_pointsize = 10 if ( $target_pointsize < 10 );
         $label_pointsize = 9 if ( $label_pointsize < 9 );
+
+        next if ( $do_skip && -f "$Bin/../$code/$part/$size.png" );
+
         run [ "convert",
             "-fill", "#979797",
             "-background", "None",
