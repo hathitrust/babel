@@ -24,8 +24,19 @@ sub new {
 sub open {
   my $self = shift;
   my ($suffix) = @_;
-  $$self{fh} = File::Temp->new( DIR => '/ram', SUFFIX => $suffix );
-  $$self{fh}->unlink_on_destroy(1);
+  # $$self{fh} = File::Temp->new( DIR => '/ram', SUFFIX => $suffix );
+  # $$self{fh}->unlink_on_destroy(1);
+}
+
+sub writer {
+  my $self = shift;
+  my ( $writer ) = @_;
+  $$self{fh} = $writer;
+}
+
+sub write {
+  my $self = shift;
+  $$self{fh}->write(@_);
 }
 
 sub run {
@@ -39,20 +50,14 @@ sub run {
   my $extern_item_id = '';
   my $total = 0;
 
-  print STDERR "AHOY MB HF run $total :: $$self{num_items}\n";
-  open(my $out, ">", "/ram/query.sql");
-  print $out $sql;
-
   while ( $total < $$self{num_items} ) {
     $sth->execute($$self{coll_id}, $extern_item_id, @{ $$self{params} });
     my $rows = $sth->fetchall_arrayref($$self{slice});
-    print STDERR "AHOY MB HF run " . scalar @$rows . "\n";
-    print $out Data::Dumper::Dumper($$rows[0]);
     last unless ( scalar @$rows );
     $self->_fill_contents($rows);
     $total += scalar @$rows;
     $extern_item_id = $self->_get_extern_item_id($$rows[-1]);
-    print STDERR "AHOY $extern_item_id\n";
+    # print STDERR "AHOY $extern_item_id\n";
   }
 
   $self->finish();
@@ -197,9 +202,9 @@ sub new {
 
 sub init {
   my $self = shift;
-  print { $$self{fh} } join( "\t",
+  $self->write(join( "\t",
     $self->_get_columns
-  ) . "\n";
+  ) . "\n");
 
 }
 
@@ -217,14 +222,14 @@ sub _fill_contents {
     my $line = join("\t", @$row);
     utf8::encode($line);
 
-    print { $$self{fh} } $line, "\n";
+    $self->write($line . "\n");
   }
 }
 
 sub finish {
   my $self = shift;
-  $$self{fh}->seek( 0, 0 );
-  return $$self{fh};
+  # $$self{fh}->seek( 0, 0 );
+  # return $$self{fh};
 }
 
 package Download::Builder::HathiFiles::JSON;
@@ -255,30 +260,30 @@ sub init {
   my $coll_record = $$self{coll_record};
   my $coll_id     = $$coll_record{coll_id};
 
-  print { $$self{fh} } '{' . "\n";
-  print { $$self{fh} } "  "
+  $self->write('{' . "\n");
+  $self->write("  "
     . $self->emit( "id",
     "https://babel.hathitrust.org/cgi/mb?a=listis;c=$coll_id" )
-    . "\n";
-  print { $$self{fh} } "  "
-    . $self->emit( "type", "http://purl.org/dc/dcmitype/Collection" ) . "\n";
-  print { $$self{fh} } "  "
-    . $self->emit( "description", $$coll_record{description} ) . "\n";
-  print { $$self{fh} } "  "
-    . $self->emit( "created", $$coll_record{owner_name} ) . "\n";
-  print { $$self{fh} } "  "
-    . $self->emit( "extent", $$coll_record{num_items} ) . "\n";
-  print { $$self{fh} } "  " . $self->emit( "formats", "text/txt" ) . "\n";
-  print { $$self{fh} } "  "
+    . "\n");
+  $self->write("  "
+    . $self->emit( "type", "http://purl.org/dc/dcmitype/Collection" ) . "\n");
+  $self->write("  "
+    . $self->emit( "description", $$coll_record{description} ) . "\n");
+  $self->write("  "
+    . $self->emit( "created", $$coll_record{owner_name} ) . "\n");
+  $self->write("  "
+    . $self->emit( "extent", $$coll_record{num_items} ) . "\n");
+  $self->write("  " . $self->emit( "formats", "text/txt" ) . "\n");
+  $self->write("  "
     . $self->emit( "publisher", { "id" => "https://www.hathitrust.org" } )
-    . "\n";
-  print { $$self{fh} } "  "
-    . $self->emit( "title", $$coll_record{collname} ) . "\n";
-  print { $$self{fh} } "  "
+    . "\n");
+  $self->write("  "
+    . $self->emit( "title", $$coll_record{collname} ) . "\n");
+  $self->write("  "
     . $self->emit( "visibility", $$coll_record{shared} ? 'publish' : 'private' )
-    . "\n";
+    . "\n");
 
-  print { $$self{fh} } "  " . $$self{json}->encode("gathers") . ": [" . "\n";
+  $self->write("  " . $$self{json}->encode("gathers") . ": [" . "\n");
 
   $$self{num_contents} = 0;
 }
@@ -298,26 +303,24 @@ sub _fill_contents {
     next unless ( $self->_include($row) );
     $self->_process_row($row);
     if ( $$self{num_contents} ) {
-      print { $$self{fh} } ",\n";
+      $self->write(",\n");
     }
     $$self{num_contents} += 1;
 
-    print { $$self{fh} } "    {\n";
+    $self->write("    {\n");
     foreach my $key (@columns) {
       my $value = $$row{$key};
       my $last  = $key eq $$keys[-1];
-      print { $$self{fh} } "      " . $self->emit( $key, $value, $last ) . "\n";
+      $self->write("      " . $self->emit( $key, $value, $last ) . "\n");
     }
-    print { $$self{fh} } "    }";
+    $self->write("    }");
   }
 }
 
 sub finish {
   my $self = shift;
-  print { $$self{fh} } "\n  ]" . "\n";
-  print { $$self{fh} } "}";
-
-  $$self{fh}->seek( 0, 0 );
+  $self->write("\n  ]" . "\n");
+  $self->write("}");
   return $$self{fh};
 }
 
