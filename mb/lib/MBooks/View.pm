@@ -408,7 +408,7 @@ sub output_HTTP {
     my ($C, $data_ref, $content_type) = @_ ;
     my $status = get_response_status($C);
 
-    if ( ref($data_ref) eq 'File::Temp' ) {
+    if ( ref($data_ref) eq 'File::Temp' || ref($data_ref) eq 'CODE' ) {
         P_output_glob_data_HTTP($C, $data_ref, $content_type, $status);
     } else {
         View::P_output_data_HTTP($C, $data_ref, $content_type, $status);
@@ -433,6 +433,12 @@ sub P_output_glob_data_HTTP {
     print STDOUT "Status: $status" . $CGI::CRLF;
     print STDOUT $headers_ref->as_string($CGI::CRLF);
     print STDOUT $CGI::CRLF;
+
+    if ( ref($data_ref) eq 'CODE' ) {
+        $data_ref->();
+        return;
+    }
+
     while ( my $line = <$data_ref> ) {
         print STDOUT $line;
     }

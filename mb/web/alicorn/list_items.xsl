@@ -370,6 +370,17 @@
               <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
             </xsl:if>
 
+            <fieldset style="margin-bottom: 0.5rem; font-size: 0.875rem">
+              <legend>Metadata Source</legend>
+              <div class="control">
+                <label for="source-select" class="offscreen">Select metadata source</label>
+                <select name="source" id="source-select" style="padding: 0.5em; font-size: 0.875rem">
+                  <option selected="selected" value="mb">Collection Metadata</option>
+                  <option value="hathifiles">HathiFiles</option>
+                </select>
+              </div>
+            </fieldset>
+
             <fieldset>
               <legend class="offscreen">Format</legend>
               <div class="control">
