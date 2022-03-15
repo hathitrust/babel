@@ -182,7 +182,7 @@ sub execute_operation
     $dbh->do(qq{SET NAMES utf8});
 
     my $format = $cgi->param('format') || 'text';
-    my $source = $cgi->param('source') || 'hathifiles';
+    my $source = $cgi->param('source') || 'mb';
 
     my $idx = 0;
     
