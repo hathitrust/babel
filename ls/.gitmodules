@@ -1,6 +1,3 @@
-[submodule "web/yui2-lib"]
-	path = web/yui2-lib
-	url = git://github.com/yui/yui2.git
 [submodule "web/common-web"]
 	path = web/common-web
     url = git@github.com:hathitrust/mdp-web.git
