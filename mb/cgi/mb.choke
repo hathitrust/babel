@@ -33,9 +33,21 @@ use CGI::Compile;
 my $script_filename = __FILE__;
 $script_filename =~ s,\.choke,,;
 my $sub = CGI::Compile->compile($script_filename);
-my $app = CGI::Emulate::PSGI->handler($sub);
+my $mb_app = CGI::Emulate::PSGI->handler($sub);
 
-$app = builder {
+use Download::Builder;
+
+my $router_app = sub {
+    my ( $env ) = @_;
+    my $request = Plack::Request->new($env);
+    if ( $request->param('a') && $request->param('a') =~ m,download, ) {
+        my $download_app = Download::Builder->new->to_app;
+        return $download_app->($env);
+    }
+    return $mb_app->($env);
+};
+
+my $app = builder {
 
     enable "PopulateENV", app_name => 'mb';
 
@@ -56,7 +68,8 @@ $app = builder {
             %{ $$settings{choke}{'default'} }
         ;
 
-    $app;
+
+    $router_app;
 };
 
 Plack::Handler::CGI->new->run($app);

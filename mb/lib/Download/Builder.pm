@@ -134,8 +134,11 @@ sub call {
         return $response->finalize;
     }
 
+    ## check $request->method eq 'POST' if we decide
+    ## to reject GET requests
+
     my $download_key = join('.', 'mb', 'download', $coll_id);
-    if ( $request->param('a') && $request->param('a') eq 'status' ) {
+    if ( $request->param('a') && $request->param('a') eq 'download-status' ) {
         $response = Plack::Response->new(200);
         $response->content_type('application/javascript');
         $response->body(JSON::XS::encode_json({ status => $ses->get_persistent($download_key) }));

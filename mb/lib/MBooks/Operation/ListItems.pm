@@ -36,6 +36,7 @@ use Debug::DUtils;
 use MBooks::Operation::Status;
 use MBooks::Utils::Sort;
 
+delete $INC{"MBooks/Operation/OpListUtils.pl"};
 require "MBooks/Operation/OpListUtils.pl";
 
 sub new
