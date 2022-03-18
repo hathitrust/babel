@@ -711,6 +711,9 @@
         <xsl:if test="$access-type/Name = 'enhanced_text_user'">
           <xsl:call-template name="build-ssd-session-header" />
         </xsl:if>
+        <xsl:if test="$access-type/Name = 'total_access'">
+          <xsl:call-template name="build-total-access-header" />
+        </xsl:if>
       </xsl:variable>
       <xsl:variable name="alert" select="exsl:node-set($alert-tmp)/node()" />
       <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name=$alert/@id]/Value" />
@@ -746,6 +749,23 @@
               </xsl:if>
               <xsl:if test="$access-type/Name = 'enhanced_text_user'">
                 <xsl:text>In-Copyright Access</xsl:text>
+              </xsl:if>
+              <xsl:if test="$access-type/Name = 'total_access'">
+                <xsl:choose>
+                  <xsl:when test="$access-type/Role = 'ht_staff_user'">
+                    <xsl:text>Staff</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$access-type/Role = 'ht_total_user'">
+                    <xsl:text>Admin</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="$access-type/Role = 'ssdproxy'">
+                    <xsl:text>ATRS</xsl:text>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:value-of select="$access-type/Role" />
+                  </xsl:otherwise>
+                </xsl:choose>
+                <xsl:text> In-Copyright Access</xsl:text>
               </xsl:if>
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">

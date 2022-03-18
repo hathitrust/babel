@@ -1022,7 +1022,9 @@ sub handle_ACCESS_TYPE_PI
     my ($C, $act, $piParamHashRef) = @_;
     my $rights = $C->get_object('Access::Rights');
     my $mdpItem = $C->get_object('MdpItem');
+    my $auth = $C->get_object('Auth');
     my $id = $mdpItem->GetId();
+
     my $xml = '';
     my $access_type = $rights->get_access_type($C, 1);
     my $rights_attribute = $rights->get_rights_attribute($C, $id);
@@ -1037,6 +1039,8 @@ sub handle_ACCESS_TYPE_PI
         ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,emergency_access, ) 
         ||
         ( $access_type eq 'in_library_user' && $initial_access_type =~ m,allow_by_held, ) 
+        # ||
+        # ( $access_type eq '')
     )
         {
 
@@ -1068,6 +1072,10 @@ sub handle_ACCESS_TYPE_PI
             $action_url = Utils::url_to($tempCgi, "/cgi/pt");
             $xml .= qq{<Action>$action_url</Action>};
         }
+    } elsif ( $rights->in_copyright($C, $id) && ( $auth->user_has_total_access($C) || $auth->user_is_print_disabled_proxy($C) ) ) {
+        $xml .= qq{<Name>total_access</Name>};
+        $xml .= qq{<Role>$access_type</Role>};
+        $xml .= qq{<Granted>TRUE</Granted>};
     }
 
     return $xml;

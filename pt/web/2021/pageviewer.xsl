@@ -258,6 +258,22 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="build-total-access-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <div class="alert alert--emergency-access">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
+
+      <p>
+        <xsl:text>This work may be in copyright. You have full view access to this item based on your elevated access.</xsl:text>
+        <br />
+        <xsl:text>Information about use can be found in the </xsl:text>
+        <a href="https://www.hathitrust.org/access_use#ic">HathiTrust Access and Use Policy</a>
+        <xsl:text>.</xsl:text>
+      </p>
+    </div>
+  </xsl:template>
+
   <xsl:template name="build-emergency-access-affiliate-header">
     <xsl:variable name="access-type" select="//AccessType" />
     <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
@@ -544,4 +560,3 @@
   <xsl:template name="build-hotjar-script-extra"></xsl:template>
 
 </xsl:stylesheet>
-
