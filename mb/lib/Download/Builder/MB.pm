@@ -176,7 +176,7 @@ sub emit {
 sub init {
   my $self        = shift;
   my $coll_record = $$self{coll_record};
-  my $coll_id     = $$coll_record{coll_id};
+  my $coll_id     = $$self{coll_id};
 
   $$self{fh}->write( '{' . "\n");
   $$self{fh}->write( "  "
@@ -187,8 +187,8 @@ sub init {
     . $self->emit( "type", "http://purl.org/dc/dcmitype/Collection" ) . "\n");
   $$self{fh}->write( "  "
     . $self->emit( "description", $$coll_record{description} ) . "\n");
-  $$self{fh}->write( "  "
-    . $self->emit( "created", $$coll_record{owner_name} ) . "\n");
+  # $$self{fh}->write( "  "
+  #   . $self->emit( "created", $$coll_record{owner_name} ) . "\n");
   $$self{fh}->write( "  "
     . $self->emit( "extent", $$coll_record{num_items} ) . "\n");
   $$self{fh}->write( "  " . $self->emit( "formats", "text/txt" ) . "\n");

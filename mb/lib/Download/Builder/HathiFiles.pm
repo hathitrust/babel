@@ -24,8 +24,6 @@ sub new {
 sub open {
   my $self = shift;
   my ($suffix) = @_;
-  # $$self{fh} = File::Temp->new( DIR => '/ram', SUFFIX => $suffix );
-  # $$self{fh}->unlink_on_destroy(1);
 }
 
 sub writer {
@@ -57,7 +55,6 @@ sub run {
     $self->_fill_contents($rows);
     $total += scalar @$rows;
     $extern_item_id = $self->_get_extern_item_id($$rows[-1]);
-    # print STDERR "AHOY $extern_item_id\n";
   }
 
   $self->finish();
@@ -97,12 +94,6 @@ SELECT mx.extern_item_id
 FROM mb_coll_item mx 
 WHERE mx.MColl_ID = ? AND mx.extern_item_id > ?
 SQL
-
-  # if ( $$self{is_ft} ) {
-  #     my $rights_sql = join( ' OR ', map { 'rights = ?' } @{ $$self{rights_ref} } );
-  #     push @{ $$self{params} }, @{ $$self{rights_ref} };
-  #     $inner_loop_sql .= " AND ( $rights_sql ) ";
-  # }
 
   $inner_loop_sql .= q{ORDER BY mx.extern_item_id};
 
@@ -158,7 +149,7 @@ sub _get_columns {
     'description',
     'source',
     'source_bib_num',
-    'oclc_num ',
+    'oclc_num',
     'isbn',
     'issn',
     'lccn',
@@ -177,6 +168,8 @@ sub _get_columns {
     'digitization_agent_code',
     'access_profile_code',
     'author',
+    'catalog_url',
+    'handle_url',
   );
 }
 
@@ -189,6 +182,9 @@ package Download::Builder::HathiFiles::Text;
 
 use base qw/Download::Builder::HathiFiles/;
 use utf8;
+
+our $IDX_HTID = 0;
+our $IDX_HT_BIB_KEY = 3;
 
 sub new {
   my $class = shift;
@@ -215,9 +211,9 @@ sub _fill_contents {
   foreach my $row (@$rows) {
     next unless ( $self->_include($row) );
     $self->_process_row($row);
-    # $$row{catalog_url} =
-    #   qq{https://catalog.hathitrust.org/Record/$$row{bib_id}};
-    # $$row{handle_url} = qq{https://hdl.handle.net/2027/$$row{htitem_id}};
+
+    push @$row, qq{https://catalog.hathitrust.org/Record/$$row[$IDX_HT_BIB_KEY]};
+    push @$row, qq{https://hdl.handle.net/2027/$$row[$IDX_HTID]};
 
     my $line = join("\t", @$row);
     utf8::encode($line);
@@ -228,8 +224,6 @@ sub _fill_contents {
 
 sub finish {
   my $self = shift;
-  # $$self{fh}->seek( 0, 0 );
-  # return $$self{fh};
 }
 
 package Download::Builder::HathiFiles::JSON;
@@ -258,7 +252,7 @@ sub emit {
 sub init {
   my $self        = shift;
   my $coll_record = $$self{coll_record};
-  my $coll_id     = $$coll_record{coll_id};
+  my $coll_id     = $$self{coll_id};
 
   $self->write('{' . "\n");
   $self->write("  "
@@ -269,8 +263,8 @@ sub init {
     . $self->emit( "type", "http://purl.org/dc/dcmitype/Collection" ) . "\n");
   $self->write("  "
     . $self->emit( "description", $$coll_record{description} ) . "\n");
-  $self->write("  "
-    . $self->emit( "created", $$coll_record{owner_name} ) . "\n");
+  # $self->write("  "
+  #   . $self->emit( "created", $$coll_record{owner_name} ) . "\n");
   $self->write("  "
     . $self->emit( "extent", $$coll_record{num_items} ) . "\n");
   $self->write("  " . $self->emit( "formats", "text/txt" ) . "\n");
@@ -294,14 +288,14 @@ sub _fill_contents {
 
   my @columns = $self->_get_columns();
 
-  # $$row{catalog_url} =
-  #   qq{https://catalog.hathitrust.org/Record/$$row{bib_id}};
-  # $$row{handle_url} = qq{https://hdl.handle.net/2027/$$row{htitem_id}};
-  # $$row{rights}     = $RightsGlobals::g_attribute_keys{ $$row{rights} };
-
   foreach my $row ( @$rows ) {
     next unless ( $self->_include($row) );
     $self->_process_row($row);
+
+    $$row{catalog_url} =
+      qq{https://catalog.hathitrust.org/Record/$$row{ht_bib_key}};
+    $$row{handle_url} = qq{https://hdl.handle.net/2027/$$row{htid}};
+
     if ( $$self{num_contents} ) {
       $self->write(",\n");
     }
