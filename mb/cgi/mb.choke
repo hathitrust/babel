@@ -62,11 +62,18 @@ my $app = builder {
 
     enable 'Choke::Cache::Filesystem';
 
+    enable
+        match_if param('a', 'download-status'),
+            'Choke::Requests',
+                %{ $$settings{choke}{'status'} }
+            ;
+
     # probably do some generous throttling
     enable
-        'Choke::Requests',
-            %{ $$settings{choke}{'default'} }
-        ;
+        match_if unchoked(),
+            'Choke::Requests',
+                %{ $$settings{choke}{'default'} }
+            ;
 
 
     $router_app;
