@@ -36,6 +36,7 @@ use MBooks::View;
 use MBooks::Relevance;
 use MBooks::Result::FullText;
 use MBooks::Operation::Status;
+delete $INC{"MBooks/Operation/OpListUtils.pl"};
 require "MBooks/Operation/OpListUtils.pl";
 
 use MBooks::Utils::ResultsCache;
