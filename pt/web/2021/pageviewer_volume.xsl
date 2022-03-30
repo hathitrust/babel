@@ -758,7 +758,7 @@
                   <xsl:when test="$access-type/Role = 'ht_total_user'">
                     <xsl:text>Collection Administration Access</xsl:text>
                   </xsl:when>
-                  <xsl:when test="$access-type/Role = 'ssdproxy'">
+                  <xsl:when test="$access-type/Role = 'ssd_proxy_user'">
                     <xsl:text>Accessible Text Request Service</xsl:text>
                   </xsl:when>
                   <xsl:otherwise>

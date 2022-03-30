@@ -1011,7 +1011,8 @@ sub handle_SSD_SESSION_PI
     my $cgi = $C->get_object('CGI');
     my $id = $cgi->param('id');
     my $auth = $C->get_object('Auth');
-    my $ssd_authenticated = $auth->get_eduPersonEntitlement_print_disabled($C);
+    my $ssd_authenticated = $auth->get_eduPersonEntitlement_print_disabled($C)
+      && !$auth->user_is_print_disabled_proxy($C);
 
     return $ssd_authenticated ? 'true' : 'false';
 }
