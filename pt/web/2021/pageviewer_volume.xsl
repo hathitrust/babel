@@ -753,19 +753,18 @@
               <xsl:if test="$access-type/Name = 'total_access'">
                 <xsl:choose>
                   <xsl:when test="$access-type/Role = 'ht_staff_user'">
-                    <xsl:text>Staff</xsl:text>
+                    <xsl:text>Collection Administration Access</xsl:text>
                   </xsl:when>
                   <xsl:when test="$access-type/Role = 'ht_total_user'">
-                    <xsl:text>Admin</xsl:text>
+                    <xsl:text>Collection Administration Access</xsl:text>
                   </xsl:when>
                   <xsl:when test="$access-type/Role = 'ssdproxy'">
-                    <xsl:text>ATRS</xsl:text>
+                    <xsl:text>Accessible Text Request Service</xsl:text>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:value-of select="$access-type/Role" />
                   </xsl:otherwise>
                 </xsl:choose>
-                <xsl:text> In-Copyright Access</xsl:text>
               </xsl:if>
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
