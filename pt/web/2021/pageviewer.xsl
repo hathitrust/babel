@@ -258,6 +258,28 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="build-total-access-header">
+    <xsl:variable name="access-type" select="//AccessType" />
+    <xsl:variable name="href">
+    </xsl:variable>
+    <div class="alert alert--emergency-access">
+      <xsl:attribute name="id">access-emergency-access</xsl:attribute>
+      <xsl:attribute name="data-access-granted">true</xsl:attribute>
+
+      <p>
+        <span>This work may be in copyright. You have full view access to this item based on your account privileges. Information about use can be found in the </span>
+        <xsl:choose>
+          <xsl:when test="$access-type/Role = 'ssdproxy'">
+            <a style="display: inline" href="https://www.hathitrust.org/accessible-texts#terms-of-service">Accessible Text Request Service Terms of Use.</a>
+          </xsl:when>
+          <xsl:otherwise>
+            <a style="display: inline" href="https://www.hathitrust.org/collection-administration-access">Collection Administration Access Terms of Use.</a>
+          </xsl:otherwise>
+        </xsl:choose>
+      </p>
+    </div>
+  </xsl:template>
+
   <xsl:template name="build-emergency-access-affiliate-header">
     <xsl:variable name="access-type" select="//AccessType" />
     <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
@@ -544,4 +566,3 @@
   <xsl:template name="build-hotjar-script-extra"></xsl:template>
 
 </xsl:stylesheet>
-
