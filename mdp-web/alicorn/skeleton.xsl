@@ -239,9 +239,9 @@
             <a class="dropdown-item" href="https://www.hathitrust.org/news_publications">News &amp; Publications</a>
           </li>
           <li><hr class="dropdown-divider" /></li>
-          <xsl:if test="$gLoggedIn = 'YES'">
+          <!-- <xsl:if test="$gLoggedIn = 'YES'">
             <li class=""><a class="dropdown-item" href="{//Header/PrivCollLink}">My Collections</a></li>
-          </xsl:if>
+          </xsl:if> -->
           <li class="">
             <a class="dropdown-item" href="/cgi/mb">Collections</a>
           </li>
@@ -276,9 +276,9 @@
           </li>
         </ul>
       </li>
-      <xsl:if test="$gLoggedIn = 'YES'">
+      <!-- <xsl:if test="$gLoggedIn = 'YES'">
         <li class="nav-item wide"><a class="nav-link" href="{//Header/PrivCollLink}">My Collections</a></li>
-      </xsl:if>
+      </xsl:if> -->
       <li class="nav-item wide">
         <a class="nav-link" href="/cgi/mb">Collections</a>
       </li>
@@ -296,6 +296,11 @@
     <li class="on-for-pt on-for-narrow">
       <button class="btn action-search-hathitrust control-search">
         <i class="icomoon icomoon-search" aria-hidden="true"></i><span class="offscreen-for-narrowest"> Search</span> HathiTrust</button>
+    </li>
+    <li>
+      <button disabled="disabled" class="btn action-toggle-notifications" aria-label="Toggle Notifications">
+        <i class="icomoon icomoon-bell" aria-hidden="true"></i>
+      </button>
     </li>
     <xsl:choose>
       <xsl:when test="$gLoggedIn = 'YES'">
