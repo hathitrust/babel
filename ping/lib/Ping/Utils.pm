@@ -5,6 +5,8 @@ use Auth::ACL;
 use Institutions;
 use Utils;
 
+use Ping::Notifications;
+
 sub identify_user {
 
     my ( $C, $env ) = @_;
@@ -66,6 +68,8 @@ sub identify_user {
             $$retval{affiliation} = 'Guest';
         }
     }
+
+    $$retval{notificationData} = Ping::Notifications::get_notification_data($C, $auth);
 
     return $retval;
 

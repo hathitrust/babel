@@ -86,26 +86,8 @@ my $app = sub {
     my $response;
 
     sub _body {
-        # true, decodeURIComponent('$displayName'), decodeURIComponent('$affiliation'), "$auth_type", "LOGGED IN"
-        # my ( $callback, $logged_in, $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $auth_type, $print_disabled, $emergency_access, $msg, $idp_list, $expired ) = @_;
         my ( $callback, $logged_in, $info, $msg, $idp_list, $expired ) = @_;
 
-        # $print_disabled = $print_disabled ? 'true' : 'false';
-        # $emergency_access = $emergency_access ? 'true' : 'false';
-        # $expired = $expired ? 'true' : 'false';
-        # my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
-        # $displayName = $displayName || '';
-        # $institution_name = $institution_name || '';
-        # $institution_code = $institution_code || '';
-        # $mapped_institution_name = $mapped_institution_name || '';
-        # $mapped_institution_code = $mapped_institution_code || '';
-        # $providerName = $providerName || '';
-        # $affiliation = $affiliation || '';
-        # unless ( $affiliation ) {
-        #     if ( $providerName ) {
-        #         $affiliation = 'Guest';
-        #     }
-        # }
 
         my $print_disabled = $$info{u} ? 'true' : 'false';
         my $emergency_access = $$info{x} ? 'true' : 'false';
@@ -130,6 +112,10 @@ my $app = sub {
         # my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
 
         $auth_type = qq{"$auth_type"} unless ( $auth_type eq 'null' );
+        my $notificationData_array = q{[]};
+        if ( ref($$info{notificationData}) ) {
+            $notificationData_array = encode_json($$info{notificationData});
+        }
 
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
@@ -149,6 +135,7 @@ HT.login_status.u = $print_disabled;
 HT.login_status.x = $emergency_access;
 HT.login_status.idp_list = $idp_list_json;
 HT.login_status.r = $r;
+HT.login_status.notificationData = $notificationData_array;
 JAVASCRIPT
 
         $retval .= <<JAVASCRIPT;
