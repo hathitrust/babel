@@ -304,7 +304,7 @@ sub _fill_contents {
     $self->write("    {\n");
     foreach my $key (@columns) {
       my $value = $$row{$key};
-      my $last  = $key eq $$keys[-1];
+      my $last  = $key eq $columns[-1];
       $self->write("      " . $self->emit( $key, $value, $last ) . "\n");
     }
     $self->write("    }");
