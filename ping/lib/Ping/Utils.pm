@@ -69,7 +69,7 @@ sub identify_user {
         }
     }
 
-    $$retval{notificationData} = Ping::Notifications::get_notification_data($C, $auth);
+    $$retval{notificationData} = Ping::Notifications::get_notification_data($C);
 
     return $retval;
 

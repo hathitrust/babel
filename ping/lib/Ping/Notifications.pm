@@ -75,6 +75,7 @@ sub has_expired {
     my ( $C ) = @_;
 
     if ( my $expires_on = $$self{expires_on} ) {
+        my $now = Utils::Time::iso_Time();
         return 1 if ( $now ge $expires_on );
     }
 
