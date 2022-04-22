@@ -64,7 +64,7 @@ sub is_valid {
     my $self = shift;
     my ( $C ) = @_;
 
-    return 0 if ( $self->has_expired($C) );
+    return 0 if ( $self->has_expired($C) || ! $self->is_effective($C) );
     return 1 if ( $self->is_public($C) );
     return 1 if ( $self->intended_for_user($C) );
     return 0;
@@ -77,6 +77,18 @@ sub has_expired {
     if ( my $expires_on = $$self{expires_on} ) {
         my $now = Utils::Time::iso_Time();
         return 1 if ( $now ge $expires_on );
+    }
+
+    return 0;
+}
+
+sub is_effective {
+    my $self = shift;
+    my ( $C ) = @_;
+
+    if ( my $effective_on = $$self{effective_on} ) {
+        my $now = Utils::Time::iso_Time();
+        return 1 if ( $now ge $effective_on );
     }
 
     return 0;
