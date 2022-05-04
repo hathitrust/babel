@@ -106,6 +106,8 @@ sub handle_SEARCH_RESULTS_PI
         $s .= wrap_string_in_tag($$item_hashref{'rights'}, 'rights');
         $s .= wrap_string_in_tag($$item_hashref{'fulltext'}, 'fulltext');
         $s .= wrap_string_in_tag($$item_hashref{'emergency_flag'}, 'emergency');
+        $s .= wrap_string_in_tag( $$item_hashref{'activated_role'},'activated_role' )
+            if ( $$item_hashref{'activated_role'} );
         $s .= wrap_string_in_tag($$item_hashref{'rel'}, 'relevance');
         $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
         $s .= wrap_string_in_tag($$item_hashref{'book_id'}, 'bookID');

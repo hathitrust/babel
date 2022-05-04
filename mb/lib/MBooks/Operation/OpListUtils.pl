@@ -218,6 +218,8 @@ sub get_final_item_arr_ref {
     my $item_arr_ref = shift;
     my $rights_ref = shift;
 
+    my $auth = $C->get_object('Auth');
+
     my $cgi = $C->get_object('CGI');
     my $coll_id = $cgi->param('c');
     my $co = $self->get_action()->get_transient_facade_member_data($C, 'collection_object');
@@ -256,6 +258,7 @@ sub get_final_item_arr_ref {
             if ($@);
 
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
+        my $activated_role;
         my $emergency_flag = 0;
         my $initial_access_status;
 
@@ -266,12 +269,15 @@ sub get_final_item_arr_ref {
                 if ( $ar->in_copyright($C, $id) ) {
                     $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $item_rights_attr, $id);
                     $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+                    $activated_role = $auth->get_activated_switchable_role($C);
                 }
             };
         }
 
         $$item_hashref{fulltext} = $fulltext_flag;
         $$item_hashref{emergency_flag} = $emergency_flag;
+        $$item_hashref{activated_role} = $$activated_role{role} 
+            if ( ref $activated_role );
 
         # add array_of hashrefs of collection info for collections
         # owned by user that also include the item
