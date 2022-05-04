@@ -24,6 +24,9 @@
       <xsl:when test="//Param[@name='colltype']">
         <xsl:value-of select="//Param[@name='colltype']" />
       </xsl:when>
+      <xsl:when test="normalize-space($gUserId)">
+        my-collections
+      </xsl:when>
       <xsl:otherwise>featured</xsl:otherwise>
     </xsl:choose>
   </xsl:variable>

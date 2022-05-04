@@ -101,6 +101,17 @@ sub execute_operation
     my $dir = MBooks::Utils::Sort::get_dir_from_sort_param(scalar $cgi->param('sort'));
 
     my $colltype = $cgi->param('colltype');
+    if ( $colltype eq 'default' ) {
+        my $auth = $C->get_object('Auth::Auth', 1);
+        my $coll_data = ref($auth) ? $cs->get_coll_data_from_user_id($auth) : [];
+        if ( scalar @$coll_data ) {
+            $colltype = 'my-collections';
+        } else {
+            $colltype = 'featured';
+        }
+        $cgi->param('colltype', $colltype);
+    }
+
     unless ( $cgi->param('page') eq 'ajax' ) {
         $colltype = 'all_colls';
     } else {

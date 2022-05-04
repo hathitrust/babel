@@ -33,7 +33,7 @@
      'solridx'  => 'text|author|title|subject|isbn',
      'solrfct'  => '.*',
      'start'    => '\d+',
-     'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured|my_colls|all_colls',
+     'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured|my_colls|all_colls|default',
      'undo'     => '.*',  #XXX consider limiting to values of a param
      'skin'     => '.*',
      'testUser' => '.*',
@@ -128,7 +128,7 @@ $g_late_operations = [
                                                            'a'     => 'listcs',
                                                           },
                                           'opt_params' => {
-                                                           'colltype' => 'featured', # pub
+                                                           'colltype' => 'default', # pub
                                                            'sort'     => 'cn_a',
                                                            'skin'     => undef,
                                                           }
