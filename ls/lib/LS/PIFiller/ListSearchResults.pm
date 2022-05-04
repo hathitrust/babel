@@ -1789,6 +1789,7 @@ sub _ls_wrap_result_data {
     my $get_slice = shift;
 
     my $cgi = $C->get_object('CGI');
+    my $auth = $C->get_object('Auth');
 
     my $output;
     my $solr_debug;
@@ -1996,15 +1997,15 @@ sub _ls_wrap_result_data {
 
         my $fulltext_flag = ($access_status eq 'allow') ? 1 : 0;
         my $emergency_flag = 0;
+        my $activated_role;
         my $initial_access_status;
 
         if ( $access_status eq 'allow' ) {
-            my $initial_access_status;
             eval {
                 my $ar = new Access::Rights($C, $id);
                 if ( $ar->in_copyright($C, $id) ) {
-                    $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights, $id);
                     $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
+                    $activated_role = $auth->get_activated_switchable_role($C);
                 }
             };
         }
@@ -2032,6 +2033,7 @@ sub _ls_wrap_result_data {
 
 	$s .= wrap_string_in_tag($fulltext_flag, 'fulltext');
     $s .= wrap_string_in_tag($emergency_flag, 'emergency');
+    $s .= wrap_string_in_tag($$activated_role{role}, 'activated_role') if ( ref($activated_role) );
 
         my $record_no = $doc_data->{'record_no'};
 

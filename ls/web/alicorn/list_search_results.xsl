@@ -429,6 +429,9 @@
               </li>
               <li>
                 <a href="https://babel.hathitrust.org/cgi/pt?id={ItemID}">
+                  <xsl:if test="fulltext=1 and normalize-space(activated_role)">
+                    <xsl:attribute name="data-activated-role"><xsl:value-of select="activated_role" /></xsl:attribute>
+                  </xsl:if>
                   <xsl:attribute name="data-clickdata">
                     <xsl:value-of select="ItemClickData"/>
                   </xsl:attribute>
@@ -436,6 +439,10 @@
                   <xsl:choose>
                     <xsl:when test="emergency=1">
                       <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="fulltext=1 and normalize-space(activated_role)">
+                      <i class="icomoon icomoon-unlocked" aria-hidden="true"></i>
+                      <xsl:text> Limited (Access Permitted)</xsl:text>
                     </xsl:when>
                     <xsl:when test="fulltext=1">
                       <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Full View</xsl:text>
