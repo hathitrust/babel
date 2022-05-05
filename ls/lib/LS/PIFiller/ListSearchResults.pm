@@ -2004,8 +2004,13 @@ sub _ls_wrap_result_data {
             eval {
                 my $ar = new Access::Rights($C, $id);
                 if ( $ar->in_copyright($C, $id) ) {
+                    $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $rights, $id);
                     $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
-                    $activated_role = $auth->get_activated_switchable_role($C);
+                    if ( $initial_access_status =~ m,allow_ssd, ) {
+                        $activated_role = { role => 'enhancedText' };
+                    } else {
+                        $activated_role = $auth->get_activated_switchable_role($C);
+                    }
                 }
             };
         }
