@@ -37,11 +37,12 @@ sub identify_user {
         $$retval{mapped_institution_name} = $mapped;
     }
     $$retval{affiliation} = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
-    $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
+    # $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
     $$retval{x} = $auth->affiliation_has_emergency_access($C);
 
     $$retval{r} = undef;
 
+    my $has_activated_role = $Types::Serialiser::false;
     foreach my $config ( $auth->get_switchable_roles($C) ) {
         my $method = $$config{method};
         my $check  = $auth->$method( $C, 1 );
@@ -51,8 +52,16 @@ sub identify_user {
                 $auth->$method($C) ?
             $Types::Serialiser::true : 
             $Types::Serialiser::false;
+            if ( $$retval{r}{$$config{role}} == $Types::Serialiser::true ) {
+                $has_activated_role = $Types::Serialiser::true;
+            }
         }
     }
+    $$retval{u} =
+      $has_activated_role || 
+        $auth->get_eduPersonEntitlement_print_disabled($C) ? 
+            $Types::Serialiser::true : 
+            $Types::Serialiser::false;
     
     $check = $auth->affiliation_is_enhanced_text_user($C);
     if ( $check ) {
@@ -68,8 +77,6 @@ sub identify_user {
             $$retval{affiliation} = 'Guest';
         }
     }
-
-    $$retval{notificationData} = Ping::Notifications::get_notification_data($C);
 
     return $retval;
 

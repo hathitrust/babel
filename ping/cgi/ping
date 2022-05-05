@@ -266,16 +266,10 @@ JAVASCRIPT
             'value' => encode_json($info),
             'path'  => '/',
             'domain' => Utils::get_cookie_domain()
-        }; #  unless ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} eq $$info{providerName} );;
+        };
+        
+        $$info{notificationData} = Ping::Notifications::get_notification_data($C);
 
-        # my $displayName = uri_escape($$info{displayName});
-        # my $affiliation = uri_escape($$info{affiliation});
-        # my $institution_name = uri_escape($$info{institution_name});
-        # my $institution_code = uri_escape($$info{institution_code});
-        # my $mapped_institution_name = uri_escape($$info{mapped_institution_name});
-        # my $mapped_institution_code = uri_escape($$info{mapped_institution_code});
-        # my $providerName = uri_escape($$info{providerName});
-        # $response->body(_body($callback, 'true', $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, $$info{x}, "LOGGED IN", undef, 0));
         $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
         return $response->finalize;
     }

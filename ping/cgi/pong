@@ -125,7 +125,7 @@ my $app = sub {
     };
     
     # return session information
-    my $info = Ping::Utils::identify_user($C, $env);
+    my $info = Ping::Utils::identify_user( $C, $env );
     $response->cookies->{'HTstatus'} = {
         'value' => encode_json($info),
         'path'  => '/',
