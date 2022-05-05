@@ -269,7 +269,11 @@ sub get_final_item_arr_ref {
                 if ( $ar->in_copyright($C, $id) ) {
                     $initial_access_status = $ar->check_initial_access_status_by_attribute($C, $item_rights_attr, $id);
                     $emergency_flag = ( $initial_access_status =~ m,emergency, ) || 0;
-                    $activated_role = $auth->get_activated_switchable_role($C);
+                    if ( $initial_access_status =~ m,allow_ssd, ) {
+                        $activated_role = { role => 'enhancedText' };
+                    } else {
+                        $activated_role = $auth->get_activated_switchable_role($C);
+                    }
                 }
             };
         }
