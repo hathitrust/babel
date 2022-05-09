@@ -48,6 +48,9 @@ use Session;
 use Plack::Request;
 use Plack::Response;
 
+use Ping::Utils;
+use JSON::XS;
+
 use URI::Escape;
 
 use CGI::PSGI;
@@ -140,6 +143,13 @@ my $app = sub {
             }
 
             $response = Plack::Response->new(302);
+            my $info = Ping::Utils::identify_user( $C, $env );
+            $response->cookies->{'HTstatus'} = {
+                'value'  => encode_json($info),
+                'path'   => '/',
+                'domain' => Utils::get_cookie_domain()
+            };
+
             $response->redirect($request->param("referer"));
         }
 
@@ -185,7 +195,7 @@ DIV
         my $roles_list_html = join("\n", @$roles_list);
         $$html =~ s,\<\!\-\- ROLES_LIST \-\-\>,$roles_list_html,;
 
-        my $referer = $request->referer;
+        my $referer = $request->param('target') || $request->referer;
         $$html =~ s,%REFERER%,$referer,;
 
         if ( $request->param('debug') ) {
