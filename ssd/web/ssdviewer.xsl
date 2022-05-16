@@ -123,8 +123,10 @@
 
         <script src="/common/alicorn/js/utils.201910.js"></script>
         <script src="/ssd/access_banner.js"></script>
+        <script src="/ssd/toc_links.js"></script>
 
-        <xsl:call-template name="build-hotjar-script" />
+
+        <!-- <xsl:call-template name="build-hotjar-script" /> -->
       </head>
 
       <body>
@@ -336,27 +338,19 @@
           <xsl:element name="li">
             <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
             <xsl:element name="a">
+              <xsl:if test="$gViewingMode='entire-volume'">
+                <xsl:attribute name="data-section-href">
+                  <xsl:value-of select="concat(Tag, '_', Seq)" />
+                </xsl:attribute>
+              </xsl:if>
               <xsl:attribute name="href">
                 <xsl:choose>
-                  <xsl:when test="$gViewingMode='entire-volume'">
-                    <xsl:variable name="SectionTitleAttr">
-                      <xsl:call-template name="ReplaceChar">
-                        <xsl:with-param name="string">
-                          <xsl:value-of select="Label"/>
-                        </xsl:with-param>
-                        <xsl:with-param name="from_char">
-                          <xsl:text> </xsl:text>
-                        </xsl:with-param>
-                        <xsl:with-param name="to_char">
-                          <xsl:text></xsl:text>
-                        </xsl:with-param>
-                      </xsl:call-template>
-                    </xsl:variable>
+                  <!-- <xsl:when test="$gViewingMode='entire-volume'">
                     <xsl:text>#</xsl:text>
-                    <xsl:value-of select="$SectionTitleAttr"/>
-                  </xsl:when>
-                  <xsl:when test="$gViewingMode='page-at-a-time'">
-                    <xsl:text>ssd?id=</xsl:text><xsl:value-of select="$gItemId"/>
+                    <xsl:value-of select="concat(Tag, '_', Seq)" />
+                  </xsl:when> -->
+                  <xsl:when test="true() or $gViewingMode='page-at-a-time'">
+                    <xsl:text>/cgi/ssd?id=</xsl:text><xsl:value-of select="$gItemId"/>
                     <xsl:text>;seq=</xsl:text><xsl:value-of select="Seq"/>
                     <xsl:text>;num=</xsl:text><xsl:value-of select="Page"/>
                     <xsl:if test="$gCurrentDebug!=''">
@@ -387,20 +381,37 @@
   <xsl:template name="ViewOnePage">
     <xsl:choose>
       <xsl:when test="$gFeatureList/Feature">
-        <xsl:choose>
-          <!-- If item has page numbers and page is numbered, heading is "Page #" using num. -->
-          <xsl:when test="$gCurrentPageNum != ''">
-            <h2>Page <xsl:value-of select="$gCurrentPageNum"/></h2>
-          </xsl:when>
-          <!-- If item has page numbers and page is not numbered, heading is "Page Text". -->
-          <xsl:otherwise>
-            <h2>Page Text</h2>
-          </xsl:otherwise>
-        </xsl:choose>
+        <xsl:variable name="nearest" select="$gFeatureList/Feature[Seq &lt;= $gCurrentPageSeq][last()]" />
+        <h2 id="seq{$gCurrentPageSeq}">
+          <xsl:value-of select="$nearest/Label" />
+          <xsl:if test="true() or $gCurrentPageSeq != $nearest/Seq">
+            <xsl:text> - Page </xsl:text>
+            <xsl:choose>
+              <xsl:when test="$gCurrentPageNum">
+                <xsl:value-of select="$gCurrentPageNum" />
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>#</xsl:text>
+                <xsl:value-of select="$gCurrentPageSeq" />
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:if>
+        </h2>
       </xsl:when>
       <!-- If item does has page numbers and page is numbered, heading is "Page #" using seq. -->
       <xsl:otherwise>
-        <h2>Page <xsl:value-of select="gCurrentPageSeq"/></h2>
+        <h2 id="seq{$gCurrentPageSeq}">
+          <xsl:text>Page </xsl:text>
+          <xsl:choose>
+            <xsl:when test="$gCurrentPageNum">
+              <xsl:value-of select="$gCurrentPageNum" />
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>#</xsl:text>
+              <xsl:value-of select="$gCurrentPageSeq" />
+            </xsl:otherwise>
+          </xsl:choose>
+        </h2>
       </xsl:otherwise>
     </xsl:choose>
 
@@ -432,6 +443,7 @@
         <xsl:choose>
           <xsl:when test="MdpApp/PageLinks/PreviousPageLink !=''">
             <xsl:element name="a">
+              <xsl:attribute name="class">navigation</xsl:attribute>
               <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/PreviousPageLink"/></xsl:attribute>
               Previous Page
             </xsl:element>
@@ -444,6 +456,7 @@
         <xsl:choose>
           <xsl:when test="MdpApp/PageLinks/NextPageLink !=''">
             <xsl:element name="a">
+              <xsl:attribute name="class">navigation</xsl:attribute>
               <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/NextPageLink"/></xsl:attribute>
               Next Page
             </xsl:element>
@@ -460,7 +473,7 @@
 
   <!-- Full Volume Viewing -->
   <xsl:template name="ViewEntireVolume">
-    <h2>Book Text</h2>
+    <!-- <h2>Book Text</h2> -->
     <xsl:element name="div">
       <xsl:attribute name="id">mdpText</xsl:attribute>
       <xsl:apply-templates select="$gFullOcr"/>
@@ -587,10 +600,13 @@
   <!-- -->
   <xsl:template match="Section">
 
+    <xsl:variable name="seq" select="Page[1]/Seq" />
+    <xsl:variable name="feature" select="//FeatureList/Feature[Seq=$seq]" />
+
     <xsl:variable name="SectionTitleAttr">
       <xsl:call-template name="ReplaceChar">
         <xsl:with-param name="string">
-          <xsl:value-of select="SectionTitle"/>
+          <xsl:value-of select="$feature/Label" />
         </xsl:with-param>
         <xsl:with-param name="from_char">
           <xsl:text> </xsl:text>
@@ -601,16 +617,17 @@
       </xsl:call-template>
     </xsl:variable>
 
-    <xsl:if test="$SectionTitleAttr!=''">
+    <!-- <xsl:if test="$SectionTitleAttr!=''">
       <xsl:element name="a">
         <xsl:attribute name="name">
           <xsl:value-of select="$SectionTitleAttr"/>
         </xsl:attribute>
       </xsl:element>
-    </xsl:if>
+    </xsl:if> -->
 
     <div class="Section">
-      <h3 class="SectionHeading"><xsl:apply-templates select="SectionTitle"/></h3>
+      <!-- <h3 id="{$SectionTitleAttr}" class="SectionHeading"><xsl:apply-templates select="SectionTitle"/></h3> -->
+      <h2 id="{$feature/Tag}_{$feature/Seq}" class="SectionHeading"><xsl:value-of select="$feature/Label" /></h2>
       <xsl:apply-templates select="Page"/>
       <p>
         <xsl:choose>
@@ -826,4 +843,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-
