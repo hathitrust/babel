@@ -102,7 +102,7 @@ sub execute_operation
 
     my $colltype = $cgi->param('colltype');
     if ( $colltype eq 'default' ) {
-        my $auth = $C->get_object('Auth::Auth', 1);
+        my $auth = $C->get_object('Auth', 1);
         my $coll_data = ref($auth) ? $cs->get_coll_data_from_user_id($auth) : [];
         if ( scalar @$coll_data ) {
             $colltype = 'my-collections';
