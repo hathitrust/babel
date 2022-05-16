@@ -6,6 +6,9 @@
   xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:cc="http://creativecommons.org/ns#"
   xmlns:foaf="http://xmlns.com/foaf/0.1/"
+  xmlns:h="http://www.hathitrust.org"
+  xmlns:exsl="http://exslt.org/common"
+  extension-element-prefixes="exsl"
   >
 
   <!-- Global Variables -->
@@ -379,23 +382,37 @@
 
   <!-- Page At A Time Viewing -->
   <xsl:template name="ViewOnePage">
+
+    <xsl:variable name="page-features-tmp">
+      <h:values>
+        <h:value>CHAPTER_START</h:value>
+        <h:value>APPENDIX</h:value>
+        <h:value>FIRST_CONTENT_CHAPTER_START</h:value>
+        <h:value>INDEX</h:value>
+        <h:value>NOTES</h:value>
+      </h:values>
+    </xsl:variable>
+
+    <xsl:variable name="page-features" select="exsl:node-set($page-features-tmp)" />
+
     <xsl:choose>
       <xsl:when test="$gFeatureList/Feature">
         <xsl:variable name="nearest" select="$gFeatureList/Feature[Seq &lt;= $gCurrentPageSeq][last()]" />
         <h2 id="seq{$gCurrentPageSeq}">
-          <xsl:value-of select="$nearest/Label" />
-          <xsl:if test="true() or $gCurrentPageSeq != $nearest/Seq">
-            <xsl:text> - Page </xsl:text>
-            <xsl:choose>
-              <xsl:when test="$gCurrentPageNum">
-                <xsl:value-of select="$gCurrentPageNum" />
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:text>#</xsl:text>
-                <xsl:value-of select="$gCurrentPageSeq" />
-              </xsl:otherwise>
-            </xsl:choose>
+          <xsl:if test="$nearest/Seq = $gCurrentPageSeq or $nearest[Tag = $page-features//value]">
+            <xsl:value-of select="$nearest/Label" />
+            <xsl:text> - </xsl:text>
           </xsl:if>
+          <xsl:text>Page </xsl:text>
+          <xsl:choose>
+            <xsl:when test="$gCurrentPageNum">
+              <xsl:value-of select="$gCurrentPageNum" />
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:text>#</xsl:text>
+              <xsl:value-of select="$gCurrentPageSeq" />
+            </xsl:otherwise>
+          </xsl:choose>
         </h2>
       </xsl:when>
       <!-- If item does has page numbers and page is numbered, heading is "Page #" using seq. -->
