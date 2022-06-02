@@ -4,6 +4,10 @@ HT.track_pageview = function(args) {
   if ( window.location.hash ) {
     args = $.extend({}, { colltype : window.location.hash.substr(1) }, args);
   }
+  args.a = 'listcs';
+  if ( ! args.colltype ) {
+    args.colltype = browser.options.view;
+  }
   var params = $.param(args);
   if ( params ) { params = "?" + params; }
   HT.analytics.trackPageview(window.location.pathname + params);
@@ -603,7 +607,7 @@ var ListBrowser = function(argv, elem) {
   }
 
   this.filter_search = function(q) {
-    options.q = $.trim(q); // .toLowerCase();
+    this.q = options.q = $.trim(q); // .toLowerCase();
     options.qre = new RegExp(q, 'i');
     if ( options.q == "" ) {
       root.remove_filter({ type: "search" });
