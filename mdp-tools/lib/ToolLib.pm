@@ -17,6 +17,7 @@ use Exporter ();
                 get_HTDE_roots
                 get_app_dir_list
                 get_app_list
+                get_github_repo_root
 
                 G_list_tags
                 G_last_tag
@@ -36,6 +37,7 @@ use Exporter ();
                 G_handle_diff
            );
 
+use Config::Tiny;
 
 $ToolLib::VERBOSE = 0;
 
@@ -915,6 +917,26 @@ sub get_HTDE_roots {
     my $app_root = $ENV{HTDE_APPROOT} || "/htapps/$where.babel";
 
     return ($repo_root, $app_root);
+}
+
+sub get_github_repo_root {
+    my $app_root = shift;
+    my $default_repo_root = shift;
+
+    my $git_config = Config::Tiny->read("$app_dir/.git/config");
+    if ( defined $$git_config{'remote "origin"'} ) {
+        my $origin_root = $$git_config{'remote "origin"'}{url};
+        if ( $origin_root =~ m,^git\@, ) {
+            $origin_root = [ split( '/', $origin_root ) ];
+            pop @$origin_root;    # lose the app
+            $repo_root = join( '/', @$origin_root );
+            print "\nUsing gitconfig=$repo_root\n" if ($ToolLib::VERBOSE);
+        }
+    }
+    else {
+        $repo_root = $default_repo_root;
+    }
+    return $repo_root;
 }
 
 

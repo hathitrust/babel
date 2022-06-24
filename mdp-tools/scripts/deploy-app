@@ -55,7 +55,7 @@ NOTE: plackup monitors a configurable list of files for changes bsed
 use strict;
 use Getopt::Std;
 
-use lib "/htapps/test.babel/mdp-lib/Utils";
+use lib "${\($ENV{TOOLS_ROOT} || '/htapps/test.babel')}/mdp-lib/Utils";
 use Vendors;
 use File::Basename;
 use Date::Calc qw(Today_and_Now Delta_DHMS);
@@ -114,6 +114,8 @@ my $VERSION_INCREMENT = __handle_VERSION_INCREMENT($opt_T);
 my $SITE = __handle_SITE($opt_m);
 
 my ($repo_root, $app_root) = get_HTDE_roots('test');
+my $default_repo_root = $repo_root;
+
 my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};
@@ -121,6 +123,9 @@ foreach my $app (@apps) {
 
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
+
+    # parse the .git/config to modify $repo_root
+    $repo_root = get_github_repo_root($app_dir, $default_repo_root);
 
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
@@ -447,8 +452,9 @@ sub __rdist_app_to_production {
     print qq{$cmd\n} if $VERBOSE;
     print qx($cmd);
 
-    if ($?) {
+    if (my $err = $?) {
         PrintN("ERROR: rdist APP failure\n");
+        PrintN($err);
         return 0;
     }
 

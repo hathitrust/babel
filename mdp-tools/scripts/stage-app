@@ -44,7 +44,7 @@ without the need to push to the branch to the central repo.
 use strict;
 use Getopt::Std;
 
-use lib "/htapps/test.babel/mdp-lib/Utils";
+use lib "${\($ENV{TOOLS_ROOT} || '/htapps/test.babel')}/mdp-lib/Utils";
 use Vendors;
 use File::Basename;
 my $LOCATION = dirname(__FILE__);
@@ -218,9 +218,13 @@ sub stage_origin_master_branch {
     my $num_apps = scalar @apps;
     my $prompt_for_diff = $FORCE_DIFF || ($num_apps == 1);
 
+    my $default_repo_root = $repo_root;
+
     foreach my $app (@apps) {
         my $fail_msg = qq{Failed to stage application ($app)\n};
         my $app_dir = "$app_root/$app";
+
+        $repo_root = get_github_repo_root( $app_dir, $default_repo_root );
 
         if (! validate_existing_app($repo_root, $app_root, $app)) {
             PrintN($fail_msg);
