@@ -171,6 +171,7 @@ if (defined($cookies{$cookie_name}))
     my $ses = new Session($C, $sid, 0);
 
     $ses->set_persistent('authenticated_via', undef);
+    $ses->set_persistent('entity_id', undef);
     $ses->close();
 }
 
