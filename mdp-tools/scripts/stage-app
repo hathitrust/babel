@@ -224,8 +224,6 @@ sub stage_origin_master_branch {
         my $fail_msg = qq{Failed to stage application ($app)\n};
         my $app_dir = "$app_root/$app";
 
-        $repo_root = get_github_repo_root( $app_dir, $default_repo_root );
-
         if (! validate_existing_app($repo_root, $app_root, $app)) {
             PrintN($fail_msg);
             $rc |= 1;

@@ -17,7 +17,6 @@ use Exporter ();
                 get_HTDE_roots
                 get_app_dir_list
                 get_app_list
-                get_github_repo_root
 
                 G_list_tags
                 G_last_tag
@@ -205,7 +204,8 @@ sub G_sync_local_master {
     return 0
       if (! G_checkout_master($app_dir));
 
-    $cmd = "git reset --hard origin/master";
+    my $main_branch = G_find_main_branch();
+    $cmd = "git reset --hard origin/$main_branch";
     return 0
       if (! execute_command($cmd));
 
@@ -295,6 +295,11 @@ sub G_sync_local_deployment {
 
     PrintY("Sync deployment succeeds\n");
     return 1;
+}
+
+sub G_find_main_branch {
+    my $branch = __exists_local_branch('main') ? 'main' : 'master';
+    return $branch;
 }
 
 # ---------------------------------------------------------------------
@@ -443,7 +448,8 @@ sub G_checkout_master {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd = "git checkout master";
+    my $main_branch = G_find_main_branch();
+    my $cmd = "git checkout $main_branch";
     return 0
       if (! execute_command($cmd));
 
@@ -476,7 +482,8 @@ sub G_merge_master_branch {
     return 0
       if (! chdir_to_app_dir($app_dir));
 
-    my $cmd = "git merge master --no-ff";
+    my $main_branch = G_find_main_branch();
+    my $cmd = "git merge $main_branch --no-ff";
     return 0
       if (! execute_command($cmd));
 
@@ -913,32 +920,12 @@ sub get_HTDE_roots {
         }
     }
 
-    my $repo_root = $ENV{HTDE_REPOROOT} || "/htapps/repos";
+    # my $repo_root = $ENV{HTDE_REPOROOT} || "/htapps/repos";
+    my $repo_root = $ENV{HTDE_REPOROOT} || qq{git\@github.com:hathitrust};
     my $app_root = $ENV{HTDE_APPROOT} || "/htapps/$where.babel";
 
     return ($repo_root, $app_root);
 }
-
-sub get_github_repo_root {
-    my $app_root = shift;
-    my $default_repo_root = shift;
-
-    my $git_config = Config::Tiny->read("$app_dir/.git/config");
-    if ( defined $$git_config{'remote "origin"'} ) {
-        my $origin_root = $$git_config{'remote "origin"'}{url};
-        if ( $origin_root =~ m,^git\@, ) {
-            $origin_root = [ split( '/', $origin_root ) ];
-            pop @$origin_root;    # lose the app
-            $repo_root = join( '/', @$origin_root );
-            print "\nUsing gitconfig=$repo_root\n" if ($ToolLib::VERBOSE);
-        }
-    }
-    else {
-        $repo_root = $default_repo_root;
-    }
-    return $repo_root;
-}
-
 
 # ---------------------------------------------------------------------
 

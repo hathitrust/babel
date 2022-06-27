@@ -124,9 +124,6 @@ foreach my $app (@apps) {
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
 
-    # parse the .git/config to modify $repo_root
-    $repo_root = get_github_repo_root($app_dir, $default_repo_root);
-
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         PrintN($fail_msg);
         next;
