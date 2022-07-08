@@ -570,7 +570,7 @@ sub __get_holdings_qualified_string
     my $access_type = Access::Rights::get_access_type_determination($C);
 	
     foreach my $attr (@{$holdings_qualified_attr_list}) {
-	if (($access_type ne $RightsGlobals::SSD_USER)
+	if (($access_type != $RightsGlobals::SSD_USER)
 	    &&
 	    ($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
 	    push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
@@ -581,7 +581,7 @@ sub __get_holdings_qualified_string
     }
 
     # etas
-    if ($self->is_california($inst)) {
+    if ($access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE && $self->is_california($inst)) {
 	push(@qualified_OR_clauses, $self->etas_CA_holdings_filter());
     }
 
