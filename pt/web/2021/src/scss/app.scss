@@ -883,6 +883,10 @@ $navigator-background: #444;
   justify-content: flex-end;
 }
 
+.login-panel .modal__footer {
+  display: block;
+}
+
 // IE 
 html.ie {
   .d--toolbar--reader {

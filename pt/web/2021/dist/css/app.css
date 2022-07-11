@@ -866,6 +866,10 @@ a.text-link svg {
   justify-content: flex-end;
 }
 
+.login-panel .modal__footer {
+  display: block;
+}
+
 html.ie .d--toolbar--reader .output-group input {
   width: 4em;
 }
