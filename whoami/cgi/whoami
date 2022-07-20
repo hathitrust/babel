@@ -26,10 +26,6 @@ use Auth::Logging;
 
 use Text::Wrap;
 
-use Mail::Mailer;
-
-
-
 my $C = new Context;
 
 # CGI
@@ -37,7 +33,8 @@ my $cgi = new CGI;
 Utils::clean_cgi_params($cgi);
 $C->set_object('CGI', $cgi);
 
-my $config = new MdpConfig(Utils::get_uber_config_path('whoami'));
+my $config = new MdpConfig(Utils::get_uber_config_path('whoami'),
+  '/htapps/babel/etc/ht_jira.conf');
 $C->set_object('MdpConfig', $config);
 
 # Database connection
@@ -49,6 +46,8 @@ Debug::DUtils::setup_debug_environment();
 # Auth
 my $auth = new Auth::Auth($C);
 $C->set_object('Auth', $auth);
+
+my $jira_ua = new LWP::UserAgent;
 
 # --- App ---
 #
@@ -84,16 +83,27 @@ if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
     my $properties = get_properties();
     my $cookie_values = get_cookie_values();
 
-    print qq{<p>Here are your credentials as we see them from your login.</p>};
-
+    my $jira_err;
     if ( $ticket ) {
+      my $comment = jira_comment_text($properties, $cookie_values);
+      $jira_err = add_jira_comment($ticket, $comment);
+      if ($jira_err) {
+        print <<HTML;
+<div style="padding: 1rem; background: orange; color: #000">
+<p>Unable to update your support ticket <strong>$ticket</strong> due to the following error:</p>
+<p><code>$jira_err</code></p>
+<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p>
+</div>
+HTML
+      } else {
         print <<HTML;
 <div style="padding: 1rem; background: orange; color: #000">
 <p>This information has been forwarded to your support ticket (<strong>$ticket</strong>).</p>
 </div>
 HTML
+      }
     }
-
+    say qq{<p>Here are your credentials as we see them from your login.</p>};
     say qq{<h2>Credentials</h2>};
     say qq{<ul>};
 
@@ -118,57 +128,7 @@ HTML
         say q{<pre>} . wrap("", "", $_) . q{</pre>};
     }
 
-    if ( $ticket ) {
-
-        # once more with feeling
-
-        my $buffer = [];
-        push @$buffer, qq{*Submitted: } . Utils::Time::iso_Time('date') . qq{*\n};
-        push @$buffer, qq{h2. Credentials\n};
-
-        foreach my $tuple ( @$properties ) {
-          my ( $key, $value ) = @$tuple;
-          if ( ref($value) ) {
-              push @$buffer, qq{* $key = };
-              foreach ( @$value ) {
-                  push @$buffer, qq{** $_};
-              }
-          } elsif ( $value ) {
-              push @$buffer, qq{* $key = $value};
-          }
-        }
-
-        push @$buffer, qq{\n\nh2. HTTP_COOKIE\n};
-        foreach my $value ( @$cookie_values ) {
-            push @$buffer, qq/* {{/ . $value . qq/}}/;
-        }
-        push @$buffer, "\n";
-
-        my $mailer = new Mail::Mailer('sendmail');
-        my $toAddr = q{feedback@issues.hathitrust.org};
-        if ( $cgi->param('debug') eq 'email' ) {
-            $toAddr = q{hathitrust-feedback-dev@umich.edu};
-        }
-        
-        my $suffix = int(rand(1000));
-        $mailer->open(
-                      {
-                       'To'       => [$toAddr],
-                       'From'     => qq{"HT Whoami ($suffix)" <hathitrust.help+$suffix\@gmail.com>},
-                       'Subject'  => $ticket,
-                      }
-                    );
-
-        if ( defined $cgi->param('debug') && $cgi->param('debug') eq 'scramble' ) {
-            foreach ( @$buffer ) {
-              $_ .= " --- " . int(rand(5000));
-            }
-        }
-
-        print $mailer(join("\n", @$buffer));
-        $mailer->close;
-
-    } else {
+    if (!$ticket) {
         print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
 
         print qq{<p>Thank you.</p>};
@@ -182,7 +142,7 @@ else {
 
     my $ticket = $cgi->path_info;
 
-    print q{<p>You then have the option to email those credentials to HathiTrust for purposes such as:
+    print q{<p>You then have the option to submit those credentials to HathiTrust for purposes such as:
 <ul>        
 <li>Recovering access to personal collections if you change institutional affiliation</li>
 <li>Supporting our staff in setting up your access to materials</li>
@@ -252,4 +212,65 @@ sub get_cookie_values {
     my $cookie_value = $ENV{HTTP_COOKIE};
     my @values = split(/;\s+/, $cookie_value);
     return \@values;
+}
+
+# Returns error string or undef for success.
+sub add_jira_comment {
+  my $key = shift;
+  my $comment = shift;
+
+  $comment =~ s/"/\\"/g;
+  $comment =~ s/\n/\\n/gm;
+  my $data = qq({ "body": "$comment", "properties":[{"key":"sd.public.comment","value":{"internal":true}}] });
+
+  my $req = jira_request(POST => "/rest/api/2/issue/$key/comment");
+  $req->content_type('application/json');
+  $req->content($data);
+
+  my $res = $jira_ua->request($req);
+  if (!$res->is_success()) {
+     warn("While adding comment: got a " . $res->code() . " with content \n" . $res->content);
+     return sprintf("Error " . $res->code());
+  }
+  return;
+}
+
+sub jira_request {
+  my $method = shift;
+  my $path = shift;
+
+  my $username = $config->get('jira_user');
+  my $password = $config->get('jira_password');
+  my $prefix = $config->get('jira_prefix');
+  my $req = HTTP::Request->new($method => $prefix . $path);
+  $req->authorization_basic($username, $password);
+
+  return $req;
+}
+
+sub jira_comment_text {
+  my $properties = shift;
+  my $cookie_values = shift;
+
+  my $buffer = [];
+  push @$buffer, qq{*Submitted: } . Utils::Time::iso_Time('date') . qq{*\n};
+  push @$buffer, qq{h2. Credentials\n};
+
+  foreach my $tuple ( @$properties ) {
+    my ( $key, $value ) = @$tuple;
+    if ( ref($value) ) {
+      push @$buffer, qq{* $key = };
+      foreach ( @$value ) {
+        push @$buffer, qq{** $_};
+      }
+    } elsif ( $value ) {
+      push @$buffer, qq{* $key = $value};
+    }
+  }
+  push @$buffer, qq{\n\nh2. HTTP_COOKIE\n};
+  foreach my $value ( @$cookie_values ) {
+    push @$buffer, qq/* {{/ . $value . qq/}}/;
+  }
+  push @$buffer, "\n";
+  return join("\n", @$buffer);
 }
