@@ -62,7 +62,7 @@ print qq{
           <div>
             <div>
               <a id="htlogo" href="https://www.hathitrust.org">
-                <img src="/register/graphics/HathiTrustDL_logo.png" alt="HathiTrust Digital Library" /></a>
+                <img src="/common/HathiTrustDL_logo.png" alt="HathiTrust Digital Library" /></a>
             </div>
           </div>
         </div>
