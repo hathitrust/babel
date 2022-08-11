@@ -151,6 +151,10 @@ sub execute_operation
         };
         die $@ if ($@);
 
+        my $contributor_name = $cgi->param('contributor_name') || '';
+        eval { $co->edit_contributor_name( $coll_id, $contributor_name ); };
+        die $@ if ($@);
+
         # edit collection name
         my $coll_name = $cgi->param('cn');
 

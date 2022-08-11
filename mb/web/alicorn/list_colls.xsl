@@ -48,7 +48,6 @@
     </script>
     <style type="text/css">
 
-
     </style>
   </xsl:template>
 
@@ -94,7 +93,7 @@
         <div class="results-actions">
           <label for="sort-option">Sort by</label>
           <select name="sort" id="sort-option">
-            <xsl:for-each select="//SortWidget/SortWidgetSort/Option">
+            <xsl:for-each select="//SortWidget/SortWidgetSort/Option[Value != 'OwnerString']">
               <option value="{Value}">
                 <xsl:if test="Focus = 'true'">
                   <xsl:attribute name="selected">selected</xsl:attribute>
@@ -197,13 +196,9 @@
           datum.Description = decodeURIComponent('<xsl:value-of select="Description/@e" />');
           datum.NumItems = <xsl:value-of select="NumItems" />;
           datum.NumItems_Display = '<xsl:value-of select="NumItems_Display" />';
-          datum.OwnerString = decodeURIComponent('<xsl:value-of select="OwnerString/@e" />');
+          datum.ContributorName = decodeURIComponent('<xsl:value-of select="ContributorName/@e" />');
 
-          <xsl:variable name="owner_affiliation">
-            <xsl:value-of select="OwnerAffiliation/@e" />
-          </xsl:variable>
-
-          datum.OwnerAffiliation = decodeURIComponent('<xsl:value-of select="str:replace($owner_affiliation, '&amp;', '__amp;')" disable-output-escaping="yes" />');
+          datum.isOwnerAffiliated = '<xsl:value-of select="OwnerAffiliated" />' == 'true';
           datum.Updated = '<xsl:value-of select="Updated" />';
           datum.Updated_Display = '<xsl:value-of select="Updated_Display" />';
           datum.Featured = '<xsl:value-of select="Featured" />';
@@ -326,19 +321,14 @@
             </xsl:if>
           </div>
           <dl style="font-size: .9rem">
-            <dt>Updated</dt>
-            <dd><xsl:value-of select="Updated_Display" /></dd>
-            <xsl:if test="normalize-space(OwnerString)">
-              <dt>Owner</dt>
+            <xsl:if test="true() and normalize-space(ContributorName)">
+              <dt>Contributor</dt>
               <dd>
-                <xsl:value-of select="OwnerString" />
-                <xsl:if test="normalize-space(OwnerAffiliation)">
-                  <xsl:text> (</xsl:text>
-                  <xsl:value-of select="OwnerAffiliation" />
-                  <xsl:text>)</xsl:text>
-                </xsl:if>
+                <xsl:value-of select="ContributorName" />
               </dd>
             </xsl:if>
+            <dt>Updated</dt>
+            <dd><xsl:value-of select="Updated_Display" /></dd>
             <dt>Number of items</dt>
             <dd><xsl:value-of select="NumItems_Display" /></dd>
           </dl>
@@ -385,6 +375,11 @@
         </li>
         <xsl:call-template name="build-collection-size-filter" />
       </ul>
+
+      <xsl:if test="count(//CollList/Collection[@owned='TRUE']) != 0">
+        <xsl:call-template name="build-collection-tools" />
+      </xsl:if>
+
       <!-- <xsl:call-template name="sidebar-filter" /> -->
       <!-- <xsl:call-template name="sidebar-about-this-collection" /> -->
     </div>
@@ -561,6 +556,59 @@
         </xsl:if>
       </span>
     </button>
+  </xsl:template>
+
+  <xsl:template name="build-collection-tools">
+    <div class="collection-tools" data-active="false">
+      <h2 class="offscreen">Collection Tools</h2>
+      <div class="panel">
+
+        <h3>Transfer Collections</h3>
+
+        <p>Generate a link to transfer your collections to another user account.</p>
+
+        <xsl:choose>
+          <xsl:when test="count(//PendingTransfers/Transfer) != 0">
+            <div class="alert alert-info">
+              Some collections are already scheduled for transfer.
+            </div>
+            <p>
+              <strong>Review Transfers</strong>
+            </p>
+            <ul>
+              <xsl:for-each select="//PendingTransfers/Transfer">
+                <li>
+                  <a href="{@href}">
+                    <xsl:choose>
+                      <xsl:when test="Payload = 'ALL'">
+                        My Collections
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:variable name="payload" select="normalize-space(Payload)" />
+                        <xsl:variable name="collection" select="//CollList/Collection[CollId=$payload]" />
+                        <xsl:value-of select="$collection/CollName" />
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </a>
+                </li>
+              </xsl:for-each>
+            </ul>
+          </xsl:when>
+          <xsl:otherwise>
+            <form action="/cgi/mb/transfer">
+              <input type="hidden" name="c" value="ALL" />
+              <button class="btn">Transfer</button>
+            </form>
+          </xsl:otherwise>
+        </xsl:choose>
+
+        <p class="smaller">
+          <a href="https://www.hathitrust.org/help_digital_library#TransferCollection" class="transfer-help-link"><i class="icomoon icomoon-help" aria-hidden="true"></i> Help about Transferring Collections</a>
+        </p>
+
+      </div>
+
+    </div>
   </xsl:template>
 
   <xsl:template name="get-page-title">

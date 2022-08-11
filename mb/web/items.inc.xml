@@ -8,6 +8,7 @@
   <CollectionFeatured><?COLLECTION_FEATURED?></CollectionFeatured>
   <CollectionBranding><?COLLECTION_BRANDING?></CollectionBranding>
   <CollectionContactInfo><?COLLECTION_CONTACT_INFO?></CollectionContactInfo>
+  <CollectionContactLink><?COLLECTION_CONTACT_LINK?></CollectionContactLink>
   <OperationResults><?OPERATION_RESULTS?></OperationResults>
   <ItemList><?ITEM_LIST?></ItemList>
 

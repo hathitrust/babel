@@ -27,6 +27,7 @@ use Utils;
 use MBooks::Index;
 use MBooks::Utils::Sort;
 use MBooks::PIFiller::ListUtils;
+use MBooks::Utils::Transfer;
 
 use URI::Escape;
 use Time::HiRes qw(time);
@@ -154,6 +155,34 @@ sub handle_COLL_LIST_JSON_PI
     return coll_list_helper_json($C, $act, 'list_colls_data');
 }
 
+sub handle_PENDING_TRANSFER_LIST_PI
+    : PI_handler(PENDING_TRANSFERS_LIST)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $s = '';
+    my $pending_transfers = MBooks::Utils::Transfer::find_pending($C);
+    foreach my $transfer ( @$pending_transfers ) {
+        my $attrs = [];
+        push @$attrs, [ 'href', "/cgi/mb/transfer/" . $transfer->token ];
+
+        my $collid_xml = '';
+        my $payload = $transfer->payload;
+        if ( scalar @$payload > 1 ) {
+            # TODO: revisit if we ever allow for free
+            # multiple selection of collections
+            $collid_xml .= wrap_string_in_tag('ALL', 'Payload');
+        } else {
+            $collid_xml .= wrap_string_in_tag($$payload[0], 'Payload');
+        }
+
+        $s .= wrap_string_in_tag($collid_xml, 'Transfer', $attrs);
+    }
+
+    return $s;
+
+}
+
 # ---------------------------------------------------------------------
 
 =item handle_MY_COLL_LIST_PI
@@ -183,16 +212,14 @@ sub get_coll_xml
     my $s = '';
 
     my $config = $C->get_object('MdpConfig');
-    my $min_mondo_n = 5000; # $config->get('filter_query_max_item_ids')
 
     $$coll_hashref{'num_items'} = 0 unless ( defined($$coll_hashref{'num_items'}) );
 
     $s .= wrap_string_in_tag($$coll_hashref{'collname'},    'CollName', [['e', uri_escape_utf8($$coll_hashref{'collname'})]]);
-    my $owner_string = MBooks::PIFiller::ListUtils::get_owner_string($C, $$coll_hashref{'owner_name'}, 1);
     my $owner_affiliation = MBooks::PIFiller::ListUtils::get_owner_affiliation($C, $$coll_hashref{'owner'}, $$coll_hashref{'owner_name'});
-    $s .= wrap_string_in_tag($owner_string, 'OwnerString', [['e', uri_escape_utf8($owner_string)]]);
-    $s .= wrap_string_in_tag($owner_affiliation, 'OwnerAffiliation', [['e', uri_escape_utf8($owner_affiliation)]]);
+    $s .= wrap_string_in_tag($owner_affiliation ne '' ? 'true' : 'false', 'OwnerAffiliated');
     $s .= wrap_string_in_tag($$coll_hashref{'owner'}, 'Owner');
+    $s .= wrap_string_in_tag($$coll_hashref{'contributor_name'}, 'ContributorName', [['e', uri_escape_utf8($$coll_hashref{'contributor_name'})]]);
     $s .= wrap_string_in_tag($$coll_hashref{'MColl_ID'},    'CollId');
     $s .= wrap_string_in_tag($$coll_hashref{'description'}, 'Description', [['e', uri_escape_utf8($$coll_hashref{'description'})]]);
     $s .= wrap_string_in_tag($$coll_hashref{'num_items'},   'NumItems');
@@ -204,17 +231,6 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($$coll_hashref{'branding'},      'Branding');
 
     $s .= wrap_string_in_tag(lc $$coll_hashref{collname}, 'CollName_Sort');
-    $s .= wrap_string_in_tag(lc $owner_string, 'OwnerString_Sort');
-
-    # my $buffer = [];
-    # push @$buffer, lc $$coll_hashref{collname};
-    # push @$buffer, lc $owner_string;
-    # push @$buffer, lc $owner_affiliation if ( $owner_affiliation );
-    # push @$buffer, lc $$coll_hashref{description} if ( $$coll_hashref{description} );
-    # $s .= wrap_string_in_tag(join(' ', @$buffer), 'Buffer');
-
-    ### $s .= wrap_string_in_tag($$coll_hashref{'num_items'} >= $min_mondo_n, 'Mondo');
-
 
     my $all_indexed = "FALSE";
 

@@ -77,6 +77,8 @@
   </SliceSizeWidget>
 
   <CollList><?COLL_LIST?></CollList>
+  <PendingTransfers><?PENDING_TRANSFERS_LIST?></PendingTransfers>
+
   <!-- DEPRECATED
   <MyCollList>< ?MY_COLL_LIST? ></MyCollList>
   <RecentlyAdded>< ?RECENTLY_ADDED list_size="3"? ></RecentlyAdded>

@@ -121,14 +121,8 @@ var ListBrowser = function(argv, elem) {
     for(var i = 0, num_rows = HT.listcs.bucket.length; i < num_rows; i++) {
       var buffer = [];
       var datum = HT.listcs.bucket[i];
-      datum.OwnerName = datum.OwnerString;
-      if ( datum.OwnerAffiliation ) {
-        datum.OwnerAffiliation = datum.OwnerAffiliation.replace('__amp;', '&amp;');
-        datum.OwnerName += " (" + datum.OwnerAffiliation + ")";
-      }
       buffer.push(datum.CollName);
-      buffer.push(datum.OwnerString);
-      buffer.push(datum.OwnerAffiliation);
+      buffer.push(datum.CuratorName || '');
       buffer.push(datum.Description);
       datum.buffer = buffer.join(' ');
     }
@@ -340,10 +334,10 @@ var ListBrowser = function(argv, elem) {
               '<div class="actions"></div>' +
             '</div>' +
             '<dl style="font-size: .9rem">' +
+              '<dt data-key-title="ContributorName">Contributor</dt>' +
+              '<dd data-key="ContributorName"></dd>' +
               '<dt>Updated</dt>' +
               '<dd data-key="Updated_Display"></dd>' +
-              '<dt>Owner</dt>' +
-              '<dd data-key="OwnerName"></dd>' +
               '<dt>Number of items</dt>' +
               '<dd data-key="NumItems_Display"></dd>' +
             '</dl>' +
@@ -358,11 +352,17 @@ var ListBrowser = function(argv, elem) {
       var datum = page.items[j];
 
       var node;
-      // var clone = document.importNode(template.content, true);
       var clone = $(template).get(0);
-      var keys = [ 'CollName', 'Updated_Display', 'OwnerName', 'NumItems_Display' ];
+      var keys = ['CollName', 'Updated_Display', 'ContributorName', 'NumItems_Display'];
       keys.forEach(function(key, index) {
         var selector = '[data-key="' + key + '"]';
+        if ( ! datum[key] ) {
+          node = clone.querySelector(selector);
+          node.parentNode.removeChild(node);
+          node = clone.querySelector(`[data-key-title="${key}"]`);
+          node.parentNode.removeChild(node);
+          return;
+        }
         node = clone.querySelector(selector);
         node.innerText = datum[key];
         if ( key == 'CollName' ) {
@@ -375,7 +375,7 @@ var ListBrowser = function(argv, elem) {
             if ( datum.isOwned ) {
               if ( ! datum.isShared ) {
                 html += '<span class="xbadge xbadge-secondary">Private</span> ';
-                if ( datum.NumItems > 0 && datum.OwnerAffiliation ) {
+                if ( datum.NumItems > 0 && datum.isOwnerAffiliated ) {
                   var href = '/cgi/mb?a=editst;shrd=1;c=' + datum.CollId + ';colltype=' + options.view;
                   html +=
                     '<button class="btn btn-sm action-change-shared" data-href="{HREF}">Make Public</button>'
@@ -600,10 +600,6 @@ var ListBrowser = function(argv, elem) {
         return ( num_items >= options.min_items && num_items < options.max_items);
       }
     })
-  }
-
-  this.filter_owner = function(owner_name) {
-
   }
 
   this.filter_search = function(q) {

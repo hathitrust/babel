@@ -131,10 +131,12 @@
       <xsl:call-template name="build-collection-branding" />
       <!-- <xsl:call-template name="sidebar-about-this-collection" /> -->
 
-      <h2 class="filters-heading">Collection Tools</h2>
+      <xsl:call-template name="sidebar-filter" />
+
+      <h2 class="filters-heading" style="border-top: 8px double #ddd">Collection Tools</h2>
       <xsl:call-template name="share-this-collection" />
       <xsl:call-template name="download-metadata-form" />
-      <xsl:call-template name="sidebar-filter" />
+      <xsl:call-template name="transfer-this-collection" />
     </div>
   </xsl:template>
 
@@ -277,6 +279,7 @@
         href="#" id="trigger-editc"
         class="btn btn-small"
         data-desc="{normalize-space(EditCollectionWidget/CollDesc)}"
+        data-contributor="{normalize-space(EditCollectionWidget/ContributorName)}"
         data-cn="{$coll_name}"
         data-c="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}"
         data-shrd="{$shrd}"
@@ -292,13 +295,14 @@
       </xsl:choose>
     </xsl:variable>
     <xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
-      <div style="display: flex; align-items: center; position: absolute; right: 0; top: 50%; transform: translateY(-50%)">
+      <div style="display: flex; align-items: center; position: absolute; right: 0; top: 50%; transform: translateY(-50%); gap: 0.5rem;">
         <button
           class="btn btn-sm"
           id="action-edit-collection"
           data-desc="{normalize-space(EditCollectionWidget/CollDesc)}"
           data-cn="{$coll_name}"
           data-c="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}"
+          data-contributor_name="{normalize-space(EditCollectionWidget/ContributorName)}"
           data-shrd="{$shrd}"
           >Edit</button>
         <!-- <xsl:if test="//EditCollectionWidget/Status = 'private'">
@@ -333,6 +337,7 @@
           <xsl:attribute name="name">permURL_link</xsl:attribute>
           <xsl:attribute name="id">permURL</xsl:attribute>
           <xsl:attribute name="class">email-permURL</xsl:attribute>
+          <xsl:attribute name="style">margin-bottom: 0</xsl:attribute>
           <xsl:attribute name="onclick">document.urlForm.permURL_link.select();</xsl:attribute>
           <xsl:attribute name="readonly">readonly</xsl:attribute>
           <xsl:attribute name="value">
@@ -344,8 +349,45 @@
     </div>
   </xsl:template>
 
+  <xsl:template name="transfer-this-collection">
+    <xsl:variable name="transfer-link" select="//EditCollectionWidget/TransferLink" />
+    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes' and normalize-space($transfer-link)">
+      <div class="panel">
+
+        <h3>Transfer Collection</h3>
+
+        <p>Generate a link to transfer this collection to another user.</p>
+
+        <form action="{$transfer-link}">
+          <input type="hidden" name="c" value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}" />
+          <xsl:choose>
+            <xsl:when test="//EditCollectionWidget/QueuedForTransfer='yes'">
+              <div class="alert alert-info" style="padding-right: 0">
+                <p style="margin-bottom: 0">This collection is scheduled for transfer.</p>
+              </div>
+
+              <div style="display: flex; gap: 0.25rem;">
+                <button class="btn">View/Cancel Transfer</button>
+                <!-- <button class="btn-mini">Cancel Transfer</button> -->
+              </div>
+            </xsl:when>
+            <xsl:otherwise>
+              <button class="btn">Transfer</button>
+            </xsl:otherwise>
+          </xsl:choose>
+        </form>
+
+        <p class="smaller">
+          <a href="https://www.hathitrust.org/help_digital_library#TransferCollection" class="transfer-help-link"><i class="icomoon icomoon-help" aria-hidden="true"></i> Help about Transferring Collections</a>
+        </p>
+
+      </div>
+
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template name="download-metadata-form">
-    <div class="downloadLinks panel" style="padding-bottom: 1rem; margin-bottom: 0; border-bottom: 8px double #ddd;">
+    <div class="downloadLinks panel" style="padding-bottom: 1rem; margin-bottom: 0; border-bottom: 0px double #ddd;">
       <h3>Download Metadata</h3>
       <xsl:choose>
         <xsl:when test="//TotalRecords = 0">
@@ -782,9 +824,22 @@
         <xsl:if test="normalize-space(//EditCollectionWidget/CollDesc)">
           <p><xsl:value-of select="//EditCollectionWidget/CollDesc" /></p>
         </xsl:if>
+        <xsl:if test="normalize-space(//EditCollectionWidget/ContributorName)">
+          <p><strong>Contributor: </strong><xsl:value-of select="//EditCollectionWidget/ContributorName" /></p>
+        </xsl:if>
         <xsl:if test="normalize-space(//CollectionContactInfo)">
           <p><strong>More Information: </strong>
-          <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" /></p>
+            <xsl:choose>
+              <xsl:when test="normalize-space(//CollectionContactLink)">
+                <a href="{//CollectionContactLink}">
+                  <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" />
+                </a>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:apply-templates select="//CollectionContactInfo" mode="copy-guts" />
+              </xsl:otherwise>
+            </xsl:choose>
+          </p>          
         </xsl:if>
 
         <!-- <xsl:call-template name="build-collection-branding" /> -->

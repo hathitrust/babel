@@ -35,7 +35,9 @@ sub test_ownership {
         (! $co->coll_owned_by_user($coll_id, $owner)))
     {
         my $msg = q{"} . $co->get_coll_name($coll_id) .
-            q{" is a private collection. Login for more options.};
+            q{" is a private collection.};
+        unless ( $ENV{REMOTE_USER} ) { $msg .= q{ Login for more options.}; }
+        else { $msg .= qq{ <a href="/cgi/mb?a=listcs;colltype=my-collections">View your collections</a>}; }
         $act->set_error_record($C, $act->make_error_record($C, $msg));
 
         return $ST_COLL_NOT_OWNER;

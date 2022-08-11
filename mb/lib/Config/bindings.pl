@@ -15,6 +15,7 @@
      'iid'      => '.*',
      'q1'       => '.*',
      'desc'     => '.*',
+     'contributor_name' => '.*',
      'page'     => 'addc|ajax|srchresults|opac_srchresults|srch|help|faq|mbookshome|home|colls_owned_json',
      'sort'     => 'auth_a|auth_d|title_a|title_d|cn_a|cn_d|date_a|date_d|acc_a|acc_d|num_a|num_d|own_d|own_a|shrd_a|shrd_d|rel_a|rel_d',
      'shrd'     => '0|1',

@@ -16,6 +16,7 @@ use Institutions;
 
 use MBooks::Utils::Sort;
 use MBooks::Utils::TempColl;
+use MBooks::Utils::Transfer;
 use MBooks::Index;
 
 BEGIN {
@@ -286,6 +287,18 @@ sub handle_COLLECTION_CONTACT_INFO_PI
     return ($coll_featured);
 }
 
+sub handle_COLLECTION_CONTACT_LINK_PI
+  : PI_handler(COLLECTION_CONTACT_LINK) {
+    my ( $C, $act, $piParamHashRef ) = @_;
+
+    my $cgi     = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+    my $co = $act->get_transient_facade_member_data( $C, 'collection_object' );
+    my $coll_link = $co->get_coll_contact_link($coll_id);
+
+    return ($coll_link);
+}
+
 # ---------------------------------------------------------------------
 
 =item handle_EDIT_COLLECTION_WIDGET_PI
@@ -327,18 +340,39 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
     if (length($coll_desc) > 255) {
         $coll_desc = substr($coll_desc, 0, 255);
     }
+    my $contributor_name = $co->get_contributor_name($coll_id);
+    if ( length($contributor_name) > 255 ) {
+        $contributor_name = substr( $contributor_name, 0, 255 );
+    }
 
     my $is_temporary = MBooks::Utils::TempColl::coll_is_temporary($C, $co, $coll_id);
+
+    my $transfer_link; my $is_queued_for_transfer = 'no';
+    unless ( $is_temporary ) {
+        my $pending_transfers = MBooks::Utils::Transfer::find_pending($C, $coll_id);
+        my $transfer_cgi = new CGI({});
+        if ( scalar @$pending_transfers ) {
+            my $token = $pending_transfers->[0]->token;
+            $transfer_cgi->path_info("/transfer/$token");
+            $is_queued_for_transfer = 'yes';
+        } else {
+            $transfer_cgi->path_info("/transfer");
+        }
+        $transfer_link = $transfer_cgi->self_url;
+    }
 
     my $s = "";
     $s .= wrap_string_in_tag($coll_id, 'CollId');
     $s .= wrap_string_in_tag($coll_name, 'CollName');
     $s .= wrap_string_in_tag($spaced_coll_name, 'SpacedCollName');
     $s .= wrap_string_in_tag($coll_desc, 'CollDesc');
+    $s .= wrap_string_in_tag($contributor_name, 'ContributorName');
     $s .= wrap_string_in_tag($status, 'Status');
     $s .= wrap_string_in_tag($coll_owned_by_user, 'OwnedByUser');
     $s .= wrap_string_in_tag($status, 'PublicStatus');
     $s .= wrap_string_in_tag($is_temporary, 'Temporary');
+    $s .= wrap_string_in_tag($transfer_link, 'TransferLink');
+    $s .= wrap_string_in_tag($is_queued_for_transfer, 'QueuedForTransfer');
 
     return $s;
 }

@@ -45,7 +45,7 @@ use warnings;
 
 
 BEGIN {
-    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{DEBUG_LOCAL} = 1;
 }
 $| = 1;		## flush stdio
 
@@ -85,20 +85,13 @@ use MBooks::MetaDataGetter;
 my @superusers =
   (
    'roger',
-   'tburtonw',
    'sooty',
   );
 
 my @allowed_uniqnames =
   (
-   'tburtonw',
    'roger',
-   'jweise',
    'sooty',
-   'khage',
-   'rwelzenb',
-   'jjyork',
-   'blancoj',
   );
 
 my @allowed_overrides =
@@ -117,7 +110,7 @@ sub bc_Usage {
 
     print qq{       [EXPUNGE] batch-collection.pl -X coll_id -o superuserid\n\n};
 
-    print qq{       [UPDATE]  batch-collection.pl -u coll_id [-t 'quoted title'] [-d 'quoted description'] [-o userid] [-O 'quoted owner name'] [-s <public|private|draft>] [-Q | -q YYYY-MM-DD | -q 0000-00-00]\n\n};
+    print qq{       [UPDATE]  batch-collection.pl -u coll_id [-t 'quoted title'] [-d 'quoted description'] [-N 'quoted contributor name'] [-o userid] [-O 'quoted owner name'] [-s <public|private|draft>] [-Q | -q YYYY-MM-DD | -q 0000-00-00]\n\n};
 
     print qq{       [QUERY]   batch-collection.pl -c -t title -o userid\n\n};
 
@@ -149,8 +142,8 @@ sub bc_Usage {
 
 }
 
-our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M, $opt_O, $opt_u, $opt_s, $opt_q, $opt_Q);
-getopts('ct:d:o:f:a:D:C:X:M:O:u:s:q:Q');
+our ($opt_t, $opt_d, $opt_o, $opt_f, $opt_a, $opt_c, $opt_D, $opt_C, $opt_X, $opt_M, $opt_O, $opt_u, $opt_s, $opt_q, $opt_Q, $opt_N);
+getopts('ct:d:o:f:a:D:C:X:M:O:u:s:q:Q:N:');
 
 my $INPUT_FILE = $opt_f || 'general';
 
@@ -314,14 +307,14 @@ else {
     $CREATE = 1;
 }
 
-my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_COLL_ID, $C_STATUS, $C_FEATURED);
+my ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_CONTRIBUTOR_NAME, $C_COLL_ID, $C_STATUS, $C_FEATURED);
 if ($APPEND) {
-    ($C_OWNER, $C_OWNER_NAME, $C_COLL_ID) =
-      ($opt_o, $opt_O || $opt_o, $opt_a,);
+    ($C_OWNER, $C_OWNER_NAME, $C_CONTRIBUTOR_NAME, $C_COLL_ID) =
+      ($opt_o, $opt_O || $opt_o, $opt_N || '', $opt_a,);
 }
 else {
-    ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME) =
-      ($opt_t, $opt_d, $opt_o, $opt_O || $opt_o,);
+    ($C_TITLE, $C_DESC, $C_OWNER, $C_OWNER_NAME, $C_CONTRIBUTOR_NAME) =
+      ($opt_t, $opt_d, $opt_o, $opt_O || $opt_o, $opt_N || '');
 }
 $C_STATUS = $opt_s;
 if ( $SUPERUSER ) {
@@ -774,7 +767,7 @@ sub bc_handle_add_items_to {
 sub bc_handle_metadata_update {
     my ( $C, $coll_id ) = @_;
     my $dbh = $CO->get_dbh();
-    my $update_sql = qq{UPDATE mb_collection SET };
+    my $update_sql = qq{UPDATE ht_web.mb_collection_dev SET };
     my @params = ();
     my @expr = ();
     my @log = ();
@@ -787,6 +780,15 @@ sub bc_handle_metadata_update {
         push @expr, q{owner_name = ?};
         push @params, $C_OWNER_NAME;
         push @log, qq{owner name = $C_OWNER_NAME};
+    }
+    if ( $C_CONTRIBUTOR_NAME ) {
+        if ( $C_CONTRIBUTOR_NAME eq '-' ) {
+            push @expr, q{contributor_name = NULL};
+        } else {
+            push @expr, q{contributor_name = ?};
+            push @params, $C_CONTRIBUTOR_NAME;
+        }
+        push @log, qq{contributor name = $C_CONTRIBUTOR_NAME};
     }
     if ( $C_TITLE ) {
         push @expr, q{collname = ?};
@@ -867,6 +869,7 @@ sub bc_create_collection {
                              'shared'      => 0,
                              'owner'       => $C_OWNER,
                              'owner_name'  => $C_OWNER_NAME,
+                             'contributor_name' => $C_CONTRIBUTOR_NAME,
                             };
 
     my $new_coll_id;

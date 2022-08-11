@@ -10,7 +10,7 @@
   <xsl:template name="display-error-message">
     <div id="mbContentContainer" class="main clearfix">
       <div class="alert alert-block alert-error">
-        <p><xsl:value-of select="/MBooksTop/ErrorMessage" /></p>
+        <p><xsl:apply-templates select="/MBooksTop/ErrorMessage" mode="copy-guts" /></p>
       </div>
     </div>
   </xsl:template>
