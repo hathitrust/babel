@@ -184,8 +184,8 @@
     <div id="SSDcontact">
       <xsl:text>For questions or comments, contact HathiTrust.org at </xsl:text>
       <xsl:element name="a">
-        <xsl:attribute name="href">mailto:feedback@issues.hathitrust.org</xsl:attribute>
-        <xsl:text>feedback@issues.hathitrust.org</xsl:text><br/>
+        <xsl:attribute name="href">mailto:support@hathitrust.org</xsl:attribute>
+        <xsl:text>support@hathitrust.org</xsl:text><br/>
       </xsl:element>
     </div>
   </xsl:template>
