@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 
-const sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('node-sass'));
 const sourcemaps = require('gulp-sourcemaps');
 const autoprefixer = require('gulp-autoprefixer');
 // var es = require('event-stream');
@@ -15,7 +15,6 @@ const compiler = require('webpack');
 const webpack = require('webpack-stream');
 
 const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
 
 var stylesheets = {};
 stylesheets.input = [ './src/scss/*.scss' ];
@@ -145,14 +144,6 @@ gulp.task('app', function() {
         ]
       },
       plugins: [
-        // new CopyPlugin({
-        //   patterns: [
-        //     {
-        //       from: path.resolve(__dirname, 'node_modules/@shoelace-style/shoelace/dist/shoelace/icons'),
-        //       to: path.resolve(__dirname, 'shoelace/icons')
-        //     }
-        //   ]
-        // })
       ]
     }, compiler, function(err, stats) {
 

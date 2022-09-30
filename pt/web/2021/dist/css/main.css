@@ -623,7 +623,6 @@ html[data-details-polyfilled="true"] details > summary:first-child {
           padding-inline-start: 1rem;
   -webkit-user-select: none;
      -moz-user-select: none;
-      -ms-user-select: none;
           user-select: none;
   display: flex;
   justify-content: space-between;
@@ -878,15 +877,6 @@ mark::after {
   content: " [highlight end] ";
 }
 
-@-webkit-keyframes progress-bar-stripes {
-  from {
-    background-position: 40px 0;
-  }
-  to {
-    background-position: 0 0;
-  }
-}
-
 @keyframes progress-bar-stripes {
   from {
     background-position: 40px 0;
@@ -936,7 +926,6 @@ mark::after {
 }
 
 .progress.active .bar {
-  -webkit-animation: progress-bar-stripes 2s linear infinite;
   animation: progress-bar-stripes 2s linear infinite;
 }
 
