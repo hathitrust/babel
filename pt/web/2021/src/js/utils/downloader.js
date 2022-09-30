@@ -354,7 +354,7 @@ HT.Downloader = {
             '</p>' +
             '<p>' +
                 'If this problem persists and you are unable to download this PDF after repeated attempts, ' + 
-                'please notify us at <a href="/cgi/feedback/?page=form" data=m="pt" data-toggle="feedback tracking-action" data-tracking-action="Show Feedback">feedback@issues.hathitrust.org</a> ' +
+                'please notify us at <a href="/cgi/feedback/?page=form" data=m="pt" data-toggle="feedback tracking-action" data-tracking-action="Show Feedback">support@hathitrust.org</a> ' +
                 'and include the URL of the book you were trying to access when the problem occurred.' +
             '</p>';
 
