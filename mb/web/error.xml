@@ -10,8 +10,6 @@
     <Filename>error.xsl</Filename>
     <Filename>xsl2htmlutils.xsl</Filename>
     <Filename>js_utils.xsl</Filename> 
-    <Filename>loads.xsl</Filename>
-    <Filename>loads_helper_mb.xsl</Filename>
     <Filename>coll.xsl</Filename>
     <Filename>skin.xsl</Filename>
     <Filename>common.xsl</Filename>

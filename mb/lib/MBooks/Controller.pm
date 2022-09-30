@@ -230,7 +230,7 @@ sub handle_error_ajax
 
     $error_cgi->param('a', 'page');
     $error_cgi->param('page', 'error_ajax');
-    $error_cgi->param('debug', $cgi->param('debug'));
+    $error_cgi->param('debug', $cgi->param('debug')) if ( defined $cgi->param('debug') );
     $C->set_object('CGI', $error_cgi);
 
     $self->___core_initialize($C);

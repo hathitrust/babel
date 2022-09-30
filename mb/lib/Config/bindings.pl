@@ -7,7 +7,7 @@
 # listed can be anything and have any value.
 %g_validator_for_param =
     (
-     'a'        => 'addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|srchm|listrchm|random|download',
+     'a'        => 'addits|aditsnc|copyit|copyitnc|movit|movitnc|delit|listis|addc|delc|editc|editst|listcs|srch|page|download',
 
      'c'        => '\d+',
      'c2'       => '\d+',
@@ -16,7 +16,7 @@
      'q1'       => '.*',
      'desc'     => '.*',
      'contributor_name' => '.*',
-     'page'     => 'addc|ajax|srchresults|opac_srchresults|srch|help|faq|mbookshome|home|colls_owned_json',
+     'page'     => 'addc|ajax|srchresults',
      'sort'     => 'auth_a|auth_d|title_a|title_d|cn_a|cn_d|date_a|date_d|acc_a|acc_d|num_a|num_d|own_d|own_a|shrd_a|shrd_d|rel_a|rel_d',
      'shrd'     => '0|1',
      'lmt'      => 'ft|all',
@@ -171,23 +171,6 @@ $g_late_operations = [
                                                           }
                                          },
 
-     'MBooks::Operation::ListSearchResults_AllMARC'   => {'req_params' => {
-                                                           'a'     => 'listsrchm',
-                                                           'c'     => undef,  #XXX
-                                                           'q1'    => undef,  #XXX
-                                                          },
-                                          'opt_params' => {
-                                                           'sort'  => 'rel_d',
-                                                           'pn'    => '1',
-                                                           'sz'    => undef,
-                                                           'start' => '0',
-                                                           'solridx' =>undef,
-                                                           'solrfct' =>undef,
-                                                          }
-                                         },
-
-
-
 
      'MBooks::Operation::Search'      => {'req_params' => {
                                                            'a'     => 'srch',
@@ -197,17 +180,6 @@ $g_late_operations = [
                                           'opt_params' => {
                                                           },
                                          },
-     'MBooks::Operation::Search_AllMARC'      => {'req_params' => {
-                                                           'a'     => 'srchm',
-                                                           'c'     => undef,
-                                                           'q1'    => undef,
-                                                          },
-                                          'opt_params' => {
-                                                           'solrfct' =>undef,
-                                                           'solridx' =>undef,
-                                                          },
-                                         },
-
 
      'MBooks::Operation::Login'       => {'req_params' => {
                                                           },
@@ -246,30 +218,6 @@ $g_late_operations = [
                                           'filler'   => 'MBooks::PIFiller::JSON',
                                     },
 
-
-                         'help'   => {
-                                     'builders' => [],
-                                     'template' => 'help.xml',
-                                     'filler'   => 'MBooks::PIFiller::Help',
-                                    },
-                         'faq'   => {
-                                     'builders' => [],
-                                     'template' => 'faq.xml',
-                                     'filler'   => 'MBooks::PIFiller::Faq',
-                                    },
-                         #XXX temp fix for old bookmarks to discontinued old home page
-                         'home'  => {
-                                     'builders' => [],
-                                     'template' => 'NoHome.xml',
-                                     'filler'   => 'MBooks::PIFiller::NoHome',
-                                    },
-
-
-                         'mbookshome'  => {
-                                     'builders' => [],
-                                     'template' => 'home.xml',
-                                     'filler'   => 'MBooks::PIFiller::Home',
-                                    },
                         },
      },
 
@@ -562,24 +510,6 @@ $g_late_operations = [
                                        'builders' => [],
                                        'template' => 'search_results_ajax.xml',
                                        'filler'   => 'MBooks::PIFiller::Search',
-                                      },
-                        },
-
-     },
-
-     # ----- database read action -----
-     'ACTION_RANDOM'      =>
-     {'action_param' => 'random',
-      'action_type'  => 'UI',
-      'operations'   => [
-                         'MBooks::Operation::RandomFeatured',
-                        ],
-      'view'         => {'default' => {
-                                       'builders' => [
-                                                      'MBooks::Operation::RandomFeatured',
-                                                     ],
-                                       'template' => 'random_featured.xml',
-                                       'filler'   => 'MBooks::PIFiller::RandomFeatured',
                                       },
                         },
 
