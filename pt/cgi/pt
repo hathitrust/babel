@@ -399,20 +399,9 @@ sub ValidityChecks {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
     }
 
-    if ( ! defined $cgi->param('skin') && ref($prefs) && $$prefs{'pt'}{'skin'} ) {
-        $cgi->param('skin', $$prefs{'pt'}{'skin'});
-    }
-
-    # if ( $cgi->param('ui') eq 'embed' && ! $cgi->param('skin') ) {
-    #     $cgi->param('skin', 'mobile');
-    # }
-
-
-
-    ## assume defaults later down the road
-    # if (! defined($orient) ||
-    #     ! exists( $PTGlobals::gValidRotationValues{$orient})) {
-    #     $cgi->param( 'orient', $PTGlobals::gDefaultOrientation );
+    ## -- NOTE: useful when we've got multiple skins enabled
+    # if ( ! defined $cgi->param('skin') && ref($prefs) && $$prefs{'pt'}{'skin'} ) {
+    #     $cgi->param('skin', $$prefs{'pt'}{'skin'});
     # }
 
     return $rc;

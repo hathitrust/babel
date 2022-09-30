@@ -49,9 +49,6 @@
 
   <xsl:variable name="gCurrentReaderMode">full</xsl:variable>
 
-  <xsl:template name="load_concat_js_file" />
-  <xsl:template name="load_uncompressed_js" />
-
   <xsl:template name="setup-html-class">
     <xsl:if test="$gHTDEV != ''">
       <xsl:text> htdev </xsl:text>
@@ -163,9 +160,6 @@
     <xsl:call-template name="build-js-link">
       <xsl:with-param name="href">/pt/2021/dist/js/utils.js</xsl:with-param>
     </xsl:call-template>
-
-    <!-- <xsl:call-template name="load_js_and_css"/> -->
-    <xsl:call-template name="include_local_javascript" />
 
     <xsl:call-template name="build-hotjar-script" />
 
