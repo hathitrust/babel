@@ -44,9 +44,6 @@ use strict;
 use warnings;
 
 
-BEGIN {
-    $ENV{DEBUG_LOCAL} = 1;
-}
 $| = 1;		## flush stdio
 
 # ----------------------------------------------------------------------
@@ -171,15 +168,6 @@ if ($NON_SUPERUSER) {
 
     unless ( index($path, "test.babel") >= 0 ) {
         print( qq{ERROR: Please run the copy of batch-collection.pl located in /htapps/test.babel/mb/scripts\n} );
-        exit 1;
-    }
-
-    my $ip_address = `hostname -i`;
-    chomp($ip_address);
-    my $host_info = `host -i grog.umdl.umich.edu`;
-    my ($test_dot_babel_ip_address) = ($host_info =~ /(\d+\.\d+\.\d+\.\d+)/s);
-    unless ($ip_address eq $test_dot_babel_ip_address) {
-        print( qq{ERROR: Please run batch-collection.pl when logged into host grog.umdl.umich.edu\n} );
         exit 1;
     }
 }
@@ -767,7 +755,7 @@ sub bc_handle_add_items_to {
 sub bc_handle_metadata_update {
     my ( $C, $coll_id ) = @_;
     my $dbh = $CO->get_dbh();
-    my $update_sql = qq{UPDATE ht_web.mb_collection_dev SET };
+    my $update_sql = qq{UPDATE ht_web.mb_collection SET };
     my @params = ();
     my @expr = ();
     my @log = ();
