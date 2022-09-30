@@ -115,21 +115,7 @@ $g_late_operations = [
   'action_type'  => 'UI',
   'operations'   => [
                     ],
-  'view'         => {'error' => {
-                                 'builders' => [],
-                                 'template' => 'error.xml',
-                                 'filler'   => 'PIFiller::Error',
-                                },
-                     'help'  => {
-                                 'builders' => [],
-                                 'template' => 'help.xml',
-                                 'filler'   => 'PIFiller::Help',
-                                },
-                     'faq'   => {
-                                 'builders' => [],
-                                 'template' => 'faq.xml',
-                                 'filler'   => 'PIFiller::Faq',
-                                },
+  'view'         => {
                      'home'  => {
                                  'builders' => [],
                                  'template' => 'home.xml',
@@ -141,12 +127,6 @@ $g_late_operations = [
                                  'template' => 'advanced.xml',
                                  'filler'   => 'LS::PIFiller::Advanced',
                                 },
-                     'advanced2'  => {
-                                 'builders' => [],
-                                 'template' => 'advanced2.xml',
-                                 'filler'   => 'LS::PIFiller::Advanced',
-                                },
-
 
                     },
  },
