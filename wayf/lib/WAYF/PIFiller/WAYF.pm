@@ -182,10 +182,10 @@ sub _list2xml {
         my $L_target = $target;
 
         # COSIGN special-case: remove when all HathiTrust auth is Shib
-        if ($HT_list->{$idp_key}->{authtype} eq 'shibboleth' && Utils::is_cosign_active()) {
-            $L_target =~ s,/cgi/,/shcgi/,;
-            $L_target = CGI::escape($L_target);
-        }
+        # if ($HT_list->{$idp_key}->{authtype} eq 'shibboleth' && Utils::is_cosign_active()) {
+        #     $L_target =~ s,/cgi/,/shcgi/,;
+        #     $L_target = CGI::escape($L_target);
+        # }
 
         my $idp_url = $HT_list->{$idp_key}->{template};
         my $host = $ENV{'HTTP_HOST'} || 'localhost';
