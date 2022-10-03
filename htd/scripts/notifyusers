@@ -57,14 +57,14 @@ foreach my $email (keys %users) {
 
 if (__confirm_email('List', 'looks')) {
     if ($DEBUG) {
-        if (__confirm_email('Test', 'tburtonw@umich.edu,roger@umich.edu')) { 
-            email_notification('tburtonw@umich.edu,roger@umich.edu', 'feedback@issues.hathitrust.org', $messages[0]);
+        if (__confirm_email('Test', 'roger@umich.edu')) { 
+            email_notification('roger@umich.edu', 'support@hathitrust.org', $messages[0]);
         }
     }
     else {
         foreach my $email (keys %users) {
             if (__confirm_email($users{$email}, $email)) { 
-                email_notification($email, 'feedback@issues.hathitrust.org', $messages[0]);
+                email_notification($email, 'support@hathitrust.org', $messages[0]);
             }
         }
     }
