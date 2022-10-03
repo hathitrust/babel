@@ -150,7 +150,7 @@ else {
 
     print qq{<p>Please <a href="https://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami$ticket" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
 
-    print q{<p>Questions?  Contact us at <a href="mailto:feedback@issues.hathitrust.org">feedback@issues.hathitrust.org</a> };
+    print q{<p>Questions?  Contact us at <a href="mailto:support@hathitrust.org">support@hathitrust.org</a> };
 }
 print qq{</body>};
 
