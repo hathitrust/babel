@@ -11,7 +11,7 @@ Note:
 
 * ___REQUESTOR_TO_ADDRESS___ is allowed to have up to ___MAX_ATTEMPTED_REGISTRATIONS___ unconfirmed requests and up to ___MAX_ACTIVE_REGISTRATIONS___ confirmed requests. You have ___ACTUAL_REGRISTRATIONS___ unconfirmed ___UREQ___ and ___ACTUAL_CONFIRMATIONS___ confirmed ___CREQ___. 
 
-* Please contact us at feedback@issues.hathitrust.org or simply reply to this email with questions or for assistance.
+* Please contact us at support@hathitrust.org or simply reply to this email with questions or for assistance.
         
 
 Regards,
