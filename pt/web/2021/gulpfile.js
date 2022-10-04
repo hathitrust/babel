@@ -51,7 +51,8 @@ stylesheets.options = {
 };
 
 var autoprefixerOptions = {
-  // browsers: ['last 2 versions', '> 5%', 'Firefox ESR']
+  // browsers: ['last 2 versions', '> 5%', 'Firefox ESR', 'IE 11'],
+  grid: 'autoplace',
 };
 
 // Compile sass into CSS

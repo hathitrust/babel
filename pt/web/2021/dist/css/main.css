@@ -623,6 +623,7 @@ html[data-details-polyfilled="true"] details > summary:first-child {
           padding-inline-start: 1rem;
   -webkit-user-select: none;
      -moz-user-select: none;
+      -ms-user-select: none;
           user-select: none;
   display: flex;
   justify-content: space-between;
