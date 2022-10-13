@@ -99,7 +99,6 @@ head.ready(function() {
             $block.find("input[name=shrd][value=" + options.shrd + ']').attr("checked", "checked");
         } else if ( ! HT.login_status.logged_in ) {
             $block.find("input[name=shrd][value=0]").attr("checked", "checked");
-            $('<div class="alert alert-info"><strong>This collection will be temporary</strong>. Log in to create permanent and public collections.</div>').appendTo($block);
             // remove the <label> that wraps the radio button
             $block.find("input[name=shrd][value=1]").remove();
             $block.find("label[for='edit-shrd-1']").remove();
@@ -150,6 +149,10 @@ head.ready(function() {
                 }
             }
         ]);
+
+        if (!HT.login_status.logged_in) {
+            $('<div class="alert alert-danger" style="text-align: left; flex-basis: 100%;"><strong>This collection will be temporary</strong>. Log in to create permanent and public collections.</div>').insertBefore($dialog.find(".modal__footer button.modal__btn:first"));
+        }
 
         $dialog.find("input[type=text],textarea").each(function() {
             var $this = $(this);

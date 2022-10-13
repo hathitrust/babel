@@ -863,6 +863,7 @@ a.text-link svg {
 
 .modal__footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 

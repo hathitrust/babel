@@ -880,6 +880,7 @@ $navigator-background: #444;
 
 .modal__footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
