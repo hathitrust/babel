@@ -58,6 +58,8 @@ sub coll_list_helper
 
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');
     $C->set_object('Collection', $co);
+    my $session_id = $C->has_object('Session') ? 
+        $C->get_object('Session')->get_session_id() : 0;
 
     my $cgi = $C->get_object('CGI');
     my $colltype = $cgi->param('colltype') || 'featured';
@@ -86,7 +88,9 @@ sub coll_list_helper
         elsif ( $colltype eq 'my-collections' || $colltype eq 'priv' ) { $selected = 'TRUE' if ( $$coll_hashref{is_owned} ); }
         else { $selected = 'TRUE'; }
 
-        $output .= wrap_string_in_tag($s, 'Collection', [['featured', $featured], ['updated', $recently_updated], ['selected', $selected], ['owned',$owned]]);
+        my $is_temporary = ( $session_id eq $$coll_hashref{owner} ) ? 'TRUE' : 'FALSE';
+
+        $output .= wrap_string_in_tag($s, 'Collection', [['featured', $featured], ['updated', $recently_updated], ['selected', $selected], ['owned',$owned], [ 'temporary', $is_temporary]]);
     }
 
     ## print STDERR "COLL_LIST_HELPER : " . ( time() - $start ) . "\n";
@@ -212,6 +216,10 @@ sub get_coll_xml
     my $s = '';
 
     my $config = $C->get_object('MdpConfig');
+    my $session_id =
+        $C->has_object('Session')
+      ? $C->get_object('Session')->get_session_id()
+      : 0;
 
     $$coll_hashref{'num_items'} = 0 unless ( defined($$coll_hashref{'num_items'}) );
 
@@ -229,6 +237,9 @@ sub get_coll_xml
     $s .= wrap_string_in_tag($$coll_hashref{'modified_display'},      'Updated_Display');
     $s .= wrap_string_in_tag($$coll_hashref{'featured'},      'Featured');
     $s .= wrap_string_in_tag($$coll_hashref{'branding'},      'Branding');
+
+    my $is_temporary = ( $session_id eq $$coll_hashref{'owner'} );
+    $s .= wrap_string_in_tag($is_temporary ? 'TRUE' : 'FALSE', 'IsTemporary');
 
     $s .= wrap_string_in_tag(lc $$coll_hashref{collname}, 'CollName_Sort');
 

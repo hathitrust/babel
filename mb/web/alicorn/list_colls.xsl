@@ -47,7 +47,9 @@
       <xsl:value-of select="//CollectionSizesJs" />
     </script>
     <style type="text/css">
-
+      .record--temporary .xbadge {
+        text-transform: uppercase;
+      }
     </style>
   </xsl:template>
 
@@ -59,20 +61,14 @@
     <xsl:call-template name="build-results-container" />
   </xsl:template>
 
-  <xsl:template name="build-container-title">
-    <div>
-      <h1 class="listcs-intro" style="margin-left: 0; font-weight: normal; margin-bottom: 1rem">
-          Collections are a way to group items for public or private use.
-      </h1>
-    </div>
-  </xsl:template>
-
   <xsl:template name="build-results-container">
     <div class="results-container" data-colltype="{//Param[@name='colltype']}">
 
       <h1 class="listcs-intro" style="margin-left: 0; font-weight: normal; margin-bottom: 1rem">
           Collections are a way to group items for public or private use.
       </h1>
+
+      <xsl:call-template name="build-temporary-collection-alert" />
 
       <div class="results-summary-container">
         <h2 class="results-summary">
@@ -212,6 +208,7 @@
           datum.isShared = '<xsl:value-of select="Shared" />' == '1';
           datum.DeleteCollHref = '<xsl:value-of select="DeleteCollHref" />';
           datum.isOwned = '<xsl:value-of select="@owned" />' == 'TRUE';
+          datum.isTemporary  = '<xsl:value-of select="@temporary" />' == 'TRUE';
           HT.listcs.bucket.push(datum);
       </xsl:for-each>
 
@@ -278,6 +275,15 @@
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template name="build-temporary-collection-alert">
+    <xsl:if test="count(//CollList/Collection[@temporary='TRUE']) &gt; 0">
+      <div class="alert alert-block alert-danger">
+        <strong>You have temporary collections.</strong>
+        Log in to make the collections permanent.
+      </div>
+    </xsl:if>
+  </xsl:template>
+  
   <xsl:template match="Collection">
     <article data-collid="{CollId}">
       <xsl:attribute name="class">
@@ -287,6 +293,9 @@
         </xsl:if>
         <xsl:if test="Owner = $gUserId">
           <xsl:text> record--owned</xsl:text>
+        </xsl:if>
+        <xsl:if test="@temporary = 'TRUE'">
+          <xsl:text> record--temporary</xsl:text>
         </xsl:if>
       </xsl:attribute>
       <div class="cover">
@@ -306,8 +315,17 @@
                   <span class="xbadge xbadge-dark">Featured</span>
                 </xsl:if>
                 <xsl:if test="Owner = $gUserId">
+                  <xsl:choose>
+                    <xsl:when test="IsTemporary = 'TRUE'">
+                      <span class="xbadge xbadge-secondary" style="text-transform: uppercase">Temporary</span>
+                    </xsl:when>
+                    <xsl:when test="Shared = '0'">
+                      <span class="xbadge xbadge-secondary">Private</span>
+                    </xsl:when>
+                    <xsl:otherwise />
+                  </xsl:choose>
                   <xsl:if test="Shared = '0'">
-                    <span class="xbadge xbadge-secondary">Private</span>
+                    <!-- <span class="xbadge xbadge-secondary">Private</span> -->
                     <xsl:if test="NumItems &gt; 0">
                       <button class="btn btn-sm action-change-shared" data-href="/cgi/mb?a=editst;shrd=1;collid={CollId};colltype={$gView}">Make Public</button>
                     </xsl:if>
@@ -357,7 +375,10 @@
     <div class="sidebar-container active-filters--empty" id="sidebar">
       <button class="for-mobile sidebar-toggle-button filter-group-toggle-show-button" aria-expanded="false">
         <span class="flex-space-between flex-center">
-          <h3 class="filter-group-heading">Options/Filters<span class="total-filter-count"></span></h3>
+          <h3 class="filter-group-heading">
+            Options/Filters
+            <span class="total-filter-count"></span>
+          </h3>
           <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon"><use xlink:href="#panel-collapsed"></use></svg> -->
           <i class="icomoon icomoon-sidebar-toggle" aria-hidden="true"></i>
         </span>
@@ -366,8 +387,7 @@
       <h2 class="filters-heading">Filter collections</h2>
 
       <h3 class="active-filters-heading">Current Filters</h3>
-      <ul class="active-filters-list">
-      </ul>
+      <ul class="active-filters-list"></ul>
 
       <ul class="filter-group-list">
         <li>
@@ -380,8 +400,6 @@
         <xsl:call-template name="build-collection-tools" />
       </xsl:if>
 
-      <!-- <xsl:call-template name="sidebar-filter" /> -->
-      <!-- <xsl:call-template name="sidebar-about-this-collection" /> -->
     </div>
   </xsl:template>
 

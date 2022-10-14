@@ -31,6 +31,20 @@
 
   <xsl:variable name="coll_id" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']" />
 
+  <xsl:variable name="gIsOwnedByUser">
+    <xsl:choose>
+      <xsl:when test="//EditCollectionWidget/OwnedByUser = 'yes'">TRUE</xsl:when>
+      <xsl:otherwise>FALSE</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <xsl:variable name="gIsTemporaryCollection">
+    <xsl:choose>
+      <xsl:when test="//EditCollectionWidget/Temporary = '1'">TRUE</xsl:when>
+      <xsl:otherwise>FALSE</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
   <xsl:template name="setup-html-data-attributes">
     <xsl:attribute name="data-anlaytics-dimension">
       <xsl:text>dimension2=</xsl:text>
@@ -239,7 +253,7 @@
           </use>
         </svg>
       </div>
-      <span class="flex-space-between flex-center" id="${label}">
+      <span class="flex-space-between flex-center" id="{$label}">
         <span class="filter-name"><xsl:value-of select="$name" /><xsl:text> </xsl:text></span>
         <xsl:if test="$count > 0">
           <span class="filter-count"><xsl:value-of select="$display" /></span>
@@ -249,7 +263,7 @@
   </xsl:template>
 
   <xsl:template name="sidebar-about-this-collection">
-    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
+    <xsl:if test="$gIsOwnedByUser = 'TRUE'">
       <div class="panel">
         <h3>About this Collection</h3>
         <dl class="metadata" style="margin-bottom: .5rem">
@@ -260,7 +274,7 @@
           <dt>Status</dt>
           <dd class="status"><xsl:value-of select="//EditCollectionWidget/Status" /></dd>
         </dl>
-        <xsl:if test="//EditCollectionWidget/OwnedByUser='yes' ">
+        <xsl:if test="$gIsOwnedByUser = 'TRUE'">
           <xsl:call-template name="collection-edit-metadata" />
         </xsl:if>
       </div>
@@ -294,7 +308,7 @@
         <xsl:otherwise>1</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
+    <xsl:if test="$gIsOwnedByUser = 'TRUE'">
       <div style="display: flex; align-items: center; position: absolute; right: 0; top: 50%; transform: translateY(-50%); gap: 0.5rem;">
         <button
           class="btn btn-sm"
@@ -351,7 +365,7 @@
 
   <xsl:template name="transfer-this-collection">
     <xsl:variable name="transfer-link" select="//EditCollectionWidget/TransferLink" />
-    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes' and normalize-space($transfer-link)">
+    <xsl:if test="$gIsOwnedByUser = 'TRUE' and normalize-space($transfer-link)">
       <div class="panel">
 
         <h3>Transfer Collection</h3>
@@ -737,7 +751,7 @@
           </xsl:for-each>
         </select>
         <button class="button btn" id="addits">Add</button>
-        <xsl:if test="/MBooksTop/EditCollectionWidget/OwnedByUser='yes' ">
+        <xsl:if test="$gIsOwnedByUser = 'TRUE'">
           <xsl:call-template name="build-item-selected-owner-actions"/>
         </xsl:if>
       </div>
@@ -807,13 +821,21 @@
       <div class="collection-header">
         <div style="display: flex; flex-grow: 1; flex-direction: row; position: relative">
           <h1 style="margin-top: 0; position: relative">
-            <xsl:if test="//EditCollectionWidget/Status = 'private'">
-              <span style="margin-right: .25rem">
-                <i class="icomoon-locked icomoon" aria-hidden="true"></i>
-              </span>
-            </xsl:if>
+            <xsl:choose>
+              <xsl:when test="$gIsTemporaryCollection = 'TRUE'">
+                <span style="margin-right: .25rem">
+                  <i class="icomoon-warning icomoon" aria-hidden=" true"></i>
+                </span>
+              </xsl:when>
+              <xsl:when test="//EditCollectionWidget/Status = 'private'">
+                <span style="margin-right: .25rem">
+                  <i class="icomoon-locked icomoon" aria-hidden="true"></i>
+                </span>
+              </xsl:when>
+              <xsl:otherwise />
+            </xsl:choose>
             <xsl:value-of select="//EditCollectionWidget/CollName" />
-            <xsl:if test="//EditCollectionWidget/Status = 'private'">
+            <xsl:if test="$gIsTemporaryCollection = 'FALSE' and //EditCollectionWidget/Status = 'private'">
               <span class="offscreen">
                 <xsl:text> (Collection is private)</xsl:text>
               </span>
@@ -840,6 +862,13 @@
               </xsl:otherwise>
             </xsl:choose>
           </p>          
+        </xsl:if>
+
+        <xsl:if test="$gIsTemporaryCollection = 'TRUE'">
+          <div class="alert alert-block alert-danger" style="margin-top: 1rem">
+            <strong>This collection is temporary.</strong>
+            Log in to make this collection permanent.
+          </div>
         </xsl:if>
 
         <!-- <xsl:call-template name="build-collection-branding" /> -->

@@ -157,7 +157,7 @@ var ListBrowser = function(argv, elem) {
       $this.attr("aria-checked", "true").attr("tabindex", 0);
       $this.find("svg use").attr('xlink:href', '#radio-checked');
       $this.get(0).focus();
-      console.log($this.get(0), document.activeElement);
+      // console.log($this.get(0), document.activeElement);
 
       root.filter_items(filter);
       root.apply_filters();
@@ -373,19 +373,23 @@ var ListBrowser = function(argv, elem) {
               html += '<span class="xbadge xbadge-dark">Featured</span> ';
             }
             if ( datum.isOwned ) {
-              if ( ! datum.isShared ) {
+              if ( datum.isTemporary ) {
+                html += '<span class="xbadge xbadge-secondary">Temporary</span> ';
+              } else if ( ! datum.isShared ) {
                 html += '<span class="xbadge xbadge-secondary">Private</span> ';
-                if ( datum.NumItems > 0 && datum.isOwnerAffiliated ) {
+              }
+              if ( datum.isOwnerAffiliated && datum.numItems > 0 ) {
+                if ( !datum.isShared ) {
                   var href = '/cgi/mb?a=editst;shrd=1;c=' + datum.CollId + ';colltype=' + options.view;
                   html +=
                     '<button class="btn btn-sm action-change-shared" data-href="{HREF}">Make Public</button>'
-                    .replace('{HREF}', href);
+                      .replace('{HREF}', href);
+                } else {
+                  var href = '/cgi/mb?a=editst;shrd=0;c=' + datum.CollId + ';colltype=' + options.view;
+                  html +=
+                    '<button class="btn btn-sm action-change-shared" data-href="{HREF}">Make Private</button>'
+                      .replace('{HREF}', href);
                 }
-              } else {
-                var href = '/cgi/mb?a=editst;shrd=0;c=' + datum.CollId + ';colltype=' + options.view;
-                html +=
-                  '<button class="btn btn-sm action-change-shared" data-href="{HREF}">Make Private</button>'
-                  .replace('{HREF}', href);
               }
               html +=
                 '<button class="btn btn-sm action-delete" data-href="{HREF}">Delete</button>'
@@ -420,6 +424,10 @@ var ListBrowser = function(argv, elem) {
 
       if ( datum.isOwned) {
         node.classList.add('record--owned');
+      }
+
+      if ( datum.isTemporary ) {
+        node.classList.add('record--temporary');
       }
 
       fragment.appendChild(clone);
