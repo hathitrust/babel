@@ -4,6 +4,8 @@ use Utils;
 use Utils::Cache::Storable;
 use Digest::MD5 qw(md5_hex);
 
+# my %CACHEABLE_ACTIONS = ( 'listis' => 1 );
+
 sub new {
     my $class = shift;
     my $self = {};
@@ -17,6 +19,12 @@ sub _initialize {
     my ( $C, $coll_id ) = @_;
     $$self{C} = $C;
     $$self{coll_id} = $coll_id;
+
+    
+    if ( defined ( my $action = $C->get_object('CGI')->param('a') ) ) {
+        $action =~ s,^list,,;
+        $$self{action} = $action;
+    }
 
     # set up cache
     my $cache_dir = Utils::get_true_cache_dir($C, 'mb_cache_dir');
@@ -33,6 +41,9 @@ sub key {
         my @parts = ( $$self{coll_id} );
         if ( defined $cgi->param('q1') ) {
             push @parts, scalar $cgi->param('q1');
+        }
+        if ( defined $$self{action} ) {
+            push @parts, $$self{action};
         }
         push @parts, sort $cgi->multi_param('facet');
         $$self{key} = md5_hex(join('/', @parts));

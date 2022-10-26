@@ -385,7 +385,12 @@ sub test_mondo_collection {
          $co->count_all_items_for_coll($coll_id) >= $mondo_check_max_item_ids    
        ) {
         $user_query_string = '*' unless ( $user_query_string );
-        print $cgi->redirect("/cgi/ls?a=srchls;c=$coll_id;q1=$user_query_string");
+
+        my $redirect_url = "/cgi/ls?a=srchls;c=$coll_id;q1=$user_query_string";
+        foreach my $facet ( $cgi->multi_param('facet') ) {
+            $redirect_url .= qq{;facet=$facet};
+        }
+        print $cgi->redirect($redirect_url);
         exit;        
     }
 

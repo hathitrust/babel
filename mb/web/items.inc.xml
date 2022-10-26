@@ -24,3 +24,4 @@
 
   <LimitToFullText><?LIMIT_TO_FULL_TEXT?></LimitToFullText>
   <DownloadMetadataAction><?DOWNLOAD_METADATA_BASE?></DownloadMetadataAction>
+  <Facets><?FACETS?></Facets>

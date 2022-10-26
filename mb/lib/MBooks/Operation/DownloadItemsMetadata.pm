@@ -115,6 +115,7 @@ sub execute_operation
 
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');    
     my $owner = $co->get_user_id;
+    $C->set_object('Collection', $co);
 
     my $CS = $act->get_transient_facade_member_data($C, 'collection_set_object'); 
     

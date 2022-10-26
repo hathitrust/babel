@@ -34,6 +34,7 @@ use CollectionSet;
 
 use MBooks::Operation::Status;
 use MBooks::Utils::ResultsCache;
+use MBooks::FacetConfig;
 
 use JSON::XS;
 
@@ -76,6 +77,12 @@ sub call {
     $C->set_object('MdpConfig', $config);
     $C->set_object('App', new App);
 
+    # additional configuration for facets and relevance weighting
+    my $facet_config =
+    new MBooks::FacetConfig( $C,
+        $ENV{SDRROOT} . "/mb/lib/Config/facetconfig.pl" );
+    $C->set_object( 'FacetConfig', $facet_config );
+
     my $cgi = CGI::PSGI->new($env);
     $C->set_object('CGI', $cgi);
 
@@ -93,6 +100,7 @@ sub call {
 
     my $dbh = $C->get_object('Database')->get_DBH();
     my $co = Collection->new( $dbh, $config, $auth );
+    $C->set_object('Collection', $co);
 
     my $CS = CollectionSet->new( $dbh, $config, $auth );
 
@@ -141,6 +149,7 @@ sub call {
     if ( $request->param('a') && $request->param('a') eq 'download-status' ) {
         $response = Plack::Response->new(200);
         $response->content_type('application/javascript');
+        $response->headers({'Cache-Control' => 'no-cache', 'Pragma' => 'no-cache' });
         $response->body(JSON::XS::encode_json({ status => $ses->get_persistent($download_key) }));
         return $response->finalize;
     }
@@ -261,8 +270,6 @@ sub get_search_results {
             require MBooks::Query::FullText;
             require MBooks::Searcher::FullText;
             require Search::Searcher;
-
-            $C->set_object( 'Collection', $co );
 
             my $user_query_string = $self->q1;
             my $Q = new MBooks::Query::FullText( $C, $user_query_string );

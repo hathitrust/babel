@@ -57,6 +57,7 @@ sub handle_OPERATION_RESULTS_PI
     $temp_cgi->param('q1', $cgi->param('q1'));
     $temp_cgi->param('sz', $cgi->param('sz'));
     $temp_cgi->param('debug', $cgi->param('debug'));
+    $temp_cgi->param('facet', $cgi->multi_param('facet'));
 
     my $url = Utils::url_to($temp_cgi, undef, 'relative');
 

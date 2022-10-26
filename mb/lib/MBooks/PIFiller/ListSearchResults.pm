@@ -40,10 +40,12 @@ use MBooks::Utils::ResultsCache;
 use Namespaces;
 
 use utf8;
+use URI::Escape;
 
 BEGIN {
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
+    require "MBooks/PIFiller/Common/Facets.pm";
 }
 
 # ---------------------------------------------------------------------
@@ -178,6 +180,7 @@ sub handle_REL_SORT_HREF_PI
     my ($C, $act, $piParamHashRef) = @_;
     return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'rel')
 }
+
 
 #XXX this will convert "&" to "&amp;" and > and < to &gt; and &lt;
 # The load programs should never put naked "&" in the data but the marc loader was missing the normalization

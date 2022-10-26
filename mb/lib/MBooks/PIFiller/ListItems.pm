@@ -46,6 +46,7 @@ BEGIN
     require "PIFiller/Common/Globals.pm";
     require "PIFiller/Common/Group_HEADER.pm";
     require "PIFiller/Common/COLLECTIONS_OWNED_JS.pm";
+    require "MBooks/PIFiller/Common/Facets.pm";
 }
 
 

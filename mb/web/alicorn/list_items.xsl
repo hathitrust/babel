@@ -75,6 +75,15 @@
         text-align: right;
 
       }
+
+      html#mb-page .sidebar-container .filter-list-container ul li.filter-item:nth-child(n+6) {
+        display: none;
+      }
+
+      html#mb-page .sidebar-container .filter-list-container ul.filter-list--expanded li.filter-item {
+       display: list-item;
+      }
+
     </style>
   </xsl:template>
 
@@ -145,27 +154,66 @@
       <xsl:call-template name="build-collection-branding" />
       <!-- <xsl:call-template name="sidebar-about-this-collection" /> -->
 
-      <xsl:call-template name="sidebar-filter" />
-
-      <h2 class="filters-heading" style="border-top: 8px double #ddd">Collection Tools</h2>
+      <h2 class="filters-heading">Collection Tools</h2>
       <xsl:call-template name="share-this-collection" />
       <xsl:call-template name="download-metadata-form" />
       <xsl:call-template name="transfer-this-collection" />
+
+      <!-- <h2 class="filters-heading" style="border-top: 8px double #ddd">Collection Tools</h2> -->
+      <xsl:call-template name="sidebar-filter" />
+
     </div>
   </xsl:template>
 
   <xsl:template name="sidebar-filter">
     <xsl:variable name="q" select="normalize-space(//QueryString)" />
+    <xsl:variable name="current" select="//Facets/SelectedFacets[multiselect/multiselectClause|facetValue|daterange]" />
 
-    <div class="panelx" style="width: 95%; margin: 0 auto 1rem">
-      <xsl:if test="(normalize-space($q) and $q != '*')">
-        <h2 class="active-filters-heading">Current Filters</h2>
+    <!-- style="width: auto; margin: 0 auto 1rem" -->
+    <div class="">
+      <h2 class="filters-heading" style="font-size: 1.125rem; border-top: 8px double #ddd; padding-top: 1rem;">Filter your search</h2>
+      <xsl:if test="(normalize-space($q) and $q != '*') or count($current) > 0">
+        <h3 class="active-filters-heading">Current Filters</h3>
         <ul class="active-filters-list">
           <xsl:call-template name="build-search-query-summary" />
+          <xsl:for-each select="$current/multiselect/multiselectClause">
+            <li class="active-filter-item">
+              <button class="active-filter-button" data-href="/cgi/{unselectURL}">
+                <span class="flex-space-between flex-center">
+                  <span class="active-filter-button-text">
+                    <xsl:value-of select="fieldName" />
+                    <xsl:text>: </xsl:text>
+                    <xsl:value-of select="facetValue" />
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" version="1.1" class="icon">
+                    <use xlink:href="#action-remove"></use>
+                  </svg>
+                  <span class="offpage">Remove</span>
+                </span>
+              </button>
+            </li>
+          </xsl:for-each>
+          <xsl:for-each select="$current/facetValue">
+            <li class="active-filter-item">
+              <button class="active-filter-button" data-href="/cgi/{unselectURL}">
+                <span class="flex-space-between flex-center">
+                  <span class="active-filter-button-text">
+                    <xsl:value-of select="fieldName" />
+                    :
+                    <xsl:value-of select="@name" />
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" version="1.1" class="icon">
+                    <use xlink:href="#action-remove"></use>
+                  </svg>
+                  <span class="offpage">Remove</span>
+                </span>
+              </button>
+            </li>
+          </xsl:for-each>
         </ul>
       </xsl:if>
       <!-- <h2 class="filters-heading">Filter items</h2> -->
-      <h2 class="filters-heading" style="font-size: 1.125rem; padding-bottom: 0">Filter your search</h2>
+      <!-- <h2 class="filters-heading" style="font-size: 1.125rem; padding-bottom: 0">Filter your search</h2> -->
       <h3 class="filters-heading" id="filter-item-viewability-desc">Item Viewability</h3>
       <ul class="filter-group-list">
         <xsl:if test="//AllItemsCount > 0">
@@ -194,6 +242,68 @@
           </ul>
         </li>
         </xsl:if>
+
+        <xsl:for-each select="//Facets/unselectedFacets/facetField[.//facetValue]">
+          <xsl:variable name="filter" select="." />
+          <xsl:variable name="index" select="position()" />
+          <xsl:variable name="total" select="count($filter/facetValue)" />
+          <li class="filter-group filter-group-multiselect">
+            <button class="filter-group-toggle-show-button" aria-expanded="true">
+              <span class="flex-space-between flex-center">
+                <h3 class="filter-group-heading">
+                  <xsl:value-of select="$filter/@name" />
+                </h3>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon">
+                  <use xlink:href="#panel-expanded"></use>
+                </svg>
+              </span>
+            </button>
+            <div class="filter-list-container">
+              <ul class="filter-list">
+                <xsl:for-each select="$filter/facetValue">
+                  <xsl:variable name="label" select="normalize-space(@name)" />
+                  <xsl:variable name="count" select="facetCount" />
+
+                  <li class="filter-item">
+                    <button class="filter-button" data-href="/cgi/{url}">
+                      <xsl:attribute name="aria-label">
+                        <xsl:value-of select="$label" />
+                        <xsl:text> - </xsl:text>
+                        <xsl:value-of select="$count" />
+                      </xsl:attribute>
+                      <span class="flex-space-between flex-center">
+                        <span class="filter-value">
+                          <xsl:value-of select="$label" />
+                        </span>
+                        <span class="filter-count">
+                          <xsl:value-of select="$count" />
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                </xsl:for-each>
+                <xsl:if test="$total &gt; 6">
+                  <li class="filter-action">
+                    <button class="button-link-light show-all-button" aria-expanded="false">
+                      <span class="show-all-button__text">
+                        Show all
+                        <xsl:value-of select="$total" />
+                        <xsl:text> </xsl:text>
+                        <xsl:value-of select="$filter/@name" />
+                        Filters
+                      </span>
+                      <span class="show-fewer-button__text">
+                        Show fewer
+                        <xsl:value-of select="$filter/@name" />
+                        Filters
+                      </span>
+                    </button>
+                  </li>
+                </xsl:if>
+              </ul>
+            </div>
+          </li>
+        </xsl:for-each>
       </ul>
     </div>
   </xsl:template>
@@ -424,6 +534,11 @@
             </xsl:choose>
             <xsl:if test="//Param[@name='lmt']">
               <input type="hidden" name="lmt" value="{//Param[@name='lmt']}" />
+            </xsl:if>
+            <xsl:if test="//Param[@name='facet']">
+              <xsl:for-each select="//Param[@name='facet']">
+                <input type="hidden" name="facet" value="{.}" />
+              </xsl:for-each>
             </xsl:if>
 
             <input type="hidden" name="source" value="hathifiles" />

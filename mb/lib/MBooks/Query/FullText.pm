@@ -24,8 +24,10 @@ use strict;
 use Utils;
 use Debug::DUtils;
 use Collection;
-use base qw(Search::Query);
+use MBooks::FacetConfig;
 use URI::Escape;
+
+use base qw(Search::Query);
 
 our $COUNTS = 1;
 
@@ -50,6 +52,8 @@ sub AFTER_Query_initialize
     {
         $self->get_ids_f_standard_user_query($C);
     }
+    my $facet_config = $C->get_object('FacetConfig');
+    $self->{'facet_config'} = $facet_config;
 }
 
 # ---------------------------------------------------------------------
@@ -167,6 +171,7 @@ sub get_Solr_query_string
     my $VERSION = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $START_ROWS = qq{&start=0&rows=1000000};
     my $INDENT = qq{&indent=off};
+    my $WRITER = '&wt=json&json.nl=arrarr';
 
     # a Solr Filter Query to limit to the collections containing the
     # ids requested or to limit to the collection field itself
@@ -181,9 +186,26 @@ sub get_Solr_query_string
         $FQ = $self->get_id_FQ();
     }
 
-    if ( my @facets = $cgi->multi_param('facet') ) {
-        foreach my $facet ( @facets ) {
-            $FQ .= qq{&fq=$facet};
+    # do we need to rename facet_config since it contains more than just facet config info?
+    my $config = $self->get_facet_config;  
+    
+    # get date type (date|both) both = enum cron date if exists otherwise bib date
+    my $date_type= $self->get_date_type;
+    my $FACETS = $self->__get_facets;
+
+    my $FACETQUERY = "";
+    my @facetquery = $cgi->multi_param('facet');
+
+    if (@facetquery) {
+        foreach my $fquery (@facetquery) {
+
+            #change datequery to proper type if using date=both
+            if ( $date_type eq "both" && $fquery =~ /publishDateRange/ ) {
+                $fquery =~ s/publishDateRange/bothPublishDateRange/g;
+            }
+
+            my $cleaned_fquery = $self->__clean_facet_query($fquery);
+            $FACETQUERY .= '&fq=' . $cleaned_fquery;
         }
     }
 
@@ -196,7 +218,7 @@ sub get_Solr_query_string
     # q=dog*&fl=id,score&fq=coll_id:(276)&$version=2.2,&start=0&rows=1000000&indent=off
     # q=dog*&fl=id,score&fq=extern_id:(mdp.3910534567+OR+mdp.3910523456+OR+mdp.3910512345)&$version=2.2,&start=0&rows=1000000&indent=off
 
-    my $solr_query_string = $USER_Q . $FL . $FQ . $VERSION . $START_ROWS . $INDENT;
+    my $solr_query_string = $USER_Q . $FL . $FQ . $FACETS . $FACETQUERY . $VERSION . $WRITER . $START_ROWS . $INDENT;
 
 
     if (DEBUG('query')||DEBUG('all')) {
@@ -289,6 +311,91 @@ sub get_Solr_internal_query_string
 sub disable_sort {
     my $self = shift;
     $$self{disable_sort} = 1;
+}
+
+sub get_facet_config
+{
+    my $self = shift;
+    return $self->{'facet_config'}
+}
+# ---------------------------------------------------------------------
+sub get_date_type
+{
+    my $self =shift;
+    my $config=$self->get_facet_config;
+    my $date_type=$config->{date_type};
+    if (DEBUG('enum'))
+    {
+	$date_type='both';
+    }
+    return $date_type;
+}
+
+sub __get_facets {
+    my $self = shift;
+    my $FACETS;
+    my $facet_config = $self->get_facet_config;
+    my $FACET_LIMIT  = $facet_config->get_facet_limit;
+
+    my $facetfields = $facet_config->get_facet_order();
+    my $FACET_FIELDS;
+    my $date_type = $self->get_date_type;
+
+    foreach my $field ( @{$facetfields} ) {
+
+        #date fix
+        if ( $field eq "publishDateRange" && $date_type eq 'both' ) {
+            $field = 'bothPublishDateRange';
+        }
+
+        $FACET_FIELDS .= '&facet.field=' . $field;
+    }
+
+    $FACETS .=
+        '&facet.mincount=1&facet=true&facet.limit='
+      . $FACET_LIMIT
+      . $FACET_FIELDS;
+    return $FACETS;
+}
+
+sub __clean_facet_query
+{
+    my $self = shift;
+    my $fquery = shift;
+    
+    my $cleaned;
+    #facet=language:%22German%22
+    my ($field,@rest)=split(/\:/,$fquery);
+    my $string=join(':',@rest);
+    # remove leading and trailing quotes
+    $string=~s/^\"//;
+    $string=~s/\"$//;
+    #XXX order dependent.  Must remove escape backslashes in string before adding backslashes to double or single quotes
+    # backslash
+    $string=~s/\\/\\\\/g;  
+
+  # back slash escape any quotes or backslashes
+    # XXX what about other lucene chars?
+    $string=~s/\"/\\\"/g;
+    #single quotes
+   # $string=~s/\'/\\\'/g;  
+  
+    # replace leading and trailing quotes
+    $string = '"'. $string . '"';
+        
+    Utils::remap_cers_to_chars(\$string);
+    # XXX Need to hex escape question mark and then protect it with a backslash, note Solr is ok if fed a question mark
+    # code in Search::Searcher::__get_request_object splits a URL on "?" so leaving a non-hex-escaped queston mark
+    # will cause the split to truncate the query. uri escape will take care of it
+  
+    # Note: facet fields mostly? all? type string which is not analyzed
+    # So we should hexencode url chars and then escape the rest
+    # Lucene special chars are: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+    # dismax seems to not have problems with lucene special chars in fq esp if they are url encoded
+    my $escaped_string=URI::Escape::uri_escape_utf8($string);
+    
+    $cleaned=$field . ':' . $escaped_string;
+    return $cleaned;
 }
 
 1;

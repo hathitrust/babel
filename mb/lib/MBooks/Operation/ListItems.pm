@@ -35,6 +35,8 @@ use Debug::DUtils;
 
 use MBooks::Operation::Status;
 use MBooks::Utils::Sort;
+use MBooks::Index;
+use MBooks::Utils::ResultsCache;
 
 delete $INC{"MBooks/Operation/OpListUtils.pl"};
 require "MBooks/Operation/OpListUtils.pl";
@@ -97,6 +99,7 @@ sub execute_operation
 
     my $co = $act->get_transient_facade_member_data($C, 'collection_object');    
     my $owner = $co->get_user_id;
+    $C->set_object('Collection', $co);
 
     my $CS = $act->get_transient_facade_member_data($C, 'collection_set_object'); 
     
@@ -163,6 +166,13 @@ sub execute_operation
     $act->set_transient_facade_member_data($C,'coll_owner_display', $coll_owner_display);
 
     $act->set_transient_facade_member_data($C, 'co', $co);
+
+    # check that we have to generate facets
+    my $search_result_data_hashref = MBooks::Utils::ResultsCache->new($C, $coll_id)->get();
+    unless ( ref($search_result_data_hashref) ) {
+        my $ix = new MBooks::Index;
+        $search_result_data_hashref = $ix->get_coll_id_facets_counts($C, $co, $coll_id);
+    }
     
     my $callback = $cgi->param('callback');
     if ($callback && $callback =~ /[^A-Za-z0-9_]/) {

@@ -33,6 +33,8 @@ use MBooks::Searcher::FullText;
 use MBooks::Query::FullText;
 use MBooks::Result::FullText;
 
+use MBooks::FacetConfig;
+
 sub new {
     my $class = shift;
 
@@ -74,7 +76,7 @@ sub __get_counts_for_coll_id {
     my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
     my $searcher = new MBooks::Searcher::FullText($engine_uri, undef, 1);
 
-    my $query_string = qq{q=coll_id:$coll_id&fl=id&start=0&rows=0};
+    my $query_string = qq{q=coll_id:$coll_id&fl=id&start=0&rows=0&wt=json&json.nl=arrarr};
 
     my $rs = new MBooks::Result::FullText();
     $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
@@ -121,6 +123,56 @@ sub get_coll_id_all_indexed_status {
     }
 
     return ($all_indexed, $num_in_collection, $num_not_indexed, $deleted);
+}
+
+sub get_coll_id_facets_counts {
+    my $self = shift;
+    my ($C, $co, $coll_id) = @_;
+
+    # bail early if the colleciton is empty
+    return if ( $co->count_all_items_for_coll($coll_id) == 0 );
+
+    my $config = $C->get_object('MdpConfig');
+    my $engine_uri = Search::Searcher::get_random_shard_solr_engine_uri($C);
+    my $searcher = new MBooks::Searcher::FullText($engine_uri, undef, 1);
+
+    my $num_in_collection = $co->count_all_items_for_coll($coll_id);
+
+    my $query_string = "";
+    my $is_large = 0;
+
+    if ($is_large = $co->collection_is_large($coll_id, $num_in_collection)) {
+        # build a query using the collid filter
+        $query_string = qq{q=coll_id:$coll_id};
+    } else {
+        # need to build a query filtering on items
+        $query_string = qq{q=*};
+    }
+
+    my $Q = new MBooks::Query::FullText($C, $query_string);
+
+    if ( ! $is_large ) {
+        $query_string .= $Q->get_id_FQ();
+    }
+
+    $query_string .= "&start=0&rows=0&wt=json&json.nl=arrarr&fl=id";
+    $query_string .= $Q->__get_facets;
+
+    my $rs = new MBooks::Result::FullText();
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $query_string, $rs);
+
+    my %search_result_data = 
+        (
+         'result_object' => $rs,
+         'well_formed' => {
+                           'all' => $Q->well_formed(),
+                           'processed_query_string' => $Q->get_processed_query_string(),
+                          },
+        );
+
+    my $cache = MBooks::Utils::ResultsCache->new($C, $coll_id)->set(\%search_result_data);
+
+    return \%search_result_data;    
 }
 
 1;

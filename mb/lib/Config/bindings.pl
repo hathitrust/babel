@@ -168,6 +168,7 @@ $g_late_operations = [
                                                            'sz'    =>  undef,
                                                            'skin'  => undef,
                                                            'lmt'   => undef,
+                                                           'facet' => undef,
                                                           }
                                          },
 
@@ -178,6 +179,7 @@ $g_late_operations = [
                                                            'q1'    => undef,
                                                           },
                                           'opt_params' => {
+                                                           'facet' => undef,
                                                           },
                                          },
 

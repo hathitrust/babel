@@ -88,7 +88,7 @@ use Auth::Auth;
 use Access::Rights;
 
 use MBooks::Controller;
-
+use MBooks::FacetConfig;
 
 $::VERSION = 1.1200;
 
@@ -119,6 +119,11 @@ my $config = new MdpConfig(
                            $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
                           );
 $C->set_object('MdpConfig', $config);
+
+# additional configuration for facets and relevance weighting
+my $facet_config =
+  new MBooks::FacetConfig( $C, $ENV{SDRROOT} . "/mb/lib/Config/facetconfig.pl" );
+$C->set_object( 'FacetConfig', $facet_config );
 
 # Database connection
 my $db = new Database('ht_web');

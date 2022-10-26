@@ -21,12 +21,56 @@ Coding example
 
 use strict;
 
+use JSON::XS;
 use Utils;
 
 use Search::Result;
+
 use base qw(Search::Result);
 
 
+sub ingest_Solr_search_response {
+    my $self = shift;
+    my ( $code, $Solr_response_ref, $status_line, $failed_HTTP_dump ) = @_;
+
+    my $http_status_ok = ( $code eq '200' );
+
+    my ( $max_score, $num_found, $query_time ) = ( 0, 0, 0.0 );
+
+    my $parsed;    #parsed json Solr response object
+
+    if ($http_status_ok) {
+        $parsed = $self->parse_JSON_results($Solr_response_ref);
+
+        # QTime (query time in milliseconds)
+        $query_time = $parsed->{responseHeader}->{QTime};
+        $query_time = sprintf( "%.3f", $query_time / 1000 );
+
+        # Max score
+        ($max_score) = ( $parsed->{response}->{maxScore} );
+        $max_score = $max_score ? $max_score : 0.0;
+
+        # Hits
+        ($num_found) = ( $parsed->{response}->{numFound} );
+        $num_found = $num_found ? $num_found : 0;
+    }
+
+    $self->{'http_status_ok'} = $http_status_ok;
+    $self->{'response_code'}  = $code;
+    $self->{'status_line'}    = $status_line;
+    $self->{'query_time'}     = $query_time;
+    $self->{'max_score'}      = $max_score;
+    $self->{'num_found'}      = $num_found;
+
+    # May be overridden for queries that limit by rows
+    $self->{'rows_returned'}    = $num_found;
+    $self->{'failed_HTTP_dump'} = $failed_HTTP_dump;
+
+    # In Subclass:
+    if ($http_status_ok) {
+        $self->AFTER_ingest_Solr_search_response($parsed);
+    }
+}
 # ---------------------------------------------------------------------
 
 =item AFTER_Result_initialize
@@ -51,62 +95,69 @@ sub AFTER_Result_initialize
 
 Example Solr result is:
 
-<response>
-  <lst name="responseHeader">
-    <int name="status">0</int>
-    <int name="QTime">1</int>
-    <lst name="params">
-      <str name="fl">id,score</str>
-      <str name="fq">id:(4 43 46)</str>
-      <str name="q">camp</str>
-      <str name="rows">1000000</str>
-    </lst>
-  </lst>
-  <result name="response" numFound="3" start="0" maxScore="0.02694472">
-    <doc>
-       <float name="score">0.02694472</float>
-       <str name="id">43</str>
-    </doc>
-
-    [...]
-  </result>
-</response>
-
+  "response": {
+    "numFound": 36,
+    "start": 0,
+    "maxScore": 0.06646542,
+    "docs": [
+      {
+        "rights": 1,
+        "id": "pur1.32754070178151",
+        "score": 0.06646542
+      },
+      {
+        "rights": 1,
+        "id": "uc2.ark:/13960/t6xw4b92f",
+        "score": 0.04884191
+      },
+      {
+        "rights": 1,
+        "id": "uc2.ark:/13960/t4rj6471s",
+        "score": 0.044879846
+      },
+      [...]
+    ]
+  },
+  "facet_counts": {
+    "facet_queries": {},
+    "facet_fields": {
+       "facet_fields": {
+          "topicStr": [
+            [
+              "Elephants",
+              21
+            ],
+            [ ... ]
+          ]
+       }
+    }
+  }
 
 =cut
 
 # ---------------------------------------------------------------------
 sub AFTER_ingest_Solr_search_response {
     my $self = shift;
-    my $Solr_response_ref = shift;
+    my $response_ref = shift;
 
     my @coll_ids = ();
     my (@result_ids, %result_score_hash, %result_rights_hash);
 
     # Coll_ids
-    my ($coll_id_fields) = ($$Solr_response_ref =~ m,<arr name="coll_id">(.*?)</arr>,s);
-    @coll_ids = ($coll_id_fields =~ m,<long>(.*?)</long>,gs);
+    foreach my $doc ( @{ $$response_ref{response}{docs} } ) {
+        push @coll_ids, $$doc{coll_id} if ( $$doc{coll_id} );
+        push @result_ids, $$doc{id};
+        $result_score_hash{$$doc{id}} = $$doc{score};
+        $result_rights_hash{$$doc{id}} = $$doc{rights};
+    }
     $self->__set_result_coll_ids(\@coll_ids);
-
-    # Ids (i.e. HT ids, mdp.3901502345676)
-    @result_ids = ($$Solr_response_ref =~ m,<str name="id">(.*?)</str>,g);
     $self->__set_result_ids(\@result_ids);
-
-    # Relevance scores
-    my @result_scores = ($$Solr_response_ref =~ m,<float name="score">(.*?)</float>,g);
-    for (my $i=0; $i < scalar(@result_ids); $i++) {
-        $result_score_hash{$result_ids[$i]} = $result_scores[$i];
-    }
     $self->{'result_scores'} = \%result_score_hash;
-
-    my @result_rights = ($$Solr_response_ref =~ m,<int name="rights">(.*?)</int>,g);
-    for (my $i=0; $i < scalar(@result_ids); $i++) {
-        $result_rights_hash{$result_ids[$i]} = $result_rights[$i];
-    }
     $self->{'result_rights'} = \%result_rights_hash;
 
+    my $facet_hash = $$response_ref{facet_counts}{facet_fields};
+    $self->{facet_hash_ref} = $facet_hash;
 }
-
 
 
 # ---------------------------------------------------------------------
@@ -262,6 +313,17 @@ sub remove_result_ids_for
 }
 
 
+sub parse_JSON_results {
+    my $self              = shift;
+    my $Solr_response_ref = shift;
+
+    # Warning json won't escape xml entities such as "&" ">" etc.
+    my $coder  = JSON::XS->new->utf8->pretty->allow_nonref;
+    my $parsed = $coder->decode($$Solr_response_ref);
+
+    return $parsed;
+
+}
 
 1;
 

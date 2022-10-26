@@ -67,7 +67,6 @@ sub ___core_initialize
     my $config = $C->get_object('MdpConfig'); 
     if ( defined $ENV{UNAVAILABLE} ) {
         my $msg = $config->get('solr_mb_maint_msg');
-        print STDERR '___core_initialize';
         
         ASSERT(0, $msg);
     }
