@@ -51,7 +51,7 @@ my $jira_ua = new LWP::UserAgent;
 
 # --- App ---
 #
-print CGI::header();
+print $cgi->header(-charset => 'UTF-8');
 print qq{<body style="margin:3em;width:50%">};
 
 print qq{
