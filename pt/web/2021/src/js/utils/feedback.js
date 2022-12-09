@@ -7,7 +7,8 @@ HT.feedback.dialog = function() {
         '    <fieldset>' +
         '        <legend>Email Address</legend>' +
         '        <label for="email" class="offscreen">EMail Address</label>' +
-        '        <input type="text" class="input-xlarge" placeholder="[Your email address]" name="email" id="email" />' +
+        '        <input type="text" class="input-xlarge" placeholder="[Your email address]" name="email" id="email" required="required" />' +
+        '        <span class="required"><i class="icomoon icomoon-info-circle" aria-hidden="true"></i> This field is required.</span>' + 
         '        <span class="help-block">We will make every effort to address copyright issues by the next business day after notification.</span>' +
         '    </fieldset>' +
         '    <fieldset>' +

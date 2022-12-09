@@ -882,6 +882,10 @@ $navigator-background: #444;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+
+  .alert {
+    margin: 0;
+  }
 }
 
 .login-panel .modal__footer {
