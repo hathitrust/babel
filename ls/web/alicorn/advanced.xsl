@@ -166,7 +166,7 @@
                 <xsl:text> active</xsl:text>
               </xsl:if>
             </xsl:attribute>
-            <button class="btn button action-add-clause" style=""><i class="icomoon icomoon-plus" aria-hidden="true"></i> Add another group of search fields</button>
+            <button type="button" class="btn button action-add-clause" style=""><i class="icomoon icomoon-plus" aria-hidden="true"></i> Add another group of search fields</button>
             <xsl:call-template name="boolean-operator">
               <xsl:with-param name="index">GROUP</xsl:with-param>
               <xsl:with-param name="name">op3</xsl:with-param>
