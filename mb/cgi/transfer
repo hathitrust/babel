@@ -423,7 +423,7 @@ sub _render {
         my $results = $stylesheet->transform($xmldoc);
 
         $response->content_type('text/html');
-        $response->body( qq{<!DOCTYPE html>\n} . Encode::encode( 'UTF-8', $stylesheet->output_as_bytes($results) ) );
+        $response->body( qq{<!DOCTYPE html>\n} . $stylesheet->output_as_chars($results) );
     }
 
     return $response->finalize;
