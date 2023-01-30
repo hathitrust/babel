@@ -632,7 +632,7 @@
         </xsl:if>
         <summary style="font-weight: bold; padding-left: 0.75rem;">
           <div class="summary">
-            <span>Have thoughts about using HathiTrust?</span>
+            <span>Are you an undergrad?</span>
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
               <use xlink:href="#panel-collapsed"></use>
             </svg>
