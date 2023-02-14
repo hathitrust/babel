@@ -10,6 +10,8 @@
 
   <xsl:template name="list-surveys"></xsl:template>
 
+  <xsl:template name="build-survey-panel"></xsl:template>
+
   <xsl:template name="build-sidebar-beta-notice"></xsl:template>
 
   <xsl:template name="load-extra-main-script">
