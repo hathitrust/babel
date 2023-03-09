@@ -185,6 +185,8 @@
       <?GOOGLE_BOOK_LINK?>
     </ExternalLinks>
 
+    <MessagesList><?APPLICATION_MESSAGES?></MessagesList>
+
   </MdpApp>
 
   <?METS_XML?>

@@ -600,6 +600,7 @@
 
     <script>
       HT.params.featureList = <xsl:value-of select="concat(//Manifest/FeatureList, ';')"  />
+      HT.params.messagesList = <xsl:value-of select="concat(//MdpApp/MessagesList, ';')" />
     </script>
   </xsl:template>
 

@@ -1638,6 +1638,28 @@ sub handle_APPLICATION_PREFS
     return join("\n", @$xmldata);
 }
 
+sub handle_APPLICATION_MESSAGES
+    : PI_handler(APPLICATION_MESSAGES)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $ses = $C->get_object('Session');
+    my $firstPage = $C->get_object('MdpItem')->GetFirstPageSequence();
+    my $lastPage = $C->get_object('MdpItem')->GetLastPageSequence();
+
+    if ( my $messages_ref = $ses->get_transient('messages') ) {
+        my $messages_data = {};
+        foreach my $key ( sort keys %$messages_ref ) {
+            # do we need structure? or just the value?
+            my $seq = $key;
+            $seq = $lastPage if ( $seq > $lastPage );
+            $seq = $firstPage if ( $seq < $firstPage );
+            $$messages_data{$seq} = $$messages_ref{$key};
+        }
+        return encode_json($messages_data);
+    }
+    return '{}';
+}
+
 sub handle_ITEM_INDEX_STATUS
     : PI_handler(ITEM_INDEX_STATUS)
 {

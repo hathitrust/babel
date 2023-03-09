@@ -169,7 +169,7 @@ export var Base = class {
 
         var rotateButtonAction = rotateButton;
         if ( this.config().rotate === false ) { rotateButtonAction = ''; }
-        template.innerHTML = `<div class="page--toolbar"><div class="tag">${rotateButtonAction}<span class="page-label"></span></div></div><div class="page-text"></div><div class="image" style=""><img alt="" style="" height="" width="" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="" /></div>`;
+        template.innerHTML = `<div class="page--toolbar"><div class="page--message"></div><div class="tag">${rotateButtonAction}<span class="page-label"></span></div></div><div class="page-text"></div><div class="image" style=""><img alt="" style="" height="" width="" src="${placeholder}" data-placeholder-src="${placeholder}" data-thumbnail-src="" /></div>`;
       } else {
         // template = this.reader.templates[this.format] = document.createElement('div');
         template = document.createElement('div');

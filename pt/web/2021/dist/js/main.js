@@ -16802,9 +16802,6 @@ try {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return __WEBPACK_DEFAULT_EXPORT__; }
-/* harmony export */ });
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
@@ -22851,7 +22848,7 @@ Object.assign(Shepherd, {
   Tour: Tour,
   Step: Step
 });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Shepherd);
+/* harmony default export */ __webpack_exports__["default"] = (Shepherd);
 
 /***/ }),
 
@@ -26007,6 +26004,26 @@ Loader.events = Events;
 
 /***/ }),
 
+/***/ "./src/js/components/messages.js":
+/*!***************************************!*\
+  !*** ./src/js/components/messages.js ***!
+  \***************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "messages": function() { return /* binding */ messages; }
+/* harmony export */ });
+var messages = {};
+messages['ownerid'] = {
+  alert: "<p>This may not have been your link's destination. <button class=\"btn btn-link\">More information</button></p>",
+  detail: "\n  <p>The link you followed was meant to go to a specific page \n  by way of a version signature; unfortunately the signature \n  could not be resolved.</p>\n  <p>We would recommend contacting the owner of the \n  referring website to let them know that their link \n  may need to be updated.</p>"
+};
+
+
+/***/ }),
+
 /***/ "./src/js/components/views/base.js":
 /*!*****************************************!*\
   !*** ./src/js/components/views/base.js ***!
@@ -26230,7 +26247,7 @@ var Base = /*#__PURE__*/function () {
             rotateButtonAction = '';
           }
 
-          template.innerHTML = "<div class=\"page--toolbar\"><div class=\"tag\">".concat(rotateButtonAction, "<span class=\"page-label\"></span></div></div><div class=\"page-text\"></div><div class=\"image\" style=\"\"><img alt=\"\" style=\"\" height=\"\" width=\"\" src=\"").concat(placeholder, "\" data-placeholder-src=\"").concat(placeholder, "\" data-thumbnail-src=\"\" /></div>");
+          template.innerHTML = "<div class=\"page--toolbar\"><div class=\"page--message\"></div><div class=\"tag\">".concat(rotateButtonAction, "<span class=\"page-label\"></span></div></div><div class=\"page-text\"></div><div class=\"image\" style=\"\"><img alt=\"\" style=\"\" height=\"\" width=\"\" src=\"").concat(placeholder, "\" data-placeholder-src=\"").concat(placeholder, "\" data-thumbnail-src=\"\" /></div>");
         } else {
           // template = this.reader.templates[this.format] = document.createElement('div');
           template = document.createElement('div');
@@ -32285,12 +32302,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_web_url_search_params_js__WEBPACK_IMPORTED_MODULE_192___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_url_search_params_js__WEBPACK_IMPORTED_MODULE_192__);
 /* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_193__ = __webpack_require__(/*! regenerator-runtime/runtime */ "./node_modules/regenerator-runtime/runtime.js");
 /* harmony import */ var regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_193___default = /*#__PURE__*/__webpack_require__.n(regenerator_runtime_runtime__WEBPACK_IMPORTED_MODULE_193__);
-/* harmony import */ var nanoevents__WEBPACK_IMPORTED_MODULE_198__ = __webpack_require__(/*! nanoevents */ "./node_modules/nanoevents/index.js");
+/* harmony import */ var nanoevents__WEBPACK_IMPORTED_MODULE_199__ = __webpack_require__(/*! nanoevents */ "./node_modules/nanoevents/index.js");
 /* harmony import */ var _components_controls__WEBPACK_IMPORTED_MODULE_194__ = __webpack_require__(/*! ./components/controls */ "./src/js/components/controls/index.js");
 /* harmony import */ var _components_imgsrv__WEBPACK_IMPORTED_MODULE_195__ = __webpack_require__(/*! ./components/imgsrv */ "./src/js/components/imgsrv.js");
 /* harmony import */ var _components_views__WEBPACK_IMPORTED_MODULE_196__ = __webpack_require__(/*! ./components/views */ "./src/js/components/views/index.js");
-/* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_197__ = __webpack_require__(/*! lodash/debounce */ "./node_modules/lodash/debounce.js");
-/* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_197___default = /*#__PURE__*/__webpack_require__.n(lodash_debounce__WEBPACK_IMPORTED_MODULE_197__);
+/* harmony import */ var _components_messages__WEBPACK_IMPORTED_MODULE_197__ = __webpack_require__(/*! ./components/messages */ "./src/js/components/messages.js");
+/* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_198__ = __webpack_require__(/*! lodash/debounce */ "./node_modules/lodash/debounce.js");
+/* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_198___default = /*#__PURE__*/__webpack_require__.n(lodash_debounce__WEBPACK_IMPORTED_MODULE_198__);
 
 
 
@@ -32499,6 +32517,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 
 
+
 var $main = document.querySelector('main');
 window.$main = $main;
 var $header = document.querySelector('header');
@@ -32532,7 +32551,7 @@ var Reader = /*#__PURE__*/function () {
     this.options = Object.assign({
       scale: 1.0
     }, options);
-    this.emitter = (0,nanoevents__WEBPACK_IMPORTED_MODULE_198__.createNanoEvents)();
+    this.emitter = (0,nanoevents__WEBPACK_IMPORTED_MODULE_199__.createNanoEvents)();
     this.controls = {};
     this.pagedetails = {
       rotate: {},
@@ -32821,7 +32840,7 @@ var Reader = /*#__PURE__*/function () {
         });
       }
 
-      this._resizer = lodash_debounce__WEBPACK_IMPORTED_MODULE_197___default()(function () {
+      this._resizer = lodash_debounce__WEBPACK_IMPORTED_MODULE_198___default()(function () {
         // DO NOT emit resize events if we're pinch-zooming??
         if (window.visualViewport && window.visualViewport.scale > 1) {
           return;
@@ -33463,17 +33482,43 @@ if (betaLink) betaLink.addEventListener('click', function (event) {
       }
     });
   }
-}); // start the reader when all resources have been loaded
+}); // page message checking
+
+function checkForPageMessages() {
+  var seq = HT.params.seq;
+
+  if (HT.params.messagesList && HT.params.messagesList[seq]) {
+    var messageKey = HT.params.messagesList[seq];
+    var el = reader.view.getPage(seq).querySelector('.page--message');
+    var message;
+
+    if (message = _components_messages__WEBPACK_IMPORTED_MODULE_197__.messages[messageKey]) {
+      el.innerHTML = message.alert;
+
+      if (message.detail) {
+        el.querySelector('button').addEventListener('click', function (event) {
+          event.preventDefault();
+          bootbox.alert(message.detail);
+        });
+      } // and then remove the message to only show it on 
+      // startup
+
+
+      delete HT.params.messagesList[seq];
+    }
+  }
+} // start the reader when all resources have been loaded
+
 
 var scale = 1.0;
 window.addEventListener('load', function (event) {
   HT.utils.handleOrientationChange(true);
   reader.start({
     view: HT.params.view || '1up',
-    seq: HT.params.seq || 10,
+    seq: HT.params.seq || 1,
     scale: scale,
     format: HT.params.format || 'image'
-  });
+  }, checkForPageMessages);
   setTimeout(function () {
     var event = document.createEvent('UIEvents');
     event.initEvent('resize', true, false, window, 0);
@@ -33481,7 +33526,7 @@ window.addEventListener('load', function (event) {
   }, 100);
 }); // apparently we still need this?
 
-var _scrollCheck = lodash_debounce__WEBPACK_IMPORTED_MODULE_197___default()(function (event) {
+var _scrollCheck = lodash_debounce__WEBPACK_IMPORTED_MODULE_198___default()(function (event) {
   if (window.visualViewport && window.visualViewport.scale == 1) {
     var activeElement = document.activeElement.closest("input,select");
 

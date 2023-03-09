@@ -573,7 +573,25 @@ body.hide-highlights {
       justify-content: flex-end;
       top: 0.5rem;
 
+      gap: 1rem;
+      align-items: center;
+
       z-index: 10;
+
+      .page--message:not(:empty) {
+        padding: 0.5rem 1rem;
+        background: rgb(253, 209, 22);
+        border-radius: 0.5rem;
+      }
+
+      .btn-link {
+        padding: 0;
+        display: inline-flex;
+        background: transparent;
+        border: none;
+        color: $link-color;
+        text-decoration: underline;
+      }
     }
 
     .tag {

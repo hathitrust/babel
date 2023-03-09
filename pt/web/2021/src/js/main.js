@@ -8,6 +8,8 @@ import { createNanoEvents } from 'nanoevents';
 import {Control} from './components/controls';
 import {Service, Loader} from './components/imgsrv';
 import {View} from './components/views';
+import {messages} from './components/messages';
+
 import debounce from 'lodash/debounce';
 
 const $main = document.querySelector('main'); window.$main = $main;
@@ -762,11 +764,42 @@ if ( betaLink )
   }
 })
 
+// page message checking
+function checkForPageMessages() {
+  let seq = HT.params.seq;
+  if ( HT.params.messagesList && HT.params.messagesList[seq] ) {
+    let messageKey = HT.params.messagesList[seq];
+    let el = reader.view.getPage(seq).querySelector('.page--message');
+    let message;
+    if ( message = messages[messageKey] ) {
+      el.innerHTML = message.alert;
+      if (message.detail) {
+        el.querySelector('button').addEventListener('click', (event) => {
+          event.preventDefault();
+          bootbox.alert(message.detail);
+        })
+      }
+
+      // and then remove the message to only show it on 
+      // startup
+      delete HT.params.messagesList[seq];
+    }
+  }
+}
+
 // start the reader when all resources have been loaded
 let scale = 1.0;
 window.addEventListener('load', (event) => {
   HT.utils.handleOrientationChange(true);
-  reader.start({ view: HT.params.view || '1up', seq: HT.params.seq || 10, scale: scale, format: HT.params.format || 'image' });
+  reader.start(
+    { 
+      view: HT.params.view || '1up', 
+      seq: HT.params.seq || 1, 
+      scale: scale, 
+      format: HT.params.format || 'image' 
+    },
+    checkForPageMessages
+  );
   setTimeout(() => {
       var event = document.createEvent('UIEvents');
       event.initEvent('resize', true, false, window, 0);

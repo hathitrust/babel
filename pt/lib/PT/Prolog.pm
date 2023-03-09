@@ -145,10 +145,14 @@ sub Run {
     $mdpItem = PT::PageTurnerUtils::GetMdpItem($C, $id, $itemFileSystemLocation);
     $C->set_object('MdpItem', $mdpItem);
 
+    my $messages = {};
     if ( my $ownerid = $cgi->param('ownerid') ) {
         my $ownerid_seq = $mdpItem->GetSequenceForOwnerId($ownerid);
         if ( $ownerid_seq ) {
             $cgi->param('seq', $ownerid_seq);
+        } else {
+            # log the ownerid failure to the appropriate seq
+            $ses->set_transient_subkey('messages', $cgi->param('seq'), 'ownerid');
         }
     }
 

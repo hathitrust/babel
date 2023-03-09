@@ -867,6 +867,10 @@ a.text-link svg {
   justify-content: flex-end;
 }
 
+.modal__footer .alert {
+  margin: 0;
+}
+
 .login-panel .modal__footer {
   display: block;
 }
@@ -1998,7 +2002,24 @@ body.hide-highlights .page-text .highlight--plaintext {
   background: transparent;
   justify-content: flex-end;
   top: 0.5rem;
+  gap: 1rem;
+  align-items: center;
   z-index: 10;
+}
+
+.d--reader--viewer .page .page--toolbar .page--message:not(:empty) {
+  padding: 0.5rem 1rem;
+  background: #fdd116;
+  border-radius: 0.5rem;
+}
+
+.d--reader--viewer .page .page--toolbar .btn-link {
+  padding: 0;
+  display: inline-flex;
+  background: transparent;
+  border: none;
+  color: #924a0b;
+  text-decoration: underline;
 }
 
 .d--reader--viewer .page .tag {
