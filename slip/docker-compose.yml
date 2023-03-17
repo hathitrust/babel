@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+
+  # assumes imgsrv-sample-data has been checked out next to "imgsrv"
+  slip:
+    build: .
+    image: hathitrust-slip
+    volumes:
+      - .:/htapps/babel/slip
+      - "../imgsrv-sample-data/sdr1:/sdr1"
+      - "../imgsrv-sample-data/etc:/htapps/babel/etc"
+      - "../imgsrv-sample-data:/tmp/imgsrv-sample-data"
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+      - HT_DEV=docker
+    depends_on:
+      - mariadb
+      - solr-sdr-catalog
+    command: bash
+
+  solr-sdr-catalog:
+    image: ghcr.io/hathitrust/catalog-solr-sample
+
+  mariadb:
+    image: ghcr.io/hathitrust/db-image:latest
+    restart: always
+
+volumes:
+  # sdr1:
+  data_db:
