@@ -26,6 +26,18 @@ services:
   mariadb:
     image: ghcr.io/hathitrust/db-image:latest
     restart: always
+    volumes:
+      - "./etc/sql/100_slip.sql:/docker-entrypoint-initdb.d/100_slip.sql"
+
+  traject:
+    image: ghcr.io/hathitrust/catalog-indexer-unstable
+    environment:
+      - SOLR_URL=http://solr-sdr-catalog:9033/solr/catalog
+      - redirect_file=/dev/null
+      - NO_DB=1
+      - DDIR=/app/examples
+    volumes:
+      - "../imgsrv-sample-data/metadata:/app/examples"
 
 volumes:
   # sdr1:
