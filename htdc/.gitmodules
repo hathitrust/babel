@@ -1,6 +1,6 @@
 [submodule "vendor/common-lib/lib"]
-	path = vendor/common-lib/lib
-    url = git@github.com:hathitrust/mdp-lib.git
+    path = vendor/common-lib/lib
+    url = ../mdp-lib.git
 [submodule "vendor/htd-lib"]
-	path = vendor/htd-lib
-    url = git@github.com:hathitrust/htd.git
+    path = vendor/htd-lib
+    url = ../htd.git
