@@ -1,6 +1,6 @@
 [submodule "vendor/common-lib/lib"]
-	path = vendor/common-lib/lib
-    url = git@github.com:hathitrust/mdp-lib.git
+    path = vendor/common-lib/lib
+    url = ../mdp-lib.git
 [submodule "vendor/slip-lib/lib"]
-	path = vendor/slip-lib/lib
-    url = git@github.com:hathitrust/slip-lib.git
+    path = vendor/slip-lib/lib
+    url = ../slip-lib.git
