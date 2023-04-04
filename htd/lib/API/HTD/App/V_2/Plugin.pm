@@ -574,7 +574,7 @@ sub GET_structure {
             $representationRef = $dataRef;
         }
 
-        my $filename = $self->__getPairtreeFilename('mets.xml');
+        my $filename = $self->__getPairtreeFilename('mets.xml', 1);
         # prevent Google Chrome error 346
         $filename =~ s/,/\./g;
         my $statusLine = $self->__getConfigVal('httpstatus', 200);
