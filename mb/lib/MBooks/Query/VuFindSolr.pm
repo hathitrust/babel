@@ -106,11 +106,12 @@ sub get_Solr_metadata_query_from_ids {
 
     my $FL         = qq{&fl=$field_list};
     my $INDENT     = qq{&indent=off};
+    my $FORMAT     = qq{&wt=xml};
     my $VERSION    = qq{&version=} . $self->get_Solr_XmlResponseWriter_version();
     my $INTERN_Q   = qq{q=$query_string};
     my $START_ROWS = qq{&start=0&rows=1000000};
 
-    my $solr_query_string = $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT;
+    my $solr_query_string = $INTERN_Q . $FL . $VERSION . $START_ROWS . $INDENT . $FORMAT;
 
     if (0) {
         require Data::Dumper;
