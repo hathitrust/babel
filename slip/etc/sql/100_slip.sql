@@ -85,3 +85,10 @@ CREATE TABLE `slip_shard_stats` (
   `s_tot_time` float NOT NULL DEFAULT 0,
   PRIMARY KEY (`run`,`shard`)
 ) ENGINE=InnoDB;
+
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_host_control` TO 'mdp-lib'@'%';
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_shard_control` TO 'mdp-lib'@'%';
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_shard_stats` TO 'mdp-lib'@'%';
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_indexed` TO 'mdp-lib'@'%';
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_errors` TO 'mdp-lib'@'%';
+GRANT INSERT, UPDATE, DELETE ON `ht`.`slip_rights` TO 'mdp-lib'@'%';
