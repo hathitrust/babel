@@ -198,14 +198,7 @@ sub _redirect_to_index {
     my $idx = $cgi->param('index') || 1;
 
     $cgi->param('index', $idx);
-    my $url = $cgi->self_url();
-    # my $url = $ENV{REQUEST_URI};
-    # my $join = ";";
-    # if ( $url =~ m,&, ) {
-    #     $join = '&';
-    # }
-    # $url .= $join . qq{index=1};
-    ### print STDERR "REDIRECTING TO INDEX $url\n";
+    my $url = $cgi->url(-relative => 1, -path_info => 1, -query => 1);
     print CGI::redirect($url);
     exit;
 }
@@ -213,14 +206,7 @@ sub _redirect_to_index {
 sub _redirect_to_browse {
     my ( $cgi ) = @_;
     $cgi->delete('index');
-    my $url = $cgi->self_url();
-    # my $url = $ENV{REQUEST_URI};
-    # my $join = ";";
-    # if ( $url =~ m,&, ) {
-    #     $join = '&';
-    # }
-    # $url .= $join . qq{index=1};
-    ### print STDERR "REDIRECTING TO BROWSE $url\n";
+    my $url = $cgi->url(-relative => 1, -path_info => 1, -query => 1);
     print CGI::redirect($url);
     exit;
 }
