@@ -46,7 +46,7 @@ sub key {
             push @parts, $$self{action};
         }
         push @parts, sort $cgi->multi_param('facet');
-        $$self{key} = md5_hex(join('/', @parts));
+        $$self{key} = $self->hexify(join('/', @parts));
     }
     return $$self{key};
 }
@@ -55,7 +55,7 @@ sub id {
     my $self = shift;
     my $C = $$self{C};
     my $ses = $C->get_object('Session');
-    return join(".", $$self{coll_id}, md5_hex( Utils::Get_Remote_User() || $ses->get_session_id() ));
+    return join(".", $$self{coll_id}, $self->hexify( Utils::Get_Remote_User() || $ses->get_session_id() ));
 }
 
 sub get {
@@ -71,6 +71,12 @@ sub set {
     my $id = $self->id();
     my $key = $self->key();
     $$self{cache}->Set($id, $key, $data);
+}
+
+sub hexify {
+  my $self = shift;
+  my $str = shift;
+  return md5_hex(utf8::is_utf8($str) ? Encode::encode_utf8($str) : $str);
 }
 
 1;
