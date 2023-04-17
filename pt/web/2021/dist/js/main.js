@@ -24290,6 +24290,7 @@ var Searchinator = /*#__PURE__*/function () {
       });
       searchForm.addEventListener('submit', function (event) {
         event.preventDefault();
+        _this3.searchStart = 1;
 
         _this3.submit();
       });

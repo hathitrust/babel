@@ -220,6 +220,7 @@ export var Searchinator = class {
 
     searchForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      this.searchStart = 1;
       this.submit();
     })
 
