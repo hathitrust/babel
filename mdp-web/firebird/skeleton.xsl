@@ -85,6 +85,7 @@
 
       <body>
         <xsl:attribute name="class">
+          <xsl:text>apps </xsl:text>
           <xsl:call-template name="setup-body-class" />
         </xsl:attribute>
         <xsl:call-template name="setup-body-data-attributes" />
@@ -126,8 +127,7 @@
   <xsl:template name="setup-html-data-attributes" />
 
   <xsl:template name="build-main-container">
-    <main class="main-container" id="main">
-      <!-- <xsl:call-template name="header" /> -->
+    <main class="main" id="main">
       <xsl:call-template name="page-contents" />
     </main>
   </xsl:template>
