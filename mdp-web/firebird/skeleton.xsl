@@ -78,9 +78,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <script src="https://kit.fontawesome.com/1c6c3b2b35.js" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
-        <script type="module" src="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.js"></script>
-
+        <xsl:choose>
+          <xsl:when test="true()">
+            <script type="module" src="//localhost:5173/js/main.js"></script>
+          </xsl:when>
+          <xsl:otherwise>
+            <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
+            <script type="module" src="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.js"></script>
+          </xsl:otherwise>
+        </xsl:choose>
       </head>
 
       <body>
