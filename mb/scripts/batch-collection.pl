@@ -83,12 +83,16 @@ my @superusers =
   (
    'roger',
    'sooty',
+   'docker'
   );
+
+push @superusers, $ENV{MB_SUPERUSER} if ( $ENV{MB_SUPERUSER} );
 
 my @allowed_uniqnames =
   (
    'roger',
    'sooty',
+   'docker'
   );
 
 my @allowed_overrides =
@@ -159,16 +163,6 @@ foreach my $superuser (@superusers) {
         $NON_SUPERUSER = 0;
         $SUPERUSER = 1;
         last;
-    }
-}
-
-if ($NON_SUPERUSER) {
-    my $path = abs_path($0);
-    #print "ABSPATH: $path\n";
-
-    unless ( index($path, "test.babel") >= 0 ) {
-        print( qq{ERROR: Please run the copy of batch-collection.pl located in /htapps/test.babel/mb/scripts\n} );
-        exit 1;
     }
 }
 
@@ -686,11 +680,12 @@ sub bc_handle_add_items_to {
         $num_ids++;
 
         # Check existence in repository
-        my $file_sys_location = Identifier::get_item_location($id);
-        if (! -e $file_sys_location) {
-            Log_print( qq{id="$id" is not in the repository, SKIPPING\n} );
-            next;
-        }
+        # Redundant since we are fetching metadata immediately after.
+        #my $file_sys_location = Identifier::get_item_location($id);
+        #if (! -e $file_sys_location) {
+        #    Log_print( qq{id="$id" is not in the repository, SKIPPING\n} );
+        #    next;
+        #}
 
         my $metadata_ref = bc_get_metadata_via_metadata_getter($C, [$id]);
         my $metadata_failed = $metadata_ref ? 0 : 1;
