@@ -459,33 +459,7 @@
   <xsl:template name="header-search-q1-value" />
 
   <xsl:template name="footer">
-    <!-- <xsl:variable name="inst" select="/MBooksTop/MBooksGlobals/InstitutionName"/> -->
-    <xsl:variable name="inst">University At Buffalo, The State University of New York</xsl:variable>
-    <footer class="site-navigation" role="contentinfo">
-      <nav>
-        <xsl:if test="false() and $inst != ''">
-          <ul class="nav">
-            <li>
-              <span class="institution-label" aria-label="${inst}" data-role="tooltip" data-microtip-position="top" data-microtip-size="small"><xsl:value-of select="$inst" /></span>
-              <!-- <span style="font-size: 0.8rem"><xsl:value-of select="$inst" /><br />HathiTrust
-              </span> -->
-            </li>
-          </ul>
-        </xsl:if>
-        <ul class="nav pull-right">
-          <li><a href="https://www.hathitrust.org/">Home</a></li>
-          <li><a href="https://www.hathitrust.org/about">About</a></li>
-          <li><a href="/cgi/mb">Collections</a></li>
-          <li><a href="https://www.hathitrust.org/help">Help</a></li>
-          <xsl:call-template name="li-feedback" />
-          <!-- <li><a href="https://m.hathitrust.org">Mobile</a></li> -->
-          <li><a href="https://www.hathitrust.org/accessibility">Accessibility</a></li>
-          <li><a href="https://www.hathitrust.org/take_down_policy">Take-Down Policy</a></li>
-          <li><a href="https://www.hathitrust.org/privacy">Privacy</a></li>
-          <li><a href="https://www.hathitrust.org/contact">Contact</a></li>
-        </ul>
-      </nav>
-    </footer>
+    <hathi-website-footer></hathi-website-footer>
   </xsl:template>
 
   <xsl:template name="li-feedback">
