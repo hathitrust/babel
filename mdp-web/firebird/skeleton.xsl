@@ -106,7 +106,7 @@
 
         <div id="root">
 
-          <div role="status" aria-atomic="true" aria-live="polite" class="offscreen"></div>
+          <div role="status" aria-atomic="true" aria-live="polite" class="visually-hidden"></div>
 
           <xsl:call-template name="navbar" />
 
@@ -610,80 +610,6 @@
   <xsl:template name="get-tracking-category">HT</xsl:template>
 
   <xsl:template name="insert-svg-icons">
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
-      <symbol id="checkbox-empty" viewBox="0 0 18 18">
-        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-61.000000, -957.000000)"><g transform="translate(60.000000, 918.000000)"><g transform="translate(0.000000, 38.000000)"><path d="M16.9994,0.99807 L2.99939,0.99807 C1.89439,0.99807 0.99939,1.89307 0.99939,2.99807 L0.99939,16.9981 C0.99939,18.1031 1.89439,18.9981 2.99939,18.9981 L16.9994,18.9981 C18.1034,18.9981 18.9994,18.1031 18.9994,16.9981 L18.9994,2.99807 C18.9994,1.89307 18.1034,0.99807 16.9994,0.99807 L16.9994,0.99807 Z M16.9994,2.99807 L16.9994,16.9981 L2.99939,16.9991 L2.99939,2.99807 L16.9994,2.99807 L16.9994,2.99807 Z"></path></g></g></g></g>
-      </symbol>
-      <symbol id="checkbox-checked" viewBox="0 0 18 18" version="1.1"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-240.000000, -957.000000)"><g transform="translate(60.000000, 918.000000)"><g transform="translate(179.000000, 38.000000)"><path d="M7.9994,14.9981 L2.9994,9.9981 L4.4134,8.5841 L7.9994,12.1701 L15.5854,4.58407 L16.9994,5.99807 L7.9994,14.9981 Z M16.9994,0.99807 L2.9994,0.99807 C1.8934,0.99807 0.9994,1.89307 0.9994,2.99807 L0.9994,16.9981 C0.9994,18.1031 1.8934,18.9981 2.9994,18.9981 L16.9994,18.9981 C18.1044,18.9981 18.9994,18.1031 18.9994,16.9981 L18.9994,2.99807 C18.9994,1.89307 18.1044,0.99807 16.9994,0.99807 L16.9994,0.99807 Z"></path></g></g></g></g></symbol>
-      <symbol id="panel-expanded" viewBox="0 0 14 2">
-        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-          <g transform="translate(-823.000000, -212.000000)">
-            <g transform="translate(822.000000, 60.000000)">
-              <g transform="translate(0.000000, 151.000000)">
-                <polygon points="14.9994 2.998 0.99943 2.998 0.99995 1.0001 14.9994 0.998"></polygon>
-              </g>
-            </g>
-          </g>
-        </g>
-      </symbol>
-      <symbol id="panel-collapsed" viewBox="0 0 12 8"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-353.000000, -585.000000)"><g transform="translate(60.000000, 477.000000)"><g transform="translate(292.000000, 108.000000)"><polygon points="2.41348 0.58407 6.9995 5.1701 11.5855 0.58407 12.9995 1.99807 6.9995 7.9981 0.99948 1.99807"></polygon></g></g></g></g></symbol>
-      <symbol id="action-remove" viewBox="0 0 14 14" class="active-filter-symbol">
-        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-          <g transform="translate(-274.000000, -993.000000)">
-            <g transform="translate(60.000000, 918.000000)">
-              <g transform="translate(214.000000, 75.000000)">
-                <polygon points="14 1.41 12.59 0 7 5.59 1.41 0 0 1.41 5.59 7 0 12.59 1.41 14 7 8.41 12.59 14 14 12.59 8.41 7"></polygon>
-              </g>
-            </g>
-          </g>
-        </g>
-      </symbol>
-      <symbol
-         className="svg"
-         fill="currentColor"
-         preserveAspectRatio="xMidYMid meet"
-         height="16"
-         width="16"
-         viewBox="0 0 16 16"
-         id="radio-empty"
-      >
-         <circle
-            className="radioOutline"
-            cx="8"
-            cy="8"
-            r="6.5"
-            fill="none"
-            stroke="black"
-            stroke-width="2.5"
-         />
-      </symbol>
-      <symbol
-         className="svg"
-         fill="currentColor"
-         preserveAspectRatio="xMidYMid meet"
-         height="16"
-         width="16"
-         viewBox="0 0 16 16"
-         id="radio-checked"
-      >
-         <circle
-            className="radioOutline"
-            cx="8"
-            cy="8"
-            r="6.5"
-            fill="none"
-            stroke="black"
-            stroke-width="2.5"
-         />
-         <circle
-            className="radioDot"
-            cx="8"
-            cy="8"
-            r="3.5"
-            fill="black"
-         />
-      </symbol>
-    </svg>
   </xsl:template>
 
   <xsl:template name="build-css-link">
@@ -696,6 +622,39 @@
     <xsl:param name="href" />
     <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
     <script type="text/javascript" src="{$href}?_{$modtime}"></script>
+  </xsl:template>
+
+  <xsl:template name="build-accordion-item">
+    <xsl:param name="id" />
+    <xsl:param name="parent" />
+    <xsl:param name="open" />
+    <xsl:param name="heading" />
+    <xsl:param name="body" />
+    <xsl:variable name="collapsed">
+      <xsl:if test="$open != true()">
+        <xsl:text>collapsed</xsl:text>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="collapse">
+      <xsl:if test="$open != true()">
+        <xsl:text>collapse</xsl:text>
+      </xsl:if>
+    </xsl:variable>
+    <div class="panel accordion-item">
+      <h3 class="accordion-header" id="heading-{$id}">
+        <button class="accordion-button fw-bold {$collapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{$id}" aria-controls="collapse-{$id}">
+          <xsl:value-of select="$heading" />
+        </button>
+      </h3>
+      <div id="collapse-{$id}" class="accordion-collapse {$collapse}" aria-labelledby="heading-{$id}">
+        <xsl:if test="normalize-space($parent)">
+          <xsl:attribute name="data-bs-parent">#<xsl:value-of select="$parent" /></xsl:attribute>
+        </xsl:if>
+        <div class="accordion-body">
+          <xsl:apply-templates select="exsl:node-set($body)" mode="copy" />
+        </div>
+      </div>
+    </div>
   </xsl:template>
 
   <xsl:template match="node()" mode="copy-guts">
