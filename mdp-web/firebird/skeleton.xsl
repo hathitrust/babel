@@ -29,18 +29,6 @@
 
   <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
 
-  <xsl:variable name="search-options">
-      <!-- <option value="ocr" data-target="ls">Everything</option> -->
-      <option value="all">All Fields</option>
-      <!-- <option value="ocronly" data-target="ls">Just Full Text</option> -->
-      <option value="title">Title</option>
-      <option value="author">Author</option>
-      <option value="subject">Subject</option>
-      <option value="isbn">ISBN/ISSN</option>
-      <option value="publisher">Publisher</option>
-      <option value="seriestitle">Series Title</option>
-  </xsl:variable>
-
   <xsl:template name="load_base_js" />
 
   <xsl:template match="/MBooksTop">
@@ -56,7 +44,6 @@
       <xsl:call-template name="setup-html-data-attributes" />
       <xsl:attribute name="class">
         <xsl:text>no-js </xsl:text>
-        <xsl:call-template name="search-target-class" />
         <xsl:call-template name="setup-html-class" />
       </xsl:attribute>
       <xsl:call-template name="setup-html-attributes" />
@@ -77,10 +64,41 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <script src="https://kit.fontawesome.com/1c6c3b2b35.js" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+          let head = document.head;
+          function addScript(options) {
+            let scriptEl = document.createElement('script');
+            if ( options.crossOrigin ) { scriptEl.crossOrigin = options.crossOrigin; }
+            if ( options.type ) { scriptEl.type = options.type; }
+            scriptEl.src = options.href;
+            document.head.appendChild(scriptEl);
+          }
+          function addStylesheet(options) {
+            let linkEl = document.createElement('link');
+            linkEl.rel = 'stylesheet';
+            linkEl.href = options.href;
+            document.head.appendChild(linkEl);
+          }
+
+          addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
+
+          let firebird_config = localStorage.getItem('firebird') || '';
+          if ( firebird_config == 'proxy' ) {
+            addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
+          } else if ( firebird_config.match('localhost') ) {
+            addScript({ href: `//${firebird_config}/js/main.js`, type: 'module' });
+          } else {
+            // connect to netlify
+            if ( firebird_config ) { firebird_config += '--'; }
+            let hostname = `//${firebird_config}hathitrust-firebird-common.netlify.app`;
+            addStylesheet({ href: `${hostname}/assets/main.css` });
+            addScript({ href: `${hostname}/assets/main.js`, type: 'module' });
+          }
+        </script>
+
         <xsl:choose>
           <xsl:when test="true()">
-            <script type="module" src="//localhost:5173/js/main.js"></script>
+            <!-- <script type="module" src="//localhost:5174/js/main.js"></script> -->
           </xsl:when>
           <xsl:otherwise>
             <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
@@ -138,34 +156,6 @@
     </main>
   </xsl:template>
 
-  <xsl:template name="access-overview">
-    <div class="offscreen" rel="note">
-      <h2>Text Only Views</h2>
-      <xsl:if test="$gHtId">
-        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
-      </xsl:if>
-      <ul>
-        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
-        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
-      </ul>
-    </div>
-  </xsl:template>
-
-  <xsl:template name="access-overview-block">
-    <div class="accessOverview" rel="note">
-      <h3>Text Only Views</h3>
-      <xsl:if test="$gHtId">
-        <p>Go to the <xsl:element name="a"><xsl:attribute name="href">/cgi/ssd?id=<xsl:value-of select="$gHtId"/></xsl:attribute>text-only view of this item.</xsl:element></p>
-      </xsl:if>
-      <ul>
-        <li>Special full-text views of publicly-available items are available to authenticated members of HathiTrust institutions.</li>
-        <li>Special full-text views of in-copyright items may be available to authenticated members of HathiTrust institutions. Members should login to see which items are available while searching. </li>
-        <li>See the <a href="https://www.hathitrust.org/accessibility">HathiTrust Accessibility</a> page for more information.</li>
-      </ul>
-    </div>
-  </xsl:template>
-
   <xsl:template name="setup-page-title">
     <xsl:variable name="page-title">
       <xsl:call-template name="get-page-title" />
@@ -184,387 +174,16 @@
 
   <xsl:template name="build-navbar-options"></xsl:template>
 
-  <xsl:template name="navbar---alicorn">
-    <header class="site-navigation" role="banner">
-      <nav aria-label="about the site">
-        <xsl:call-template name="navbar-site-links" />
-        <ul id="person-nav" class="nav pull-right">
-          <xsl:call-template name="navbar-user-links" />
-        </ul>
-      </nav>
-      <xsl:call-template name="build-extra-header" />
-    </header>
-  </xsl:template>
-
   <xsl:template name="build-extra-header" />
 
   <xsl:template name="config-include-logo">FALSE</xsl:template>
-
-  <xsl:template name="navbar-site-links">
-    <ul id="nav" class="nav">
-      <li class="nav-item">
-        <a class="nav-link home-link" href="https://www.hathitrust.org">
-          <span class="offscreen-for-narrowest">Home</span>
-        </a>
-      </li>
-      <li class="nav-item dropdown" id="burger-menu-container">
-        <a id="burger-menu-trigger" href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
-        <ul id="burger-menu" class="dropdown-menu">
-          <li class="fixed">
-            <span class="dropdown-header">About</span>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/about">Welcome to HathiTrust</a>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/partnership">Our Partnership</a>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/digital_library">Our Digital Library</a>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/htrc">Our Research Center</a>
-          </li>
-          <li class="nested">
-            <a class="dropdown-item" href="https://www.hathitrust.org/news_publications">News &amp; Publications</a>
-          </li>
-          <li><hr class="dropdown-divider" /></li>
-          <!-- <xsl:if test="$gLoggedIn = 'YES'">
-            <li class=""><a class="dropdown-item" href="{//Header/PrivCollLink}">My Collections</a></li>
-          </xsl:if> -->
-          <li class="">
-            <a class="dropdown-item" href="/cgi/mb">Collections</a>
-          </li>
-          <li class="help">
-            <a class="dropdown-item" href="https://www.hathitrust.org/help">Help</a>
-          </li>
-          <xsl:call-template name="li-feedback">
-            <xsl:with-param name="a-class">dropdown-item</xsl:with-param>
-          </xsl:call-template>
-        </ul>
-      </li>
-      <li class="nav-item" id="about-menu-container">
-        <a id="about-menu" href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button">About</a>
-        <ul class="dropdown-menu">
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/about">Welcome to HathiTrust</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/partnership">Our Partnership</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/digital_library">Our Digital Library</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/collaborative-programs">Our Collaborative Programs</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/htrc">Our Research Center</a>
-          </li>
-          <li>
-            <a class="dropdown-item" href="https://www.hathitrust.org/news_publications">News &amp; Publications</a>
-          </li>
-        </ul>
-      </li>
-      <!-- <xsl:if test="$gLoggedIn = 'YES'">
-        <li class="nav-item wide"><a class="nav-link" href="{//Header/PrivCollLink}">My Collections</a></li>
-      </xsl:if> -->
-      <li class="nav-item wide">
-        <a class="nav-link" href="/cgi/mb">Collections</a>
-      </li>
-      <li class="nav-item help wide">
-        <a class="nav-link" href="https://www.hathitrust.org/help">Help</a>
-      </li>
-      <xsl:call-template name="li-feedback">
-        <xsl:with-param name="li-class">nav-item wide</xsl:with-param>
-        <xsl:with-param name="a-class">nav-link</xsl:with-param>
-      </xsl:call-template>
-    </ul>
-  </xsl:template>
-
-  <xsl:template name="navbar-user-links">
-    <li class="on-for-pt on-for-narrow">
-      <button class="btn action-search-hathitrust control-search">
-        <i class="icomoon icomoon-search" aria-hidden="true"></i><span class="offscreen-for-narrowest"> Search</span> HathiTrust</button>
-    </li>
-    <li>
-      <button disabled="disabled" class="btn action-toggle-notifications" aria-label="Toggle Notifications">
-        <i class="icomoon icomoon-bell" aria-hidden="true"></i>
-      </button>
-    </li>
-    <xsl:choose>
-      <xsl:when test="$gLoggedIn = 'YES'">
-        <xsl:choose>
-          <xsl:when test="//Header/UserHasRoleToggles='TRUE'">
-            <li class="x--off-for-narrowest">
-              <xsl:variable name="debug">
-                <xsl:if test="//Param[@name='debug']">?debug=<xsl:value-of select="//Param[@name='debug']" /></xsl:if>
-              </xsl:variable>
-              <a href="/cgi/ping/switch{$debug}" class="action-switch-role">
-                <xsl:apply-templates select="//Header/UserAffiliation" mode="copy-guts" />
-                <xsl:text> </xsl:text>
-                <xsl:text>⚡</xsl:text>
-              </a>
-            </li>
-          </xsl:when>
-          <xsl:otherwise>
-            <li class="item-vanishing">
-              <span>
-                <xsl:value-of select="//Header/UserAffiliation" />
-                <!-- ProviderName causes collisions with search navbar -->
-                <!--
-                <xsl:if test="//Header/ProviderName">
-                  <xsl:text> (</xsl:text>
-                  <xsl:value-of select="//Header/ProviderName" />
-                  <xsl:text>)</xsl:text>
-                </xsl:if>
-                -->
-              </span>
-            </li>
-          </xsl:otherwise>
-        </xsl:choose>
-        <li class="x--off-for-narrowest"><a class="logout-link" href="{//Header/LoginLink}">Log out</a></li>
-      </xsl:when>
-      <xsl:otherwise>
-        <li><a id="login-link" class="trigger-login action-login" data-close-target=".modal.login" href="{//Header/LoginLink}">Log in</a></li>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-
-  <xsl:template name="header">
-
-    <div class="container container-medium flex-container container-header">
-      <div class="logo">
-        <a href="https://www.hathitrust.org">
-          <span class="offscreen">HathiTrust Digital Library</span>
-        </a>
-      </div>
-      <div id="search-modal-content" class="search-modal-content">
-        <form id="ht-search-form" class="ht-search-form" method="GET" action="/cgi/ls/one">
-          <div style="display: flex; flex-direction: row">
-            <div style="flex-grow: 1">
-              <div style="display: flex">
-                <div class="control control-q1">
-                  <label for="q1-input" class="offscreen">Search full-text index</label>
-                  <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items" required="required" pattern="^(?!\s*$).+">
-                    <xsl:attribute name="value">
-                      <xsl:call-template name="header-search-q1-value" />
-                    </xsl:attribute>
-                  </input>
-                </div>
-                <div class="control control-searchtype">
-                  <label for="search-input-select" class="offscreen">Search Field List</label>
-                  <select id="search-input-select" size="1" class="search-input-select" name="searchtype" style="font-size: 1rem">
-                    <xsl:call-template name="search-input-select-options" />
-                  </select>
-                </div>
-              </div>
-              <div class="global-search-options">
-                <fieldset class="search-target">
-                  <legend class="offscreen">Available Indexes</legend>
-                  <input name="target" type="radio" id="option-full-text-search" value="ls" checked="checked" />
-                  <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
-                  <input name="target" type="radio" id="option-catalog-search" value="catalog" />
-                  <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
-                </fieldset>
-                <xsl:call-template name="header-search-ft-checkbox" />
-              </div>
-            </div>
-            <div style="flex-grow: 0">
-              <div class="control">
-                <button class="btn btn-primary" id="action-search-hathitrust"><i class="icomoon icomoon-search" aria-hidden="true"></i> Search HathiTrust</button>
-              </div>
-            </div>
-          </div>
-          <div class="global-search-links" style="padding-top: 1rem; margin-top: -1rem">
-            <ul class="search-links">
-              <li class="search-advanced-link">
-                <a href="/cgi/ls?a=page;page=advanced">Advanced full-text search</a>
-              </li>
-              <li class="search-catalog-link">
-                <a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a>
-              </li>
-              <li>
-                <a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a>
-              </li>
-            </ul>
-          </div>
-        </form>
-      </div>
-    </div>
-
-  </xsl:template>
-
-  <xsl:template name="header-search-form">
-    <div class="search-form">
-      <xsl:call-template name="global-search-form" />
-    </div>
-  </xsl:template>
-
-  <xsl:template name="global-search-form">
-    <form action="/cgi/ls/one" method="GET">
-      <div class="search-tabs" role="radiogroup" aria-labelledby="search-tabs-label">
-        <span id="search-tabs-label" class="offscreen">Search this index</span>
-        <xsl:call-template name="header-search-tabs" />
-      </div>
-      <xsl:call-template name="global-search-form-fieldset" />
-      <xsl:call-template name="global-search-form-options" />
-    </form>
-  </xsl:template>
-
-  <xsl:template name="global-search-form-fieldset">
-    <fieldset>
-      <label for="q1-input" class="offscreen" >Search</label>
-      <input id="q1-input" name="q1" type="text" class="search-input-text" placeholder="Search words about or within the items">
-        <xsl:attribute name="value">
-          <xsl:call-template name="header-search-q1-value" />
-        </xsl:attribute>
-      </input>
-      <div class="search-input-options">
-        <label for="search-input-select" class="offscreen">Search Field List</label>
-        <select id="search-input-select" size="1" class="search-input-select" name="searchtype">
-          <xsl:call-template name="search-input-select-options" />
-        </select>
-      </div>
-      <button class="button"><span class="offscreen">Search</span></button>
-    </fieldset>
-  </xsl:template>
-
-  <xsl:template name="global-search-form-options">
-    <div class="search-extra-options">
-      <ul class="search-links">
-        <li class="search-advanced-link">
-          <a>
-            <xsl:attribute name="href">
-              <xsl:call-template name="GetAdvancedFullTextHref"/>
-            </xsl:attribute>
-            <xsl:text>Advanced full-text search</xsl:text>
-          </a>
-        </li>
-        <li class="search-catalog-link"><a href="https://catalog.hathitrust.org/Search/Advanced">Advanced catalog search</a></li>
-        <li><a href="https://www.hathitrust.org/help_digital_library#SearchTips">Search tips</a></li>
-      </ul>
-      <xsl:call-template name="header-search-ft-checkbox" />
-    </div>
-  </xsl:template>
-
-  <xsl:template name="GetAdvancedFullTextHref">
-    <xsl:text>/cgi/ls?a=page;page=advanced</xsl:text>
-  </xsl:template>
-
-
-  <xsl:template name="header-search-q1-value" />
 
   <xsl:template name="footer">
     <hathi-website-footer></hathi-website-footer>
   </xsl:template>
 
-  <xsl:template name="li-feedback">
-    <xsl:param name="li-class" />
-    <xsl:param name="a-class" />
-    <xsl:variable name="feedback-id">
-      <xsl:call-template name="get-feedback-id" />
-    </xsl:variable>
-    <xsl:variable name="feedback-m">
-      <xsl:call-template name="get-feedback-m" />
-    </xsl:variable>
-    <li class="{$li-class}"><a class="{$a-class}" href="/cgi/feedback?page=form" data-m="{$feedback-m}" data-toggle="feedback tracking-action" data-id="{$feedback-id}" data-tracking-action="Show Feedback">Feedback</a></li>
-  </xsl:template>
-
-  <xsl:template name="get-feedback-id">HathiTrust (babel)</xsl:template>
-  <xsl:template name="get-feedback-m">ht</xsl:template>
-
-  <xsl:template name="page-contents">
-    <xsl:call-template name="contents" />
-  </xsl:template>
-
-  <xsl:template name="get-page-contents" />
-
-  <xsl:template name="login-block">
-    <div class="login">
-      <xsl:choose>
-        <xsl:when test="$gLoggedIn = 'YES'">
-          <!-- we don't do anything normally -->
-        </xsl:when>
-        <xsl:otherwise>
-          <a href="{/MBooksTop/Header/LoginLink}" id="login-button" class="button log-in">LOG IN</a>
-        </xsl:otherwise>
-      </xsl:choose>
-    </div>
-  </xsl:template>
-
-  <xsl:template name="header-search-tabs">
-    <xsl:variable name="target">
-      <xsl:call-template name="header-search-target" />
-    </xsl:variable>
-    <input name="target" type="radio" id="option-full-text-search" value="ls">
-      <xsl:if test="$target = 'ls'">
-        <xsl:attribute name="checked">checked</xsl:attribute>
-      </xsl:if>
-    </input>
-    <label for="option-full-text-search" class="search-label-full-text">Full-text</label>
-    <input name="target" type="radio" id="option-catalog-search" value="catalog">
-      <xsl:if test="$target = 'catalog'">
-        <xsl:attribute name="checked">checked</xsl:attribute>
-      </xsl:if>
-    </input>
-    <label for="option-catalog-search" class="search-label-catalog">Catalog</label>
-  </xsl:template>
-
-  <!-- default to ls -->
-  <xsl:template name="search-target-class">
-    <xsl:variable name="class">
-      <xsl:text>search-target-</xsl:text><xsl:call-template name="header-search-target" />
-    </xsl:variable>
-    <xsl:value-of select="normalize-space($class)" />
-  </xsl:template>
-  <xsl:template name="header-search-target">ls</xsl:template>
-
-  <xsl:template name="search-input-select-options">
-    <xsl:for-each select="exsl:node-set($search-options)/*">
-      <option value="{@value}">
-        <xsl:if test="@data-target">
-          <xsl:attribute name="data-target"><xsl:value-of select="@data-target" /></xsl:attribute>
-        </xsl:if>
-        <xsl:call-template name="header-search-options-selected">
-          <xsl:with-param name="value" select="@value" />
-        </xsl:call-template>
-        <xsl:value-of select="." />
-      </option>
-    </xsl:for-each>
-  </xsl:template>
-
-  <xsl:template name="header-search-options-selected" />
-
-  <xsl:template name="header-search-ft-checkbox">
-    <xsl:variable name="checked">
-      <xsl:call-template name="header-search-ft-value" />
-    </xsl:variable>
-    <div class="global-search-ft">
-      <input type="checkbox" name="ft" value="ft" id="global-search-ft">
-        <xsl:if test="normalize-space($checked)">
-          <xsl:attribute name="checked">checked</xsl:attribute>
-        </xsl:if>
-      </input>
-      <label for="global-search-ft">Full view only</label>
-    </div>
-  </xsl:template>
-
-  <xsl:template name="header-search-ft-value">checked</xsl:template>
-
   <xsl:template name="list-surveys">
     <xsl:call-template name="list-surveys-blocks" />
-<!--     <xsl:choose>
-      <xsl:when test="contains(//Param[@name='debug'], 'blocks')">
-        <xsl:call-template name="list-surveys-blocks" />
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:call-template name="list-surveys-combined" />
-      </xsl:otherwise>
-    </xsl:choose> -->
   </xsl:template>
 
   <xsl:template name="list-surveys-blocks">
