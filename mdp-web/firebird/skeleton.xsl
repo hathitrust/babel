@@ -107,7 +107,7 @@
         </xsl:choose>
       </head>
 
-      <body>
+      <body style="opacity: 0; visibility: none;">
         <xsl:attribute name="class">
           <xsl:text>apps </xsl:text>
           <xsl:call-template name="setup-body-class" />
