@@ -64,47 +64,7 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <script type="text/javascript">
-          let head = document.head;
-          function addScript(options) {
-            let scriptEl = document.createElement('script');
-            if ( options.crossOrigin ) { scriptEl.crossOrigin = options.crossOrigin; }
-            if ( options.type ) { scriptEl.type = options.type; }
-            scriptEl.src = options.href;
-            document.head.appendChild(scriptEl);
-          }
-          function addStylesheet(options) {
-            let linkEl = document.createElement('link');
-            linkEl.rel = 'stylesheet';
-            linkEl.href = options.href;
-            document.head.appendChild(linkEl);
-          }
-
-          addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
-
-          let firebird_config = localStorage.getItem('firebird') || '';
-          if ( firebird_config == 'proxy' ) {
-            addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
-          } else if ( firebird_config.match('localhost') ) {
-            addScript({ href: `//${firebird_config}/js/main.js`, type: 'module' });
-          } else {
-            // connect to netlify
-            if ( firebird_config ) { firebird_config += '--'; }
-            let hostname = `//${firebird_config}hathitrust-firebird-common.netlify.app`;
-            addStylesheet({ href: `${hostname}/assets/main.css` });
-            addScript({ href: `${hostname}/assets/main.js`, type: 'module' });
-          }
-        </script>
-
-        <xsl:choose>
-          <xsl:when test="true()">
-            <!-- <script type="module" src="//localhost:5174/js/main.js"></script> -->
-          </xsl:when>
-          <xsl:otherwise>
-            <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
-            <script type="module" src="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.js"></script>
-          </xsl:otherwise>
-        </xsl:choose>
+        <xsl:call-template name="load-firebird-assets" />
       </head>
 
       <body style="opacity: 0; visibility: none;">
@@ -123,20 +83,72 @@
         <!-- <xsl:call-template name="access-overview" /> -->
 
         <div id="root">
+          <xsl:call-template name="build-root-attributes" />
 
           <div role="status" aria-atomic="true" aria-live="polite" class="visually-hidden"></div>
 
-          <xsl:call-template name="navbar" />
+          <xsl:call-template name="build-root-container" />
 
-          <xsl:call-template name="build-main-container" />
-
-          <xsl:call-template name="footer" />
         </div>
         <xsl:call-template name="setup-body-tail" />
       </body>
 
     </html>
 
+  </xsl:template>
+
+  <xsl:template name="load-firebird-assets">
+    <script type="text/javascript">
+      let head = document.head;
+      function addScript(options) {
+        let scriptEl = document.createElement('script');
+        if ( options.crossOrigin ) { scriptEl.crossOrigin = options.crossOrigin; }
+        if ( options.type ) { scriptEl.type = options.type; }
+        scriptEl.src = options.href;
+        document.head.appendChild(scriptEl);
+      }
+      function addStylesheet(options) {
+        let linkEl = document.createElement('link');
+        linkEl.rel = 'stylesheet';
+        linkEl.href = options.href;
+        document.head.appendChild(linkEl);
+      }
+
+      addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
+
+      let firebird_config = localStorage.getItem('firebird') || '';
+      if ( firebird_config == 'proxy' ) {
+        addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
+      } else if ( firebird_config.match('localhost') ) {
+        addScript({ href: `//${firebird_config}/js/main.js`, type: 'module' });
+      } else {
+        // connect to netlify
+        if ( firebird_config ) { firebird_config += '--'; }
+        let hostname = `//${firebird_config}hathitrust-firebird-common.netlify.app`;
+        addStylesheet({ href: `${hostname}/assets/main.css` });
+        addScript({ href: `${hostname}/assets/main.js`, type: 'module' });
+      }
+    </script>
+
+    <xsl:choose>
+      <xsl:when test="true()">
+        <!-- <script type="module" src="//localhost:5174/js/main.js"></script> -->
+      </xsl:when>
+      <xsl:otherwise>
+        <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
+        <script type="module" src="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.js"></script>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="build-root-attributes" />
+
+  <xsl:template name="build-root-container">
+    <xsl:call-template name="navbar" />
+
+    <xsl:call-template name="build-main-container" />
+
+    <xsl:call-template name="footer" />    
   </xsl:template>
 
   <xsl:template name="setup-body-tail"></xsl:template>
