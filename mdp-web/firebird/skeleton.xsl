@@ -82,6 +82,7 @@
 
         <!-- <xsl:call-template name="access-overview" /> -->
 
+        <hathi-acceptable-use-banner></hathi-acceptable-use-banner>
         <div id="root">
           <xsl:call-template name="build-root-attributes" />
 
@@ -266,18 +267,21 @@
         <xsl:text>collapsed</xsl:text>
       </xsl:if>
     </xsl:variable>
-    <xsl:variable name="collapse">
-      <xsl:if test="$open != true()">
-        <xsl:text>collapse</xsl:text>
+    <xsl:variable name="show">
+      <xsl:if test="$open = true()">
+        <xsl:text>show</xsl:text>
       </xsl:if>
     </xsl:variable>
     <div class="panel accordion-item">
       <h3 class="accordion-header" id="heading-{$id}">
         <button class="accordion-button fw-bold {$collapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{$id}" aria-controls="collapse-{$id}">
+          <xsl:if test="$open">
+            <xsl:attribute name="aria-expanded">true</xsl:attribute>
+          </xsl:if>
           <xsl:value-of select="$heading" />
         </button>
       </h3>
-      <div id="collapse-{$id}" class="accordion-collapse {$collapse}" aria-labelledby="heading-{$id}">
+      <div id="collapse-{$id}" class="accordion-collapse collapse {$show}" aria-labelledby="heading-{$id}">
         <xsl:if test="normalize-space($parent)">
           <xsl:attribute name="data-bs-parent">#<xsl:value-of select="$parent" /></xsl:attribute>
         </xsl:if>
