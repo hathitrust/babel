@@ -67,7 +67,7 @@
         <xsl:call-template name="load-firebird-assets" />
       </head>
 
-      <body style="opacity: 0; visibility: none;">
+      <body style="opacity: 0; visibility: hidden;">
         <xsl:attribute name="class">
           <xsl:text>apps </xsl:text>
           <xsl:call-template name="setup-body-class" />
