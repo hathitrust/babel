@@ -625,15 +625,15 @@
     <xsl:variable name="inst_id" select="//InstitutionCode" />
     <xsl:variable name="access-type" select="//AccessType" />
 
-    <xsl:if test="false() and $gLoggedIn = 'YES'">
-      <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='ht-2023-ux-qa']/Value" />
+    <xsl:if test="true() and $gLoggedIn = 'YES'">
+      <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='ht-2023-ux-preview']/Value" />
       <details id="ht-2023-ux-qa" class="details--alert details--notice" data-open="{$state}">
         <xsl:if test="$state = 'open' or normalize-space($state) = ''">
           <xsl:attribute name="open">open</xsl:attribute>
         </xsl:if>
         <summary style="font-weight: bold; padding-left: 0.75rem;">
           <div class="summary">
-            <span>Are you an undergrad?</span>
+            <span>Our website is changing soon!</span>
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon closed">
               <use xlink:href="#panel-collapsed"></use>
             </svg>
@@ -644,11 +644,8 @@
         </summary>
         <div>
           <p>
-            <xsl:text>We want to talk to you about your HathiTrust experience!</xsl:text>
-          </p>
-          <p>
-            <a href="http://eepurl.com/gbk5Jb" target="_blank">Sign up for an interview</a> 
-            <xsl:text> and a chance to receive a $25 gift card.</xsl:text>
+            <strong><a target="_blank" href="http://eepurl.com/gbk5Jb">Sign up to preview the changes</a></strong> 
+            <xsl:text> and give us your feedback for a chance to get a $25 gift card.</xsl:text>
           </p>
         </div>
       </details>
