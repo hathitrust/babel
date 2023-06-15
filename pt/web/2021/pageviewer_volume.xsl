@@ -625,7 +625,7 @@
     <xsl:variable name="inst_id" select="//InstitutionCode" />
     <xsl:variable name="access-type" select="//AccessType" />
 
-    <xsl:if test="true() and $gLoggedIn = 'YES'">
+    <xsl:if test="true() or $gLoggedIn = 'YES'">
       <xsl:variable name="state" select="//Preferences/Key[@name='alerts']/Key[@name='ht-2023-ux-preview']/Value" />
       <details id="ht-2023-ux-qa" class="details--alert details--notice" data-open="{$state}">
         <xsl:if test="$state = 'open' or normalize-space($state) = ''">
