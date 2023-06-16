@@ -47,7 +47,7 @@ sub identify_user {
         my $method = $$config{method};
         my $check  = $auth->$method( $C, 1 );
         if ( $check ) {
-            $$retval{r} = {};
+            $$retval{r} = {}; # unless ( defined $$retval{r} );
             $$retval{r}{$$config{role}} =
                 $auth->$method($C) ?
             $Types::Serialiser::true : 
