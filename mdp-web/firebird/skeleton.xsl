@@ -115,19 +115,27 @@
         document.head.appendChild(linkEl);
       }
 
-      addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
+      // addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
 
       let firebird_config = localStorage.getItem('firebird') || '';
       if ( firebird_config == 'proxy' ) {
         addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
       } else if ( firebird_config.match('localhost') ) {
+        addScript({ href: `//${firebird_config}/@vite/client`, type: 'module' });
         addScript({ href: `//${firebird_config}/js/main.js`, type: 'module' });
-      } else {
+      } else if ( firebird_config ) {
         // connect to netlify
         if ( firebird_config ) { firebird_config += '--'; }
         let hostname = `//${firebird_config}hathitrust-firebird-common.netlify.app`;
         addStylesheet({ href: `${hostname}/assets/main.css` });
         addScript({ href: `${hostname}/assets/main.js`, type: 'module' });
+      } else {
+        <xsl:for-each select="//ApplicationAssets[@slot='common']/Stylesheet">
+          addStylesheet({ href: `<xsl:value-of select="." />` });
+        </xsl:for-each>
+        <xsl:for-each select="//ApplicationAssets[@slot='common']/Script">
+          addScript({ href: `<xsl:value-of select="." />`, type: 'module' });
+        </xsl:for-each>
       }
     </script>
 
