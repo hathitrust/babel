@@ -445,6 +445,9 @@ sub __rdist_app_to_production {
     print qq{Now starting APP rdist to production $s ...\n};
 
     my $opt = defined($site) ? qq{-m $site} : '';
+    if ($ENV{RDIST_NO_FORK}) {
+      $opt .= ' -F';
+    }
     my $cmd = qq{rdist -f $app_dir/bin/rdist.app $opt};
     print qq{$cmd\n} if $VERBOSE;
     print qx($cmd);
