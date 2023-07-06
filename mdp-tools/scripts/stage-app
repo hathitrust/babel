@@ -254,6 +254,7 @@ sub stage_origin_master_branch {
         list_submodule_dependencies($app_dir);
 
         handle_staging_rdist_hook($app);
+        handle_staging_post_install_hook($app);
         emulate_rdist_bin_timestamp($app);
 
         PrintY("Begin sanity checks ...\n");
@@ -330,12 +331,49 @@ sub stage_topic_branch {
 
     PrintY(qq{Staging via clone succeeds\n}) unless ($rc);
 
+    handle_staging_post_install_hook($app);
     handle_staging_rdist_hook($app, $STAGE, $dest_app_root);
     emulate_rdist_bin_timestamp($app, $dest_app_root);
 
     return $rc;
 }
 
+# ---------------------------------------------------------------------
+
+=item handle_staging_post_install_hook
+
+Description
+
+To avoid committing the results of npm run build (always the source of merge conflicts),
+looks for $app/bin/build.sh and invokes that after staging the app.
+
+Only reports build.sh output and whether it failed but otherwise is agnostic.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_staging_post_install_hook {
+    my $app = shift;
+
+    my ($src_repo_root, $src_app_root) = get_HTDE_roots($STAGE);
+
+    my $build_sh = qq{$src_app_root/$app/bin/build.sh};
+
+    if (! -e $build_sh) {
+      PrintY(qq{No stage post-install script at $build_sh ... skip\n});
+    }
+    else {
+      PrintY(qq{Now running stage post-install script=$build_sh...\n});
+      print qx($build_sh);
+
+      if ($?) {
+        PrintN("ERROR: stage post-install script failure\n");
+        return 0;
+      }
+      PrintY("Stage post-install succeeds.\n");
+    }
+    return 1;
+}
 
 # ---------------------------------------------------------------------
 
