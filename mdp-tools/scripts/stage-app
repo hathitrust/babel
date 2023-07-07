@@ -67,18 +67,20 @@ sub stage_app_usage {
             -A all apps. If -b <branch>, skip apps without a branch=<branch> 
             -d prompt to show diffs when staging multiple apps
                  (always prompts when staging a single app)
+            -O <service>: babel (default), www, catalog
             -v verbose
             -h print help \n};
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b, $opt_d);
-my $ops = getopts('hvs:Ab:d');
+our ($opt_h, $opt_v, $opt_s, $opt_A, $opt_b, $opt_d, $opt_S);
+my $ops = getopts('hvs:Ab:dS:');
 
 my @valid_beta_stages = @ToolLib::valid_beta_stages;
 my @all_valid_stages = @ToolLib::all_valid_stages;
+my @all_valid_services = @ToolLib::all_valid_services;
 
-my @valid_dev_repos = @ToolLib::valid_dev_repos;
+# my @valid_dev_repos = @ToolLib::valid_dev_repos;
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = $opt_v;
@@ -94,6 +96,18 @@ my $all = $opt_A;
 
 my @APPS = __handle_APPS($all);
 
+my $SERVICE = $opt_S;
+if ($SERVICE) {
+    print STDERR "-> @all_valid_services :: $SERVICE\n";
+    if (! grep(/^$SERVICE$/, @all_valid_services)) {
+        PrintN("$SERVICE is not a valid beta staging area\n");
+        print stage_app_usage();
+        exit 1;
+    }
+    $ToolLib::SERVICE = $SERVICE;
+    PrintY("staging to $SERVICE\n");
+}
+
 my $STAGE = $opt_s;
 if ($BRANCH) {
     if (! grep(/^$STAGE$/, @valid_beta_stages)) {
@@ -102,11 +116,11 @@ if ($BRANCH) {
         exit 1;
     }
     my ($repo_root, $app_root) = get_HTDE_roots();
-    if (! grep(/^$app_root$/, @valid_dev_repos)) {
-        PrintN("$app_root is not a valid developer repo\n");
-        print stage_app_usage();
-        exit 1;
-    }
+    # if (! grep(/^$app_root$/, @valid_dev_repos)) {
+    #     PrintN("$app_root is not a valid developer repo\n");
+    #     print stage_app_usage();
+    #     exit 1;
+    # }
 }
 else {
     $STAGE = $opt_s || 'test';
