@@ -366,6 +366,9 @@ sub handle_staging_rdist_hook {
         if ($dest_app_root) {
             $opt .= " -d APP_dest_root=$dest_app_root";
         }
+        if ($ENV{RDIST_NO_FORK}) {
+          $opt .= ' -F';
+        }
 
         my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
 
