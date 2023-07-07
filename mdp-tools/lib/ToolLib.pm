@@ -32,6 +32,7 @@ use Exporter ();
                 G_push_origin_tags
                 G_checkout_tag
                 G_clone
+                G_update_branch
                 G_fetch_origin
                 G_handle_diff
            );
@@ -41,27 +42,9 @@ use Config::Tiny;
 $ToolLib::VERBOSE = 0;
 $ToolLib::SERVICE = 'babel';
 
-@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4 dev-3 preview);
+@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4 preview);
 @ToolLib::all_valid_stages = (@ToolLib::valid_beta_stages, 'test');
 @ToolLib::all_valid_services = qw(babel www catalog); # aspirational
-
-# @ToolLib::valid_developers =
-#   qw (
-#           aelkiss 
-#           jgmorse 
-#           jjyork 
-#           moseshll 
-#           roger 
-#           rrotter 
-#           skorner 
-#           sooty 
-#           stampy 
-#           tburtonw 
-#           pfarber
-#      );
-
-# @ToolLib::valid_dev_repos = map { "/htapps/$_.$ToolLib::SERVICE" } @ToolLib::valid_developers;
-
 
 # ====================================================================
 #
@@ -180,6 +163,30 @@ sub G_clone {
     return 1;
 }
 
+# ---------------------------------------------------------------------
+
+=item G_update_branch
+
+Pull a local branch to update.
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub G_update_branch {
+    my ( $dest_app_dir, $app, $branch ) = @_;
+    print "Updating $branch\n";
+
+    return 0
+      if (! chdir_to_app_dir($dest_app_dir));
+
+    my $cmd_1      = "git pull origin $branch";
+
+    return 0
+      if ( !execute_command($cmd_1) );
+
+
+}
 
 # ---------------------------------------------------------------------
 
