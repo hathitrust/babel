@@ -100,30 +100,27 @@ pt:
   - EMPTY_CACHE
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 __LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/pt id=uc1.\$b699489 __LOCAL__
-  - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 orient=1 __LOCAL__
-  - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 size=50 __LOCAL__
-  - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015051323379 view=text seq=100 __LOCAL__
-  - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015079129154 view=pdf __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/pt id=mdp.39015007162160 __LOCAL__
 
   - EMPTY_CACHE
   - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=uc1.$b699489;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;orient=1;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;size=50;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015051323379;view=text;seq=100;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015079129154;view=pdf;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015051323379;view=plaintext;seq=100;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/pt?id=mdp.39015007162160;__LOCAL__
 
   - EMPTY_CACHE
   - /htapps/__CMD_STAGE__/pt/cgi/search id=uc1.\$b699489 q1=drama __LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/search id=uc1.\$b699489 q1=__EMPTYOCR__ __LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/search id=mdp.39015062775989 q1=medecine __LOCAL__
   - /htapps/__CMD_STAGE__/pt/cgi/search id=mdp.39015062775989 q1=foobar __LOCAL__
+  - /htapps/__CMD_STAGE__/pt/cgi/search id=mdp.39015007162160 q1=foobar __LOCAL__
 
   - EMPTY_CACHE
   - https://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=uc1.$b699489;q1=drama;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=uc1.$b699489;q1=__EMPTYOCR__;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=mdp.39015062775989;q1=medecine;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=mdp.39015062775989;q1=foobar;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/pt/search?id=mdp.39015007162160;q1=foobar;__LOCAL__
 
 ssd:
   - EMPTY_CACHE
