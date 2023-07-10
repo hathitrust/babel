@@ -122,6 +122,10 @@ my $app = sub {
         if ( ref($$info{analyticsSettings}) ){
             $analytics_settings = encode_json($$info{analyticsSettings});
         }
+        my $hotjar_settings = q{null};
+        if ( ref( $$info{hotjarSettings} ) ) {
+            $hotjar_settings = encode_json( $$info{hotjarSettings} );
+        }
 
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
@@ -143,6 +147,7 @@ HT.login_status.idp_list = $idp_list_json;
 HT.login_status.r = $r;
 HT.login_status.notificationData = $notificationData_array;
 HT.analyticsSettings = $analytics_settings;
+HT.hotjarSettings = $hotjar_settings;
 JAVASCRIPT
 
         $retval .= <<JAVASCRIPT;
@@ -281,6 +286,10 @@ JAVASCRIPT
             $$info{analyticsSettings} = $analytics_settings;
         }
 
+        if ( my $hotjar_settings = Utils::Settings::load('ping', 'hotjar') ) {
+            $$info{hotjarSettings} = $hotjar_settings;
+        }
+
         $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
         return $response->finalize;
     }
@@ -328,6 +337,10 @@ JAVASCRIPT
 
     if ( my $analytics_settings = Utils::Settings::load('ping', 'analytics') ) {
         $$info{analyticsSettings} = $analytics_settings;
+    }
+
+    if ( my $hotjar_settings = Utils::Settings::load( 'ping', 'hotjar' ) ) {
+        $$info{hotjarSettings} = $hotjar_settings;
     }
 
     # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
