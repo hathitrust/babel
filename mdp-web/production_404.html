@@ -5,80 +5,33 @@
     <meta charset="utf-8" />
     <title>Not Found | Hathi Trust Digital Library</title>
 
-    <script type="text/javascript" src="/common/alicorn/js/utils.201910.js"></script>
-    <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
+    <script type="module" src="/common/firebird/dist/assets/index.js"></script>
 
   </head>
   
-  <body class="staticPage"> 
+  <body class="staticPage apps" style="opacity: 0; visibility: hidden;">
 
     <div id="root">
 
-      <header class="site-navigation" role="banner">
-        <nav aria-label="about the site">
-        <ul id="nav" class="nav">
-        <li>
-          <a class="home-link" href="https://www.hathitrust.org"><span class="offscreen-for-narrowest">Home</span></a>
-        </li>
-        <li class="menu nav-links">
-          <a aria-expanded="false" class="menu" href="#" id="burger-menu"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
-          <ul>
-            <li class="menu">
-              <a href="#" class="menu" aria-expanded="false" aria-haspopup="true" id="about-menu" aria-hidden="false">About <span class="caret" aria-hidden="true"></span></a>
-              <ul role="menu" aria-labelledby="about-menu" aria-hidden="true">
-                <li>
-                  <a href="https://www.hathitrust.org/about" aria-role="menuitem">Welcome to HathiTrust</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/partnership" aria-role="menuitem">Our Partnership</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/digital_library" aria-role="menuitem">Our Digital Library</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/collaborative-programs" aria-role="menuitem">Our Collaborative Programs</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/htrc" aria-role="menuitem">Our Research Center</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/news_publications" aria-role="menuitem">News &amp; Publications</a>
-                </li>
-              </ul>
-            </li>
-                  <li>
-              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
-            </li>
-            <li class="help">
-              <a href="https://www.hathitrust.org/help">Help</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
-            </li>
-          </ul>
-        </li>
-        </ul>
-        </nav>
-      </header>
-      
-      <main id="main" class="main-container">
+      <hathi-website-header data-prop-search-state="toggle" data-prop-user-navigation="false"></hathi-website-header>
 
-        <div class="container container-medium flex-container container-boxed" style="margin-top: 1.75rem">
+      <main id="main" class="main-container error">
 
-          <section style="margin: 1rem">
+        <div class="container mt-4">
 
-            <h2>This item does not exist.</h2>
+          <section class="m-3 col-md-6 bg-vaguely-faded">
+
+            <h1>This item does not exist.</h1>
             <p>
               We couldn't locate that item in the repository.
             </p>
-            <p>
-              <img src="/mdp-web/graphics/empty_stacks.jpg" alt="Empty Stacks" style="width: 100%; box-shadow: 10px 10px 33px 16px rgba(102,102,102,0.62); border: 8px solid white;" />
+
+            <p data-hathi-trigger="hathi-feedback-form-modal" id="feedback-form">
+              <button type="button" class="btn btn-primary"><span>Report the Problem</span></button>
             </p>
-            <p class="pull-right">
-              <small>
-                <a href="https://www.flickr.com/photos/colink/24567815691/">"Empty Shelves"</a> by <a href="https://www.flickr.com/photos/colink/">Colin Knowles</a> is licensed under <a href="http://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>
-              </small>
-            </p>
+  
+            <hathi-feedback-form-modal data-prop-form="error" data-prop-is-open="false"></hathi-feedback-form-modal">          
 
           </section>
 
@@ -86,37 +39,7 @@
 
       </main>
 
-      <footer class="site-navigation" role="contentinfo">
-        <nav>
-          <ul class="nav pull-right">
-            <li>
-              <a href="https://www.hathitrust.org/">Home</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/about">About</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/help">Help</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
-            </li>
-            <li><a href="https://www.hathitrust.org/accessibility">Accessibility</a></li>
-            <li>
-              <a href="https://www.hathitrust.org/take_down_policy">Take-Down Policy</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/privacy">Privacy</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/contact">Contact</a>
-            </li>
-          </ul>
-        </nav>
-      </footer>
+      <hathi-website-footer></hathi-website-footer>
 
     </div>
 

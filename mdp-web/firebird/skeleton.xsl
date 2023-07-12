@@ -115,8 +115,6 @@
         document.head.appendChild(linkEl);
       }
 
-      // addScript({ href: 'https://kit.fontawesome.com/1c6c3b2b35.js', crossOrigin: 'anonymous' });
-
       let firebird_config = localStorage.getItem('firebird') || '';
       if ( firebird_config == 'proxy' ) {
         addScript({ href: `//${location.host}/js/main.js`, type: 'module' });

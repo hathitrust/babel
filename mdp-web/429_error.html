@@ -7,121 +7,38 @@
 
     <title>Hathi Trust Digital Library - Resource Unavailable</title>
 
-    <script type="text/javascript" src="/common/alicorn/js/utils.201910.js"></script>
-    <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
-
-    <style>
-      #masthead { height: 86px; }
-    </style>
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
+    <script type="module" src="/common/firebird/dist/assets/index.js"></script>
   </head>
   
-  <body class="staticPage"> 
+  <body class="staticPage apps" style="opacity: 0; visibility: hidden;">
 
     <div id="root">
     
-      <header class="site-navigation" role="banner">
-        <nav aria-label="about the site">
-        <ul id="nav" class="nav">
-        <li>
-          <a class="home-link" href="https://www.hathitrust.org"><span class="offscreen-for-narrowest">Home</span></a>
-        </li>
-        <li class="menu nav-links">
-          <a aria-expanded="false" class="menu" href="#" id="burger-menu"><i class="icomoon icomoon-reorder" aria-hidden="true"></i> Menu</a>
-          <ul>
-            <li class="menu">
-              <a href="#" class="menu" aria-expanded="false" aria-haspopup="true" id="about-menu" aria-hidden="false">About <span class="caret" aria-hidden="true"></span></a>
-              <ul role="menu" aria-labelledby="about-menu" aria-hidden="true">
-                <li>
-                  <a href="https://www.hathitrust.org/about" aria-role="menuitem">Welcome to HathiTrust</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/partnership" aria-role="menuitem">Our Partnership</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/digital_library" aria-role="menuitem">Our Digital Library</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/collaborative-programs" aria-role="menuitem">Our Collaborative Programs</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/htrc" aria-role="menuitem">Our Research Center</a>
-                </li>
-                <li>
-                  <a href="https://www.hathitrust.org/news_publications" aria-role="menuitem">News &amp; Publications</a>
-                </li>
-              </ul>
-            </li>
-                  <li>
-              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
-            </li>
-            <li class="help">
-              <a href="https://www.hathitrust.org/help">Help</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
-            </li>
-          </ul>
-        </li>
-        </ul>
-        </nav>
-      </header>
+      <hathi-website-header data-prop-search-state="toggle" data-prop-user-navigation="false"></hathi-website-header>
       
-      <main id="main" class="main-container">
+      <main id="main" class="main-container error">
 
-        <div class="container container-medium flex-container" style="margin-top: 1.75rem">
-          <div>
-            <img src="./graphics/librarian.jpg" alt="photograph of ye olden days at the library"/> 
-          </div>
-          <div style="flex-grow: 1; margin-left: 1rem">
+        <div class="container mt-4">
+          <section class="m-3 col-md-6 bg-vaguely-faded">
             <h1>Resource Temporarily Unavailable</h1>
 
-            <div class="message_error">
-              
+            <div class="alert alert-warning message_error rounded-4 mt-4">
               
                 <p>You have temporarily exceeded viewing limits. ___CHOKED_UNTIL___</p>
                 <p>Viewing limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>
 
-                <!-- PHOTOCOPIER_USAGE -->
-                
-                <p><strong><a href="__REQUEST_URL__">Try your request again.</a></strong></p>
-
             </div>
 
-          </div>
+            <!-- PHOTOCOPIER_USAGE -->
+            
+            <p><a class="btn btn-primary" href="__REQUEST_URL__">Reload Page</a></p>
+
+          </section>
         </div>
       </main>
 
-      <footer class="site-navigation" role="contentinfo">
-        <nav>
-          <ul class="nav pull-right">
-            <li>
-              <a href="https://www.hathitrust.org/">Home</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/about">About</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/mb">Collections</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/help">Help</a>
-            </li>
-            <li>
-              <a href="//babel.hathitrust.org/cgi/feedback?page=form" data-m="pt" data-toggle="feedback tracking-action" data-id="" data-tracking-action="Show Feedback">Feedback</a>
-            </li>
-            <li><a href="https://www.hathitrust.org/accessibility">Accessibility</a></li>
-            <li>
-              <a href="https://www.hathitrust.org/take_down_policy">Take-Down Policy</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/privacy">Privacy</a>
-            </li>
-            <li>
-              <a href="https://www.hathitrust.org/contact">Contact</a>
-            </li>
-          </ul>
-        </nav>
-      </footer>
+      <hathi-website-footer></hathi-website-footer>
 
     </div>
   </body>
