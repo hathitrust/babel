@@ -221,38 +221,27 @@ print <<HTML;
 <html>
   <head>
     <title>HathiTrust - Logout</title>
-    <link rel="stylesheet" href="/common/unicorn/css/common.css" />
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <style>
-        \@media all and (max-width: 900px) {
-          .container.centered {
-            width: 95%;
-          }
-
-        \@media all and (max-width: 480px) {
-
-          .container.page.centered {
-            // padding-left: 0;
-            // padding-right: 0;
-            padding-left: 1em;
-            padding-right: 1em;
-
-          }
-    </style>
   </head>
 
   <body>
-    <div class="container centered">
-        <div class"row">
-            <div class="span8 push2">
-                <div class="alert alert-success alert-block">
+
+    <div class="modal show d-block">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title">Log out</h1>
+                </div>
+                <div class="modal-body">
                     <p>You have logged out!</p>
                     <p>You are still logged in to $instituion_name.</p>
-                    <p><a class="btn" $redirect><i class="icomoon icomoon-arrow-left" aria-hidden="true"></i> Go Back</a></p>
+                    <p><a class="btn btn-primary" $redirect><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Go Back</a></p>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal-backdrop fade show"></div>
   </body>
 </html>
 HTML
