@@ -33,30 +33,21 @@
 
   <xsl:template match="/MBooksTop">
     <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
-      <xsl:attribute name="data-analytics-code">
-        <xsl:call-template name="get-analytics-code" />
-      </xsl:attribute>
-      <xsl:attribute name="data-analytics-enabled"><xsl:call-template name="get-analytics-enabled" /></xsl:attribute>
       <xsl:attribute name="data-tracking-category"><xsl:call-template name="get-tracking-category" /></xsl:attribute>
       <xsl:if test="//UserHasRoleToggles/@activated != ''">
         <xsl:attribute name="data-activated"><xsl:value-of select="//UserHasRoleToggles/@activated" /></xsl:attribute>
       </xsl:if>
       <xsl:call-template name="setup-html-data-attributes" />
       <xsl:attribute name="class">
-        <xsl:text>no-js </xsl:text>
         <xsl:call-template name="setup-html-class" />
       </xsl:attribute>
       <xsl:call-template name="setup-html-attributes" />
 
       <head>
 
-        <xsl:comment>IE PRE-SETUP</xsl:comment>
-
         <xsl:call-template name="load_base_js" />
 
         <xsl:call-template name="setup-extra-header" />
-
-        <xsl:comment>IE POST-SETUP</xsl:comment>
 
         <title>
           <xsl:call-template name="setup-page-title" />
@@ -74,13 +65,9 @@
         </xsl:attribute>
         <xsl:call-template name="setup-body-data-attributes" />
         
-        <xsl:call-template name="insert-svg-icons" />
-
         <xsl:call-template name="debug-messages" />
 
         <xsl:call-template name="skip-to-main-link" />
-
-        <!-- <xsl:call-template name="access-overview" /> -->
 
         <hathi-acceptable-use-banner></hathi-acceptable-use-banner>
         <div id="root">
@@ -201,36 +188,6 @@
     <hathi-website-footer></hathi-website-footer>
   </xsl:template>
 
-  <xsl:template name="list-surveys">
-    <xsl:call-template name="list-surveys-blocks" />
-  </xsl:template>
-
-  <xsl:template name="list-surveys-blocks">
-    <xsl:for-each select="//Surveys/Survey">
-      <div class="alert alert-notice alert-block">
-        <xsl:if test=".//a[@dir]">
-          <xsl:attribute name="dir"><xsl:value-of select=".//a/@dir" /></xsl:attribute>
-        </xsl:if>
-        <p>
-          <xsl:apply-templates select="Desc" mode="copy-guts" />
-        </p>
-      </div>
-    </xsl:for-each>
-  </xsl:template>
-
-  <xsl:template name="list-surveys-combined">
-    <div class="alert alert-notice alert-block">
-      <xsl:for-each select="//Surveys/Survey">
-        <p>
-          <xsl:if test="position() &gt; 1">
-            <xsl:attribute name="style">margin-top: 20px</xsl:attribute>
-          </xsl:if>
-          <xsl:apply-templates select="Desc" mode="copy-guts" />
-        </p>
-      </xsl:for-each>
-    </div>
-  </xsl:template>
-
   <xsl:template name="debug-messages">
     <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages/*">
       <div class="debug-messages">
@@ -239,28 +196,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template name="get-analytics-enabled">true</xsl:template>
-  <xsl:template name="get-analytics-code">
-    <xsl:text>UA-954893-23</xsl:text>
-    <xsl:call-template name="get-extra-analytics-code" />
-  </xsl:template>
-  <xsl:template name="get-extra-analytics-code"></xsl:template>
   <xsl:template name="get-tracking-category">HT</xsl:template>
-
-  <xsl:template name="insert-svg-icons">
-  </xsl:template>
-
-  <xsl:template name="build-css-link">
-    <xsl:param name="href" />
-    <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
-    <link rel="stylesheet" href="{$href}?_{$modtime}" />
-  </xsl:template>
-
-  <xsl:template name="build-js-link">
-    <xsl:param name="href" />
-    <xsl:variable name="modtime" select="//Timestamp[@href=$href]/@modtime" />
-    <script type="text/javascript" src="{$href}?_{$modtime}"></script>
-  </xsl:template>
 
   <xsl:template name="build-accordion-item">
     <xsl:param name="id" />
