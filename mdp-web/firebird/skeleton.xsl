@@ -29,6 +29,16 @@
 
   <xsl:variable name="gEnableGoogleAnalytics" select="'true'"/>
 
+  <xsl:variable name="item-link-config-tmp">
+    <h:select>
+      <h:option key="emergency" icon="fa-solid fa-unlock-keyhole" class="list-group-item">Temporary Access</h:option>
+      <h:option key="fulltext-activated-role" icon="fa-solid fa-unlock-keyhole" class="list-group-item active">Limited (Access Permitted)</h:option>
+      <h:option key="fulltext" icon="fa-regular fa-file-lines" class="list-group-item active">Full View</h:option>
+      <h:option key="limited" icon="fa-solid fa-lock" class="list-group-item">Limited (search-only)</h:option>
+    </h:select>
+  </xsl:variable>
+  <xsl:variable name="gItemLinkConfig" select="exsl:node-set($item-link-config-tmp)" />
+
   <xsl:template name="load_base_js" />
 
   <xsl:template match="/MBooksTop">
