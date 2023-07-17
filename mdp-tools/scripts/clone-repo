@@ -17,6 +17,7 @@ sub clone_app_usage {
                     instead of /htapps/user.babel
                  -f force rename (mv) existing clone, then clone
                  -A all apps
+                 -S <service>, babel (default), www, catalog
                  -h print help\n};
     return $s;
 }
@@ -26,8 +27,8 @@ if (! scalar @ARGV) {
     exit 0;
 }
 
-our ($opt_h, $opt_s, $opt_f, $opt_A);
-my $ops = getopts('hs:fA');
+our ($opt_h, $opt_s, $opt_f, $opt_A, $opt_S);
+my $ops = getopts('hs:fAS:');
 
 my $help = $opt_h;
 $ToolLib::VERBOSE = 1;
@@ -37,6 +38,17 @@ if ($help) {
     exit 0;
 }
 
+my @all_valid_services = @ToolLib::all_valid_services;
+my $SERVICE = $opt_S;
+if ($SERVICE) {
+    if (! grep(/^$SERVICE$/, @all_valid_services)) {
+        PrintN("$SERVICE is not a valid beta staging area\n");
+        print stage_app_usage();
+        exit 1;
+    }
+    $ToolLib::SERVICE = $SERVICE;
+    PrintY("deploying to $SERVICE\n");
+}
 
 my $STAGE = $opt_s;
 if ($STAGE) {
