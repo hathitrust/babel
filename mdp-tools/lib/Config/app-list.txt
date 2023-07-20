@@ -21,10 +21,8 @@ access
 plack-lib
 qual
 ping
-register
 kgs
 widgets
-register
 watermarks
 whoami
 ic-tracking
