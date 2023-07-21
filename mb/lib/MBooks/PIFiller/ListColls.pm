@@ -93,8 +93,6 @@ sub coll_list_helper
         $output .= wrap_string_in_tag($s, 'Collection', [['featured', $featured], ['updated', $recently_updated], ['selected', $selected], ['owned',$owned], [ 'temporary', $is_temporary]]);
     }
 
-    ## print STDERR "COLL_LIST_HELPER : " . ( time() - $start ) . "\n";
-
     return $output;
 }
 
@@ -213,6 +211,7 @@ sub get_coll_xml
 {
     my $C = shift;
     my $coll_hashref = shift;
+
     my $s = '';
 
     my $config = $C->get_object('MdpConfig');
@@ -339,6 +338,61 @@ sub handle_COLLNAME_SORT_HREF_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
     return MBooks::PIFiller::ListUtils::get_sorting_href($C, 'cn')
+}
+
+sub handle_LIST_SIZE_WIDGET_PI
+    : PI_handler(LIST_SIZE_WIDGET)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $size = $cgi->param('size') || '_';
+
+    my $size_counts = $act->get_transient_facade_member_data( $C, 'size_counts' );
+
+    my $s = '';
+    foreach my $key ( keys %$size_counts ) {
+        my $value = $$size_counts{$key} || 0;
+        $s .= wrap_string_in_tag(
+            '',
+            'Size',
+            [
+                ['key', $key],
+                ['count', $value],
+                ['disabled', $value == 0 ? 'TRUE' : 'FALSE'],
+                ['focus', $key eq $size ? 'TRUE' : 'FALSE']
+            ]
+        );
+    }
+
+    return $s;
+
+}
+
+sub handle_VIEW_SIZE_WIDGET_PI
+    : PI_handler(VIEW_SIZE_WIDGET)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+    my $cgi = $C->get_object('CGI');
+    my $colltype = $cgi->param('colltype');
+
+    my $view_counts = $act->get_transient_facade_member_data($C, 'view_counts');
+
+    my $s = '';
+    foreach my $key ( keys %$view_counts ) {
+        my $value = $$view_counts{$key} || 0;
+        $s .= wrap_string_in_tag(
+            '',
+            'Size',
+            [
+                ['key', $key],
+                ['count', $value],
+                ['disabled', $value == 0 ? 'TRUE' : 'FALSE'],
+                ['focus', $key eq $colltype ? 'TRUE' : 'FALSE']
+            ]
+        );
+    }
+    return $s;
+
 }
 
 

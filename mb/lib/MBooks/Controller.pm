@@ -79,9 +79,11 @@ sub ___core_initialize
     {
         my $config = $C->get_object('MdpConfig');
         my $params = $config->get('mbooks_default_params');
+        my $colltype = $cgi->param('colltype');
         my $temp_cgi = new CGI($params);
         $temp_cgi->param('debug', scalar $cgi->param('debug'));
         $cgi = $temp_cgi;
+        $cgi->param('colltype', $colltype) if ( $colltype );
         $C->set_object('CGI',$cgi);
     }
 

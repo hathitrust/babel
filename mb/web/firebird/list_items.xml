@@ -2,7 +2,7 @@
 
 <MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
 
-  <!-- list_search_results.xml -->
+  <!-- list_items.xml -->
 
   <!-- XSL fallback files -->
   <XslFileList>
@@ -10,14 +10,17 @@
     <Filename>js_utils.xsl</Filename> 
     <!-- <Filename>loads.xsl</Filename> -->
     <!-- <Filename>loads_helper_mb.xsl</Filename> -->
+    <Filename>list_utils.xsl</Filename> 
     <!-- <Filename>coll.xsl</Filename> -->
     <Filename>skin.xsl</Filename>
     <Filename>common.xsl</Filename>
-    <Filename>list_utils.xsl</Filename> 
     <Filename>list_items.xsl</Filename>
     <Filename>xsl2htmlutils.xsl</Filename>
    </XslFileList>
 
+<!--     <Filename>coll.xsl</Filename>
+    <Filename>skin.xsl</Filename>
+ -->
   <!-- Custom OPTIONAL XML for top-level file -->
   <CustomXml></CustomXml>
 
@@ -25,8 +28,10 @@
   <?CHUNK filename="header.xml"?>
   <?CHUNK filename="footer.xml"?>
   <!-- Include -->
-  <?CHUNK filename="list_search_results.inc.xml" optional="0"?>
+  <?CHUNK filename="items.inc.xml" optional="0"?>
 
   <GoogleAnalytics/>
+
+  <AnalyticsReportUrl><?ANALYTICS_REPORT_URL?></AnalyticsReportUrl>
 
 </MBooksTop>

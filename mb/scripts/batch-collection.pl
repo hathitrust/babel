@@ -92,7 +92,7 @@ my @allowed_uniqnames =
   (
    'roger',
    'sooty',
-   'docker'
+   'docker',
   );
 
 my @allowed_overrides =
@@ -152,7 +152,8 @@ my $date = Utils::Time::iso_Time('date');
 my $time = Utils::Time::iso_Time('time');
 my $LOGFILE = $INPUT_FILE . qq{-$date-$time.log};
 
-my $WHO_AM_I_REALLY = `whoami`;
+my $UID = $<;
+my $WHO_AM_I_REALLY = ( $UID == 1000 ) ? 'docker' : `whoami`;
 chomp($WHO_AM_I_REALLY);
 
 my $NON_SUPERUSER = 1;
@@ -750,7 +751,7 @@ sub bc_handle_add_items_to {
 sub bc_handle_metadata_update {
     my ( $C, $coll_id ) = @_;
     my $dbh = $CO->get_dbh();
-    my $update_sql = qq{UPDATE ht_web.mb_collection SET };
+    my $update_sql = qq{UPDATE ht.mb_collection SET };
     my @params = ();
     my @expr = ();
     my @log = ();

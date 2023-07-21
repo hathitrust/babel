@@ -28,5 +28,6 @@
   <?CHUNK filename="list_search_results.inc.xml" optional="0"?>
 
   <GoogleAnalytics/>
+  <AnalyticsReportUrl><?ANALYTICS_REPORT_URL?></AnalyticsReportUrl>
 
 </MBooksTop>

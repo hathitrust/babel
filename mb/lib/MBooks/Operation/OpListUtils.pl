@@ -285,6 +285,20 @@ sub get_final_item_arr_ref {
         $$item_hashref{activated_role} = $$activated_role{role} 
             if ( ref $activated_role );
 
+        my $activated_role;
+
+        my $key = 'limited';
+        if ( $$item_hashref{emergency} eq '1' ) {
+            $key = 'emergency';
+        }
+        elsif ( ref($activated_role) && $$item_hashref{fulltext} eq '1' ) {
+            $key = 'fulltext-activated';
+        }
+        elsif ( $$item_hashref{fulltext} eq '1' ) {
+            $key = 'fulltext';
+        }
+        $$item_hashref{key} = $key;
+
         # add array_of hashrefs of collection info for collections
         # owned by user that also include the item
         my $coll_ary_hashref;

@@ -17,7 +17,7 @@
      'desc'     => '.*',
      'contributor_name' => '.*',
      'page'     => 'addc|ajax|srchresults',
-     'sort'     => 'auth_a|auth_d|title_a|title_d|cn_a|cn_d|date_a|date_d|acc_a|acc_d|num_a|num_d|own_d|own_a|shrd_a|shrd_d|rel_a|rel_d',
+     'sort'     => 'updated_a|updated_d|auth_a|auth_d|title_a|title_d|cn_a|cn_d|date_a|date_d|acc_a|acc_d|num_a|num_d|own_d|own_a|shrd_a|shrd_d|rel_a|rel_d',
      'shrd'     => '0|1',
      'lmt'      => 'ft|all',
      'debug'    => '.*',
@@ -35,6 +35,7 @@
      'solrfct'  => '.*',
      'start'    => '\d+',
      'colltype' => 'pub|priv|updated|class|all|my-collections|updated|featured|my_colls|all_colls|default',
+     'size'     => '1000|500-100|250-500|100-250|50-100|25-50|0-25',
      'undo'     => '.*',  #XXX consider limiting to values of a param
      'skin'     => '.*',
      'testUser' => '.*',
@@ -63,6 +64,8 @@
      'shrd_d'   => 'shared',
      'rel_a'    => 'rel',   #XXX temp until lucene integration
      'rel_d'    => 'rel',   #XXX temp until lucene integration
+     'updated_a' => 'modified',
+     'updated_d' => 'modified'
     );
 
 

@@ -114,6 +114,16 @@ sub handle_SEARCH_RESULTS_PI
         $s .= wrap_string_in_tag($$item_hashref{'record_no'}, 'record');
         $s .= wrap_string_in_tag($$item_hashref{'book_id'}, 'bookID');
 
+        my $key = 'limited';
+        if ( $$item_hashref{'emergency_flag'} eq '1') {
+            $key = 'emergency';
+        } elsif ( $$item_hashref{'activated_role'} && $$item_hashref{'fulltext'} eq '1' ) {
+            $key = 'fulltext-activated';
+        } elsif ( $$item_hashref{'fulltext'} eq '1' ) {
+            $key = 'fulltext'
+        }
+        $s .= wrap_string_in_tag($key, 'Key');
+
         my $coll_ary_ref = $item_hashref->{'item_in_collections'};
         my $colls;
 

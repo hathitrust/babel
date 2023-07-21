@@ -554,7 +554,7 @@ sub handle_PAGING_PI
     ASSERT(defined($pager),qq{pager not defined });
 
     my $cgi = $C->get_object('CGI');
-    my $current_page = $cgi->param('pn');
+    my $current_page = $cgi->param('pn') || 1;
     my $current_sz = $cgi->param('sz');
 
     my $temp_cgi = new CGI($cgi);
@@ -568,6 +568,10 @@ sub handle_PAGING_PI
     elsif (($cgi->param('a') eq 'listsrch')||($cgi->param('a') eq 'listsrch'))
     {
         $temp_cgi->param('a', 'listsrch');
+    }
+    elsif ( $cgi->param('a') eq 'listcs') 
+    {
+        $temp_cgi->param('a', 'listcs');
     }
     else
     {
@@ -689,6 +693,7 @@ sub handle_PAGING_PI
     $s .= wrap_string_in_tag($end_pagelinks, 'EndPageLinks');
 
     $pager->current_page($current_page);
+    $s .= wrap_string_in_tag($current_page, 'CurrentPage' );
     $s .= wrap_string_in_tag($pager->last_page, 'TotalPages');
     $s .= wrap_string_in_tag($pager->entries_on_this_page, 'NumRecsOnThisPage');
     $s .= wrap_string_in_tag($pager->entries_per_page, 'RecsPerPage');
@@ -1105,6 +1110,29 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
 
 
     return $s;
+}
+
+sub handle_ANALYTICS_REPORT_URL_PI
+  : PI_handler(ANALYTICS_REPORT_URL) {
+    my ( $C, $act, $piParamHashRef ) = @_;
+
+    my $cgi     = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+
+    my @parts   = ('/mb');
+    my $tempCgi = new CGI({});
+
+    push @parts, $cgi->param('a');
+    push @parts, $coll_id;
+
+    foreach my $param ( $cgi->param ) {
+        if ( $param =~ m,q[0-9]|field[0-9]|anyall[0-9]|op[0-9]|lmt|sort|facet, ) {
+            $tempCgi->param( $param, $cgi->param($param) );
+        }
+    }
+    my $qs = $tempCgi->query_string;
+    $qs =~ s/;/&amp;/g;
+    return join( '/', @parts ) . ( $qs ? "?$qs" : '' );
 }
 
 sub commify
