@@ -418,7 +418,7 @@
           <div class="resource-access-container">
             <ul>
               <li>
-                <a href="http://catalog.hathitrust.org/Record/{record}">
+                <a href="https://catalog.hathitrust.org/Record/{record}">
                   <xsl:attribute name="data-clickdata">
                     <xsl:value-of select="ItemClickData"/>
                   </xsl:attribute>

@@ -27,6 +27,7 @@ use base qw(PIFiller);
 use Utils;
 use Debug::DUtils;
 
+use JSON::XS;
 
 BEGIN
 {
@@ -43,8 +44,64 @@ BEGIN
 #
 
 
+sub handle_ADVANCED_SEARCH_CONFIG_PI
+    : PI_handler(ADVANCED_SEARCH_CONFIG)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my @format_data; my @language_data;
+
+    my $catalog_derived_data_dir = qq{/htapps/catalog/web/derived_data};
+    my $format_filename = qq{$catalog_derived_data_dir/format.txt};
+    my $language_filename = qq{$catalog_derived_data_dir/language.txt};
+    if (-f $language_filename && -f $format_filename ) {
+        open my $fh, "<:encoding(UTF-8)", $language_filename;
+        chomp(@language_data = <$fh>);
+        close($fh);
+
+        open my $fh, "<", $format_filename;
+        chomp( @format_data = <$fh> );
+        close($fh);
+    } else {
+        my $fconfig =         $C->get_object('FacetConfig');
+        @format_data  =     @{ $fconfig->{'formats_list'} };
+        @language_data = @{ $fconfig->{'language_list'} };
+        print STDERR "AHOY NOT FOUND $format_filename\n";
+    }
+
+    my $s = '';
+    # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @format_data), 'FormatData');
+    # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @language_data), 'LanguageData');
+
+    my $data = encode_json(\@format_data); $data =~ s,&,&amp;,g;
+    $s .= wrap_string_in_tag($data, 'FormatData');
+    $data = encode_json(\@language_data); $data =~ s,&,&amp;,g;
+    $s .= wrap_string_in_tag($data, 'LanguageData');
+
+    return $s;
+}
+
 #   
 # ---------------------------------------------------------------------
+sub handle_ADVANCED_SEARCH_FORM_NOP_PI
+    : PI_handler(ADVANCED_SEARCH_FORM_NOP)
+{
+    my ( $C, $act, $piParamHashRef ) = @_;
+    my $cgi = $C->get_object('CGI');
+
+    my $xml;
+
+    # add collection info
+    my $coll_info = __get_coll_info($C,$act);
+    if(defined($coll_info))
+    {
+	    $xml.= wrap_string_in_tag($coll_info, 'COLL_INFO');
+    }
+
+    return $xml;
+}
+
+
 sub handle_ADVANCED_SEARCH_FORM_PI
     : PI_handler(ADVANCED_SEARCH_FORM)
 {

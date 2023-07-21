@@ -609,6 +609,8 @@ sub __get_coll_info
     my $coll_featured;
     my $coll_branding;
     my $coll_contact_info;
+    my $coll_contact_link;
+    my $coll_contributor_name;
 
     if(defined ($cgi->param('c')))  {
     	my $coll_id = $cgi->param('c');
@@ -623,12 +625,16 @@ sub __get_coll_info
     	    $coll_name   = $co->get_coll_name($coll_id);
             $coll_featured = $co->get_coll_featured($coll_id);
             $coll_contact_info = $co->get_coll_contact_info($coll_id);
+            $coll_contact_link = $co->get_coll_contact_link($coll_id);
             $coll_branding = $co->get_coll_branding($coll_id);
+            $coll_contributor_name = $co->get_contributor_name($coll_id);
     	    $coll_info ='<COLL_DESC>'. $coll_desc . '</COLL_DESC>';
     	    $coll_info .='<COLL_NAME>'. $coll_name . '</COLL_NAME>';
             $coll_info .= '<COLL_FEATURED>' . $coll_featured . '</COLL_FEATURED>' if ( $coll_featured );
             $coll_info .= '<COLL_BRANDING>' . $coll_branding . '</COLL_BRANDING>' if ( $coll_branding );
             $coll_info .= '<COLL_CONTACT_INFO>' . $coll_contact_info . '</COLL_CONTACT_INFO>' if ( $coll_contact_info );
+            $coll_info .= '<COLL_CONTACT_LINK>' . $coll_contact_link . '</COLL_CONTACT_LINK>' if ( $coll_contact_link );
+            $coll_info .= '<COLL_CONTRIBUTOR_NAME>' . $coll_contributor_name . '</COLL_CONTRIBUTOR_NAME>' if ( $coll_contributor_name );
             $coll_info .= '<COLL_SHARED>' . $co->get_shared_status($coll_id) . '</COLL_SHARED>';
     	}
     }
@@ -1286,6 +1292,35 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
   return $s;
 }
 
+sub handle_ANALYTICS_REPORT_URL_PI
+  : PI_handler(ANALYTICS_REPORT_URL)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $coll_id = $cgi->param('c');
+
+    my @parts = ('/ls');
+    my $tempCgi = new CGI({});
+
+    if ( $coll_id ) {
+        push @parts, 'listis';
+        push @parts, $coll_id;
+        push @parts, $cgi->param('lmt') || 'all';
+    } else {
+        push @parts, $cgi->param('a');
+    }
+
+    foreach my $param ( $cgi->param ) {
+        if ( $param =~ m,q[0-9]|field[0-9]|anyall[0-9]|op[0-9]|lmt, ) {
+            $tempCgi->param($param, $cgi->param($param));
+        }
+    }
+    my $qs = $tempCgi->query_string;
+    $qs =~ s/;/&amp;/g;
+    return join('/', @parts) . ( $qs ? "?$qs" : '' );
+}
+
 # ---------------------------------------------------------------------
 #======================================================================
 #
@@ -1402,6 +1437,8 @@ sub __isAdvanced{
     my $isAdvanced="false";
     my $qcount = 0;
     my $anyall;
+
+    return 'true' if ( $cgi->param('adv') eq '1' );
 
     for my $i (1..4)
     {
@@ -2047,6 +2084,15 @@ sub _ls_wrap_result_data {
 	my $result_number = $doc_data->{'result_number'};
 	$s .=wrap_string_in_tag($result_number, 'result_number');
 
+    my $key = 'limited';
+    if ( $emergency_flag eq '1') {
+        $key = 'emergency';
+    } elsif ( ref($activated_role) && $fulltext_flag eq '1' ) {
+        $key = 'fulltext-activated';
+    } elsif ( $fulltext_flag eq '1' ) {
+        $key = 'fulltext'
+    }
+    $s .= wrap_string_in_tag($key, 'Key');
 
         $output .= wrap_string_in_tag($s, 'Item');
     }

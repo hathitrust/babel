@@ -43,6 +43,8 @@
    'srch'   =>'.*',
    'heldby' =>'.*',
    'c'   =>'.*',
+   'skin' => '.*',
+   'adv' => '1',
   );
 
 # Specification of global *database* operations to be executed before
