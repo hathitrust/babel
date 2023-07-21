@@ -73,7 +73,10 @@ my $C = new Context;
 my $cgi = new CGI;
 Utils::clean_cgi_params($cgi);
 $C->set_object('CGI', $cgi);
-$cgi->delete('skin'); # legacy
+
+## the wayf application somehow avoids the 
+## usual debug handling
+## $ENV{DEBUG} = 'xml' if ( $cgi->param('debug') );
 
 #
 # Create the application

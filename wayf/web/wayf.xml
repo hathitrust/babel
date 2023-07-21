@@ -16,4 +16,7 @@
   <FriendLoginLink><?FRIEND_LOGIN_LINK?></FriendLoginLink>
   <BackToRefererLink><?BACK_TO_REFERER_LINK?></BackToRefererLink>
 
+  <ApplicationAssets slot="common"><?COMMON_ASSETS?></ApplicationAssets>
+
+
 </MBooksTop>
