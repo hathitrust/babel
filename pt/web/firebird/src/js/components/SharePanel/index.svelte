@@ -20,11 +20,6 @@
   // initial seq
   let currentSeq = manifest.currentSeq;
   
-  // function updateSeq(data) {
-  //   if ( data ) { seq = data; }
-  // }
-  // emitter.on('location.updated', updateSeq);
-
   let codeBlock;
   let view = '1up';
   let codeBlockText = {};
@@ -71,22 +66,8 @@
     })
   }    
 
-  onMount(() => {
-    // btnShareHandle.bs = new bootstrap.Tooltip(btnShareHandle, { title: getLabel });
-    // btnShareHandleLink.bs = new bootstrap.Tooltip(btnShareHandleLink, { title: getLabel });
-    // btnCodeBlock.bs = new bootstrap.Tooltip(btnCodeBlock, { title: getLabel, container: modalBody });
-
-    // [ btnShareHandle, btnShareHandleLink, btnCodeBlock ].forEach((el) => {
-    //   el.addEventListener('hidden.bs.tooltip', () => {
-    //     let tooltip = bootstrap.Tooltip.getInstance(el);
-    //     tooltip.setContent({ '.tooltip-inner': el.getAttribute('aria-label') });
-    //   })
-    // })
-
-    return () => {
-      // emitter.off('location.updated', updateSeq);
-    }
-  })
+  $: ownerid = manifest.ownerid($currentSeq);
+  $: pageUrl = `https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bseq=${$currentSeq}${ownerid ? '%3Bownerid=' + ownerid : ''}`;
 
 </script>
 
@@ -125,7 +106,7 @@
           type="text" 
           class="form-control" 
           readonly 
-          value="https://hdl.handle.net/2027/{manifest.id}?urlappend=%3Bseq={$currentSeq}"
+          value="{pageUrl}"
           bind:this={shareHandleLink}
           on:blur={selectInnerText}
           on:click={selectInnerText} />
