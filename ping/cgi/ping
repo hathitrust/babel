@@ -57,6 +57,7 @@ use URI::Escape;
 
 use Ping::Utils;
 use JSON::XS;
+use Utils::Settings;
 
 use MIME::Base64;
 
@@ -117,6 +118,15 @@ my $app = sub {
             $notificationData_array = encode_json($$info{notificationData});
         }
 
+        my $analytics_settings = q{null};
+        if ( ref($$info{analyticsSettings}) ){
+            $analytics_settings = encode_json($$info{analyticsSettings});
+        }
+        my $hotjar_settings = q{null};
+        if ( ref( $$info{hotjarSettings} ) ) {
+            $hotjar_settings = encode_json( $$info{hotjarSettings} );
+        }
+
         my $retval = <<JAVASCRIPT;
 var HT = HT || {};
 HT.login_status = {};
@@ -136,6 +146,8 @@ HT.login_status.x = $emergency_access;
 HT.login_status.idp_list = $idp_list_json;
 HT.login_status.r = $r;
 HT.login_status.notificationData = $notificationData_array;
+HT.analyticsSettings = $analytics_settings;
+HT.hotjarSettings = $hotjar_settings;
 JAVASCRIPT
 
         $retval .= <<JAVASCRIPT;
@@ -270,6 +282,14 @@ JAVASCRIPT
         
         $$info{notificationData} = Ping::Notifications::get_notification_data($C);
 
+        if ( my $analytics_settings = Utils::Settings::load('ping', 'analytics') ) {
+            $$info{analyticsSettings} = $analytics_settings;
+        }
+
+        if ( my $hotjar_settings = Utils::Settings::load('ping', 'hotjar') ) {
+            $$info{hotjarSettings} = $hotjar_settings;
+        }
+
         $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
         return $response->finalize;
     }
@@ -314,6 +334,14 @@ JAVASCRIPT
         x => 0,
         r => undef,
     };
+
+    if ( my $analytics_settings = Utils::Settings::load('ping', 'analytics') ) {
+        $$info{analyticsSettings} = $analytics_settings;
+    }
+
+    if ( my $hotjar_settings = Utils::Settings::load( 'ping', 'hotjar' ) ) {
+        $$info{hotjarSettings} = $hotjar_settings;
+    }
 
     # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
     # $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));

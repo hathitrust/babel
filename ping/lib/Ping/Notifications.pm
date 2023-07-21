@@ -3,6 +3,7 @@ package Ping::Notifications;
 use JSON::XS;
 use Carp;
 use List::Util qw(first);
+use Digest::MD5;
 
 sub get_notification_data {
     my ( $C ) = @_;
@@ -35,7 +36,10 @@ sub load_notification_data {
         }
 
         next unless ( $raw );
-        my $notification = Ping::Notifications::Notification->new(JSON::XS::decode_json($raw));
+        my $notification =
+          Ping::Notifications::Notification->new( 
+            JSON::XS::decode_json($raw),
+            Digest::MD5::md5_hex($raw) );
         next unless ( $notification->is_valid($C) );
 
         push @$data, $notification->TO_JSON();
@@ -56,6 +60,9 @@ use Auth::Auth;
 sub new {
     my $class = shift;
     my ( $self ) = shift;
+    unless ( $$self{id} ) {
+        $$self{id} = shift;
+    }
     bless $self, $class;
     return $self;
 }
