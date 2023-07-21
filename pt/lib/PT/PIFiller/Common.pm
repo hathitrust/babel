@@ -34,8 +34,11 @@ use Survey;
 use Namespaces;
 
 use File::Slurp ();
+use HTML::Entities;
+use File::Basename qw(basename);
 
 use URI;
+use URI::Escape;
 
 require "PIFiller/Common/Globals.pm";
 require "PIFiller/Common/Group_HEADER.pm";
@@ -854,6 +857,7 @@ sub handle_FEATURED_COLLECTION_LIST_PI
     my $id = $cgi->param('id');
 
     my $coll_list;
+    $coll_list = [] if ($output_is_json);
     if ($co->item_exists($id))
     {
         my $coll_data_arrayref =
@@ -1032,9 +1036,14 @@ sub handle_ACCESS_TYPE_PI
     my $initial_access_type =
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
-    if ( $access_type eq 'enhanced_text_user' ) {
-        $xml .= qq{<Name>$access_type</Name>};
-    }
+    # if ( $access_type eq 'enhanced_text_user' ) {
+    #     $xml .= qq{<Name>$access_type</Name>};
+    # } elsif ( $access_type eq 'ssd_user' ) {
+    #     $xml .= qq{<Name>ssd_session_user</Name>};
+    # }
+    $access_type = 'ssd_session_user' if ( $access_type eq 'ssd_user' );
+
+    $xml .= qq{<WTF>$access_type / $initial_access_type</WTF>};
 
     if ( 
         ( $access_type eq 'emergency_access_affiliate' && $initial_access_type =~ m,emergency_access, ) 
@@ -1077,6 +1086,11 @@ sub handle_ACCESS_TYPE_PI
         $xml .= qq{<Name>total_access</Name>};
         $xml .= qq{<Role>$access_type</Role>};
         $xml .= qq{<Granted>TRUE</Granted>};
+    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'enhanced_text_user' ) {
+        $xml .= qq{<Name>$access_type</Name>};
+        my $final_access_status =
+            $rights->check_final_access_status($C, $id) eq 'allow' ? 'TRUE' : 'FALSE';
+        $xml .= qq{<Granted>$final_access_status</Granted>};
     }
 
     return $xml;
@@ -1206,6 +1220,98 @@ sub handle_FEATURE_LIST_PI
     }
 
     return $featureXML;
+}
+
+# ---------------------------------------------------------------------
+sub handle_SECTION_LIST_JSON
+    : PI_handler(SECTION_LIST_JSON)
+{
+    my ( $C, $act, $piParamHashRef ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+
+    my $sections = [];
+    $mdpItem->InitFeatureIterator();
+    my $featureRef;
+
+    my $seenFirstTOC = 0;
+    my $seenFirstIndex = 0;
+    my $seenSection = 0;
+
+    my $i = 1;
+    while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
+        my $tag   = $$$featureRef{'tag'};
+        my $label = $$$featureRef{'label'};
+        my $page  = $$$featureRef{'pg'};
+        my $seq   = $$$featureRef{'seq'};
+
+        if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^CHAPTER_START$,) {
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+        elsif ($tag =~ m,^MULTIWORK_BOUNDARY$,) {
+            # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
+            # if its seq matches the next CHAPTER seq.
+            my $nextFeatureRef = $mdpItem->PeekNextFeature();
+            if ($$nextFeatureRef
+                && (
+                    ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
+                    &&
+                    ($$$nextFeatureRef{'seq'} eq $seq))
+               ) {
+                # Skip CHAPTER_START
+                $mdpItem->GetNextFeature();
+            }
+            $label = qq{$label } . $i++;
+            $seenSection = 1;
+        }
+
+        if ($seenSection) {
+            $seenFirstTOC = 0;
+            $seenFirstIndex = 0;
+        }
+
+        # Repetition suppression
+        if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
+            $seenSection = 0;
+            if ($seenFirstTOC) {
+                next;
+            }
+            else {
+                $seenFirstTOC = 1;
+            }
+        }
+
+        if  ($tag =~ m,INDEX|IND,) {
+            $seenSection = 0;
+            if ($seenFirstIndex) {
+                next;
+            }
+            else {
+                $seenFirstIndex = 1;
+            }
+        }
+
+        my $url = BuildContentsItemLink($cgi, $seq, $page);
+        my $datum = {
+            tag => $tag,
+            label => $label,
+            page => $page,
+            seq => $seq,
+            url => $url
+        };
+
+        push @$sections, $datum;
+
+    }
+
+    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
+    return $json->encode($sections);
 }
 
 # ---------------------------------------------------------------------
@@ -1710,6 +1816,63 @@ sub handle_ITEM_CHECK_EXISTENCE
         }
     }
     return 'FALSE';
+}
+
+sub handle_APPLICATION_ASSETS_PI
+    : PI_handler(APPLICATION_ASSETS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    # my $path = q{/pt/firebird/dist/assets};
+    # my @assets = ();
+    # foreach my $filename ( glob("$ENV{SDRROOT}/pt/web/firebird/dist/assets/*.*") ) {
+    #     my $media_type = ( $filename =~ m,\.css, ) ? 'text/css' : 'application/js';
+    #     my $basename = basename($filename);
+    #     if ( $basename =~ m,\.css, ) {
+    #         push @assets, qq{<Stylesheet>$path/$basename</Stylesheet>};
+    #     } elsif ( $basename =~ m,\.js, ) {
+    #         push @assets, qq{<Script>$path/$basename</Script>};
+    #     }
+    # }
+
+    my @assets = ();
+    my %asset_paths = ();
+
+    $asset_paths{'/pt/firebird'} = "$ENV{SDRROOT}/pt/web/firebird/dist/manifest.json";
+    foreach my $path ( keys %asset_paths ) {
+        next unless ( -f $asset_paths{$path} );
+        my $manifest = decode_json(File::Slurp::read_file($asset_paths{$path}));
+        foreach my $basename ( keys %$manifest ) {
+            if ( $basename =~ m,\.css, ) {
+                push @assets, qq{<Stylesheet>$path/dist/$$manifest{$basename}{file}</Stylesheet>};
+            } elsif ( $basename =~ m,\.js, || $$manifest{$basename}{isEntry} ) {
+                push @assets, qq{<Script>$path/dist/$$manifest{$basename}{file}</Script>};
+            }
+        }
+    }
+
+    return join("\n", @assets);
+}
+
+sub handle_ANALYTICS_REPORT_URL_PI
+  : PI_handler(ANALYTICS_REPORT_URL) {
+    my ( $C, $act, $piParamHashRef ) = @_;
+
+    my $cgi     = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+    
+
+    my @parts   = $cgi->url(-absolute => 1);
+    $parts[0] =~ s,^/cgi,,;
+
+    push @parts, handle_CONTENT_PROVIDER_PI(@_);
+    push @parts, uri_escape($mdpItem->GetId());
+
+    my $q1 = $cgi->param('q1');
+    my $url = join('/', @parts);
+    $url .= "?q1=$q1" if ( $q1 );
+
+    return $url;
 }
 
 sub ExtractLSParams {

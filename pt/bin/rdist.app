@@ -19,6 +19,6 @@ APP_dest = ( /htapps/babel/pt )
 #
 ( ${APP_src} ) -> ( ${NASMACC} ${NASICTC} )
         install -oremove ${APP_dest};
-        except_pat ( \\.git yui2-lib );
+        except_pat ( \\.git node_modules );
         notify hathitrust-release@umich.edu ;
 

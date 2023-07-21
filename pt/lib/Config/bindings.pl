@@ -11,7 +11,7 @@
      'size'     => '\d+',
      'sz'     => '\d+',
      'view'     => 'image|text|1up|2up|thumb|plaintext|search|default|page|flip|scroll',
-     'format'     => 'image|plaintext',
+     'format'     => 'image|plaintext|json',
      'debug'    => '.*',
      'newsid'   => '1|[a-z0-9]{32}',
      'attr'     => '\d+',
@@ -23,7 +23,7 @@
      'skin'     => '.*',
      'q1'       => '.*',
      'u'        => '1',
-     'ui'       => 'reader|embed|fullscreen',
+     'ui'       => 'reader|embed|fullscreen|crms',
      'ptsop'    => 'AND|OR|and|or',
      'index'    => '1',
      'a'        => '\w+|\-',
@@ -64,17 +64,36 @@ $g_late_operations = [
                         },
      },
 
+    #  # ----- UI action -----
+    #  'ACTION_SEARCH'  =>
+    #  {'action_param' => 'page',
+    #   'action_type'  => 'UI',
+    #   'operations'   => [],
+    #   'view'         => {'search' => {
+    #                                    'builders' => [],
+    #                                    'template' => 'searchresults_{ITEM_TYPE}.xml',
+    #                                    'filler'   => 'PT::PIFiller::Search',
+    #                                   },
+    #                     },
+    #  },
+
      # ----- UI action -----
      'ACTION_SEARCH'  =>
      {'action_param' => 'page',
       'action_type'  => 'UI',
       'operations'   => [],
-      'view'         => {'search' => {
-                                       'builders' => [],
-                                       'template' => 'searchresults_{ITEM_TYPE}.xml',
-                                       'filler'   => 'PT::PIFiller::Search',
-                                      },
-                        },
+      'view'         => {
+            'search' => {
+                'builders' => [],
+                'template' => 'searchresults_{ITEM_TYPE}.xml',
+                'filler'   => 'PT::PIFiller::Search',
+            },
+            'json' => {
+                'builders' => [],
+                'template' => 'test.xml',
+                'filler'   => 'PT::PIFiller::Search',
+            },
+        },
      },
 
     );

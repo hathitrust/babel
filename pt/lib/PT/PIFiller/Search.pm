@@ -25,6 +25,7 @@ use PIFiller;
 use base qw(PIFiller);
 
 use PT::PIFiller::Common;
+use PT::PIFiller::Root;
 use PT::PageTurnerUtils;
 
 use SLIP_Utils::Common;
@@ -862,6 +863,18 @@ sub handle_ITEM_SEARCH_RESULTS_PI
     else {
         return 'INVALID_SEARCH_TERMS';
     }
+}
+
+sub handle_SETUP_ITEM_SEARCH_RESULTS_PARAMS_PI
+    : PI_handler(SETUP_ITEM_SEARCH_RESULTS_PARAMS_PI)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $rs = $C->get_object('Search::Result::Page');
+    my $output = PT::SearchUtils::as_json( $C, $rs );
+    Utils::map_chars_to_cers(\$output);
+
+    return qq{HT.params.payload = $output;}
 }
 
 sub handle_ITEM_FRAGMENT_SEARCH_RESULTS_PI

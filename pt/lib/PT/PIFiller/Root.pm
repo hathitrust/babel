@@ -932,12 +932,138 @@ sub handle_EPUB_ROOT_PI
     return $unpacked_root;
 }
 
+sub handle_SETUP_MANIFEST_PARAMS
+    : PI_handler(SETUP_MANIFEST_PARAMS)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+    my $id = $mdpItem->GetId();
+
+    my $json = JSON::XS->new()->utf8(0)->allow_nonref(1);
+
+    my $manifest = {};
+
+    my $xml = [];
+    my $mmo = $mdpItem->GetMetadataObject();
+    # my $root = $mmo->
+    my $metadata = {
+        title => $mdpItem->GetFullTitle(),
+        author => $mmo->get_author(),
+        publisher => $mmo->get_publisher(),
+        format => $mdpItem->GetFormat(),
+        publicationDate => $mmo->get_publication_date(),
+        catalogRecordNo => $mmo->get_catalog_record_no(),
+        description => $mmo->get_description(),
+        enumChron => $mdpItem->GetVolumeData(),
+    };
+    push @$xml, qq{HT.params.metadata = } . $json->encode($metadata);
+
+    ## ACCESS USE
+    my $rights = {};
+
+    my $ar = $C->get_object('Access::Rights');
+    my $attr = $ar->get_rights_attribute($C, $id);
+    $$rights{attribute} = $attr;
+    if ($attr == $RightsGlobals::g_suppressed_attribute_value) {
+        $$rights{head} = q{This item is suppressed};
+    } else {
+        my $access_profile = $ar->get_access_profile_attribute($C, $id);
+        my $ref_to_arr_of_hashref =
+        Access::Statements::get_stmt_by_rights_values($C, undef, $attr, $access_profile,
+                                                    {
+                                                    stmt_url      => 1,
+                                                    stmt_url_aux  => 1,
+                                                    stmt_head     => 1,
+                                                    stmt_icon     => 1,
+                                                    stmt_icon_aux => 1,
+                                                    });
+
+        my $hashref = $ref_to_arr_of_hashref->[0];
+        $$rights{head} = $$hashref{stmt_head};
+        $$rights{useLink} = $$hashref{stmt_url};
+        $$rights{useLinkAux} = $$hashref{stmt_url_aux};
+        $$rights{useIcon} = $$hashref{stmt_icon};
+        $$rights{useAuxIcon} = $$hashref{stmt_icon_aux};
+    }
+    push @$xml, qq{HT.params.rights = } . $json->encode($rights);
+
+    my @seqList = $mdpItem->GetSequenceNumbers();
+    push @$xml, qq{HT.params.totalSeq = } . $seqList[-1];
+    push @$xml, qq{HT.params.hasOcr = } .  ( $mdpItem->Get('has_ocr') ? 'true' : 'false' );
+
+    my $finalAccessStatus =
+      $C->get_object('Access::Rights')->assert_final_access_status( $C, $id );
+
+    unless ( $cgi->param('page') eq 'search' || $finalAccessStatus ne 'allow' ) {
+        push @$xml, qq{HT.params.featureList = } . handle_FEATURE_LIST_JSON($C, $act, $piParamHashRef);
+        push @$xml, qq{HT.params.readingOrder = } . $json->encode($mdpItem->Get('readingOrder'));
+        push @$xml, qq{HT.params.defaultSeq = } . handle_DEFAULT_SEQ($C, $act, $piParamHashRef);
+        push @$xml, qq{HT.params.firstPageSeq = } . $mdpItem->GetFirstPageSequence;
+        push @$xml, qq{HT.params.sectionList = } . PT::PIFiller::Common::handle_SECTION_LIST_JSON($C, $act, $piParamHashRef);
+
+        my $defaults = __get_default_dimensions( $C, $act, $piParamHashRef );
+        push @$xml, qq{HT.params.defaultImage = {}};
+        push @$xml, qq{HT.params.defaultImage.height = } . $$defaults{height};
+        push @$xml, qq{HT.params.defaultImage.width = } . $$defaults{width};
+    }
+
+    push @$xml, qq{HT.params.finalAccessAllowed = } . ( $finalAccessStatus eq 'allow' ? 'true' : 'false' );
+    my $check = PT::PIFiller::Common::handle_ALLOW_FULL_PDF_PI(@_);
+    push @$xml, qq{HT.params.allowFullDownload = } . ( $check eq 'allow' ? 'true' : 'false' );
+    $check = PT::PIFiller::Common::handle_ALLOW_SINGLE_PAGE_PDF_PI(@_);
+    push @$xml, qq{HT.params.allowSinglePageDownload = } . ( $check eq 'allow' ? 'true' : 'false' );
+
+    push @$xml, qq{HT.params.versionLabel = } . $json->encode(PT::PIFiller::Common::handle_VERSION_LABEL_PI(@_));
+
+    push @$xml, qq{HT.params.messageList = } . PT::PIFiller::Common::handle_APPLICATION_MESSAGES(@_);
+
+    ### SHAMELESS GREEN
+    my $external_links = [];
+    my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
+    if ($allow_pod) {
+        my $dbh = $C->get_object('Database')->get_DBH($C);
+
+        my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
+        my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
+
+        my $url = $sth->fetchrow_array();
+        if ( $url ) {
+            $url = Utils::xml_escape_url_separators($url);
+            push @$external_links, { type => 'pod', href => $url };
+        }
+    }
+
+    my $digitization_source = $mdpItem->Get('digitization_source');
+    if ( $digitization_source eq 'google' ) {
+        my $book_id = Namespaces::get_google_id_by_namespace($C, $id);
+        if ( $book_id ) {
+            push @$external_links, { type => 'external', title => 'Google Books', href => qq{https://books.google.com/books?vid=$book_id} };
+        }
+    }
+
+    push @$xml, qq{HT.params.externalLinks = } . $json->encode($external_links);
+
+    $xml = join(";\n", @$xml);
+    return $xml;
+}
+
+
 # ---------------------------------------------------------------------
 sub handle_BASE_IMAGE_DIMENSIONS
     : PI_handler(BASE_IMAGE_DIMENSIONS)
 {
     my ($C, $act, $piParamHashRef) = @_;
 
+    my $defaults = __get_default_dimensions(@_);
+
+    return qq{<Width>$$defaults{width}</Width><Height>$$defaults{height}</Height>};
+
+}
+
+sub __get_default_dimensions {
+    my ($C, $act, $piParamHashRef) = @_;
     my $cgi = $C->get_object('CGI');
     my $mdpItem = $C->get_object('MdpItem');
 
@@ -985,9 +1111,7 @@ sub handle_BASE_IMAGE_DIMENSIONS
 
     my $use_height = int($$info{ImageHeight} * ( 680.0 / $$info{ImageWidth} ));
     my $use_width = 680;
-
-    return qq{<Width>$use_width</Width><Height>$use_height</Height>};
-
+    return { width => $use_width, height => $use_height };
 }
 
 # ---------------------------------------------------------------------
@@ -1037,7 +1161,6 @@ sub handle_READING_ORDER
     return $mdpItem->Get('readingOrder');
 }
 
-# ---------------------------------------------------------------------
 sub handle_FEATURE_LIST_JSON
     : PI_handler(FEATURE_LIST_JSON)
 {
@@ -1145,104 +1268,6 @@ sub handle_FEATURE_LIST_JSON
     }
 
     $cache->Set($mdpItem->GetId(), $cache_key, $featureList);
-    return '[' . join(',', @$featureList) . ']';
-}
-
-sub handle_FEATURE_LIST_JSON_XX
-    : PI_handler(FEATURE_LIST_JSON_XX)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    my $cgi = $C->get_object('CGI');
-    my $mdpItem = $C->get_object('MdpItem');
-
-    $mdpItem->InitFeatureIterator();
-    my $featureRef;
-
-    my $seenFirstTOC = 0;
-    my $seenFirstIndex = 0;
-    my $seenSection = 0;
-
-    my $json = JSON::XS->new()->utf8(1)->allow_nonref(1);
-    my $featureList = [];
-
-    my $i = 1;
-    while ($featureRef = $mdpItem->GetNextFeature(), $$featureRef) {
-        my $tag   = $$$featureRef{'tag'};
-        my $label = $$$featureRef{'label'};
-        my $page  = $$$featureRef{'pg'};
-        my $seq   = $$$featureRef{'seq'};
-
-        if  ($tag =~ m,FIRST_CONTENT_CHAPTER_START|1STPG,) {
-            $label = qq{$label } . $i++;
-            $seenSection = 1;
-        }
-        elsif ($tag =~ m,^CHAPTER_START$,) {
-            $label = qq{$label } . $i++;
-            $seenSection = 1;
-        }
-        elsif ($tag =~ m,^MULTIWORK_BOUNDARY$,) {
-            # Suppress redundant link on MULTIWORK_BOUNDARY seq+1
-            # if its seq matches the next CHAPTER seq.
-            my $nextFeatureRef = $mdpItem->PeekNextFeature();
-            if ($$nextFeatureRef
-                && (
-                    ($$$nextFeatureRef{'tag'} =~ m,^CHAPTER_START$,)
-                    &&
-                    ($$$nextFeatureRef{'seq'} eq $seq))
-               ) {
-                # Skip CHAPTER_START
-                $mdpItem->GetNextFeature();
-            }
-            $label = qq{$label } . $i++;
-            $seenSection = 1;
-        }
-
-        if ($seenSection) {
-            $seenFirstTOC = 0;
-            $seenFirstIndex = 0;
-        }
-
-        # Repetition suppression
-        if  ($tag =~ m,TABLE_OF_CONTENTS|TOC,) {
-            $seenSection = 0;
-            if ($seenFirstTOC) {
-                next;
-            }
-            else {
-                $seenFirstTOC = 1;
-            }
-        }
-
-        if  ($tag =~ m,INDEX|IND,) {
-            $seenSection = 0;
-            if ($seenFirstIndex) {
-                next;
-            }
-            else {
-                $seenFirstIndex = 1;
-            }
-        }
-
-        # y $url = BuildContentsItemLink($cgi, $seq, $page);
-
-        push @{$featureList}, '{' .
-            q{"seq":} . $json->encode($seq) . ', ' .
-            q{"tag":} . $json->encode($tag) . ', ' .
-            q{"label":} . $json->encode($label) . ',' .
-            q{"page":} . $json->encode($page) . '}';
-
-        # my $featureItem =
-        #     wrap_string_in_tag($tag, 'Tag') .
-        #         wrap_string_in_tag($label, 'Label') .
-        #             wrap_string_in_tag($page, 'Page') .
-        #                 wrap_string_in_tag($seq, 'Seq') .
-        #                     wrap_string_in_tag($url, 'Link');
-
-        # $featureXML .=
-        #     wrap_string_in_tag($featureItem, 'Feature');
-    }
-
     return '[' . join(',', @$featureList) . ']';
 }
 

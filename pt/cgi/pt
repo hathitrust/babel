@@ -339,6 +339,12 @@ sub ValidityChecks {
         $cgi->param( 'seq', $seq );
     }
 
+    # CRMS skin is a `ui` to the app now
+    if ( $cgi->param('skin') =~ m,crms, ) {
+        $cgi->param('ui', 'crms');
+        $cgi->delete('skin');
+    }
+
     my $view = $cgi->param( 'view' );
     my $format = $cgi->param( 'format' );
     my $size = $cgi->param( 'size' );

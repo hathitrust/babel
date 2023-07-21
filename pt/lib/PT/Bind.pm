@@ -106,8 +106,14 @@ sub get_action_template_name
     my $cgi = $C->get_object('CGI');
 
     my $page = $cgi->param('page') || 'default';
+    my $format = $cgi->param('format');
 
-    my $ui_hashref = $Action::Bind::g_action_bindings{$action_name}{'view'}{$page};
+    my $action_hashref = $Action::Bind::g_action_bindings{$action_name}{'view'};
+    my $ui_hashref = ( defined $format && exists $$action_hashref{$format} ) ? 
+        $$action_hashref{$format} : 
+        $$action_hashref{$page};
+
+    # my $ui_hashref = $Action::Bind::g_action_bindings{$action_name}{'view'}{$page};
     my $template_name = $$ui_hashref{'template'};
 
     my $item_type;

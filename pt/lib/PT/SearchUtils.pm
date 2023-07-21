@@ -45,6 +45,9 @@ use PT::Query;
 use utf8;
 use Encode;
 
+use JSON::XS;
+use POSIX qw(floor ceil);
+
 my $HOST = `hostname`; chomp($HOST); $HOST =~ s,\..*$,,;
 
 # ---------------------------------------------------------------------
@@ -618,6 +621,83 @@ sub Solr_retrieve_OCR_page {
     }
 
     return $page_OCR_ref;
+}
+
+sub as_json {
+    my ($C, $rs) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $cgi = $C->get_object('CGI');
+
+    my $json = JSON::XS->new->utf8(0);
+
+    my $output = {};
+    my $total_records = $rs->get_num_found();
+    $$output{q1} = $cgi->param('q1');
+    $$output{sort} = $cgi->param('sort') || 'seq';
+    $$output{totalResults} = $total_records;
+
+    my $slice_size = $cgi->param('sz');
+    my $start = $cgi->param('start');
+    my $end = $start + $slice_size - 1;
+    if ( $end > $total_records ) {
+        $end = $total_records;
+    }
+    # which records are we showing
+    $$output{startRecord} = $start;
+    $$output{endRecord} = $end;
+
+    my ( $next, $prev );
+    if ($total_records > $slize_size) {
+        my $focus = -1;
+        my $prev_focus =
+          ( floor( $start / $slice_size ) * $slice_size ) - ( $slice_size - 1 );
+        if ($prev_focus >= 1) {
+            $$output{prev} = $prev_focus;
+        }
+    }
+    my $next_link_possible = (ceil($total_records/$slice_size) == ceil($start/$slice_size)) ? 1 : 0;
+    unless ($next_link_possible) {
+        my $next_focus = ( ceil( $start / $slice_size ) * $slice_size ) + 1;
+        if ($total_records >= $next_focus) {
+            $$output{next} = $next_focus;
+        }
+    }
+
+    my $final_access_status =
+      $C->get_object('Access::Rights')->assert_final_access_status( $C, $mdpItem->GetId() );
+    $$output{finalAccessStatus} = $final_access_status;
+    $$output{results} = [];
+    $rs->init_iterator();
+    while ( my $result = $rs->get_next_Page_result() ) {
+        my $item = {};
+        my $snip_list = $result->{snip_list};
+        $$item{pageNum} = $result->{pgnum} || '';
+        $$item{seq} = $mdpItem->GetVirtualPageSequence( $result->{seq} );
+        $$item{id} = $result->{id};
+        $$item{volId} = $result->{vol_id};
+        $$item{kwics} = [];
+
+        my $term_hit_ct = 0;
+        foreach my $snip_ref (@$snip_list) {
+            $term_hit_ct += () = $$snip_ref =~ m,{lt:}.*?{gt:},g;
+
+            if ( $final_access_status eq 'allow' ) {
+                PT::PageTurnerUtils::format_OCR_text($snip_ref);
+                $$snip_ref =~ s,^\s*,,; $$snip_ref =~ s,\s*$,,;
+                push @{ $$item{kwics} }, $$snip_ref;
+            }
+        }
+        $$item{termHitCount} = ($term_hit_ct/2);
+        push @{ $$output{results} }, $item;
+    }
+
+    $$output{range} = {};
+    $$output{range}{min} = 1;
+    $$output{range}{max} = ceil($total_records / $slice_size);
+    $$output{range}{value} = ceil( $start / $slice_size );
+
+    return $json->encode($output);
 }
 
 

@@ -44,7 +44,7 @@ use MdpGlobals;
 use Utils;
 use Debug::DUtils;
 use PI;
-use View;
+use PT::View;
 use Identifier;
 
 
@@ -131,8 +131,15 @@ $C->set_object('Search::Result::Page', $rs);
 my $act = $C->get_object('Action');
 $act->execute_action($C);
 
-my $vw = new View($C);
+my $format = $cgi->param('format');
+if (defined $format && $format eq 'json') {
+    my $output = PT::SearchUtils::as_json($C, $rs);
+    print $cgi->header('application/json; charset=utf-8');
+    print $output;
+    exit;
+}
 
+my $vw = new PT::View($C);
 $vw->execute_view($C, $act);
 $vw->output($C);
 
