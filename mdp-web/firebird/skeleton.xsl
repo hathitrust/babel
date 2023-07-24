@@ -133,16 +133,14 @@
         </xsl:for-each>
       }
     </script>
+    <script>
+      // in case any of the links and scripts fail
+      setTimeout(function() {
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
+      }, 1500);
+    </script>
 
-    <xsl:choose>
-      <xsl:when test="true()">
-        <!-- <script type="module" src="//localhost:5174/js/main.js"></script> -->
-      </xsl:when>
-      <xsl:otherwise>
-        <link rel="stylesheet" href="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.css" />
-        <script type="module" src="https://deploy-preview-15--hathitrust-firebird-common.netlify.app/assets/main.js"></script>
-      </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
 
   <xsl:template name="build-root-attributes" />
