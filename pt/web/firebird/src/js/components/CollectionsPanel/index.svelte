@@ -12,8 +12,6 @@
   let featuredCollectionsList = [];
   let collectionsList = [];
 
-  let userIsAnonymous = HT.login_status.logged_in === false;
-
   let action = 'addits';
   let modal;
   let c;
@@ -67,6 +65,7 @@
         label: status.coll_name
       })
       inCollectionsList = inCollectionsList;
+      console.log("-- bleh", action);
       if (action == 'addits') {
         let c2 = params.get('c2');
         let idx = collectionsList.findIndex((o) => o.value == c2);
@@ -102,6 +101,9 @@
   }
 
   $: if ( status.class ) { announceStatus(); }
+  $: loginStatus = HT.loginStatus;
+  $: loggedIn = $loginStatus.logged_in;
+  $: userIsAnonymous = loggedIn === false;
 
   onMount(() => {
     let rootEl = document.querySelector('#root');
@@ -183,6 +185,14 @@
         </ul>
       </div>
     {/if}
+    <div class="mb-3">
+      <ul class="list-unstyled">
+        {#if collectionsList.length > 0 || inCollectionsList.length > 0}
+        <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=my-collections">My Collections</a></li>
+        {/if}
+        <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=all">Shared Collections</a></li>
+      </ul>
+    </div>
   </slot:fragment>
 </Panel>
 <CollectionEditModal 
