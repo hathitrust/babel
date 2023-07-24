@@ -10,6 +10,8 @@ import { HotjarManager } from '~firebird-common/src/js/lib/hotjar';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
+import { writable } from 'svelte/store';
+
 // -- favor lib/tooltip.js action because the native bootstrap 
 // tooltip remains on when buttons are clicked and stay in focus
 // new bootstrap.Tooltip('body', { 
@@ -44,9 +46,23 @@ const buildProps = (el) => {
 // configure the HT global
 setupHTEnv();
 
+// an empty login status
+let emptyLoginStatus = {
+  logged_in: false,
+  idp_list: [],
+};
+
+HT.loginStatus = writable(emptyLoginStatus);
+HT.login_status = emptyLoginStatus;
+
 let app;
 
-HT.postPingCallback = function () {
+HT.postPingCallback = function (login_status) {
+  HT.loginStatus.set(login_status);
+
+  // if the app was already initialized, punt
+  if ( app ) { return ; }
+
   let el = document.getElementById('root');
   let props = buildProps(el);
 
@@ -70,6 +86,14 @@ script.async = true;
 script.src = `//${
   HT.service_domain
 }/cgi/ping?callback=HT.postPingCallback&_${new Date().getTime()}`;
+script.onerror = function() { 
+  HT.postPingCallback(emptyLoginStatus); 
+}
 document.head.appendChild(script);
+
+setTimeout(() => {
+  if ( document.body.dataset.initialized == 'true' ) { return ; }
+  HT.postPingCallback(emptyLoginStatus)
+}, 500);
 
 export default app

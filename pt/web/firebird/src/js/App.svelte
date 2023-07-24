@@ -1,36 +1,36 @@
 <script>
   import { onMount, setContext } from 'svelte';
-	import { writable, get } from 'svelte/store';
+  import { writable, get } from 'svelte/store';
 
   import dialogPolyfill from 'dialog-polyfill';
 
-	import { Manifest } from './lib/manifest';
+  import { Manifest } from './lib/manifest';
   import { updateHistory } from './lib/history';
-	import Emittery from 'emittery';
+  import Emittery from 'emittery';
   import { tooltip } from './lib/tooltip';
-	import { constrain } from './lib/layout.js';
+  import { constrain } from './lib/layout.js';
 
   // components
   import WebsiteHeader from '~firebird-common/src/js/components/Header';
   import AcceptableUseBanner from '~firebird-common/src/js/components/AcceptableUseBanner';
 
   import ViewerToolbar from './components/ViewerToolbar';
-	import Panel from './components/Panel';
+  import Panel from './components/Panel';
 
-	import SurveyPanel from './components/SurveyPanel';
+  import SurveyPanel from './components/SurveyPanel';
   import AccessStatusPanel from './components/AccessStatusPanel';
-	import MetadataPanel from './components/MetadataPanel/index.svelte';
-	import VersionPanel from './components/VersionPanel';
-	import JumpToSectionPanel from './components/JumpToSectionPanel';
-	import GetThisItemPanel from './components/GetThisItemPanel';
-	import SharePanel from './components/SharePanel';
-	import CollectionsPanel from './components/CollectionsPanel';
-	import SearchInItemPanel from './components/SearchInItemPanel';
-	import DownloadPanel from './components/DownloadPanel';
+  import MetadataPanel from './components/MetadataPanel/index.svelte';
+  import VersionPanel from './components/VersionPanel';
+  import JumpToSectionPanel from './components/JumpToSectionPanel';
+  import GetThisItemPanel from './components/GetThisItemPanel';
+  import SharePanel from './components/SharePanel';
+  import CollectionsPanel from './components/CollectionsPanel';
+  import SearchInItemPanel from './components/SearchInItemPanel';
+  import DownloadPanel from './components/DownloadPanel';
 
   // view components
-	import SearchView from './components/SearchView';
-	import RestrictedView from './components/RestrictedView';
+  import SearchView from './components/SearchView';
+  import RestrictedView from './components/RestrictedView';
 
   import OneUpView from './components/Reader/OneUpView';
   import TwoUpView from './components/Reader/TwoUpView';
@@ -38,11 +38,11 @@
   import ConfiguringView from './components/Reader/ConfiguringView';
 
   // set up context
-	const emitter = new Emittery();
-	setContext('emitter', emitter);
+  const emitter = new Emittery();
+  setContext('emitter', emitter);
 
-	const manifest = new Manifest(HT.params);
-	setContext('manifest', manifest);
+  const manifest = new Manifest(HT.params);
+  setContext('manifest', manifest);
 
   setContext('HT', globalThis.HT);
 
@@ -52,58 +52,58 @@
   let showLoadingView = false;
 
   // build environment
-	const views = {};
-	views['1up'] = OneUpView;
-	views['2up'] = TwoUpView;
-	views['thumb'] = GridView;
+  const views = {};
+  views['1up'] = OneUpView;
+  views['2up'] = TwoUpView;
+  views['thumb'] = GridView;
 
   // restricted.xsl and searchresults.xsl set view from the XSLT
   // otherwise, set it from the parameter
-	export let view = manifest.view;
-	export let format = manifest.format || 'image';
+  export let view = manifest.view;
+  export let format = manifest.format || 'image';
 
   let isReaderView = views[view] != null;
 
-	// && ! isEmbed
-	if ( window.innerWidth < 800 && manifest.ui != 'embed' && isReaderView ) {
-		view = '1up';
+  // && ! isEmbed
+  if ( window.innerWidth < 800 && manifest.ui != 'embed' && isReaderView ) {
+    view = '1up';
   } else if ( manifest.totalSeq == 1 && manifest.view == '2up' && isReaderView ) {
     view = '1up';
   }
-	
-	let lastView = '1up';
-	const currentView = writable(view);
-	const currentFormat = writable(format);
-	const currentSeq = writable(manifest.currentSeq);
-	
-	let instance;
-	manifest.instance = instance;
+  
+  let lastView = '1up';
+  const currentView = writable(view);
+  const currentFormat = writable(format);
+  const currentSeq = writable(manifest.currentSeq);
+  
+  let instance;
+  manifest.instance = instance;
 
-	manifest.currentView = currentView;
-	manifest.currentFormat = currentFormat;
-	manifest.currentSeq = currentSeq;
-	manifest.q1 = writable(manifest.q1 || '');
-	manifest.currentLocation = writable({});
-	manifest.interfaceMode = writable(document.body.dataset.interface);
+  manifest.currentView = currentView;
+  manifest.currentFormat = currentFormat;
+  manifest.currentSeq = currentSeq;
+  manifest.q1 = writable(manifest.q1 || '');
+  manifest.currentLocation = writable({});
+  manifest.interfaceMode = writable(document.body.dataset.interface);
   const interfaceMode = manifest.interfaceMode;
-	manifest.isFullscreen = writable(false);
-	const isFullscreen = manifest.isFullscreen;
+  manifest.isFullscreen = writable(false);
+  const isFullscreen = manifest.isFullscreen;
 
-	const storedSelected = JSON.parse(sessionStorage.getItem(manifest.selectedKey) || '[]');
-	manifest.selected = writable(new Set(storedSelected));
+  const storedSelected = JSON.parse(sessionStorage.getItem(manifest.selectedKey) || '[]');
+  manifest.selected = writable(new Set(storedSelected));
 
-	window.manifest = manifest;
+  window.manifest = manifest;
   window.emitter = emitter;
 
   // aside
-	let priority = 'min';
+  let priority = 'min';
   let disabled = false;
   let position = `${26 * 16}px`;
   let container;
   let type = 'horizontal';
   let dragging = false;
-	let w = 0;
-	let h = 0;
+  let w = 0;
+  let h = 0;
   let pos = `${26 * 16}px`; // '26rem';
   let min = `${10 * 16}px`; // '10rem';
   let max = '50%';
@@ -157,18 +157,18 @@
     };
   }
 
-	function update(x, y) {
-		if (disabled) return;
+  function update(x, y) {
+    if (disabled) return;
 
-		const { top, left } = container.getBoundingClientRect();
+    const { top, left } = container.getBoundingClientRect();
 
-		const pos_px = type === 'horizontal' ? x - left : y - top;
-		const size = type === 'horizontal' ? w : h;
+    const pos_px = type === 'horizontal' ? x - left : y - top;
+    const size = type === 'horizontal' ? w : h;
 
-		position = pos.endsWith('%') ? `${(100 * pos_px) / size}%` : `${pos_px}px`;
+    position = pos.endsWith('%') ? `${(100 * pos_px) / size}%` : `${pos_px}px`;
     document.body.style.setProperty('--aside-width', position);
-		// dispatch('change');
-	}
+    // dispatch('change');
+  }
 
   let lastPosition;
   let asideExpanded = true;
@@ -216,21 +216,21 @@
     }
   }
 
-	let targetView;
-	function switchView(options) {
-		// console.log("-- switchView", options);
-		targetView = options.view || lastView;
-		if ( targetView == '2up' && window.innerWidth < 800 ) {
-			targetView = '1up';
-		}
+  let targetView;
+  function switchView(options) {
+    // console.log("-- switchView", options);
+    targetView = options.view || lastView;
+    if ( targetView == '2up' && window.innerWidth < 800 ) {
+      targetView = '1up';
+    }
     if ( targetView == $currentView ) { return ; }
-		if ( $currentView != 'thumb' ) {
-			lastView = $currentView;
-		}
-		if ( options.seq ) {
-			$currentSeq = options.seq;
-		}
-		// $currentView = targetView;
+    if ( $currentView != 'thumb' ) {
+      lastView = $currentView;
+    }
+    if ( options.seq ) {
+      $currentSeq = options.seq;
+    }
+    // $currentView = targetView;
     // updateHistory({ view: targetView, seq: $currentSeq });
     setupLoadingView();
     setTimeout(() => {
@@ -239,16 +239,16 @@
       HT.live.announce(`Viewing item in ${viewDisplayLabel(targetView)} view.`);
       HT.prefs.set({ pt: { view: targetView }});
     }, 0);
-	}
+  }
 
-	function switchFormat(options) {
-		// console.log("-- switchFormat", options);
-		if ( $currentFormat != options.format ) {
-			$currentFormat = options.format;
+  function switchFormat(options) {
+    // console.log("-- switchFormat", options);
+    if ( $currentFormat != options.format ) {
+      $currentFormat = options.format;
       updateHistory({ format: options.format });
       HT.prefs.set({ pt: { format: options.format }});
-		}
-	}
+    }
+  }
 
   let loadingTimeout;
   function setupLoadingView() {
@@ -294,8 +294,8 @@
     }
   }
 
-	emitter.on('view.switch', switchView);
-	emitter.on('view.switch.format', switchFormat);
+  emitter.on('view.switch', switchView);
+  emitter.on('view.switch.format', switchFormat);
   emitter.on('view.ready', hideLoadingView);
   emitter.on('log.action', handleLogAction);
   emitter.once('auth.renew').then(data => {
@@ -324,9 +324,9 @@
     w = container.clientWidth;
     h = container.clientHeight;
 
-		const resizeObserver = new ResizeObserver((entries) => {
-			const entry = entries[0];
-			// const contentBoxSize = entry.contentBoxSize[0];
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      // const contentBoxSize = entry.contentBoxSize[0];
       if ( entry.contentBoxSize ) {
         w = entry.contentBoxSize[0].inlineSize;
         h = entry.contentBoxSize[0].blockSize;
@@ -346,23 +346,23 @@
       clampHeight = ( h <= 600 ) ? '600px' : '0px';
     })
 
-		resizeObserver.observe(container);
+    resizeObserver.observe(container);
 
     return () => {
       resizeObserver.disconnect();
-			emitter.off('view.switch', switchView);
-			emitter.off('view.switch.format', switchFormat);
-			emitter.off('lightbox.open', openLightbox);
+      emitter.off('view.switch', switchView);
+      emitter.off('view.switch.format', switchFormat);
+      emitter.off('lightbox.open', openLightbox);
     }
   })
 
   let clampHeight = '0px';
 
-	$: position = pos;
-	$: if (container) {
-		const size = type === 'horizontal' ? w : h;
-		position = constrain(container, size, min, max, position, priority);
-	}
+  $: position = pos;
+  $: if (container) {
+    const size = type === 'horizontal' ? w : h;
+    position = constrain(container, size, min, max, position, priority);
+  }
   $: if ( isReaderView && currentSeq ) { updateHistory({ seq: $currentSeq }); }
 
   onMount(() => {
@@ -389,7 +389,7 @@
 </script>
 
 <hathi-website-header>
-	<WebsiteHeader searchState="toggle" compact={true}></WebsiteHeader>
+  <WebsiteHeader searchState="toggle" compact={true}></WebsiteHeader>
 </hathi-website-header>
 <div style="grid-area: options">
   <button 
@@ -473,7 +473,7 @@
 <AcceptableUseBanner></AcceptableUseBanner>
 
 {#if dragging}
-	<div class="mousecatcher" />
+  <div class="mousecatcher" />
 {/if}
 
 <dialog 
@@ -495,14 +495,14 @@
 </dialog>
 
 <style>
-	.mousecatcher {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(255, 255, 255, 0.0001);
-	}
+  .mousecatcher {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.0001);
+  }
 
   .lightbox {
     width: 98dvw;

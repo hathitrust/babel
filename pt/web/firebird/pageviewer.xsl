@@ -80,7 +80,7 @@
       <xsl:text disable-output-escaping="yes">
       window.firebirdErrorHandler = function(event) {
         event.preventDefault();
-        if ((event.target &amp;&amp; event.target.src.indexOf('/firebird/dist/') != -1) || (event.filename &amp;&amp; event.filename.indexOf('/firebird/dist/' != -1))) {
+        if ((event.target &amp;&amp; event.target.src &amp;&amp; event.target.src.indexOf('/firebird/dist/') != -1) || (event.filename &amp;&amp; event.filename.indexOf('/firebird/dist/' != -1))) {
           if ( ! HT.service_domain ) {
             console.log(event);
             alert("Sorry, this browser version is not supported.");
