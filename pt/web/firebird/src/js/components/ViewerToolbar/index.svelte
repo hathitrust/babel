@@ -70,7 +70,7 @@
 
     let targetSeq = manifest.guess(value);
     if ( targetSeq ) {
-      emitter.emit('page.goto', { seq: seq });
+      emitter.emit('page.goto', { seq: targetSeq });
     } else {
       seq = $currentSeq;
     }
