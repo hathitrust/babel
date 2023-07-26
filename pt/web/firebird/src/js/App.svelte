@@ -68,7 +68,11 @@
   // && ! isEmbed
   if ( window.innerWidth < 800 && manifest.ui != 'embed' && isReaderView ) {
     view = '1up';
-  } else if ( manifest.totalSeq == 1 && manifest.view == '2up' && isReaderView ) {
+  } else if ( manifest.ui == 'embed' && window.innerWidth > window.innerHeight ) {
+    view = '2up';
+  }
+  
+  if ( manifest.totalSeq == 1 && view == '2up' && isReaderView ) {
     view = '1up';
   }
   
