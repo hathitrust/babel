@@ -56,6 +56,7 @@
   views['1up'] = OneUpView;
   views['2up'] = TwoUpView;
   views['thumb'] = GridView;
+  views['default'] = OneUpView;
 
   // restricted.xsl and searchresults.xsl set view from the XSLT
   // otherwise, set it from the parameter
