@@ -400,6 +400,11 @@ sub ValidityChecks {
         }
     }
 
+    if ( $view eq 'page' ) {
+        $view = '1up';
+        $cgi->param('view', $view);
+    }
+
     if (! $size ||
         ! exists($PTGlobals::gSizes{$size})) {
         $cgi->param( 'size', $PTGlobals::gDefaultSize );
