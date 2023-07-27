@@ -72,7 +72,7 @@
     root: container,
     threshold: [ 0, 0.25, 0.5, 0.75, 1.0 ],
     // rootMargin: '0px'
-    rootMargin: `200% 0% 200% 0%`
+    rootMargin: `110% 0% 110% 0%`
   });
   observer.observedIdx = 0;
   observer.totalIdx = manifest.totalSeq;
