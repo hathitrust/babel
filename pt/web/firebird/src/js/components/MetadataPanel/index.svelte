@@ -25,7 +25,7 @@
     }
   } else if ( referrer.match(HT.service_domain) ) {
     if ( referrer.match('/cgi/ls') ) {
-      referrerLabel = 'Back to Seach Results';
+      referrerLabel = 'Back to Search Results';
     } else if ( referrer.match('/cgi/mb') ) {
       referrerLabel = 'Back to Collection';
     } else if ( referrer.match('/cgi/pt/search') ) {
