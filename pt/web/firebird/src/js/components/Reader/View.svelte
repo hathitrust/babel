@@ -13,6 +13,8 @@
   const currentView = manifest.currentView;
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
+
+  const LOAD_PAGE_WINDOW = 2;
   
   export let format = $currentFormat;
   export let container;
@@ -118,12 +120,12 @@
       }
     })
     let newInView = [ targetSeq ];
-    for (let seq = targetSeq - 1; seq >= targetSeq - 5; seq--) {
+    for (let seq = targetSeq - 1; seq >= targetSeq - LOAD_PAGE_WINDOW; seq--) {
       if (seq > 0) {
         newInView.push(seq);
       }
     }
-    for (let seq = targetSeq + 1; seq <= targetSeq + 5; seq++) {
+    for (let seq = targetSeq + 1; seq <= targetSeq + LOAD_PAGE_WINDOW; seq++) {
       if (seq < manifest.totalSeq) {
         newInView.push(seq);
       }
