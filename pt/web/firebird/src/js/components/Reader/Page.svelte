@@ -20,6 +20,9 @@
 
   import { extractHighlights } from '../../lib/highlights';
 
+  const LOAD_DELAY_TIMEOUT = 500;
+  const EXAGGERATED_DEBUG_DELAY_TIMEOUT = 5000;
+
   export let observer;
   export let handleIntersecting;
   export let handleUnintersecting;
@@ -66,6 +69,13 @@
   let timeout;
 
   let requestStatus = 200;
+  
+  // capture the x-choke-xyz headers
+  let xChokeAllowed = 1;
+  let xChokeCredit;
+  let xChokeDebt;
+  let xChokeDelta;
+  let xChokeUntil;
 
   // cgi/imgsrv/thumbnail?id={canvas.id}&seq={seq}
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
@@ -133,7 +143,7 @@
     if (visible) {
       timeout = setTimeout(
         format == 'image' ? loadImage : loadPageText, 
-        100)
+        LOAD_DELAY_TIMEOUT)
       ;
     } else {
       if ( format == 'image' ) {
@@ -169,8 +179,8 @@
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
     clearTimeout(loadImageTimeout);
-    const isDebugging = false;
-    const delay = isDebugging ? 5 * 1000 : 100;
+    const isDebugging = HT.debug_load || false;
+    const delay = isDebugging ? EXAGGERATED_DEBUG_DELAY_TIMEOUT : 100;
     loadImageTimeout = setTimeout(() => {
       loadImageActual(reload);
     }, delay);
@@ -198,6 +208,13 @@
     let isRestricted = false;
     fetch(imageSrc)
       .then((response) => {
+
+        xChokeAllowed = response.headers.get('x-choke-allowed');
+        xChokeDebt = response.headers.get('x-choke-debt');
+        xChokeCredit = response.headers.get('x-choke-credit');
+        xChokeUntil = response.headers.get('x-choke-until');
+        xChokeDelta = response.headers.get('x-choke-delta');
+
         if (!response.ok) {
           requestStatus = response.status;
           return;
@@ -248,6 +265,8 @@
         return response.blob();
       })
       .then(blob => {
+        if ( requestStatus == 429 ) { return ; }
+
         if ( objectUrl ) {
           URL.revokeObjectURL(objectUrl);
         }
@@ -296,8 +315,8 @@
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
     clearTimeout(loadPageTextTimeout);
-    const isDebugging = false;
-    const delay = isDebugging ? 5 * 1000 : 100;
+    const isDebugging = HT.debug_load || false;
+    const delay = isDebugging ? EXAGGERATED_DEBUG_DELAY_TIMEOUT : 100;
     loadPageTextTimeout = setTimeout(() => {
       loadPageTextActual(reload);
     }, delay);
@@ -581,6 +600,18 @@
     selected={$selected.has(seq)}
     togglePageSelection={(event) => manifest.select(seq, event)}
     />
+
+    {#if HT.debug_choke}
+    <pre 
+      class="bg-dark text-white fs-7 m-0 p-0 me-3" 
+      style="grid-row: 1/3; grid-column: 2/3;">
+Choked: {xChokeAllowed == 1 ? 'NO' : 'YES'}
+Debt: {xChokeDebt}
+Credit: {xChokeCredit}
+Delta: {xChokeDelta}{#if xChokeAllowed == 0}
+Until: {xChokeUntil}{/if}
+    </pre>
+    {/if}
 
   <figure class="frame format-{format}" 
     class:pending={!isLoaded}

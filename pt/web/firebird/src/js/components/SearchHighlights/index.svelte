@@ -168,12 +168,12 @@
 
   :global(mark.image.highlight) {
     position: absolute;
-    opacity: 0.2;
+    opacity: 0.4;
   }
 
   :global(mark.highlight) {
     background: #ffff00;
-    background: darkorange;
+    /* background: darkorange; */
   }
 
   :global(html[data-show-highlights="false"] mark.image.highlight) {

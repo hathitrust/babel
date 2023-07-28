@@ -15,6 +15,8 @@
   const currentFormat = manifest.currentFormat;
 
   const LOAD_PAGE_WINDOW = 2;
+  const LOAD_PAGE_DELAY_TIMEOUT = 1000;
+  const LOAD_PAGE_PEEK_PERCENT = '25%';
   
   export let format = $currentFormat;
   export let container;
@@ -74,7 +76,7 @@
     root: container,
     threshold: [ 0, 0.25, 0.5, 0.75, 1.0 ],
     // rootMargin: '0px'
-    rootMargin: `110% 0% 110% 0%`
+    rootMargin: `${LOAD_PAGE_PEEK_PERCENT} 0% ${LOAD_PAGE_PEEK_PERCENT} 0%`
   });
   observer.observedIdx = 0;
   observer.totalIdx = manifest.totalSeq;
@@ -157,7 +159,7 @@
         if ( pageDatum.timeout ) { clearTimeout(pageDatum.timeout); }
         pageDatum.timeout = setTimeout(() => {
           loadPages(seq);
-        }, 1000);
+        }, LOAD_PAGE_DELAY_TIMEOUT);
       }
       currentInView.add(seq);
       // console.log("? scroll.intersecting", seq, Array.from(currentInView));
@@ -173,7 +175,6 @@
 
   const handleUnintersecting = (({detail}) => {
     if ( observer.observedIdx < manifest.totalSeq ) { return ; }
-    if ( detail.target.dataset.loaded != 'true' ) { return ; }
     let seq = parseInt(detail.target.dataset.seq);
     // console.log("- un/intersecting", seq);
     itemMap[seq].intersectionRatio = undefined;
@@ -181,6 +182,8 @@
       clearTimeout(itemMap[seq].timeout);
       itemMap[seq].timeout = null;
     }
+
+    if ( detail.target.dataset.loaded != 'true' ) { return ; }
 
     unloadQueue.add(() => {
       return unloadPage(itemMap[seq])
@@ -482,6 +485,7 @@
   class:view-1up={$currentView == '1up'}
   class:view-thumb={$currentView == 'thumb'}
   style:--paddingBottom={$currentView == '2up' ? 2.5 * 16 : 0}
+  style:--fa-animation-duration='10s'
   bind:this={inner}
   on:click={handleClick}
   on:keydown={handleKeydown}
