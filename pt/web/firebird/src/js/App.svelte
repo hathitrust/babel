@@ -183,9 +183,6 @@
       '--aside-collapsed-width', 
       asideExpanded ? null : '16px');
   }
-  if ( manifest.ui == 'crms') {
-    togglePane();
-  }
 
   let optionsToggled = false;
   function toggleOptions() {
