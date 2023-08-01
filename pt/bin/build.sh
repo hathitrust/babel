@@ -9,8 +9,13 @@ then
 fi
 
 cd $BINPATH/../web/firebird
-lock_check=`find package-lock.json -newer ./dist/manifest.json`
-src_check=`find src -newer ./dist/manifest.json`
+lock_check='yes'
+src_check='yes'
+if [ -f ./dist/manifest.json ]
+then
+  lock_check=`find package-lock.json -newer ./dist/manifest.json`
+  src_check=`find src -newer ./dist/manifest.json`
+fi
 
 if [ "$lock_check" == "" ]
 then
