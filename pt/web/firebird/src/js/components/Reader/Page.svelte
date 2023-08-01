@@ -77,6 +77,9 @@
   let xChokeDelta;
   let xChokeUntil;
 
+  export let debugChoke = false;
+  export let debugLoad = false;
+
   // cgi/imgsrv/thumbnail?id={canvas.id}&seq={seq}
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
@@ -138,13 +141,16 @@
     return percentage;
   }
 
-  export function toggle(visible) {
+  export async function toggle(visible) {
     isVisible = visible;
     if (visible) {
-      timeout = setTimeout(
-        format == 'image' ? loadImage : loadPageText, 
-        LOAD_DELAY_TIMEOUT)
-      ;
+      // let isVisible update the DOM
+      await tick();
+      if ( format == 'image' ) {
+        loadImage();
+      } else {
+        loadPageText();
+      }
     } else {
       if ( format == 'image' ) {
         unloadImage();
@@ -178,17 +184,28 @@
   export const loadImage = function(reload=false) {
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
-    clearTimeout(loadImageTimeout);
-    const isDebugging = HT.debug_load || false;
-    const delay = isDebugging ? EXAGGERATED_DEBUG_DELAY_TIMEOUT : 100;
-    loadImageTimeout = setTimeout(() => {
-      loadImageActual(reload);
-    }, delay);
+    if ( debugLoad ) {
+      clearTimeout(loadImageTimeout);
+      loadImageTimeout = setTimeout(() => {
+        loadImageActual(reload);
+      }, EXAGGERATED_DEBUG_DELAY_TIMEOUT);
+      return;
+    }
+    loadImageActual(reload);
   }
 
   export const loadImageActual = function(reload=false) {
     timeout = null;
+
+    if ( isLoading ) {
+      if ( debugChoke || debugLoad ) {
+        console.log("-- page.loadImage already loading", seq);
+      }
+      return;
+    }
+
     isLoading = true;
+
     // if ( image && image.src != defaultThumbnailSrc || reload ) { console.log(":: not loading DUPE", image.src); return ; }
     if ( ! image ) { console.log("-- page.loadImage - no image", seq); return ; }
     if ( image && image.src != defaultThumbnailSrc ) {
@@ -314,12 +331,14 @@
   export const loadPageText = function(reload=false) {
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
-    clearTimeout(loadPageTextTimeout);
-    const isDebugging = HT.debug_load || false;
-    const delay = isDebugging ? EXAGGERATED_DEBUG_DELAY_TIMEOUT : 100;
-    loadPageTextTimeout = setTimeout(() => {
-      loadPageTextActual(reload);
-    }, delay);
+    if ( debugLoad ) {
+      clearTimeout(loadPageTextTimeout);
+      loadPageTextTimeout = setTimeout(() => {
+        loadPageTextActual(reload);
+      }, EXAGGERATED_DEBUG_DELAY_TIMEOUT);
+      return;
+    }
+    loadPageTextActual(reload);
   }
 
   export const loadPageTextActual = function(reload=false) {
@@ -555,6 +574,7 @@
   {style} 
   data-seq={seq} 
   data-xorient={orient}
+  data-loaded={isLoaded}
   style:--zoom={zoom}
   style:--scanZoom={scanZoom}
   style:--ratio={scanUseRatio}
@@ -601,7 +621,7 @@
     togglePageSelection={(event) => manifest.select(seq, event)}
     />
 
-    {#if HT.debug_choke}
+    {#if debugChoke}
     <pre 
       class="bg-dark text-white fs-7 m-0 p-0 me-3" 
       style="grid-row: 1/3; grid-column: 2/3;">

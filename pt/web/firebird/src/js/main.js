@@ -56,8 +56,14 @@ HT.loginStatus = writable(emptyLoginStatus);
 HT.login_status = emptyLoginStatus;
 
 let app;
+let needLoggedInStatus = true;
 
 HT.postPingCallback = function (login_status) {
+
+  if ( ! needLoggedInStatus ) { return ; }
+
+  needLoggedInStatus = ! login_status.logged_in;
+  
   HT.loginStatus.set(login_status);
 
   // if the app was already initialized, punt

@@ -5,7 +5,8 @@
 	import { createObserver } from '../../lib/observer';
   import PQueue from "p-queue";
   import { debounce } from '../../lib/debounce';
-
+  import { setfn } from '../../lib/sets';
+  
   import Page from './Page';
 
   const emitter = getContext('emitter');
@@ -15,7 +16,8 @@
   const currentFormat = manifest.currentFormat;
 
   const LOAD_PAGE_WINDOW = 2;
-  const LOAD_PAGE_DELAY_TIMEOUT = 1000;
+  const LOAD_PAGE_DELAY_TIMEOUT = 150;
+  const UNLOAD_PAGE_INTERVAL = 30 * 1000;
   const LOAD_PAGE_PEEK_PERCENT = '25%';
   
   export let format = $currentFormat;
@@ -47,6 +49,7 @@
   const itemData = [];
   const itemMap = {};
   const currentInView = new Set;
+  let unloadFromView = new Set;
 
   let zoom = 1; // on startup
   let zoomIndex = zoomScales.indexOf(zoom);
@@ -67,11 +70,6 @@
     interval: 500,
   });
 
-  const unloadQueue = new PQueue({
-    concurrency: 1,
-    interval: 5000,
-  })
-
   const { observer, io } = createObserver({
     root: container,
     threshold: [ 0, 0.25, 0.5, 0.75, 1.0 ],
@@ -82,13 +80,11 @@
   observer.totalIdx = manifest.totalSeq;
 
   const unloadPage = async function(pageDatum) {
-    let percentage = itemMap[pageDatum.seq].page.visible(viewport);    
-    // console.log("!! unloading", pageDatum.seq, percentage, isInitialized, "->", pageDatum);
-    if ( pageDatum.intersectionRatio > 0 ) { return ; }
-    itemMap[pageDatum.seq].page.toggle(false);
+    pageDatum.page.toggle(false);
     currentInView.delete(pageDatum.seq);
     pageDatum.loaded = pageDatum.inView = false;
-    itemMap[pageDatum.seq].timeout = null;
+    pageDatum.timeout = null;
+    pageDatum.unloadTimeout = null;
   }
 
   const loadPage = async function(pageDatum, delta) {
@@ -137,6 +133,7 @@
     let newDiff = newInView.filter(x => !previouslyInView.includes(x));
 
     newDiff.forEach((seq) => {
+      if (itemMap[seq].loaded) { return ; }
       itemMap[seq].inView = true;
       queue.add(() => {
         return queuePage(itemMap[seq])
@@ -152,15 +149,12 @@
     let pageDatum = itemMap[seq];
     if ( detail.isIntersecting ) {
       pageDatum.intersectionRatio = detail.intersectionRatio;
-      if ( pageDatum.loaded ) {
-        // console.log("# scroll.intersecting", seq, detail.isIntersecting, detail.intersectionRatio, isInitialized);
-      } else {
-        // console.log("+ scroll.intersecting", seq, detail.isIntersecting, detail.intersectionRatio, isInitialized, observer.observedIdx);
-        if ( pageDatum.timeout ) { clearTimeout(pageDatum.timeout); }
-        pageDatum.timeout = setTimeout(() => {
-          loadPages(seq);
-        }, LOAD_PAGE_DELAY_TIMEOUT);
-      }
+
+      if ( pageDatum.timeout ) { clearTimeout(pageDatum.timeout); }
+      pageDatum.timeout = setTimeout(() => {
+        loadPages(seq);
+      }, LOAD_PAGE_DELAY_TIMEOUT);
+      
       currentInView.add(seq);
       // console.log("? scroll.intersecting", seq, Array.from(currentInView));
     } else {
@@ -183,11 +177,7 @@
       itemMap[seq].timeout = null;
     }
 
-    if ( detail.target.dataset.loaded != 'true' ) { return ; }
-
-    unloadQueue.add(() => {
-      return unloadPage(itemMap[seq])
-    });
+    currentInView.delete(seq);
   })
 
   const updateViewport = function() {
@@ -202,6 +192,7 @@
 
     let max = { seq: -1, percentage: 0 };
     let possibles = Array.from(currentInView).sort((a,b) => a-b);
+
     possibles.forEach((seq) => {
       let percentage = itemMap[seq].page.visible(viewport);
       // console.log("-- view.setCurrentSeq", seq, percentage);
@@ -320,9 +311,10 @@
   }
 
   // bind events
-  emitter.on('page.goto', gotoPage);
+  const unsubscribers = {};
+  unsubscribers.gotoPage = emitter.on('page.goto', gotoPage);
 
-  emitter.on('zoom.update', delta => {
+  unsubscribers.zoomUpdate = emitter.on('zoom.update', delta => {
     console.log('<< zoom.update', zoomIndex, delta, zoom, isInitialized);
 
     startSeq = $currentSeq;
@@ -340,6 +332,38 @@
       in: zoomIndex < ( zoomScales.length - 1 )
     });
   })
+
+  let debugChoke = false;
+  let debugLoad = false;
+  unsubscribers.debugChoke = emitter.on('debug.choke', (value) => {
+    debugChoke = value;
+  })
+  unsubscribers.debugLoad = emitter.on('debug.load', (value) => {
+    debugLoad = value;
+  })
+
+  const unloadInterval = setInterval(() => {
+    const possibles = new Set(itemData.filter((pageDatum) => pageDatum.loaded == true));
+    if ( setfn.eqSet(unloadFromView, possibles) ) { return; }
+    unloadFromView = possibles;
+
+    const nearest = LOAD_PAGE_WINDOW * 2;
+    const tmp = [...currentInView].sort((a,b) => { return a - b });
+    // console.log("-- view.unload seq", tmp, currentInView);
+    const seq1 = itemData[tmp[0]].seq;
+    const seq2 = itemData[tmp.at(-1)].seq;
+
+    possibles.forEach((pageDatum) => {
+      if ( ! pageDatum.page.visible(viewport) ) {
+        const seq = pageDatum.seq;
+        if ( ! ( ( Math.abs(seq - seq1) <= nearest ) || ( Math.abs(seq - seq2) <= nearest ) ) ) {
+          // console.log("-- view.unload", pageDatum.seq);
+          unloadPage(pageDatum)
+        }
+      }
+    })
+
+  }, UNLOAD_PAGE_INTERVAL);
 
   // build item map
   let baseHeight = Math.ceil(innerHeight * 0.90) * zoom;
@@ -393,7 +417,7 @@
       item.page.toggle(visible);
     })
   }
-  emitter.on('view.toggle', toggleView);
+  unsubscribers.viewToggle = emitter.on('view.toggle', toggleView);
 
   $: columnWidth = ( zoom > 1 ) ? innerWidth / 2 * zoom : null;
   $: if ( format != lastFormat ) { zoom = 1; lastFormat = format; }
@@ -461,12 +485,10 @@
     resizeObserver.observe(container);
 
     return () => {
-      let t0 = (new Date).getTime();
-      emitter.off('page.goto', gotoPage);
-      emitter.off('view.toggle', toggleView);
+      Object.keys(unsubscribers).forEach(key => unsubscribers[key]());
       container.removeEventListener('scroll', handleScroll);
+      clearInterval(unloadInterval);
       resizeObserver.disconnect();
-      // console.log("-- scroll.demount", (new Date).getTime() - t0);
     }
   })
 
@@ -507,6 +529,7 @@
           {canvas} 
           {handleIntersecting}
           {handleUnintersecting}
+          {debugChoke}
           innerHeight={$currentView == 'thumb' ? 250 : innerHeight}
           innerWidth={$currentView == 'thumb' ? 250 : innerWidth}
           view={$currentView}
