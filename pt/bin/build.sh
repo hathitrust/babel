@@ -9,18 +9,31 @@ then
 fi
 
 cd $BINPATH/../web/firebird
-npm install
-errVal=$?
-if [ $errVal -ne 0 ]
+lock_check=`find package-lock.json -newer ./dist/manifest.json`
+src_check=`find src -newer ./dist/manifest.json`
+
+if [ "$lock_check" == "" ]
 then
-  exit $errVal
+  echo "pt/firebird: package-lock.json unchanged; skipping install"
+else
+  npm install
+  errVal=$?
+  if [ $errVal -ne 0 ]
+  then
+    exit $errVal
+  fi
 fi
 
-npm run build
-errVal=$?
-if [ $errVal -ne 0 ]
+if [ "$lock_check" == "" -a "$src_check" == "" ]
 then
-  exit $errVal
+  echo "pt/firebird: app unchanged; skipping build"
+else
+  npm run build
+  errVal=$?
+  if [ $errVal -ne 0 ]
+  then
+    exit $errVal
+  fi
 fi
 
 echo "pt/firebird build done"
