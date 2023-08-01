@@ -175,7 +175,7 @@ export class Manifest {
       seq = parseInt(value, 10);
       seq = this.seq(value);
     }
-    if ( seq && seq >= 1 && seq <= this.featureList.length ) {
+    if ( seq && seq >= 1 && seq <= this.totalSeq ) {
       return seq;
     }
     return false;
