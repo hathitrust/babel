@@ -255,7 +255,7 @@
             on:click|preventDefault={onClick}>
             #{item.seq}
             {#if item.pageNum}
-              (p. #{item.pageNum})
+              (p. {item.pageNum})
             {/if}
           </a>
           {:else}
