@@ -153,6 +153,8 @@
       input.focus();
     })
 
+    $: if ( q1 ) { start = 1 ; }
+
     beforeUpdate(async () => {
       if (inFetch) {
         await tick();
@@ -220,7 +222,7 @@
         class:active={sort == 'score'} 
         use:tooltip 
         aria-label="Sort by relevance"
-        on:click={(event) => { sort = 'score'; onSubmit() }}>
+        on:click={(event) => { sort = 'score'; start = 1; onSubmit() }}>
         <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
       </button>
       <button 
@@ -229,7 +231,7 @@
         class:active={sort == 'seq'} 
         use:tooltip 
         aria-label="Sort by page scan"
-        on:click={(event) => { sort = 'seq'; onSubmit() }}>
+        on:click={(event) => { sort = 'seq'; start = 1; onSubmit() }}>
         <i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i>
       </button>
     </div>

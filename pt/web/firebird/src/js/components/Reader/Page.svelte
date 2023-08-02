@@ -1,7 +1,7 @@
 <svelte:options accessors={true} />
 <script>
 
-  import { onMount, getContext, onDestroy, tick } from 'svelte';
+  import { onMount, getContext, tick } from 'svelte';
   import { afterUpdate } from 'svelte';
   import { get } from 'svelte/store';
 
@@ -38,11 +38,14 @@
   export let innerHeight
   export let innerWidth;
 
-  let pageDiv;
+  export let debugChoke = false;
+  export let debugLoad = false;
+
   let includePageText = ( view != 'thumb' );
 
   let focused = false;
   let invoked = false;
+  let pageDiv;
 
   let pageNum = manifest.pageNum(seq);
 
@@ -53,7 +56,6 @@
   let image;
   let rotatedImage;
   let imageSrc;
-  let text;
   let matches;
   let page_coords;
   let pageText;
@@ -77,15 +79,7 @@
   let xChokeDelta;
   let xChokeUntil;
 
-  export let debugChoke = false;
-  export let debugLoad = false;
-
-  // cgi/imgsrv/thumbnail?id={canvas.id}&seq={seq}
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
-
-  export const scrollIntoView = function(params) {
-    pageDiv.scrollIntoView(false);
-  }
 
   export const offsetTop = function() {
     return pageDiv.parentElement.offsetTop + pageDiv.offsetTop;
@@ -94,11 +88,6 @@
   export const focus = function(invoke=false) {
     focused = true;
     invoked = invoke;
-    // if ( invoke === true ) {
-    //   setTimeout(() => {
-    //     pageDiv.focus();
-    //   }, 0);
-    // }
   }
 
   export const unfocus = function() {
@@ -183,7 +172,6 @@
 
   export const loadImage = function(reload=false) {
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
-    // return;
     if ( debugLoad ) {
       clearTimeout(loadImageTimeout);
       loadImageTimeout = setTimeout(() => {
@@ -396,7 +384,7 @@
 
         // if no words match, there's no highlighting
         let words = JSON.parse(ocr_div.dataset.words || '[]');
-        if ( ! words || ! words.length ) { return ; }
+        if ( ! words || ! words.length ) { page_coords = null; return ; }
 
         page_coords = parseCoords(ocr_div.dataset.coords);
 
@@ -517,7 +505,6 @@
   $: scanUseRatio = manifest.meta(canvas.seq).ratio;
   $: scanAdjusted = false;
   $: orient = 0;
-  $: rotateX = 0;
   $: isUnusual = checkForFoldout(canvas);
   $: defaultPageHeight = null; // ( view == '2up' || view == '1up' ) ? null : `${scanHeight}px`;
   $: pageHeight = ( view == 'thumb' || zoom > 1 ) ? `${innerHeight * zoom}px` : null;
@@ -555,16 +542,10 @@
         clearTimeout(timeout);
         // console.log("-- app.unmount", seq);
       }
-      // unloadImage(); 
       emitter.off('update.highights', loadPageText);
       emitter.off('page.reload', reloadPage);
     }
   })
-
-  // onDestroy(() => {
-  //   console.log("-- Page DESTROY", seq);
-  // })
-
 </script>
 
 <!--   inert={!focused ? true : null} ??? -->
