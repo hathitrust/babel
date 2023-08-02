@@ -300,6 +300,7 @@
   emitter.on('view.switch.format', switchFormat);
   emitter.on('view.ready', hideLoadingView);
   emitter.on('log.action', handleLogAction);
+  emitter.on('update.history', updateHistory);
   emitter.once('auth.renew').then(data => {
     handleAuthRenew(data);
   })
@@ -355,6 +356,7 @@
       emitter.off('view.switch', switchView);
       emitter.off('view.switch.format', switchFormat);
       emitter.off('lightbox.open', openLightbox);
+      emitter.off('update.history', updateHistory);
     }
   })
 

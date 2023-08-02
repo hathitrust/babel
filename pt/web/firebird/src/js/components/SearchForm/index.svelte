@@ -74,6 +74,7 @@
       message = `No results found for ${q1}`;
     }
     updateStatus({ class: 'alert-primary', message: message});
+    updateHistory();
   }
 
   function updateStatus(options) {
@@ -81,6 +82,14 @@
     status.message = options.message;
     HT.live.announce(status.message);
     status = status;
+  }
+
+  function updateHistory() {
+    let params = { q1: q1 };
+    if ( ! inPanel ) {
+      params.start = start;
+    }
+    emitter.emit('update.history', params);
   }
 
   function onSubmit(event, args) {
