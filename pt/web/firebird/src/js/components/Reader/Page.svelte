@@ -513,7 +513,10 @@
 
   $: if ( invoked && pageDiv ) { pageDiv.focus(); }
   $: if ( isVisible && format == 'image' && shouldLoadImage(image) ) { loadImage(); }
-  $: if ( zoom != lastZoom ) { loadImage(true); lastZoom = zoom; }
+  $: if ( zoom != lastZoom ) { 
+    if ( isVisible ) { loadImage(true); } 
+    lastZoom = zoom; 
+  }
   $: if ( isVisible && format == 'image' && image && image.src == defaultThumbnailSrc ) { loadImage(true); }
   $: if ( isVisible && format == 'plaintext' && ( ! figCaption || figCaption.dataset.loaded == 'false' ) ) { loadPageText(); }
 
