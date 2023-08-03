@@ -192,8 +192,6 @@
       return;
     }
 
-    isLoading = true;
-
     // if ( image && image.src != defaultThumbnailSrc || reload ) { console.log(":: not loading DUPE", image.src); return ; }
     if ( ! image ) { console.log("-- page.loadImage - no image", seq); return ; }
     if ( image && image.src != defaultThumbnailSrc ) {
@@ -202,6 +200,9 @@
         return ; 
       }
     }
+
+    isLoading = true;
+
     let height = ( view == 'thumb' ) ? 250 : Math.ceil(manifest.fit(scanHeight) * window.devicePixelRatio);
     let action = ( view == 'thumb' ) ? 'thumbnail' : 'image';
     imageSrc = buildRequest(action, {
