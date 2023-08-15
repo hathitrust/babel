@@ -146,6 +146,7 @@
       q1 = '';
       manifest.q1.set(q1);
       emitter.emit('page.update.highlights', q1);
+      updateHistory();
     }
 
     function jumpToPage(event) {
