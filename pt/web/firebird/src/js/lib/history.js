@@ -6,7 +6,11 @@ export function updateHistory(options) {
   }
 
   Object.keys(options).forEach((param) => {
-    searchParams.set(param, options[param]);
+    if (options[param]) {
+      searchParams.set(param, options[param]);
+    } else {
+      searchParams.delete(param);
+    }
   })
 
   if ( searchParams.get('format') == 'image') {
