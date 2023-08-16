@@ -62,8 +62,12 @@ HT.postPingCallback = function (login_status) {
 
   if ( ! needLoggedInStatus ) { return ; }
 
-  needLoggedInStatus = ! login_status.logged_in;
-  
+  // we need to set loginStatus as long as login_status.authType === undefined
+  // because ping sets authType=null and the emptyLoginStatus doesn't set authType
+  // now in a non-logged in state, if the timeout fires AFTER ping
+  // the loginStatus won't get overwritten with the empty response
+  needLoggedInStatus = login_status.authType === undefined;
+
   HT.loginStatus.set(login_status);
 
   // if the app was already initialized, punt
