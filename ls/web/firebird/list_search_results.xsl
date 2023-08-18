@@ -341,7 +341,7 @@
             <div class="list-group list-group-horizontal-sm align-items-center">
               <a class="list-group-item list-group-item-action w-sm-50" href="http://catalog.hathitrust.org/Record/{record}">
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i> 
-                <span>Catalog Record</span>
+                <span>Catalog Record</span><i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
               <a class="list-group-item list-group-item-action {$config/@class} w-sm-50" href="/cgi/pt?id={ItemID}">
                 <xsl:if test="fulltext=1 and normalize-space(activated_role)">
@@ -366,6 +366,7 @@
                     <span>Limited (search-only)</span>
                   </xsl:otherwise>
                 </xsl:choose>
+                <i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
               <xsl:if test="rights = '8'">
                 <br />
