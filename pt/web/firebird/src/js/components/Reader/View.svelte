@@ -23,7 +23,7 @@
   export let format = $currentFormat;
   export let container;
   export let startSeq = 1;
-  export let zoomScales = [ 0.5, 0.75, 1, 1.5, 1.75, 2, 2.5 ];
+  export let zoomScales = [ 0.5, 0.75, 1, 1.5, 1.75, 2, 2.5, 3.0, 3.5, 4.0 ];
 
   export let innerHeight = container.clientHeight;
   export let innerWidth = container.clientWidth;

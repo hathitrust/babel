@@ -31,7 +31,7 @@ export class Manifest {
     };
 
     this.bestHeights = [];
-    [ 0.5, 0.75, 1, 1.5, 2, 2.5 ].forEach((factor) => {
+    [ 0.5, 0.75, 1, 1.5, 2, 2.5, 3.0, 3.5, 4.0 ].forEach((factor) => {
       this.bestHeights.push(this.defaultImage.height * factor);
     })
 
