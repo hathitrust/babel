@@ -94,7 +94,6 @@ my $app = sub {
         my $emergency_access = $$info{x} ? 'true' : 'false';
         $expired = $expired ? 'true' : 'false';
         my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
-        my $displayName = uri_escape_utf8($$info{displayName} || '');
         my $institution_name = uri_escape_utf8($$info{institution_name} || '');
         my $institution_code = uri_escape_utf8($$info{institution_code} || '');
         my $mapped_institution_name = uri_escape_utf8($$info{mapped_institution_name} || '');
@@ -131,7 +130,6 @@ my $app = sub {
 var HT = HT || {};
 HT.login_status = {};
 HT.login_status.logged_in = $logged_in;
-HT.login_status.displayName = decodeURIComponent('$displayName');
 HT.login_status.institutionName = decodeURIComponent('$institution_name');
 HT.login_status.institutionCode = decodeURIComponent('$institution_code');
 HT.login_status.mappedInstitutionName = decodeURIComponent('$mapped_institution_name');
@@ -324,7 +322,6 @@ JAVASCRIPT
     };
 
     my $info = {
-        displayName => '',
         institution_name => '',
         institution_code => '',
         mapped_institution_code => '',
