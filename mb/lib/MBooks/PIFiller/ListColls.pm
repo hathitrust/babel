@@ -358,7 +358,8 @@ sub handle_LIST_SIZE_WIDGET_PI
             [
                 ['key', $key],
                 ['count', $value],
-                ['disabled', $value == 0 ? 'TRUE' : 'FALSE'],
+                # Do not hide a size facet with zero value if it's the selected one.
+                ['disabled', ($value == 0 && $key ne $size) ? 'TRUE' : 'FALSE'],
                 ['focus', $key eq $size ? 'TRUE' : 'FALSE']
             ]
         );

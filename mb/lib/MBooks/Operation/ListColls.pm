@@ -162,9 +162,6 @@ sub execute_operation
     #     print STDERR "AHOY COUNTS $_colltype :: $count\n";
     # }
 
-    # my $all_count = scalar @$coll_arr_ref;
-
-    my $all_count = 0;
     my $updated_limit_date = new Date::Manip::Date;
     $updated_limit_date->parse("30 days ago");
     my $updated_limit = $updated_limit_date->printf("%Y-%m-%d %H:%M:%S");
@@ -195,7 +192,8 @@ sub execute_operation
 
     my $tmp = [];
     foreach my $coll_hashref ( @$coll_arr_ref ) {
-        my $include = 1;
+        my $matches_query = 1;
+        my $matches_size = 1;
 
         my %current_user = map { $_ => 1 } $C->get_object('Auth')->get_user_names($C);
         $$coll_hashref{is_owned} = 1 if ( $current_user{$$coll_hashref{owner}} );
@@ -208,9 +206,8 @@ sub execute_operation
                 $$coll_hashref{description} =~ m,$q1,i
             )
         ) {
-            $include = 0;
+            $matches_query = 0;
         }
-        $all_count += 1 if ( $include );
 
         if (
             $size && 
@@ -219,9 +216,11 @@ sub execute_operation
                 && ( $$coll_hashref{num_items} < $max_size )
             )
         ) {
-            $include = 0;
+            $matches_size = 0;
         }
 
+        # Bail out and do not update facets unless this is a query match
+        next unless $matches_query;
         $$view_counts{all} += 1 if ( $$coll_hashref{shared} );
         $$view_counts{featured} += 1 if ( $$coll_hashref{featured} ne '' );
         $$view_counts{updated} += 1 if ( $$coll_hashref{modified} ge $updated_limit );
@@ -243,7 +242,7 @@ sub execute_operation
         $$size_counts{'25-50'} += 1 if ( 25 <= $num_items && $num_items < 50 );
         $$size_counts{'0-25'} += 1 if ( 0 <= $num_items && $num_items < 25 );
 
-        push @$tmp, $coll_hashref if ( $include );
+        push @$tmp, $coll_hashref if $matches_size;
     }
     $coll_arr_ref = $tmp;
 
@@ -261,7 +260,6 @@ sub execute_operation
 
     my $pager = $self->do_paging($C, $cgi, $total_records);
     $act->set_transient_facade_member_data( $C, 'pager', $pager );
-
     return $ST_OK;
 }
 
