@@ -35,7 +35,7 @@
    'anyall1'    => 'any|all|phrase|most',
    'anyall2'    => 'any|all|phrase|most',
    'anyall3'    => 'any|all|phrase|most',
-   'anyall4'    => 'any|all|phrase\most',
+   'anyall4'    => 'any|all|phrase|most',
    'yop'    => '.*',
    'pdate'    => '\d+',
    'pdate_start'    => '\d+',
