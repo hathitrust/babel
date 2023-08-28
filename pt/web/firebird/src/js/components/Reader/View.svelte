@@ -7,6 +7,8 @@
   import { debounce } from '../../lib/debounce';
   import { setfn } from '../../lib/sets';
   
+  import { DetailsStateManager } from './utils';
+  
   import Page from './Page';
 
   const emitter = getContext('emitter');
@@ -69,6 +71,8 @@
     concurrency: 5,
     interval: 500,
   });
+
+  const detailsManager = new DetailsStateManager(container);
 
   const { observer, io } = createObserver({
     root: container,
@@ -365,6 +369,16 @@
 
   }, UNLOAD_PAGE_INTERVAL);
 
+  const handleDetailsClick = function(event) {
+    let targetEl = event.target.closest('details');
+    if ( ! targetEl ) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    detailsManager.updateDetailsState(targetEl);
+  }
+
   // build item map
   let baseHeight = Math.ceil(innerHeight * 0.90) * zoom;
   for(let seq = 1; seq <= manifest.totalSeq; seq++) {
@@ -430,6 +444,7 @@
         if ( startSeq > 1 ) {
           setTimeout(() => {
             let target = findTarget({ seq: startSeq, force: true });
+            if ( ! target ) { return ; }
             let offsetTop = 
               typeof(target.offsetTop) == 'function' ?
               target.offsetTop() : 
@@ -471,6 +486,7 @@
 
     container.dataset.view = $currentView;
     container.addEventListener('scroll', handleScroll);
+    container.addEventListener('click', handleDetailsClick);
 
     const resizeObserver = new ResizeObserver(entries => {
       const entry = entries.at(0);
@@ -487,6 +503,7 @@
     return () => {
       Object.keys(unsubscribers).forEach(key => unsubscribers[key]());
       container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('click', handleDetailsClick);
       clearInterval(unloadInterval);
       resizeObserver.disconnect();
     }
