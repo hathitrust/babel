@@ -5,6 +5,7 @@
   const emitter = getContext('emitter');
 
   export let sticky = false;
+  export let isOpen = false;
   export let selected = false;
   export let focused = true;
   export let seq;
@@ -18,7 +19,7 @@
   export let allowPageZoom = false;
   export let allowRotate = false;
 
-  let isOpen = true; // selected || null;
+  // let isOpen = true; // selected || null;
   let isDisabled = ( view == 'thumb' && ! allowFullDownload );
 
   export let rotateScan = function() { }
@@ -100,7 +101,7 @@
      ><i class="fa-solid fa-rotate-right"></i></button>
     {/if}
     {#if allowPageZoom}
-    <div class="btn-group-vertical" role="group">
+    <div class="btn-group-vertical bg-white" role="group">
       <button 
         type="button" 
         class="btn btn-light border border-dark" 
@@ -244,6 +245,7 @@
 
   .page-menu .btn {
     --bs-btn-font-size: 1.25rem;
+    --bs-btn-disabled-opacity: 0.4;
   }
 
   .page-menu summary {list-style: none}

@@ -72,7 +72,10 @@
     interval: 500,
   });
 
-  const detailsManager = new DetailsStateManager(container);
+  const detailsManager = new DetailsStateManager({
+    root: container,
+    openState: manifest.initialDetailsOpenState
+  });
 
   const { observer, io } = createObserver({
     root: container,

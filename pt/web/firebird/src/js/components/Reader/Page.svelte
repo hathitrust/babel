@@ -603,6 +603,7 @@
     allowPageZoom={view != 'thumb'}
     allowFullDownload={manifest.allowFullDownload}
     selected={$selected.has(seq)}
+    isOpen={manifest.initialDetailsOpenState}
     togglePageSelection={(event) => manifest.select(seq, event)}
     />
 

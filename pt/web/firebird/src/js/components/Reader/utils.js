@@ -2,16 +2,16 @@ const DETAILS_CHUNK_SIZE = 25;
 
 export class DetailsStateManager {
 
-  constructor(container) {
-    this.container = container;
-    this.openState = true;
+  constructor(options = {}) {
+    this.root = options.root;
+    this.openState = options.openState;
     this.pageSequenceChunks = [];
     this.detailsEls = [];
   }
 
   updateDetailsState(targetEl) {
     if ( this.detailsEls.length == 0 ) {
-      this.detailsEls = [...this.container.querySelectorAll('details')];
+      this.detailsEls = [...this.root.querySelectorAll('details')];
       this.pageSequenceChunks = this.sliceIntoChunks(this.detailsEls.map((el) => el.dataset.seq), DETAILS_CHUNK_SIZE);
     }
     
