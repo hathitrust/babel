@@ -15,22 +15,28 @@ export class DetailsStateManager {
       this.pageSequenceChunks = this.sliceIntoChunks(this.detailsEls.map((el) => el.dataset.seq), DETAILS_CHUNK_SIZE);
     }
     
-    this.openState = ! this.openState;
+    // capture the current new openState in case the user
+    // toggles state before we're done updating all the page menus
+    let openState = this.openState = ! this.openState;
     const currentSeq = targetEl.dataset.seq;
     const nearestChunk = this.pageSequenceChunks.find((chunk) => chunk.indexOf(currentSeq) >= 0);
-    this.processChunk(nearestChunk);
+    this.processChunk(nearestChunk, openState);
 
     this.pageSequenceChunks.forEach((chunk) => {
       if ( chunk.indexOf(currentSeq) >= 0 ) { return ; }
       setTimeout(() => {
-        this.processChunk(chunk);
-      });
+        this.processChunk(chunk, openState);
+      }, 100);
     })
   }
 
-  processChunk(chunk) {
+  processChunk(chunk, state) {
+    // state changed; punt
+    if ( state != this.openState ) {
+      return;
+    }
     chunk.forEach((seq) => {
-      this.detailsEls[seq - 1].open = this.openState;
+      this.detailsEls[seq - 1].open = state;
     })
   }
 
