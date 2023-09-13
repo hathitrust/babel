@@ -5,6 +5,7 @@
   const emitter = getContext('emitter');
 
   export let sticky = false;
+  export let isOpen = false;
   export let selected = false;
   export let focused = true;
   export let seq;
@@ -18,7 +19,7 @@
   export let allowPageZoom = false;
   export let allowRotate = false;
 
-  let isOpen = selected || null;
+  // let isOpen = true; // selected || null;
   let isDisabled = ( view == 'thumb' && ! allowFullDownload );
 
   export let rotateScan = function() { }
@@ -31,17 +32,18 @@
 <details 
   class="page-menu {side} view-{view}" 
   class:sticky-top={sticky}
+  data-seq={seq}
   open={isOpen}
   aria-hidden={!focused}
   tabindex={focused && ! isDisabled ? 0 : -1}
   disabled={isDisabled ? true : null}
   >
   <summary 
-    class="btn-dark"
+    class="btn-dark shadow"
     aria-hidden={!focused}
     tabindex={focused ? 0 : -1}
     >
-    <div class="d-flex align-items-center justify-content-between shadow px-2 py-1 gap-2 rounded">
+    <div class="d-flex align-items-center justify-content-between px-2 py-1 gap-2 rounded">
       <span class="seq">
         #{seq}
         {#if pageNum}
@@ -99,7 +101,7 @@
      ><i class="fa-solid fa-rotate-right"></i></button>
     {/if}
     {#if allowPageZoom}
-    <div class="btn-group-vertical" role="group">
+    <div class="btn-group-vertical bg-white" role="group">
       <button 
         type="button" 
         class="btn btn-light border border-dark" 
@@ -184,6 +186,11 @@
     justify-self: end;
   }
 
+  .page-menu .arrow {
+    border-left: 1px solid #707070;
+    padding-left: 0.5rem;
+  }
+
   .page-menu[open] .arrow i::before {
     content: "\F077";
   }
@@ -238,6 +245,7 @@
 
   .page-menu .btn {
     --bs-btn-font-size: 1.25rem;
+    --bs-btn-disabled-opacity: 0.4;
   }
 
   .page-menu summary {list-style: none}

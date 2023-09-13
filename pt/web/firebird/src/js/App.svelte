@@ -93,6 +93,9 @@
   const interfaceMode = manifest.interfaceMode;
   manifest.isFullscreen = writable(false);
   const isFullscreen = manifest.isFullscreen;
+  manifest.initialDetailsOpenState = true;
+  if ( manifest.ui == 'embed' ) { manifest.initialDetailsOpenState = false; }
+  if ( window.innerWidth < 800 ) { manifest.initialDetailsOpenState = false; }
 
   const storedSelected = JSON.parse(sessionStorage.getItem(manifest.selectedKey) || '[]');
   manifest.selected = writable(new Set(storedSelected));
