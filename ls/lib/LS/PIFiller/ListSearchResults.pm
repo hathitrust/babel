@@ -1901,7 +1901,7 @@ sub _ls_wrap_result_data {
             # add the vernacular $245c if present
             #XXX we assume second 245c is a vernacular!
             if (defined ($doc_data->{'title_c'}->[1])){
-                $vtitle.= $doc_data->{'title_c'}->[1];
+                $vtitle.=" ". $doc_data->{'title_c'}->[1];
             }
 
             Utils::map_chars_to_cers(\$vtitle);
