@@ -749,8 +749,9 @@
         on:click={finalizeDownload}>Download</button> -->
       <a
         class="btn btn-primary"
+        aria-hidden={downloadInProgress}
+        aria-disabled={downloadInProgress}
         role={downloadInProgress ? 'link' : undefined}
-        disabled={downloadInProgress}
         on:click={() => modal.hide()}
         href={downloadUrl}>Download</a
       >
