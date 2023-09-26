@@ -1878,31 +1878,12 @@ sub _ls_wrap_result_data {
 
         $s .= wrap_string_in_tag($book_ids,'bookID');
 
-        #my ($display_titles_ary_ref) = $doc_data->{'title_display'};
-        #XXX WARNING  Second title in Solr title field is either
-        #  a) title without the initial article
-        #  b) title in the vernacular from a linked 880 field
-        # Until we fix indexing and what fields we get from VuFind we will only use the first 245
-        # thus we won't display title in vernacular
-        #   my $display_title = join(',', @{$display_titles_ary_ref});
         my $display_title = $doc_data->{'title_display'};
-        #$display_titles_ary_ref->[0];
-        # add 245c, assume only one!
-        #if (defined ($doc_data->{'title_c'})){
-        #    $display_title.=" ". $doc_data->{'title_c'}->[0];
-        #}
-
+        
         Utils::map_chars_to_cers(\$display_title);
 
         $s .= wrap_string_in_tag($display_title, 'Title');
 
-        # how do we display vernacular title?
-        #if (defined ($doc_data->{'title_display'})){
-        #    my  $vtitle.=  $doc_data->{'title_display'};
-            
-        #    Utils::map_chars_to_cers(\$vtitle);
-        #    $s .= wrap_string_in_tag($vtitle, 'VernacularTitle');
-        #}
         my $enum=$doc_data->{'volume_enumcron'}->[0];
 
         if (defined ($enum))
