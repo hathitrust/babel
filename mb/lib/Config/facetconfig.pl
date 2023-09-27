@@ -101,7 +101,7 @@ $all_weights     = $rel_weights->{'all'};
     
 $param_2_solr_map = {
                            'author'=>'author',
-                           'title'=>'title',
+                           'title'=>'title_display',
                            'debugtitle' =>'debugtitle',
                            'debugocr'=>'debugocr',
                            'subject'=>'subject', 
@@ -125,7 +125,7 @@ $param_2_solr_map = {
 
 $field_2_display={
                   'author'=>'Author',
-                  'title'=>'Title',
+                  'title_display'=>'Title',
                   'subject'=>'Subject', 
                   'hlb3'=>'Academic Discipline',
                   'ocronly'=>'Only Full-Text',
