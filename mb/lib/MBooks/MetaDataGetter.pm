@@ -367,46 +367,11 @@ sub __process_title {
         $display_title = $metadata_hashref->{title_display};
     }
 
-    # If 245c is an array with more than one element, the second
-    # element is the vernacular title
-    #my $vtitle_c;
-    #my $title_c = $metadata_hashref->{title_c};
-
-    # Add first 245c,
-    #if (defined $title_c) {
-    #    if (ref $title_c eq 'ARRAY') {
-    #        $display_title .= ' ' . $title_c->[0];
-    #        $vtitle_c = $title_c->[1];
-    #    }
-    #    else {
-    #        $display_title .= ' ' . $title_c;
-    #    }
-    #}
-
-    # Display vernacular title?
-    #my $vtitle = $metadata_hashref->{vtitle};
-    #if (defined $vtitle) {
-    #    $vtitle = $vtitle->[0] if (ref $vtitle eq 'ARRAY');
-
-        # Add the vernacular $245c if present. We assume second 245c
-        # is a vernacular!
-    #    $vtitle .= $vtitle_c if (defined $vtitle_c);
-
-        # Add space
-    #    $vtitle = " " . $vtitle;
-    #    $display_title .= $vtitle;
-    #}
-
     my $item_id = $metadata_hashref->{extern_item_id};
     my $volume = $aux_metadata_hashref->{$item_id}->{volume};
     $display_title .= " " . $volume if (defined $volume);
 
     $metadata_hashref->{display_title} = $display_title;
-
-    # Remove vufind title keys
-    #delete $metadata_hashref->{title};
-    #delete $metadata_hashref->{vtitle};
-    #delete $metadata_hashref->{title_c};
 }
 
 # ---------------------------------------------------------------------

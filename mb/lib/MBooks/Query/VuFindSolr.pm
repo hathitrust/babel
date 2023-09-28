@@ -90,10 +90,7 @@ sub get_Solr_metadata_query_from_ids {
     #Remove title, title_c and vtitle because this function is only used in MetadataGetter.pm and we are removing from them all the titles
     my $field_list_arr_ref= [ 'author',
                               'mainauthor',
-                              #'title',
                               'title_display',
-                              #'title_c',
-                              #'vtitle',
                               'titleSort',
                               'ht_id_display', # contains item_id, update_time, enumchron, enhanced publishDate
                               'id',            # bib record id
