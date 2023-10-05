@@ -372,6 +372,8 @@ sub __process_title {
     $display_title .= " " . $volume if (defined $volume);
 
     $metadata_hashref->{display_title} = $display_title;
+
+    delete $metadata_hashref->{title_display};
 }
 
 # ---------------------------------------------------------------------
