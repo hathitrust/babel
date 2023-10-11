@@ -291,7 +291,7 @@ sub get_Solr_query_string
   
     # The common Solr query parameters
     my $Q ='q=';
-    my $FL = qq{&fl=title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,lccn,score};
+    my $FL = qq{&fl=title_display,title,title_c,volume_enumcron,vtitle,author,author2,mainauthor,date,rights,id,record_no,oclc,isbn,lccn,score};
 
 #XXX temporary until Phil fixes ability to login and set debug flag
 
