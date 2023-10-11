@@ -1884,15 +1884,6 @@ sub _ls_wrap_result_data {
 
         $s .= wrap_string_in_tag($display_title, 'Title');
 
-        #my $enum=$doc_data->{'volume_enumcron'}->[0];
-
-        #if (defined ($enum))
-        #{
-        #    Utils::map_chars_to_cers(\$enum);
-        #}
-        #$s .= wrap_string_in_tag($enum, 'VolEnumCron');
-
-
         # mainauthor changes
         my $main_author='';
         my $author;
