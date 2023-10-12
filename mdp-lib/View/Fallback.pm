@@ -124,9 +124,7 @@ sub _initialize
     my $self = shift;
     my $C = shift;
     
-    my $use_local_paths = DEBUG('local');
-    my $key = $use_local_paths ? 'local_base_fallback_paths' : 'base_fallback_paths';
-    my @base_fallback_paths = $C->get_object('MdpConfig')->get($key);
+    my @base_fallback_paths = $C->get_object('MdpConfig')->get('local_base_fallback_paths');
 
     $self->{'base_fallback_paths'} = \@base_fallback_paths;
 }
