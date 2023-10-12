@@ -947,17 +947,7 @@ Description
 
 # ---------------------------------------------------------------------
 sub get_uber_config_path {
-    my $app_name = shift;
-
-    my $path;
-    if (DEBUG('local')) {
-        $path = $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
-    }
-    else {
-        $path = $ENV{SDRROOT} . "/$app_name/vendor/common-lib/lib/Config/uber.conf"
-    }
-
-    return $path;
+    return $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf";
 }
 
 

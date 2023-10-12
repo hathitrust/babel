@@ -190,14 +190,8 @@ sub get_config_path {
     my $app = shift;
     my $conf_file = shift;
 
-    my $path;
-    if (DEBUG('local')) {
-        $path = $ENV{SDRROOT} . "/slip-lib/Config/$conf_file";
-    }
-    else {
-        $path = $ENV{SDRROOT} . "/$app/vendor/slip-lib/lib/Config/$conf_file";
-    }
-    ASSERT(-e $path, qq{get_config_path: path to $conf_file for $app does not exist});
+    my $path = $ENV{SDRROOT} . "/slip-lib/Config/$conf_file";
+    ASSERT(-e $path, qq{get_config_path: $path does not exist});
 
     return $path;
 }
@@ -253,14 +247,9 @@ sub get_run_number {
 
 A SLIP run configuration consists of:
 
-1) uber.conf from mdp-lib or the slip submodule vendor/common-lib/lib
-(if debug=local)
-
-2) common.conf from slip-lib or the slip submodule vendor/slip-lib/lib
-(if debug=local)
-
-3) run-<run_number>.conf from slip-lib or the slip submodule
-vendor/slip-lib/lib (if debug=local)
+1) uber.conf from mdp-lib 
+2) common.conf from slip-lib
+3) run-<run_number>.conf from slip-lib
 
 =cut
 

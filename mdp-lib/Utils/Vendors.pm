@@ -28,37 +28,9 @@ sub init {
         push(@my_inc, "$Bin/../lib");
     }
 
-    my $local_switch = 0;
-    if ( -f "$Bin/../lib/Config/local.conf" ) {
-        local $/;
-        open(my $IN, "$Bin/../lib/Config/local.conf");
-        my $tmp = <$IN>;
-        close($IN);
-        $local_switch = $tmp =~ m/^debug_local\s+=\s+1/gsm;
-    }
-    $local_switch = $local_switch || $ENV{DEBUG_LOCAL} || ($ENV{HT_DEV} && $ENV{REQUEST_METHOD} ne 'POST' && CGI::param('debug') && (CGI::param('debug') =~ m,local,));
-    if ($local_switch) {
-        push(@my_inc, "$ENV{SDRROOT}/mdp-lib");
-        $ENV{DEBUG_LOCAL} = 1;
-        $ENV{DEBUG} .= ',' if ( $ENV{DEBUG} );
-        $ENV{DEBUG} .= 'local';
-    }
-
-    if ( -d "$Bin/../vendor" ) {
-        opendir(VENDOR, "$Bin/../vendor");
-        foreach my $repo ( grep(! /^(\.|\.\.)$/, readdir(VENDOR)) ) {
-            if ( -d "$Bin/../vendor/$repo/lib" ) {
-                if ($local_switch){
-                    if ( -d "$Bin/../../$repo") {
-                        push(@my_inc, "$Bin/../../$repo");
-                    }
-                }
-                else {
-                    push(@my_inc, "$Bin/../vendor/$repo/lib");
-                }
-            }
-        }
-    }
+    push(@my_inc, "$ENV{SDRROOT}/mdp-lib");
+    push(@my_inc, "$ENV{SDRROOT}/plack-lib");
+    push(@my_inc, "$ENV{SDRROOT}/slip-lib");
 
     unshift(@INC, @my_inc);
 }
