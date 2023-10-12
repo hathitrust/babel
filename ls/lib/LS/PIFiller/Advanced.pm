@@ -73,11 +73,13 @@ sub handle_ADVANCED_SEARCH_CONFIG_PI
     # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @format_data), 'FormatData');
     # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @language_data), 'LanguageData');
 
-    my $data = encode_json(\@format_data); $data =~ s,&,&amp;,g;
+    my $json_xs = JSON::XS->new->utf8(0);
+    my $data = $json_xs->encode(\@format_data);
+    $data =~ s,&,&amp;,g;
     $s .= wrap_string_in_tag($data, 'FormatData');
-    $data = encode_json(\@language_data); $data =~ s,&,&amp;,g;
+    $data = $json_xs->encode(\@language_data);
+    $data =~ s,&,&amp;,g;
     $s .= wrap_string_in_tag($data, 'LanguageData');
-
     return $s;
 }
 
