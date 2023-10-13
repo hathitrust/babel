@@ -14,29 +14,29 @@
   let view;
   let isInitialized = true;
 
-  export const currentLocation = function() {
+  export const currentLocation = function () {
     let location = {};
-    if ( view.item($currentSeq) ) {
+    if (view.item($currentSeq)) {
       let item = view.item($currentSeq);
       location[item.side] = item;
 
-      if ( view.item($currentSeq).side == 'verso' ) {
+      if (view.item($currentSeq).side == 'verso') {
         let item = view.item($currentSeq + 1);
-        if ( item ) {
+        if (item) {
           location[item.side] = item;
         }
       }
     }
     return location;
-  }
+  };
 
-  const findTarget = function(options) {
+  const findTarget = function (options) {
     let targetIdx;
     let item = view.item($currentSeq);
     let currentSpread = item.spreadIndex;
-    if ( options.delta !== undefined ) {
+    if (options.delta !== undefined) {
       targetIdx = currentSpread + options.delta;
-    } else if ( options.seq && ! isNaN(options.seq) ) {
+    } else if (options.seq && !isNaN(options.seq)) {
       targetIdx = view.item(options.seq).spreadIndex;
     } else {
       // invalid option;
@@ -44,56 +44,66 @@
     }
     // console.log("-- 2up.findTarget", currentSpread, targetIdx);
     return view.spread(targetIdx).el;
-  }
+  };
 
-  const findFocusItems = function(seq) {
+  const findFocusItems = function (seq) {
     let pages = [];
     let item = view.item($currentSeq);
     const spread = view.spread(item.spreadIndex);
     pages = Array.from(spread.items);
     return pages;
-  }
-  
-  const handleClick = function(event) {
-    if ( $currentFormat == 'plaintext' ) { return ; }
-    if ( event.target.closest('details') ) { return ; }
-    if ( event.target.closest('button') ) { return ; }
+  };
+
+  const handleClick = function (event) {
+    if ($currentFormat == 'plaintext') {
+      return;
+    }
+    if (event.target.closest('details')) {
+      return;
+    }
+    if (event.target.closest('button')) {
+      return;
+    }
     let pageDiv = event.target.closest('div.page');
-    if ( ! pageDiv ) { return ; }
+    if (!pageDiv) {
+      return;
+    }
     let options = { delta: 1 };
-    if ( pageDiv.classList.contains('verso') ) {
+    if (pageDiv.classList.contains('verso')) {
       options.delta = -1;
     }
     emitter.emit('page.goto', options);
-  }
+  };
 
-  const handleKeydown = function(event) {
-    if ( event.target.closest('details') ) { return ; }
+  const handleKeydown = function (event) {
+    if (event.target.closest('details')) {
+      return;
+    }
     let pageDiv = event.target.closest('div.page');
-    if ( ! pageDiv ) { return ; }
-    if ( event.code == 'Enter' ) {
+    if (!pageDiv) {
+      return;
+    }
+    if (event.code == 'Enter') {
       let options = { delta: 1 };
-      if ( pageDiv.classList.contains('verso') ) {
+      if (pageDiv.classList.contains('verso')) {
         options.delta = -1;
       }
       emitter.emit('page.goto', options);
     }
-  }  
-
+  };
 </script>
 
-  <View
-    {container}
-    {startSeq}
-    {currentLocation}
-    {findTarget}
-    {findFocusItems}
-    {handleClick}
-    {handleKeydown}
-    format={$currentFormat}
-    bind:this={view}
-   />
+<View
+  {container}
+  {startSeq}
+  {currentLocation}
+  {findTarget}
+  {findFocusItems}
+  {handleClick}
+  {handleKeydown}
+  format={$currentFormat}
+  bind:this={view}
+/>
 
 <style>
-
 </style>

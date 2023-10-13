@@ -1,6 +1,6 @@
 <svelte:options accessors={true} />
-<script>
 
+<script>
   import { onMount, getContext, tick } from 'svelte';
   import { afterUpdate } from 'svelte';
   import { get } from 'svelte/store';
@@ -34,14 +34,14 @@
   export let zoom;
   export let style = null;
   export let side = null;
-  
-  export let innerHeight
+
+  export let innerHeight;
   export let innerWidth;
 
   export let debugChoke = false;
   export let debugLoad = false;
 
-  let includePageText = ( view != 'thumb' );
+  let includePageText = view != 'thumb';
 
   let focused = false;
   let invoked = false;
@@ -71,7 +71,7 @@
   let timeout;
 
   let requestStatus = 200;
-  
+
   // capture the x-choke-xyz headers
   let xChokeAllowed = 1;
   let xChokeCredit;
@@ -81,21 +81,23 @@
 
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
-  export const offsetTop = function() {
+  export const offsetTop = function () {
     return pageDiv.parentElement.offsetTop + pageDiv.offsetTop;
-  }
+  };
 
-  export const focus = function(invoke=false) {
+  export const focus = function (invoke = false) {
     focused = true;
     invoked = invoke;
-  }
+  };
 
-  export const unfocus = function() {
+  export const unfocus = function () {
     focused = false;
-    if ( pageDiv == document.activeElement ) { pageDiv.blur(); }
-  }
+    if (pageDiv == document.activeElement) {
+      pageDiv.blur();
+    }
+  };
 
-  export const visible = function(viewport) {
+  export const visible = function (viewport) {
     // because we have spreads
     let top = pageDiv.parentElement.offsetTop + pageDiv.offsetTop;
     let height = pageDiv.clientHeight;
@@ -103,22 +105,23 @@
 
     let rootMargin = 0;
 
-    let pageIsVisible = ( top >= ( viewport.top - rootMargin ) && bottom <= ( viewport.bottom + rootMargin ));
-    let bottomIsVisible = ( top < ( viewport.top - rootMargin ) && viewport.top < ( bottom + rootMargin ) )
-    let topIsVisible = ( top < ( viewport.bottom + rootMargin ) && viewport.bottom < ( bottom + rootMargin ));
+    let pageIsVisible = top >= viewport.top - rootMargin && bottom <= viewport.bottom + rootMargin;
+    let bottomIsVisible = top < viewport.top - rootMargin && viewport.top < bottom + rootMargin;
+    let topIsVisible = top < viewport.bottom + rootMargin && viewport.bottom < bottom + rootMargin;
 
-    let percentage = 0; let test;
-    if ( topIsVisible || bottomIsVisible || pageIsVisible ) {
+    let percentage = 0;
+    let test;
+    if (topIsVisible || bottomIsVisible || pageIsVisible) {
       // now we're visible
-      if ( pageIsVisible ) {
+      if (pageIsVisible) {
         percentage = 1.0;
         test = 'topIsVisible && bottomIsVisible';
-      } else if ( topIsVisible ) {
+      } else if (topIsVisible) {
         // only the top is visible
         let heightVisible = viewport.bottom - top;
         percentage = heightVisible / height;
         test = 'topIsVisible';
-      } else if ( bottomIsVisible ) {
+      } else if (bottomIsVisible) {
         let heightVisible = bottom - viewport.top;
         percentage = heightVisible / height;
         test = 'bottomIsVisible';
@@ -128,20 +131,20 @@
     // console.log("-- visible", seq, percentage, { top, bottom }, viewport );
 
     return percentage;
-  }
+  };
 
   export async function toggle(visible) {
     isVisible = visible;
     if (visible) {
       // let isVisible update the DOM
       await tick();
-      if ( format == 'image' ) {
+      if (format == 'image') {
         loadImage();
       } else {
         loadPageText();
       }
     } else {
-      if ( format == 'image' ) {
+      if (format == 'image') {
         unloadImage();
       }
       unloadPageText();
@@ -150,29 +153,29 @@
     }
   }
 
-  const updateMatches = function(coords, values) {
-    matches = [ ...values ];
-    page_coords = [ ...coords ];
-  }
+  const updateMatches = function (coords, values) {
+    matches = [...values];
+    page_coords = [...coords];
+  };
 
   let loadImageTimeout;
   let loadPageTextTimeout;
-  const buildRequest = function(action, params) {
+  const buildRequest = function (action, params) {
     const req = new URL(`${location.protocol}//${HT.service_domain}/cgi/imgsrv/${action}`);
     Object.keys(params).forEach((param) => {
-      if ( params[param] ) {
+      if (params[param]) {
         req.searchParams.set(param, params[param]);
       }
-    })
-    if ( manifest.debug ) {
+    });
+    if (manifest.debug) {
       req.searchParams.set('debug', manifest.debug);
     }
     return req.toString();
-  }
+  };
 
-  export const loadImage = function(reload=false) {
+  export const loadImage = function (reload = false) {
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
-    if ( debugLoad ) {
+    if (debugLoad) {
       clearTimeout(loadImageTimeout);
       loadImageTimeout = setTimeout(() => {
         loadImageActual(reload);
@@ -180,41 +183,43 @@
       return;
     }
     loadImageActual(reload);
-  }
+  };
 
-  export const loadImageActual = function(reload=false) {
+  export const loadImageActual = function (reload = false) {
     timeout = null;
 
-    if ( isLoading ) {
-      if ( debugChoke || debugLoad ) {
-        console.log("-- page.loadImage already loading", seq);
+    if (isLoading) {
+      if (debugChoke || debugLoad) {
+        console.log('-- page.loadImage already loading', seq);
       }
       return;
     }
 
     // if ( image && image.src != defaultThumbnailSrc || reload ) { console.log(":: not loading DUPE", image.src); return ; }
-    if ( ! image ) { console.log("-- page.loadImage - no image", seq); return ; }
-    if ( image && image.src != defaultThumbnailSrc ) {
-      if ( ! reload ) { 
-        console.log("-- page.loadImage - not loading DUPE", seq, image.src)
-        return ; 
+    if (!image) {
+      console.log('-- page.loadImage - no image', seq);
+      return;
+    }
+    if (image && image.src != defaultThumbnailSrc) {
+      if (!reload) {
+        console.log('-- page.loadImage - not loading DUPE', seq, image.src);
+        return;
       }
     }
 
     isLoading = true;
 
-    let height = ( view == 'thumb' ) ? 250 : Math.ceil(manifest.fit(scanHeight) * window.devicePixelRatio);
-    let action = ( view == 'thumb' ) ? 'thumbnail' : 'image';
+    let height = view == 'thumb' ? 250 : Math.ceil(manifest.fit(scanHeight) * window.devicePixelRatio);
+    let action = view == 'thumb' ? 'thumbnail' : 'image';
     imageSrc = buildRequest(action, {
       id: canvas.id,
       seq: seq,
-      height: height
+      height: height,
     });
 
     let isRestricted = false;
     fetch(imageSrc)
       .then((response) => {
-
         xChokeAllowed = response.headers.get('x-choke-allowed');
         xChokeDebt = response.headers.get('x-choke-debt');
         xChokeCredit = response.headers.get('x-choke-credit');
@@ -226,101 +231,106 @@
           return;
         }
 
-        if ( response.headers.get('x-hathitrust-access') == 'deny' ) {
+        if (response.headers.get('x-hathitrust-access') == 'deny') {
           isRestricted = true;
         }
 
-        if ( response.headers.get('x-hathitrust-renew') ) {
+        if (response.headers.get('x-hathitrust-renew')) {
           emitter.emit('auth.renew', response.headers.get('x-hathitrust-renew'));
         }
 
         let update = {};
         let size = response.headers.get('x-image-size');
-        if ( size ) {
+        if (size) {
           let parts = size.split('x');
           let naturalHeight = parseInt(parts[1], 10);
-          let naturalWidth = parseInt(parts[0], 10) ;
+          let naturalWidth = parseInt(parts[0], 10);
           let ratio = canvas.height / naturalHeight;
           let width = Math.ceil(naturalWidth * ratio);
 
           canvas.width = width;
-          canvas.useWidth = Math.ceil(canvas.useHeight * ( canvas.width / canvas.height ));
+          canvas.useWidth = Math.ceil(canvas.useHeight * (canvas.width / canvas.height));
           canvas = canvas;
           update = Object.assign(update, {
             height: canvas.height,
             width: width,
             size: {
               width: naturalWidth,
-              height: naturalHeight
-            }
+              height: naturalHeight,
+            },
           });
         }
 
         let resolution = response.headers.get('x-image-resolution');
-        if ( resolution ) {
-          update.resolution = resolution.replace("/1", "").replace(/\.0+ /, ' ');
+        if (resolution) {
+          update.resolution = resolution.replace('/1', '').replace(/\.0+ /, ' ');
           const r = 300 / parseInt(update.resolution, 10);
-          update.screenResolution = `${Math.ceil(update.size.width * r)}x${Math.ceil(update.size.height * r)}`
+          update.screenResolution = `${Math.ceil(update.size.width * r)}x${Math.ceil(update.size.height * r)}`;
         }
 
-        if ( size || resolution) {
+        if (size || resolution) {
           manifest.update(seq, update);
           canvas.ratio = manifest.meta(seq).ratio;
         }
 
         return response.blob();
       })
-      .then(blob => {
-        if ( requestStatus == 429 ) { return ; }
+      .then((blob) => {
+        if (requestStatus == 429) {
+          return;
+        }
 
-        if ( objectUrl ) {
+        if (objectUrl) {
           URL.revokeObjectURL(objectUrl);
         }
 
-        if ( false && isRestricted && blob.text ) {
+        if (false && isRestricted && blob.text) {
           blob.text().then((text) => {
             let nextBlob = new Blob([text], { type: 'image/svg+xml' });
             objectUrl = URL.createObjectURL(nextBlob);
-          })
+          });
         } else {
           objectUrl = URL.createObjectURL(blob);
         }
 
-        if ( image ) {
+        if (image) {
           image.src = objectUrl;
-          isLoaded = true; isLoading = false;
-          if ( ! isRestricted ) {
+          isLoaded = true;
+          isLoading = false;
+          if (!isRestricted) {
             loadPageText();
             emitter.on('page.update.highlights', updatePageText);
           }
         } else {
           URL.revokeObjectURL(objectUrl);
         }
-      })    
-  }
+      });
+  };
 
-  export const unloadImage = function() {
+  export const unloadImage = function () {
     URL.revokeObjectURL(objectUrl);
-    if ( image ) {
+    if (image) {
       image.src = defaultThumbnailSrc;
     }
     // console.log("-- !! page.loadImage - unload", seq, image, orient);
-  }
+  };
 
-  const unloadPageText = function() {
-    if ( figCaption ) { figCaption.innerHTML = ''; }
+  const unloadPageText = function () {
+    if (figCaption) {
+      figCaption.innerHTML = '';
+    }
     emitter.off('page.update.highlights', updatePageText);
-  }
+  };
 
-  const updatePageText = function() {
+  const updatePageText = function () {
     loadPageText(true);
-  }
+  };
 
   let numPageTextLoaded = 0;
-  export const loadPageText = function(reload=false) {
+  export const loadPageText = function (reload = false) {
     // console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
-    if ( debugLoad ) {
+    if (debugLoad) {
       clearTimeout(loadPageTextTimeout);
       loadPageTextTimeout = setTimeout(() => {
         loadPageTextActual(reload);
@@ -328,23 +338,31 @@
       return;
     }
     loadPageTextActual(reload);
-  }
+  };
 
-  export const loadPageTextActual = function(reload=false) {
+  export const loadPageTextActual = function (reload = false) {
     // return;
 
-    if ( ! isVisible ) { return ; }
-    if ( ! figCaption ) { return ; }
+    if (!isVisible) {
+      return;
+    }
+    if (!figCaption) {
+      return;
+    }
 
-    if ( ! includePageText ) { return ; }
+    if (!includePageText) {
+      return;
+    }
 
-    if ( figCaption && figCaption.dataset.loaded == 'true' && ! reload ) {
+    if (figCaption && figCaption.dataset.loaded == 'true' && !reload) {
       return;
     }
 
     function parseCoords(value) {
-      if ( ! value ) { return null; }
-      var values = value.split(' ')
+      if (!value) {
+        return null;
+      }
+      var values = value.split(' ');
       return values.map((v) => parseInt(v, 10));
     }
 
@@ -352,23 +370,24 @@
     let text_src = buildRequest('html', {
       id: canvas.id,
       seq: seq,
-      q1: $q1
-    })
+      q1: $q1,
+    });
     fetch(text_src)
       .then((response) => {
         return response.text();
       })
-      .then(text => {
+      .then((text) => {
+        numPageTextLoaded = +1;
 
-        numPageTextLoaded =+ 1;
-
-        if ( ! figCaption ) { return ; }
+        if (!figCaption) {
+          return;
+        }
 
         text = text.replace(/<span class="ocr_line"/g, '<span class="ocr_line" role="text"');
         const parser = new DOMParser();
         const ocr_div = parser.parseFromString(text, 'text/html').body.childNodes[0];
 
-        if ( ocr_div.textContent.trim() == "" || ! ocr_div.textContent.trim().match(/\w+/) ) {
+        if (ocr_div.textContent.trim() == '' || !ocr_div.textContent.trim().match(/\w+/)) {
           ocr_div.innerHTML = `
             <div class="w-100 m-auto mt-3">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
@@ -385,37 +404,42 @@
 
         // if no words match, there's no highlighting
         let words = JSON.parse(ocr_div.dataset.words || '[]');
-        if ( ! words || ! words.length ) { page_coords = null; return ; }
+        if (!words || !words.length) {
+          page_coords = null;
+          return;
+        }
 
         page_coords = parseCoords(ocr_div.dataset.coords);
 
         matches = extractHighlights(words, ocr_div);
-      })
+      });
 
-      if ( format == 'plaintext' && figCaption.dataset.configured != 'true' ) {
-        emitter.on('page.update.highlights', updatePageText);
-        figCaption.dataset.configured = true;
-        isLoaded = true;
-      }
-  }
+    if (format == 'plaintext' && figCaption.dataset.configured != 'true') {
+      emitter.on('page.update.highlights', updatePageText);
+      figCaption.dataset.configured = true;
+      isLoaded = true;
+    }
+  };
 
-  const rotateScan = async function() {
-    orient = ( orient + 90 ) % 360;
-    if ( orient == 0 ) { return ; }
+  const rotateScan = async function () {
+    orient = (orient + 90) % 360;
+    if (orient == 0) {
+      return;
+    }
 
-    if ( ! rotatedImage ) {
+    if (!rotatedImage) {
       await tick();
     }
     // console.log("-- page.rotateScan", seq, rotatedImage);
     drawRotatedImage();
-  }
+  };
 
-  const drawRotatedImage = async function() {
+  const drawRotatedImage = async function () {
     await tick();
     const context = rotatedImage.getContext('2d');
     rotatedImage.height = rotatedImage.width = 0;
     let imgWidth, imgHeight;
-    if ( orient == 90 || orient == 270 ) {
+    if (orient == 90 || orient == 270) {
       imgWidth = image.naturalWidth;
       imgHeight = image.naturalHeight;
     } else {
@@ -435,16 +459,18 @@
     }
     context.restore();
     rotatedImage.dataset.ready = true;
-  }
+  };
 
-  const updateZoom = function(delta) {
-    if ( zoom != 1 && pageZoom == 1 ) { pageZoom = zoom; }
+  const updateZoom = function (delta) {
+    if (zoom != 1 && pageZoom == 1) {
+      pageZoom = zoom;
+    }
     pageZoom += delta;
     loadImage(true);
   };
 
   function calculateRatio(innerHeight, canvas) {
-    if ( canvas.height > canvas.width ) {
+    if (canvas.height > canvas.width) {
       return innerHeight / canvas.height;
     }
     let width = innerWidth * 0.6;
@@ -455,34 +481,42 @@
 
   function calculate(innerHeight, canvas, key, zoom, orient) {
     // console.log("calculate", seq, value, scanRatio, zoom, innerHeight);
-    let altkey = ( key == 'height' ) ? 'width' : 'height';
-    let value = ( orient % 180 == 0 ) ? canvas[key] : canvas[altkey];
+    let altkey = key == 'height' ? 'width' : 'height';
+    let value = orient % 180 == 0 ? canvas[key] : canvas[altkey];
     // console.log("-- page.calculate", key, value, orient, orient % 180);
     return Math.ceil(value * scanRatio * zoom);
   }
 
   function calculateZoom(zoom, pageZoom) {
-    if ( pageZoom > 1 && pageZoom > zoom  ) { return pageZoom; }
+    if (pageZoom > 1 && pageZoom > zoom) {
+      return pageZoom;
+    }
     return zoom;
   }
 
   function calculatePage(innerHeight, value, zoom) {
-    if ( zoom == 1 ) { return null; }
+    if (zoom == 1) {
+      return null;
+    }
     // console.log("calculatePage", seq, value, scanRatio, zoom);
     return `${Math.ceil(value * scanRatio * zoom)}px`;
   }
 
   function checkForFoldout() {
-    if ( view == 'thumb' || format != 'image' ) { return false; }
+    if (view == 'thumb' || format != 'image') {
+      return false;
+    }
     let meta = manifest.meta(seq);
-    if ( orient != 0 ) { console.log("-- page.checkForFoldout", seq, meta.width, meta.height); }
-    if ( meta.width < meta.height ) { return false; }
+    if (orient != 0) {
+      console.log('-- page.checkForFoldout', seq, meta.width, meta.height);
+    }
+    if (meta.width < meta.height) {
+      return false;
+    }
     // console.log("-- checkForFoldout", manifest.checkFeatures(seq, "FOLDOUT"));
     return (
-      manifest.checkFeatures(seq, "FOLDOUT") && 
-      ! manifest.checkFeatures(seq, "BLANK")
-    ) || (
-      ( meta.width / meta.height ) > ( 4 / 3 )
+      (manifest.checkFeatures(seq, 'FOLDOUT') && !manifest.checkFeatures(seq, 'BLANK')) ||
+      meta.width / meta.height > 4 / 3
     );
   }
 
@@ -491,9 +525,13 @@
   }
 
   function shouldLoadImage(image) {
-    let retval = ! isLoaded;
-    if ( ! image ) { retval = false; }
-    if ( image && image.src != defaultThumbnailSrc ) { retval = false; }
+    let retval = !isLoaded;
+    if (!image) {
+      retval = false;
+    }
+    if (image && image.src != defaultThumbnailSrc) {
+      retval = false;
+    }
     // console.log("-- page.loadImage - shouldLoadimage", seq, retval, isLoaded, isLoading);
     return retval;
   }
@@ -508,56 +546,65 @@
   $: orient = 0;
   $: isUnusual = checkForFoldout(canvas);
   $: defaultPageHeight = null; // ( view == '2up' || view == '1up' ) ? null : `${scanHeight}px`;
-  $: pageHeight = ( view == 'thumb' || zoom > 1 ) ? `${innerHeight * zoom}px` : null;
-  $: pageWidth = ( view == 'thumb' || zoom > 1 ) ? `${innerWidth * zoom}px` : null;
+  $: pageHeight = view == 'thumb' || zoom > 1 ? `${innerHeight * zoom}px` : null;
+  $: pageWidth = view == 'thumb' || zoom > 1 ? `${innerWidth * zoom}px` : null;
 
-  $: if ( invoked && pageDiv ) { pageDiv.focus(); }
-  $: if ( isVisible && format == 'image' && shouldLoadImage(image) ) { loadImage(); }
-  $: if ( zoom != lastZoom ) { 
-    if ( isVisible ) { loadImage(true); } 
-    lastZoom = zoom; 
+  $: if (invoked && pageDiv) {
+    pageDiv.focus();
   }
-  $: if ( isVisible && format == 'image' && image && image.src == defaultThumbnailSrc ) { loadImage(true); }
-  $: if ( isVisible && format == 'plaintext' && ( ! figCaption || figCaption.dataset.loaded == 'false' ) ) { loadPageText(); }
+  $: if (isVisible && format == 'image' && shouldLoadImage(image)) {
+    loadImage();
+  }
+  $: if (zoom != lastZoom) {
+    if (isVisible) {
+      loadImage(true);
+    }
+    lastZoom = zoom;
+  }
+  $: if (isVisible && format == 'image' && image && image.src == defaultThumbnailSrc) {
+    loadImage(true);
+  }
+  $: if (isVisible && format == 'plaintext' && (!figCaption || figCaption.dataset.loaded == 'false')) {
+    loadPageText();
+  }
 
-  const reloadPage = function(options) {
-    if ( options.seq == seq ) {
-      if ( options.visible === false ) {
+  const reloadPage = function (options) {
+    if (options.seq == seq) {
+      if (options.visible === false) {
         toggle(false);
         return;
       }
-      if ( options.orient != null ) {
+      if (options.orient != null) {
         orient = options.orient;
       }
-      if ( image ) {
+      if (image) {
         loadImage(true);
       } else {
         toggle(true);
       }
     }
-  }
+  };
   emitter.on('page.reload', reloadPage);
 
   onMount(() => {
-
-    return () => { 
+    return () => {
       // console.log("-- page.unmount", seq);
-      if(timeout) {
+      if (timeout) {
         clearTimeout(timeout);
         // console.log("-- app.unmount", seq);
       }
       emitter.off('update.highights', loadPageText);
       emitter.off('page.reload', reloadPage);
-    }
-  })
+    };
+  });
 </script>
 
 <!--   inert={!focused ? true : null} ??? -->
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<div 
-  class="page {format}" 
-  {style} 
-  data-seq={seq} 
+<div
+  class="page {format}"
+  {style}
+  data-seq={seq}
   data-xorient={orient}
   data-loaded={isLoaded}
   style:--zoom={zoom}
@@ -572,18 +619,18 @@
   class:recto={side == 'recto'}
   class:direction-rtl={isRTL}
   class:zoomed={pageZoom > 1 && pageZoom != zoom}
-  id="p{seq}" 
+  id="p{seq}"
   aria-hidden={!focused}
   aria-label="Page scan {seq}"
   role="group"
   tabindex={focused ? 0 : -1}
-  use:observer 
-  on:intersecting={handleIntersecting} 
+  use:observer
+  on:intersecting={handleIntersecting}
   on:unintersecting={handleUnintersecting}
-  bind:this={pageDiv}>
-
+  bind:this={pageDiv}
+>
   {#if manifest.messageList[seq]}
-  <PageMessage {view} seq={seq} code={manifest.messageList[seq]}></PageMessage>
+    <PageMessage {view} {seq} code={manifest.messageList[seq]} />
   {/if}
 
   <PageMenu
@@ -605,36 +652,32 @@
     selected={$selected.has(seq)}
     isOpen={manifest.initialDetailsOpenState}
     togglePageSelection={(event) => manifest.select(seq, event)}
-    />
+  />
 
-    {#if debugChoke}
-    <pre 
-      class="bg-dark text-white fs-7 m-0 p-0 me-3" 
-      style="grid-row: 1/3; grid-column: 2/3;">
+  {#if debugChoke}
+    <pre class="bg-dark text-white fs-7 m-0 p-0 me-3" style="grid-row: 1/3; grid-column: 2/3;">
 Choked: {xChokeAllowed == 1 ? 'NO' : 'YES'}
 Debt: {xChokeDebt}
 Credit: {xChokeCredit}
 Delta: {xChokeDelta}{#if xChokeAllowed == 0}
-Until: {xChokeUntil}{/if}
+        Until: {xChokeUntil}{/if}
     </pre>
-    {/if}
+  {/if}
 
-  <figure class="frame format-{format}" 
+  <figure
+    class="frame format-{format}"
     class:pending={!isLoaded}
     class:adjusted={canvas.width > canvas.height}
     class:zoomed={pageZoom > 1 && pageZoom != zoom}
     class:landscape={scanUseRatio > 1 && zoom == 1}
     tabindex={focused ? 0 : -1}
     data-xorient={orient}
-    >
+  >
     {#if format == 'image'}
       <div class="image">
         {#if !isLoaded && requestStatus == 200}
           <div class="page-loader">
-            <i 
-              class="fa-solid fa-stroopwafel fa-2xl opacity-75"
-              class:fa-spin={isVisible}
-              aria-hidden="true"></i>
+            <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true" />
           </div>
         {/if}
         {#if isVisible && requestStatus == 429}
@@ -643,46 +686,44 @@ Until: {xChokeUntil}{/if}
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
                 Image Temporarily Unavailable
               </div>
-              <p class="fs-7 text-muted text-center">
-                Error code: 429
-              </p>
+              <p class="fs-7 text-muted text-center">Error code: 429</p>
             </div>
           </div>
         {/if}
         {#if isVisible}
-        <img 
-          bind:this={image} 
-          class:d-none={orient != 0}
-          src={defaultThumbnailSrc} 
-          data-loaded={isLoaded}
-          alt="" 
-          class:zoomed={pageZoom > 1}
-          on:load={() => { if ( orient != 0 ) { drawRotatedImage(); }}}
+          <img
+            bind:this={image}
+            class:d-none={orient != 0}
+            src={defaultThumbnailSrc}
+            data-loaded={isLoaded}
+            alt=""
+            class:zoomed={pageZoom > 1}
+            on:load={() => {
+              if (orient != 0) {
+                drawRotatedImage();
+              }
+            }}
           />
           {#if orient != 0}
             <canvas data-ready="false" bind:this={rotatedImage} />
           {/if}
           {#if side != 'thumb' && page_coords}
-          <SearchHighlights {canvas} {seq} {orient} image={image} page_coords={page_coords} matches={matches} format="image"></SearchHighlights>
+            <SearchHighlights {canvas} {seq} {orient} {image} {page_coords} {matches} format="image" />
           {/if}
         {/if}
       </div>
       {#if side != 'thumb'}
-      <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption}>
-      </figcaption>
+        <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption} />
       {/if}
     {:else if format == 'plaintext'}
       {#if !isLoaded}
         <div class="page-loader">
-          <i 
-            class="fa-solid fa-stroopwafel fa-2xl opacity-75"
-            class:fa-spin={isVisible}
-            aria-hidden="true"></i>
+          <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true" />
         </div>
       {/if}
       {#if isVisible}
-      <SearchHighlights page_coords={page_coords} matches={matches} format="plaintext"></SearchHighlights>
-      <figcaption data-loaded="false" class="plaintext" bind:this={figCaption}></figcaption>
+        <SearchHighlights {page_coords} {matches} format="plaintext" />
+        <figcaption data-loaded="false" class="plaintext" bind:this={figCaption} />
       {/if}
     {/if}
   </figure>
@@ -694,7 +735,7 @@ Until: {xChokeUntil}{/if}
     @supports not (height: 100dvh) {
       --vh: 98vh; // Fallback for browsers not supporting dvh
     }
-    --defaultPageHeight: calc(var(--vh) - ( ( var(--stage-header-height) + var(--paddingBottom, 0) ) * 1px) );
+    --defaultPageHeight: calc(var(--vh) - ((var(--stage-header-height) + var(--paddingBottom, 0)) * 1px));
     --actualPageHeight: var(--scanHeight, var(--defaultPageHeight));
     --actualZoom: var(--zoom, 1);
     height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1));
@@ -807,7 +848,7 @@ Until: {xChokeUntil}{/if}
       margin-bottom: 1rem;
 
       figure {
-        --frameHeight: calc(250px * var(--actualZoom)); 
+        --frameHeight: calc(250px * var(--actualZoom));
       }
     }
 
@@ -825,16 +866,19 @@ Until: {xChokeUntil}{/if}
       outline: 0;
 
       .frame {
-        --bs-btn-focus-shadow-rgb: 66,70,73;
+        --bs-btn-focus-shadow-rgb: 66, 70, 73;
         outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), 0.5);
       }
     }
   }
 
   .frame {
-    --defaultframeHeight: calc(var(--vh) * 0.99 - ( ( var(--stage-header-height) + var(--paddingBottom) ) * 1px) );
-    --frameHeight: calc(clamp(var(--clampHeight), var(--defaultframeHeight), var(--defaultframeHeight)) * var(--scanZoom, 1) / max(var(--ratio), 1));
+    --defaultframeHeight: calc(var(--vh) * 0.99 - ((var(--stage-header-height) + var(--paddingBottom)) * 1px));
+    --frameHeight: calc(
+      clamp(var(--clampHeight), var(--defaultframeHeight), var(--defaultframeHeight)) * var(--scanZoom, 1) /
+        max(var(--ratio), 1)
+    );
     min-height: 0;
     height: 100%;
     width: 100%;
@@ -862,39 +906,35 @@ Until: {xChokeUntil}{/if}
     // }
 
     &.pending {
-
       .page-loader {
         font-size: 3rem;
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translateX(-50%) translateY(-50%);
-        color: #9C92AC;
+        color: #9c92ac;
       }
 
       .image {
-
         position: relative;
 
         background-color: rgb(223, 219, 229, 0.125);
 
         // 4 point stars
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%239C92AC' fill-opacity='0.25'%3E%3Cpolygon fill-rule='evenodd' points='8 4 12 6 8 8 6 12 4 8 0 6 4 4 6 0 8 4'/%3E%3C/g%3E%3C/svg%3E");        
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%239C92AC' fill-opacity='0.25'%3E%3Cpolygon fill-rule='evenodd' points='8 4 12 6 8 8 6 12 4 8 0 6 4 4 6 0 8 4'/%3E%3C/g%3E%3C/svg%3E");
         img {
           opacity: 0;
         }
       }
 
       &.format-plaintext {
-
         background-color: rgb(223, 219, 229, 0.25);
         // 4 point stars
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%239C92AC' fill-opacity='0.25'%3E%3Cpolygon fill-rule='evenodd' points='8 4 12 6 8 8 6 12 4 8 0 6 4 4 6 0 8 4'/%3E%3C/g%3E%3C/svg%3E");        
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%239C92AC' fill-opacity='0.25'%3E%3Cpolygon fill-rule='evenodd' points='8 4 12 6 8 8 6 12 4 8 0 6 4 4 6 0 8 4'/%3E%3C/g%3E%3C/svg%3E");
       }
     }
 
     &.format-image {
-
       .image {
         height: var(--frameHeight);
         width: auto;
@@ -926,7 +966,7 @@ Until: {xChokeUntil}{/if}
 
       background: #fff;
       box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
-      border: 1px solid #ddd;    
+      border: 1px solid #ddd;
 
       transition: height 100ms;
 
@@ -934,10 +974,10 @@ Until: {xChokeUntil}{/if}
         width: 100% !important;
       }
     }
-
   }
 
-  figure img, figure canvas {
+  figure img,
+  figure canvas {
     display: block;
     margin: auto;
 
@@ -948,10 +988,10 @@ Until: {xChokeUntil}{/if}
 
     background: #f9f8f5;
     box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
-    border: 1px solid #ddd;    
+    border: 1px solid #ddd;
   }
 
-  figure canvas[data-ready="false"] {
+  figure canvas[data-ready='false'] {
     visibility: hidden;
   }
 
@@ -974,14 +1014,14 @@ Until: {xChokeUntil}{/if}
     max-height: 100%;
   }
 
-  .page:is([data-xorient="90"]),
-  .page:is([data-xorient="270"]) {
+  .page:is([data-xorient='90']),
+  .page:is([data-xorient='270']) {
     max-width: 100%;
     height: auto;
   }
 
-  .frame:is([data-xorient="90"]),
-  .frame:is([data-xorient="270"]) {
+  .frame:is([data-xorient='90']),
+  .frame:is([data-xorient='270']) {
     height: auto;
     width: 100%;
     max-width: 100%;
@@ -989,9 +1029,12 @@ Until: {xChokeUntil}{/if}
 
     padding: 2rem 6rem 2rem 1rem;
 
-    & .image, & .loader {
+    & .image,
+    & .loader {
       height: min-content;
-      width: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)) !important;
+      width: calc(
+        clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)
+      ) !important;
       aspect-ratio: calc(1 / var(--ratio));
       margin: auto;
     }
@@ -1028,5 +1071,4 @@ Until: {xChokeUntil}{/if}
     align-items: center;
     justify-content: center;
   }
-
 </style>

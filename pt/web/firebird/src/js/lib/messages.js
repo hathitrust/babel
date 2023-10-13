@@ -7,7 +7,7 @@ messages['ownerid'] = {
   could not be resolved.</p>
   <p>We would recommend contacting the owner of the 
   referring website to let them know that their link 
-  may need to be updated.</p>`
-}
+  may need to be updated.</p>`,
+};
 
-export {messages};
+export { messages };

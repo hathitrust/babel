@@ -5,15 +5,11 @@
 export function drag(node, callback) {
   /** @param {PointerEvent} event */
   const pointerdown = (event) => {
-    
-    if ( event.target.closest('button') ) {
+    if (event.target.closest('button')) {
       return;
     }
 
-    if (
-      (event.pointerType === 'mouse' && event.button === 2) ||
-      (event.pointerType !== 'mouse' && !event.isPrimary)
-    )
+    if ((event.pointerType === 'mouse' && event.button === 2) || (event.pointerType !== 'mouse' && !event.isPrimary))
       return;
 
     node.setPointerCapture(event.pointerId);
@@ -41,6 +37,6 @@ export function drag(node, callback) {
   return {
     destroy() {
       node.removeEventListener('pointerdown', pointerdown);
-    }
+    },
   };
 }

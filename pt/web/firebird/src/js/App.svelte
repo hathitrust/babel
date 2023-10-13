@@ -66,21 +66,21 @@
   let isReaderView = views[view] != null;
 
   // && ! isEmbed
-  if ( window.innerWidth < 800 && manifest.ui != 'embed' && isReaderView ) {
+  if (window.innerWidth < 800 && manifest.ui != 'embed' && isReaderView) {
     view = '1up';
-  } else if ( manifest.ui == 'embed' && window.innerWidth > window.innerHeight ) {
+  } else if (manifest.ui == 'embed' && window.innerWidth > window.innerHeight) {
     view = '2up';
   }
-  
-  if ( manifest.totalSeq == 1 && view == '2up' && isReaderView ) {
+
+  if (manifest.totalSeq == 1 && view == '2up' && isReaderView) {
     view = '1up';
   }
-  
+
   let lastView = '1up';
   const currentView = writable(view);
   const currentFormat = writable(format);
   const currentSeq = writable(manifest.currentSeq);
-  
+
   let instance;
   manifest.instance = instance;
 
@@ -94,8 +94,12 @@
   manifest.isFullscreen = writable(false);
   const isFullscreen = manifest.isFullscreen;
   manifest.initialDetailsOpenState = true;
-  if ( manifest.ui == 'embed' ) { manifest.initialDetailsOpenState = false; }
-  if ( window.innerWidth < 800 ) { manifest.initialDetailsOpenState = false; }
+  if (manifest.ui == 'embed') {
+    manifest.initialDetailsOpenState = false;
+  }
+  if (window.innerWidth < 800) {
+    manifest.initialDetailsOpenState = false;
+  }
 
   const storedSelected = JSON.parse(sessionStorage.getItem(manifest.selectedKey) || '[]');
   manifest.selected = writable(new Set(storedSelected));
@@ -115,7 +119,7 @@
   let pos = `${26 * 16}px`; // '26rem';
   let min = `${10 * 16}px`; // '10rem';
   let max = '50%';
-  
+
   let stage;
 
   /**
@@ -125,15 +129,11 @@
   function drag(node, callback) {
     /** @param {PointerEvent} event */
     const pointerdown = (event) => {
-      
-      if ( event.target.closest('button') ) {
+      if (event.target.closest('button')) {
         return;
       }
 
-      if (
-        (event.pointerType === 'mouse' && event.button === 2) ||
-        (event.pointerType !== 'mouse' && !event.isPrimary)
-      )
+      if ((event.pointerType === 'mouse' && event.button === 2) || (event.pointerType !== 'mouse' && !event.isPrimary))
         return;
 
       node.setPointerCapture(event.pointerId);
@@ -161,7 +161,7 @@
     return {
       destroy() {
         node.removeEventListener('pointerdown', pointerdown);
-      }
+      },
     };
   }
 
@@ -181,10 +181,8 @@
   let lastPosition;
   let asideExpanded = true;
   function togglePane() {
-    asideExpanded = ! asideExpanded;
-    document.body.style.setProperty(
-      '--aside-collapsed-width', 
-      asideExpanded ? null : '16px');
+    asideExpanded = !asideExpanded;
+    document.body.style.setProperty('--aside-collapsed-width', asideExpanded ? null : '16px');
   }
 
   let optionsToggled = false;
@@ -197,7 +195,7 @@
   let lightboxImg;
   function openLightbox(options) {
     lightboxImg.style.visibility = 'hidden';
-    lightboxImg.addEventListener('load', () => lightboxImg.style.visibility = 'visible', { once: true });
+    lightboxImg.addEventListener('load', () => (lightboxImg.style.visibility = 'visible'), { once: true });
     lightboxImg.src = options.src;
     lightboxImg.alt = options.alt;
     lightboxModal.showModal();
@@ -212,12 +210,12 @@
   emitter.on('lightbox.open', openLightbox);
 
   function viewDisplayLabel(view) {
-    if ( view == '2up' ){
-      return "two pages, side-by-side";
-    } else if ( view == '1up' ){
-      return "single page";
-    } else if ( view == 'thumb' ) {
-      return "thumbnails grid";
+    if (view == '2up') {
+      return 'two pages, side-by-side';
+    } else if (view == '1up') {
+      return 'single page';
+    } else if (view == 'thumb') {
+      return 'thumbnails grid';
     }
   }
 
@@ -225,14 +223,16 @@
   function switchView(options) {
     // console.log("-- switchView", options);
     targetView = options.view || lastView;
-    if ( targetView == '2up' && window.innerWidth < 800 ) {
+    if (targetView == '2up' && window.innerWidth < 800) {
       targetView = '1up';
     }
-    if ( targetView == $currentView ) { return ; }
-    if ( $currentView != 'thumb' ) {
+    if (targetView == $currentView) {
+      return;
+    }
+    if ($currentView != 'thumb') {
       lastView = $currentView;
     }
-    if ( options.seq ) {
+    if (options.seq) {
       $currentSeq = options.seq;
     }
     // $currentView = targetView;
@@ -242,22 +242,24 @@
       $currentView = targetView;
       updateHistory({ view: targetView, seq: $currentSeq });
       HT.live.announce(`Viewing item in ${viewDisplayLabel(targetView)} view.`);
-      HT.prefs.set({ pt: { view: targetView }});
+      HT.prefs.set({ pt: { view: targetView } });
     }, 0);
   }
 
   function switchFormat(options) {
     // console.log("-- switchFormat", options);
-    if ( $currentFormat != options.format ) {
+    if ($currentFormat != options.format) {
       $currentFormat = options.format;
       updateHistory({ format: options.format });
-      HT.prefs.set({ pt: { format: options.format }});
+      HT.prefs.set({ pt: { format: options.format } });
     }
   }
 
   let loadingTimeout;
   function setupLoadingView() {
-    if ( ! isReaderView ) { return ; }
+    if (!isReaderView) {
+      return;
+    }
     isBuildingView = true;
     loadingTimeout = setTimeout(() => {
       showLoadingView = true;
@@ -275,26 +277,28 @@
 
   function handleAuthRenew(entityID) {
     setTimeout(() => {
-      const reauthUrl = `https://${HT.service_domain}/Shibboleth.sso/Login?entityID=${entityID}&target=${encodeURIComponent(window.location.href)}`;
+      const reauthUrl = `https://${
+        HT.service_domain
+      }/Shibboleth.sso/Login?entityID=${entityID}&target=${encodeURIComponent(window.location.href)}`;
       const retval = window.confirm(`We're having a problem with your session; select OK to log in again.`);
-      if ( retval ) {
+      if (retval) {
         window.location.href = reauthUrl;
       }
     }, 100);
   }
 
-  async function handleLogAction(options={}) {
+  async function handleLogAction(options = {}) {
     let url = new URL(location.href.replace(/;/g, '&'));
     const searchParams = new URLSearchParams(url.searchParams);
     let action = options.action || '-';
-    if ( options.value ) {
+    if (options.value) {
       action += ':' + options.value;
     }
     searchParams.set('a', action);
     url.search = searchParams.toString();
-    const response = await fetch(url.toString(), { credentials: 'include'} );
+    const response = await fetch(url.toString(), { credentials: 'include' });
     let entityID;
-    if ( response.headers.get('x-hathitrust-renew') ) {
+    if (response.headers.get('x-hathitrust-renew')) {
       emitter.emit('auth.renew', response.headers.get('x-hathitrust-renew'));
     }
   }
@@ -304,25 +308,29 @@
   emitter.on('view.ready', hideLoadingView);
   emitter.on('log.action', handleLogAction);
   emitter.on('update.history', updateHistory);
-  emitter.once('auth.renew').then(data => {
+  emitter.once('auth.renew').then((data) => {
     handleAuthRenew(data);
-  })
+  });
 
   emitter.on('view.relocated', () => {
-    if ( optionsToggled ) { toggleOptions(); }
+    if (optionsToggled) {
+      toggleOptions();
+    }
     handleLogAction();
-  })
+  });
 
   // console.log("-- startup.seq", $currentSeq);
 
-  $: if ( stage ) { stage.style.setProperty('--stage-header-height', document.querySelector('hathi-website-header').clientHeight); }
+  $: if (stage) {
+    stage.style.setProperty('--stage-header-height', document.querySelector('hathi-website-header').clientHeight);
+  }
 
   onMount(() => {
     // force this in case we're doing id=open/id=r, etc.
     updateHistory({ id: manifest.id });
     setupLoadingView();
 
-    if ( ! globalThis.HTMLDialogElement ) {
+    if (!globalThis.HTMLDialogElement) {
       dialogPolyfill.registerDialog(lightboxModal);
     }
 
@@ -333,7 +341,7 @@
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
       // const contentBoxSize = entry.contentBoxSize[0];
-      if ( entry.contentBoxSize ) {
+      if (entry.contentBoxSize) {
         w = entry.contentBoxSize[0].inlineSize;
         h = entry.contentBoxSize[0].blockSize;
       } else {
@@ -349,8 +357,8 @@
       //   document.body.dataset.interface = 'minimal';
       // }
 
-      clampHeight = ( h <= 600 ) ? '600px' : '0px';
-    })
+      clampHeight = h <= 600 ? '600px' : '0px';
+    });
 
     resizeObserver.observe(container);
 
@@ -360,8 +368,8 @@
       emitter.off('view.switch.format', switchFormat);
       emitter.off('lightbox.open', openLightbox);
       emitter.off('update.history', updateHistory);
-    }
-  })
+    };
+  });
 
   let clampHeight = '0px';
 
@@ -370,122 +378,108 @@
     const size = type === 'horizontal' ? w : h;
     position = constrain(container, size, min, max, position, priority);
   }
-  $: if ( isReaderView && currentSeq ) { updateHistory({ seq: $currentSeq }); }
+  $: if (isReaderView && currentSeq) {
+    updateHistory({ seq: $currentSeq });
+  }
 
   onMount(() => {
-    let resizeObserver = new ResizeObserver(entries => {
+    let resizeObserver = new ResizeObserver((entries) => {
       const entry = entries.at(0);
       const height = entry.contentRect.height;
-      if ( height < 600 ) {
+      if (height < 600) {
         clampHeight = `600px`;
       } else {
         clampHeight = `0px`;
       }
-    })
-    resizeObserver.observe(container)
+    });
+    resizeObserver.observe(container);
 
     const searchLink = document.querySelector('a[href="#input-search-text"]');
-    if ( searchLink ) {
+    if (searchLink) {
       searchLink.addEventListener('click', (event) => {
         event.preventDefault();
         emitter.emit('search-form.focus');
-      })
+      });
     }
-  })
-
+  });
 </script>
 
 <hathi-website-header>
-  <WebsiteHeader searchState="toggle" compact={true}></WebsiteHeader>
+  <WebsiteHeader searchState="toggle" compact={true} />
 </hathi-website-header>
 <div style="grid-area: options">
-  <button 
-    data-action="toggle-options" 
-    style="grid-area: options" 
-    class="btn btn-dark shadow rounded-0 w-100 d-flex justify-content-between align-items-center d-md-none" 
+  <button
+    data-action="toggle-options"
+    style="grid-area: options"
+    class="btn btn-dark shadow rounded-0 w-100 d-flex justify-content-between align-items-center d-md-none"
     class:d-none={$interfaceMode == 'minimal'}
-    on:click={toggleOptions}>
+    on:click={toggleOptions}
+  >
     <span>Options</span>
-    <i 
-      class="fa-solid fa-angle-down" 
-      class:fa-rotate-180={optionsToggled} 
-      aria-hidden="true"></i>
+    <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true" />
   </button>
 </div>
 {#if isReaderView}
-<ViewerToolbar></ViewerToolbar>
+  <ViewerToolbar />
 {/if}
 <aside>
-  <div 
-    class="inner"
-    class:invisible={!asideExpanded}
-    >
+  <div class="inner" class:invisible={!asideExpanded}>
     <div class="accordion">
-      <SurveyPanel></SurveyPanel>
-      <AccessStatusPanel></AccessStatusPanel>
+      <SurveyPanel />
+      <AccessStatusPanel />
     </div>
-    <div 
-      class="accordion" 
-      id="controls">
-      <MetadataPanel></MetadataPanel>
+    <div class="accordion" id="controls">
+      <MetadataPanel />
       {#if manifest.ui != 'crms'}
-      <DownloadPanel></DownloadPanel>
+        <DownloadPanel />
       {/if}
       {#if isReaderView && manifest.finalAccessAllowed}
-      <SearchInItemPanel></SearchInItemPanel>
-      <JumpToSectionPanel></JumpToSectionPanel>
+        <SearchInItemPanel />
+        <JumpToSectionPanel />
       {/if}
       {#if manifest.ui != 'crms'}
-      <GetThisItemPanel></GetThisItemPanel>
-      <CollectionsPanel></CollectionsPanel>
-      <SharePanel></SharePanel>
+        <GetThisItemPanel />
+        <CollectionsPanel />
+        <SharePanel />
       {/if}
     </div>
-    <VersionPanel></VersionPanel>
+    <VersionPanel />
   </div>
 </aside>
 <div class="divider" use:drag={(e) => update(e.clientX, e.clientY, e)}>
-  <button 
-    type="button" 
+  <button
+    type="button"
     class="btn x-btn-lg btn-outline-dark shadow rounded-circle"
     use:tooltip
-    aria-label="{asideExpanded ? 'Close sidebar' : 'Open sidebar'}"
-    on:click={togglePane}>
-    <i 
-      class="fa-solid fa-arrow-right-from-bracket"  
-      class:fa-flip-horizontal={asideExpanded}
-      aria-hidden="true"></i>
+    aria-label={asideExpanded ? 'Close sidebar' : 'Open sidebar'}
+    on:click={togglePane}
+  >
+    <i class="fa-solid fa-arrow-right-from-bracket" class:fa-flip-horizontal={asideExpanded} aria-hidden="true" />
   </button>
 </div>
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
   {#if stage}
     {#if view == 'search'}
-    <SearchView></SearchView>
+      <SearchView />
     {:else if view == 'restricted'}
-    <RestrictedView></RestrictedView>
+      <RestrictedView />
     {:else}
-    <!-- <ViewerToolbar></ViewerToolbar> -->
-    <svelte:component 
-      this={views[$currentView]}
-      startSeq={$currentSeq}
-      container={stage}
-      ></svelte:component>
+      <!-- <ViewerToolbar></ViewerToolbar> -->
+      <svelte:component this={views[$currentView]} startSeq={$currentSeq} container={stage} />
     {/if}
   {/if}
 </main>
 {#if isBuildingView}
-<ConfiguringView show={showLoadingView} />
+  <ConfiguringView show={showLoadingView} />
 {/if}
 
-<AcceptableUseBanner></AcceptableUseBanner>
+<AcceptableUseBanner />
 
 {#if dragging}
   <div class="mousecatcher" />
 {/if}
 
-<dialog 
-  bind:this={lightboxModal} 
-  class="lightbox border-0 rounded">
+<dialog bind:this={lightboxModal} class="lightbox border-0 rounded">
   <div class="d-flex align-items-center justify-content-center h-100 w-100 overflow-auto position-relative">
     <button
       type="button"
@@ -494,10 +488,7 @@
       aria-label="Close Modal"
       on:click={closeLightbox}>Close <i class="fa-solid fa-xmark" aria-hidden="true" /></button
     >
-    <img 
-      alt=""
-      bind:this={lightboxImg} 
-      class="h-auto w-auto mw-100 mh-100 border border-dark" />
+    <img alt="" bind:this={lightboxImg} class="h-auto w-auto mw-100 mh-100 border border-dark" />
   </div>
 </dialog>
 
@@ -524,7 +515,6 @@
   }
 
   .lightbox::backdrop {
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
   }
-
 </style>

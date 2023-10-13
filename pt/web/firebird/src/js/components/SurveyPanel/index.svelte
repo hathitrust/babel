@@ -3,7 +3,7 @@
   import NotificationsManager from '~firebird-common/src/js/lib/notifications';
 
   import Panel from '../Panel';
-  
+
   const HT = getContext('HT');
   const prefs = HT.prefs.get();
   prefs.pt = prefs.pt || {};
@@ -25,7 +25,7 @@
     let id = this.id;
     prefs.pt.alerts[id] = open ? 'open' : 'closed';
     HT.prefs.set(prefs);
-    console.log("-- survey.panel.toggle", id, open);
+    console.log('-- survey.panel.toggle', id, open);
   }
 
   onMount(() => {
@@ -40,7 +40,7 @@
   <!-- <div class="accordion"> -->
   {#each notificationsManager.surveyData as survey}
     <Panel expanded={isExpanded(survey)} class="dark" id={survey.id} onToggle={onToggle.bind(survey)}>
-      <i class="fa-solid fa-square-poll-vertical" slot="icon"></i>
+      <i class="fa-solid fa-square-poll-vertical" slot="icon" />
       <slot:fragment slot="title">{survey.title}</slot:fragment>
       <slot:fragment slot="body">
         {#if survey.message.indexOf('<p>') > -1}
@@ -49,9 +49,7 @@
           <p>{survey.message}</p>
         {/if}
         <p>
-          <a href={survey.read_more_link} target="_blank"
-            >{survey.read_more_label}</a
-          >
+          <a href={survey.read_more_link} target="_blank">{survey.read_more_label}</a>
         </p>
       </slot:fragment>
     </Panel>

@@ -15,7 +15,7 @@
   let action = 'addits';
   let modal;
   let c;
-  let cn; 
+  let cn;
   let desc;
   let contributorName;
   let shared;
@@ -24,11 +24,11 @@
 
   function parseResponse(line) {
     var kv;
-    var tmp = line.trim().split("|");
+    var tmp = line.trim().split('|');
     let message = [];
-    for(var i = 0; i < tmp.length; i++) {
-        kv = tmp[i].split("=");
-        status[kv[0]] = kv[1];
+    for (var i = 0; i < tmp.length; i++) {
+      kv = tmp[i].split('=');
+      status[kv[0]] = kv[1];
     }
     if (status.result == 'ADD_ITEM_FAILURE') {
       status.class = 'alert-danger';
@@ -40,11 +40,19 @@
         message.push(`${numFailed} item${numFailed > 1 ? 's' : ''} could not be added to your collection`);
       }
       if (status.NumAddedToCollection > 0) {
-        message.push(`${status.NumAddedToCollection} item${status.NumAddedToCollection > 1 ? 's' : ''} ${status.NumAddedToCollection > 1 ? 'were' : 'was'} added to ${collection_link}.`);
+        message.push(
+          `${status.NumAddedToCollection} item${status.NumAddedToCollection > 1 ? 's' : ''} ${
+            status.NumAddedToCollection > 1 ? 'were' : 'was'
+          } added to ${collection_link}.`
+        );
       }
       if (status.NumAlreadyInCollection > 0) {
-        message.push(`${status.NumAlreadyInCollection} item${status.NumAlreadyInCollection > 1 ? 's' : ''} ${status.NumAlreadyInCollection > 1 ? 'were' : 'was'} already in ${collection_link}.`)
-      }      
+        message.push(
+          `${status.NumAlreadyInCollection} item${status.NumAlreadyInCollection > 1 ? 's' : ''} ${
+            status.NumAlreadyInCollection > 1 ? 'were' : 'was'
+          } already in ${collection_link}.`
+        );
+      }
     }
     status.message = message.join(' ');
     status = status;
@@ -62,10 +70,10 @@
       parseResponse(await response.text());
       inCollectionsList.push({
         value: status.coll_id,
-        label: status.coll_name
-      })
+        label: status.coll_name,
+      });
       inCollectionsList = inCollectionsList;
-      console.log("-- bleh", action);
+      console.log('-- bleh', action);
       if (action == 'addits') {
         let c2 = params.get('c2');
         let idx = collectionsList.findIndex((o) => o.value == c2);
@@ -84,7 +92,7 @@
   }
 
   function addItem() {
-    if(c == '__NEW__') {
+    if (c == '__NEW__') {
       openModal();
       return;
     }
@@ -100,7 +108,9 @@
     HT.live.announce(statusEl.innerText);
   }
 
-  $: if ( status.class ) { announceStatus(); }
+  $: if (status.class) {
+    announceStatus();
+  }
   $: loginStatus = HT.loginStatus;
   $: loggedIn = $loginStatus.logged_in;
   $: userIsAnonymous = loggedIn === false;
@@ -110,38 +120,35 @@
     rootEl.querySelectorAll('select[data-use="collections"] option').forEach((optionEl) => {
       collectionsList.push({
         value: optionEl.value,
-        label: optionEl.innerText
-      })
+        label: optionEl.innerText,
+      });
     });
     collectionsList = collectionsList;
 
     rootEl.querySelectorAll('select[data-use="featured-collections"] option').forEach((optionEl) => {
       featuredCollectionsList.push({
         value: optionEl.value,
-        label: optionEl.innerText
-      })
+        label: optionEl.innerText,
+      });
     });
     featuredCollectionsList = featuredCollectionsList;
 
     rootEl.querySelectorAll('select[data-use="in-collections"] option').forEach((optionEl) => {
       inCollectionsList.push({
         value: optionEl.value,
-        label: optionEl.innerText
-      })
+        label: optionEl.innerText,
+      });
     });
     inCollectionsList = inCollectionsList;
-  })
-
+  });
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bookmark" slot="icon"></i>
+  <i class="fa-solid fa-bookmark" slot="icon" />
   <slot:fragment slot="title">Collections</slot:fragment>
   <slot:fragment slot="body">
     {#if userIsAnonymous}
-      <div class="alert alert-warning">
-        Log in to make your personal collections permanent.
-      </div>      
+      <div class="alert alert-warning">Log in to make your personal collections permanent.</div>
     {/if}
     {#if featuredCollectionsList.length}
       <div class="mb-3">
@@ -166,14 +173,14 @@
       </div>
     </div>
     {#if status.class}
-    <div class="alert mt-1 {status.class} d-flex align-items-center gap-3" bind:this={statusEl}>
-      {#if status.class == 'alert-danger'}
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-      {:else}
-        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-      {/if}
-      <span>{@html status.message}</span>
-    </div>
+      <div class="alert mt-1 {status.class} d-flex align-items-center gap-3" bind:this={statusEl}>
+        {#if status.class == 'alert-danger'}
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+        {:else}
+          <i class="fa-regular fa-circle-check" aria-hidden="true" />
+        {/if}
+        <span>{@html status.message}</span>
+      </div>
     {/if}
     {#if inCollectionsList.length}
       <div class="mb-3">
@@ -188,19 +195,11 @@
     <div class="mb-3">
       <ul class="list-unstyled">
         {#if collectionsList.length > 0 || inCollectionsList.length > 0}
-        <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=my-collections">My Collections</a></li>
+          <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=my-collections">My Collections</a></li>
         {/if}
         <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=all">Shared Collections</a></li>
       </ul>
     </div>
   </slot:fragment>
 </Panel>
-<CollectionEditModal 
-  bind:this={modal} 
-  {userIsAnonymous}
-  {c}
-  {cn}
-  {desc}
-  {contributorName}
-  {shared}
-  {submitAction} />
+<CollectionEditModal bind:this={modal} {userIsAnonymous} {c} {cn} {desc} {contributorName} {shared} {submitAction} />

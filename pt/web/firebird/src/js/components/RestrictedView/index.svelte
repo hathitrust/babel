@@ -20,36 +20,29 @@
   // subviews['orphan-candidate-item'] = OrphanCandidateItem;
 
   let externalLinks = manifest.externalLinks;
-  let links = externalLinks.filter(link => link.type == 'oclc');
+  let links = externalLinks.filter((link) => link.type == 'oclc');
 
   let searchAvailable = true;
   let rightsAttribute = manifest.accessRestriction.rightsAttribute;
   let message = manifest.accessRestriction.message;
-  if ( rightsAttribute == 8  ) {
+  if (rightsAttribute == 8) {
     searchAvailable = false;
-  } else if ( message == 'orphan-candidate-item' ) {
+  } else if (message == 'orphan-candidate-item') {
     searchAvailable = false;
   }
 
-  let onClick = function(event) {
+  let onClick = function (event) {
     location.assign(event.target.href);
-  }
-
+  };
 </script>
 
 <div class="p-3 m-3 overflow-auto">
-
-  <svelte:component 
-    this={subviews[message]}
-    link={links[0]}
-    ></svelte:component>
+  <svelte:component this={subviews[message]} link={links[0]} />
 
   {#if searchAvailable}
-  <SearchForm inPanel={false} {onClick}></SearchForm>
+    <SearchForm inPanel={false} {onClick} />
   {/if}
-
 </div>
 
 <style>
-
 </style>
