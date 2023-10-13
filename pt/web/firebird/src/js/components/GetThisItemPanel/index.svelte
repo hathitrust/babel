@@ -31,7 +31,7 @@
         {/each}
         {#each externalLinks.filter((link) => link.type == 'external') as link}
           <li>
-            <a href={link.href}>{link.title}</a>
+            <a href={link.href}>Download at {link.title}</a>
           </li>
         {/each}
       </ul>
