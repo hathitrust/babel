@@ -1,0 +1,420 @@
+#!/usr/bin/env perl
+
+
+# Copyright 2006, The Regents of The University of Michigan, All Rights Reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+use strict;
+umask 0000;
+
+# ----------------------------------------------------------------------
+# Performance measurement
+# ----------------------------------------------------------------------
+BEGIN {
+    ( $main::realSTART ) = time;
+    ## $ENV{DEBUG_LOCAL} = 1;
+    ## $ENV{TEST_BLACKLIST} = 1;
+    # $ENV{REMOTE_ADDR} = '8.8.8.8';
+    # $ENV{SDRINST} = '';
+}
+
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    # Set the SDRINST and SDRLIB environment variables in auth
+    # system absence.
+    require Auth::Surrogate;
+    Auth::Surrogate::authorize('/pt/cgi');
+}
+
+# ----------------------------------------------------------------------
+# Libraries
+# ----------------------------------------------------------------------
+# Perl standard libs
+use CGI;
+use JSON::XS;
+
+# Magic
+use Attribute::Handlers;
+
+# MDP specfic
+use Utils;
+use Debug::DUtils;
+use PI;
+use View;
+use Identifier;
+use MdpGlobals;
+use SLIP_Utils::Common;
+use Auth::Logging;
+
+# ----------------------------------------------------------------------
+# define global namespaces
+# ----------------------------------------------------------------------
+use PTGlobals;
+
+use PT::MdpItem;
+use PT::Prolog;
+
+$::VERSION = 1.1200;
+
+# # ---------------------------------------------------------------------
+# #
+# #                           MOBILE DETECTION
+# #
+# # ---------------------------------------------------------------------
+
+# {
+#     unless ( $ENV{QUERY_STRING} =~ m,skin=, || $ENV{TERM} ) {
+#         require HTTP::BrowserDetect;
+#         my $browser = HTTP::BrowserDetect->new();
+#         if ( 0 && ( $browser->mobile() || $browser->tablet() ) ) {
+#             # redirect out of here
+#             my $url = $ENV{REQUEST_URI};
+#             my $join = ";";
+#             if ( $url =~ m,&, ) {
+#                 $join = '&';
+#             }
+#             print CGI::redirect(qq{${url}${join}skin=mobile});
+#             exit;
+#         }
+#     }
+# }
+
+# ---------------------------------------------------------------------
+#
+#                           M A I N
+#
+# ---------------------------------------------------------------------
+
+my $prolog = new PT::Prolog;
+
+$prolog->Run(\&ValidityChecks, 'pt');
+
+my $C = $prolog->GetContext();
+my $gMdpItem = $C->get_object('MdpItem');
+
+# Order matters. Any information specific to this request (page,
+# possibly new handler, etc.) is done after initialization
+$gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues);
+
+my $config = $C->get_object('MdpConfig');
+my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config);
+# Stomp $config in Context object
+$C->set_object('MdpConfig', $run_config);
+
+# Order matters, Save the current URL in the session so that later we
+# can build a "back" link
+my $gCgi = $C->get_object('CGI');
+my $gDso = $C->get_object('Session');
+PT::PageTurnerUtils::SetLastPageTurnerLinkFromSession( $gCgi, $gDso );
+
+my $gId = $gCgi->param('id');
+
+if ( $gCgi->param('a') eq 'checkout' ) {
+    $C->get_object('Session')->set_transient_subkey('checkouts', $gId, 1);
+}
+
+Auth::Logging::log_access($C, 'pt');
+unless ( $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) eq 'allow' ) {
+    # Auth::Logging::log_failed_access($C, $gId, 'pt');
+    if ( $gCgi->param('a') && $gCgi->param('a') eq '-' ) {
+        my $cookie= $gCgi->cookie('HTexpiration') || '{}';
+        my $data = decode_json($cookie);
+        if ( $$data{$gId} ) {
+            # we had access, but no longer do
+            $$data{$gId} = -1;
+            my $cookie = new CGI::Cookie(
+                            -name    => 'HTexpiration',
+                            -value   => encode_json($data),
+                            -path    => '/',
+                            -domain  => Utils::get_cookie_domain($gCgi),
+                            -httponly => 0,
+                          );
+            Utils::add_header($C, 'Cookie' => $cookie);
+        }
+        View::P_output_data_HTTP($C, undef, undef, 204);
+        exit;
+    }
+
+    # could we have had access?
+    Auth::Logging::log_possible_incopyright_access($C, $gId);
+
+    if ( $C->get_object('Access::Rights')->suppressed($C, $gId ) ) {
+        View::P_output_data_HTTP($C, undef, undef, 404);
+        exit;
+    }
+}
+else {
+    # return the volume
+    if ( $gCgi->param('a') eq 'release' ) {
+        Auth::Exclusive::release_exclusive_access($C, $gId);
+        # and now redirect away from the page
+        ## my $redirect_url = PT::PageTurnerUtils::HomeLink();
+        my $tempCgi = new CGI($gCgi);
+        $tempCgi->delete('a');
+        my $redirect_url = Utils::url_to($tempCgi);
+        print $gCgi->redirect($redirect_url);
+        exit;
+    }
+
+    # checkout the volume
+    if ( $gCgi->param('a') && $gCgi->param('a') eq 'checkout' ) {
+        # and now redirect away from the page
+        my $redirect_url;
+        if ( $gCgi->referer() =~ m,/cgi/pt/search, ) {
+            $redirect_url = $gCgi->referer();
+        } else {
+            my $tempCgi = new CGI($gCgi);
+            $tempCgi->delete('a');
+            $redirect_url = Utils::url_to($tempCgi);
+        }
+        print $gCgi->redirect($redirect_url);
+        exit;
+    }
+
+    # Security logging
+    if ( Auth::Logging::log_incopyright_access($C, $gId) ) {
+        Auth::ACL::a_Increment_accesscount($gId);
+        # Auth::Logging::log_successful_access($C, $gId, 'pt');
+    }
+
+    if ( $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE
+          ||
+         $C->get_object('Access::Rights')->get_access_type($C) == $RightsGlobals::LIBRARY_IPADDR_USER ) {
+        # update an cookie so the reader can update itself
+        my $cookie= $gCgi->cookie('HTexpiration') || '{}';
+        my $data = decode_json($cookie);
+
+        # clean up useless expiration=0 values
+        my $did_modify = 0;
+        foreach my $key ( keys %$data ) {
+            if ( $$data{$key} eq '0' ) {
+                delete $$data{$key};
+                $did_modify = 1;
+            }
+        }
+
+        my ( $granted, $owner, $expires ) = $C->get_object('Access::Rights')->get_exclusivity($C);
+
+        if ( $expires ne '0000-00-00 00:00:00' || $did_modify ) {
+            $$data{$gId} = Utils::Time::unix_Time($expires) if ( $expires ne '0000-00-00 00:00:00' );
+
+            my $cookie = new CGI::Cookie(
+                            -name    => 'HTexpiration',
+                            -value   => encode_json($data),
+                            -path    => '/',
+                            -domain  => Utils::get_cookie_domain($gCgi),
+                            -httponly => 0,
+                          );
+            Utils::add_header($C, 'Cookie' => $cookie);
+        }
+    }
+
+    if ( $gCgi->param('a') ) {
+        View::P_output_data_HTTP($C, undef, undef, 204);
+        exit;
+    }
+
+    # set up text, image or pdf handlers for this request
+    $gMdpItem->DetermineAndSetContentHandler();
+
+    # There will only be a "requested rotation" value if the user
+    # clicked on a "rotate image" button
+    if ( $gCgi->param( 'view' ) eq 'image' ) {
+        # get displayable page image, if cached in web space), or
+        # create and place in web space cache
+        $gMdpItem->HandleImageContent();
+    }
+    elsif ( $gCgi->param( 'view' ) eq 'fpdf' || $gCgi->param( 'view' ) eq 'pdf'  ) {
+        ### $gMdpItem->FullPdfHandler($C);
+        require PT::PIFiller::Root;
+        my $redirect_url = PT::PIFiller::Root::BuildImageServerPDFUrl($gCgi, $gCgi->param('view'));
+        print $gCgi->redirect($redirect_url);
+        exit;
+    }
+    elsif ( $gCgi->param( 'view' ) eq 'text' || $gCgi->param( 'view' ) eq 'plaintext' ) {
+        # "text" view will eventually be handled by BookReader
+        $gMdpItem->OcrHandler($C);
+
+        # add line breaks to text with highlights and map special highlight chars
+        PT::PageTurnerUtils::format_OCR_text( $gMdpItem->GetOcrTextRef(), 1 );
+    }
+}
+
+
+# ----------------------------------------------------------------------
+# get XML template and process its PIs
+# ----------------------------------------------------------------------
+
+# Pseudo-controller-like sequence follows
+my $act = $C->get_object('Action');
+$act->execute_action($C);
+
+my $vw = new View($C);
+
+$vw->execute_view($C, $act);
+$vw->output($C);
+
+$C->dispose();
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+#
+#                       end of M A I N
+#
+# ---------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# NAME         :
+# PURPOSE      :
+# CALLS        :
+# INPUT        :
+# RETURNS      :
+# GLOBALS      :
+# SIDE-EFFECTS :
+# NOTES        :
+# ----------------------------------------------------------------------
+sub ValidityChecks {
+    my ( $cgi ) = @_;
+
+    my $rc = PT::Prolog::ST_EMPTY;
+    my $id = $cgi->param('id');
+
+    # There must be a valid id of an item to view
+    silent_ASSERT(Identifier::validate_mbooks_id($cgi), qq{Invalid document id provided.});
+
+    # lose any image map params
+    $cgi->delete( 'x' );
+    $cgi->delete( 'y' );
+
+    my $page = $cgi->param( 'page' );
+    if (! grep(/^$page$/, @PTGlobals::gValidPageValues )) {
+        $cgi->param( 'page', 'root' );
+    }
+
+    my $seq = $cgi->param( 'seq' );
+    my $num = $cgi->param( 'num' );
+    my $ownerid = $cgi->param('ownerid');
+    if (! ($seq || $num || $ownerid) )
+    {
+        # Support for starting at the title page
+        $rc |= PT::Prolog::ST_SEQ_NOT_SUPPLIED;
+    }
+
+    # Set defaults to be overridden if processing for missing seq and
+    # num is available downstream
+    $seq =~ s,^[^0-9]*?(\d+).*?$,$1,;
+    if ( ! $seq  ) {
+        $cgi->param( 'seq', $PTGlobals::gDefaultSeq );
+    }
+    else {
+        $cgi->param( 'seq', $seq );
+    }
+
+    # CRMS skin is a `ui` to the app now
+    if ( $cgi->param('skin') =~ m,crms, ) {
+        $cgi->param('ui', 'crms');
+        $cgi->delete('skin');
+    }
+
+    my $view = $cgi->param( 'view' );
+    my $format = $cgi->param( 'format' );
+    my $size = $cgi->param( 'size' );
+    my $orient = $cgi->param( 'orient' );
+    my $ui = defined $cgi->param('ui') ? $cgi->param('ui') : 'default';
+
+    my $prefs = $cgi->cookie('HT.prefs');
+    if ( $prefs ) {
+        eval {
+            $prefs = decode_json($prefs);
+        };
+        if ( my $err = $@ ) {
+            $prefs = undef;
+        }
+    }
+
+    unless ( ( $view && $view ne 'default' ) || $ui eq 'embed' ) {
+        if ( $prefs ) {
+            eval {
+                $view = $$prefs{'pt'}{'view'};
+                $cgi->param('view', $view);
+            };
+            if ( my $err = $@ ) {
+                # ignore
+                # $prefs = { pt => { view => $PTGlobals::gDefaultView } };
+            }
+        }
+    }
+
+    unless ( $format || $ui eq 'embed' ) {
+        if ( $prefs ) {
+            eval {
+                $format = $$prefs{'pt'}{'format'};
+                $cgi->param('format', $format);
+            };
+        }
+    }
+
+    if ( ! $view ||
+         ! grep(/^$view$/, (@PTGlobals::gViewTypes, @PTGlobals::gAuthdViewTypes))) {
+
+        $rc |= PT::Prolog::ST_VIEW_NOT_SUPPLIED;
+
+        if ( $cgi->param( 'ssd' ) ) {
+            # 'ssd' URL param is deprecated
+            $cgi->param( 'view', $PTGlobals::gDefaultSsdView );
+        }
+        elsif ( defined $ui && $ui eq 'embed' ) {
+            $cgi->param('view', 'default');
+        }
+        else {
+            $cgi->param( 'view', $PTGlobals::gDefaultView );
+        }
+    }
+
+    if ( $view eq 'page' ) {
+        $view = '1up';
+        $cgi->param('view', $view);
+    }
+
+    if (! $size ||
+        ! exists($PTGlobals::gSizes{$size})) {
+        $cgi->param( 'size', $PTGlobals::gDefaultSize );
+    }
+
+    ## -- NOTE: useful when we've got multiple skins enabled
+    # if ( ! defined $cgi->param('skin') && ref($prefs) && $$prefs{'pt'}{'skin'} ) {
+    #     $cgi->param('skin', $$prefs{'pt'}{'skin'});
+    # }
+
+    return $rc;
+}
+

@@ -1,0 +1,42 @@
+#! /bin/sh
+
+#
+# wrapper for kdu_expand and cjpeg--create jpg from jp2 in one step
+#
+
+# determine locations of binaries
+CJPEG=/usr/bin/cjpeg
+KDUEXPAND=/l/local/bin/kdu_expand
+
+# intermediate file
+TMPBMP=/tmp/kdu_expand_jpg_$$.bmp
+
+# parse arguments
+CJPEGARGS=""
+KDUEXPANDARGS=""
+while [ -n "$1" ]; do
+
+  # preserve/translate -o and -quality arguments for cjpeg
+  if [ "$1" = "-o" ]; then
+    CJPEGARGS="$CJPEGARGS -outfile $2"
+    shift
+  elif [ "$1" = "-quality" ]; then
+    CJPEGARGS="$CJPEGARGS -quality $2"
+    shift
+
+  # translate locally-invented -r syntax into crazy -region syntax
+  elif [ "$1" = "-r" ]; then
+    KDUEXPANDARGS="$KDUEXPANDARGS -region {$2,$3},{$4,$5}"
+    shift 4
+
+  # preserve all other arguments for kdu_expand
+  else
+    KDUEXPANDARGS="$KDUEXPANDARGS $1"
+  fi
+  shift
+done
+
+$KDUEXPAND $KDUEXPANDARGS -o $TMPBMP
+$CJPEG $CJPEGARGS $TMPBMP
+
+rm -f $TMPBMP
