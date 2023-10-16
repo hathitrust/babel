@@ -21,13 +21,7 @@ services:
       target: imgsrv-fcgi
     user: ${CURRENT_USER}
     volumes:
-      - ${BABEL_HOME}/imgsrv:/htapps/babel/imgsrv
-      - ${BABEL_HOME}/mdp-lib:/htapps/babel/mdp-lib
-      - ${BABEL_HOME}/slip-lib:/htapps/babel/slip-lib
-      - ${BABEL_HOME}/plack-lib:/htapps/babel/plack-lib
-      - ${BABEL_HOME}/mdp-web:/htapps/babel/mdp-web
-      - ${BABEL_HOME}/logs:/htapps/babel/logs
-      - ${BABEL_HOME}/cache:/htapps/babel/cache
+      - ${BABEL_HOME}:/htapps/babel
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
       - ${BABEL_HOME}/sample-data/watermarks:/htapps/babel/watermarks
@@ -52,29 +46,16 @@ services:
       target: apache
     user: ${CURRENT_USER}
     volumes:
+      - ${BABEL_HOME}:/htapps/babel
       - ${BABEL_HOME}/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
       - ${BABEL_HOME}/apache/auth:/etc/apache2/auth
-      - ${BABEL_HOME}/imgsrv:/htapps/babel/imgsrv
-      - ${BABEL_HOME}/logs:/htapps/babel/logs
-      - ${BABEL_HOME}/cache:/htapps/babel/cache
-      - ${BABEL_HOME}/pt:/htapps/babel/pt
-      - ${BABEL_HOME}/ssd:/htapps/babel/ssd
-      - ${BABEL_HOME}/ping:/htapps/babel/ping
-      - ${BABEL_HOME}/mb:/htapps/babel/mb
-      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
-      - ${BABEL_HOME}/ls:/htapps/babel/ls
-      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
-      - ${BABEL_HOME}/common:/htapps/babel/common
-      - ${BABEL_HOME}/mdp-lib:/htapps/babel/mdp-lib
-      - ${BABEL_HOME}/slip-lib:/htapps/babel/slip-lib
-      - ${BABEL_HOME}/plack-lib:/htapps/babel/plack-lib
-      - ${BABEL_HOME}/mdp-web:/htapps/babel/mdp-web
-      - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data/watermarks:/htapps/babel/watermarks
       - ${BABEL_HOME}/sample-data:/tmp/sample-data
       - ${BABEL_HOME}/catalog:/htapps/catalog
+      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
+      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
@@ -164,8 +145,7 @@ services:
     image: hathitrust-slip
     user: ${CURRENT_USER}
     volumes:
-      - ${BABEL_HOME}/slip:/htapps/babel/slip
-      - ${BABEL_HOME}/logs:/htapps/babel/logs
+      - ${BABEL_HOME}:/htapps/babel
       # this is where docs-j saves output
       - ${BABEL_HOME}/slip/sample:/htapps/babel/logs/tmp
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
