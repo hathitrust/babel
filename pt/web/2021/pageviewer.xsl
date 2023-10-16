@@ -11,7 +11,6 @@
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <!-- Global Variables -->
-  <xsl:variable name="gOrphanCandidate" select="/MBooksTop/MBooksGlobals/OrphanCandidate"/>
   <xsl:variable name="gFinalAccessStatus" select="/MBooksTop/MBooksGlobals/FinalAccessStatus"/>
   <xsl:variable name="gCurrentQ1" select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
   <xsl:variable name="gFeatureList" select="/MBooksTop/MdpApp/FeatureList"/>

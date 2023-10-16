@@ -49,7 +49,6 @@ from within the Auth::ACL package.
  | external | crms          | total   | non-UM engaged in CRMS and CRMS World activities
  | staff    | crms          | total   | UM staff engaged in CRMS and CRMS World activities
  | staff    | superuser     | total   | UM staff (developers)
- | staff    | orphan        | total   | UM staff engaged in the Orphan Works project
  | staff    | quality       | total   | UM staff engaged in the Qual project
  | external | quality       | total   | non-UM engaged in the Qual project
  | staff    | replacement   | total   | UM staff at DCU

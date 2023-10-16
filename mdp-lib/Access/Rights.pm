@@ -76,7 +76,6 @@ use Auth::Exclusive;
 use RightsGlobals;
 
 use Access::Holdings;
-use Access::Orphans;
 
 use Utils::Time;
 
@@ -723,28 +722,6 @@ sub public_domain_world {
 
 # ---------------------------------------------------------------------
 
-=item PUBLIC: orphan_candidate
-
-Description: is this id an orphand candidate?
-
-=cut
-
-# ---------------------------------------------------------------------
-sub orphan_candidate {
-    my $self = shift;
-    my ($C, $id) = @_;
-
-    my $attribute = $self->get_rights_attribute($C, $id);
-    if ($attribute == $RightsGlobals::g_orphan_candidate_attribute_value) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
-}
-
-# ---------------------------------------------------------------------
-
 =item PUBLIC: creative_commons
 
 Description: is this id one of the Creative Commons
@@ -1050,10 +1027,6 @@ sub _Assert_final_access_status {
         ($final_access_status, $granted, $owner, $expires) = _resolve_access_by_held_BRLM($C, $id, 1);
     }
     elsif
-      ($initial_access_status eq 'allow_orph_by_holdings_by_agreement') {
-        ($final_access_status, $granted, $owner, $expires) = _resolve_access_by_held_and_agreement($C, $id, 1);
-    }
-    elsif
       ($initial_access_status eq 'allow_ssd_by_holdings') {
         ($final_access_status, $granted, $owner, $expires) = _resolve_ssd_access_by_held($C, $id, 1);
     }
@@ -1093,11 +1066,7 @@ improbable that an item to which exclusive access applies will be
 acquired by a user other that the user viewing results filtered by the
 'fulltext' Facet.
 
-(2) If the initial_access_status is
-'allow_orph_by_holdings_by_agreement' we set final_access_status to
-'allow' only if the institution has an agreement.
-
-(3) SSD users only can see items held by their institution.
+(2) SSD users only can see items held by their institution.
 
 =cut
 
@@ -1133,16 +1102,6 @@ sub _Check_final_access_status {
         }
         else {
             $final_access_status = 'allow';
-        }
-    }
-    elsif
-      ($initial_access_status eq 'allow_orph_by_holdings_by_agreement') {
-        if (defined($id)) {
-            ($final_access_status, $granted, $owner, $expires) = _resolve_access_by_held_and_agreement($C, $id, 0);
-        }
-        else {
-            # downstream must filter on holdings if $final_access_status = 'allow'
-            $final_access_status = _institution_has_orphan_agreement($C) ? 'allow' : 'deny';
         }
     }
     elsif
@@ -1564,50 +1523,6 @@ sub _check_access_exclusivity {
 
 # ---------------------------------------------------------------------
 
-=item _resolve_access_by_held_and_agreement
-
-Orphan users must be "US soil" authed affiliates of a HT institution,
-the user's institution must hold the work and agree to allow orphan
-access and no more simultaneous users from that institution than
-number of print copies held by that institution.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub _resolve_access_by_held_and_agreement {
-    my ($C, $id, $assert_ownership) = @_;
-
-    my ($status, $granted, $owner, $expires) = ('deny', 0, undef, '0000-00-00 00:00:00');
-
-    my $inst = 'not defined';
-    my $held = 0;
-    my $agreed = 0;
-
-    my $US_status = _resolve_access_by_GeoIP($C, 'US');
-    if ($US_status eq 'allow') {
-        $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-        $agreed = Access::Orphans::institution_agreement($C, $inst);
-        if ($agreed) {
-            $held = Access::Holdings::id_is_held($C, $id, $inst);
-            if ($held) {
-                if ($assert_ownership) {
-                    ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
-                }
-                else {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
-                }
-            }
-        }
-    }
-    DEBUG('pt,auth,all,agree,notagree,held,notheld',
-          qq{<h5>Held+agreement status=$status inst of requestor=$inst held=$held agreed=$agreed</h5>});
-
-    return ($status, $granted, $owner, $expires);
-}
-
-
-# ---------------------------------------------------------------------
-
 =item _resolve_access_by_held_BRLM
 
 Exclusive access is granted if work is OP and brittle, lost, missing
@@ -1830,22 +1745,6 @@ sub _resolve_emergency_access_by_held_by_GeoIP {
     DEBUG('pt,auth,all,held,notheld', qq{<h5>Emergency Access ICUS access=$status Holdings institution=$inst held=$held"</h5>});
 
     return ($status, $granted, $owner, $expires);
-}
-
-# ---------------------------------------------------------------------
-
-=item _institution_has_orphan_agreement
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub _institution_has_orphan_agreement {
-    my $C = shift;
-
-    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-    return Access::Orphans::institution_agreement($C, $inst);
 }
 
 1;
