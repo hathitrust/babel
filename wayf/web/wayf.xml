@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- WAYF/wayf.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>wayf.xsl</Filename>
+   </XslFileList>
+
+  <CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
+  <IdP_List><?IDP_LIST?></IdP_List>
+  <SocialIdP_List><?SOCIAL_IDP_LIST ?></SocialIdP_List>
+  <FriendLoginLink><?FRIEND_LOGIN_LINK?></FriendLoginLink>
+  <BackToRefererLink><?BACK_TO_REFERER_LINK?></BackToRefererLink>
+
+  <ApplicationAssets slot="common"><?COMMON_ASSETS?></ApplicationAssets>
+
+
+</MBooksTop>
