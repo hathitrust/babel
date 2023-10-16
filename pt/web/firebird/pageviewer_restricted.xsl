@@ -56,11 +56,6 @@
           <xsl:text>emergency-access-affiliate</xsl:text>
         </xsl:when>
 
-        <!-- orphan message -->
-        <xsl:when test="$gOrphanCandidate='true'">
-          <xsl:text>orphan-candidate-item</xsl:text>
-        </xsl:when>
-
         <!-- In copyright, no access message -->
         <xsl:otherwise>
           <xsl:text>no-access-item</xsl:text>
