@@ -1,0 +1,287 @@
+#!/usr/bin/env perl
+
+use strict;
+use CGI;
+use URI::Escape;
+
+{
+    package Net::Google::Analytics::MeasurementProtocol;
+    use strict;
+    use warnings;
+    use Carp ();
+
+    our $VERSION = 0.02;
+
+    sub new {
+        my $class = shift;
+        my %args = (@_ == 1 ? %{$_[0]} : @_ );
+
+        Carp::croak 'tracking_id (tid) missing or invalid'
+            unless $args{tid} && $args{tid} =~ /^(?:UA|MO|YT)-\d+-\d+$/;
+
+        # If the 'aip' key exists, even if set to 0, the ip will be anonymized.
+        # So we only push it to our args if user set it to 1.
+        delete $args{aip} if exists $args{aip} && !$args{aip};
+
+        # default settings:
+        $args{ua}  ||= __PACKAGE__ . "/$VERSION";
+        $args{cid} ||= _gen_uuid_v4();
+        $args{v}   ||= 1;
+        $args{cd}  ||= '/';
+        $args{an}  ||= 'My App';
+        $args{ds}  ||= 'app';
+
+        my $debug = delete $args{debug};
+        return bless {
+            args  => \%args,
+            debug => $debug,
+            ua    => _build_user_agent( $args{ua} ),
+        }, $class;
+    }
+
+    sub send {
+        my ($self, $hit_type, $args) = @_;
+
+        my %args = (%{$self->{args}}, %$args, t => $hit_type);
+        my %required = (
+            pageview    => [qw(v tid cid cd an)],
+            screenview  => [qw(v tid cid cd an)],
+            event       => [qw(v tid cid cd an ec ea)],
+            transaction => [qw(v tid cid cd an ti)],
+            item        => [qw(v tid cid cd an ti in)],
+            social      => [qw(v tid cid cd an sn sa st)],
+            exception   => [qw(v tid cid cd an)],
+            timing      => [qw(v tid cid cd an utc utv utt)],
+        );
+        Carp::croak("invalid hit type $hit_type") unless $required{$hit_type};
+
+        foreach my $required ( @{$required{$hit_type}} ) {
+            Carp::croak("argument '$required' is required for '$hit_type' hit type. See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#$required for more information")
+                unless $args{$required};
+        }
+        Carp::croak('for "pageview" hit types you must set either "dl" or both "dh" and "dp"')
+            if $hit_type eq 'pageview' && !($args{dl} || ($args{dh} && $args{dp}));
+
+        return $self->_request(\%args);
+    }
+
+    sub _request {
+        my ($self, $args) = @_;
+
+        my $ua = $self->{ua};
+        my $target = $self->{debug}
+            ? 'https://www.google-analytics.com/debug/collect'
+            : 'https://www.google-analytics.com/collect'
+            ;
+
+        if ( $self->{debug} ) {
+            print STDERR Data::Dumper::Dumper($args);
+        }
+
+        my $res = $ua->post( $target, $args );
+        if ($self->{debug}) {
+            return $res;
+        }
+        else {
+            return substr($res->status_line, 0, 1) == 2;
+        }
+    }
+
+    sub _build_user_agent {
+        my ($ua) = @_;
+        # require Furl;
+        # return Furl->new( agent => $ua, timeout => 5 );
+
+        require LWP::UserAgent;
+        return LWP::UserAgent->new( agent => $ua, timeout => 5 );
+    }
+
+    # UUID v4 (pseudo-random) generator based on UUID::Tiny
+    sub _gen_uuid_v4 {
+        my $uuid = '';
+        for ( 1 .. 4 ) {
+            my $v1 = int(rand(65536)) % 65536;
+            my $v2 = int(rand(65536)) % 65536;
+            my $rand_32bit = ($v1 << 16) | $v2;
+            $uuid .= pack 'I', $rand_32bit;
+        }
+        substr $uuid, 6, 1, chr( ord( substr( $uuid, 6, 1 ) ) & 0x0f | 0x40 );
+        substr $uuid, 8, 1, chr( ord( substr( $uuid, 8, 1 ) ) & 0x3f | 0x80 );
+
+        # uuid is created. Convert to string:
+        return join '-',
+               map { unpack 'H*', $_ }
+               map { substr $uuid, 0, $_, '' }
+               ( 4, 2, 2, 2, 6 );
+    }
+
+}
+
+# change 'central' to the url of your weblogin server.
+my $central = "https://weblogin.umich.edu/cgi-bin/logout";
+my $redirect = "";
+
+# print STDERR "AHOY AHOY $ENV{QUERY_STRING} :: $ENV{HTTP_REFERER}\n";
+if ( $ENV{ QUERY_STRING } =~ m{^(https?://.*|https?%3A%2F%2F.*)$}i ) {
+    $redirect = "$1";
+    $redirect = uri_unescape($redirect);
+} elsif ( $ENV{HTTP_REFERER} =~ m,\.hathitrust\.org, ) {
+    $redirect = $ENV{HTTP_REFERER};
+}
+
+# perform any local cleanup here
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# erase trace of previous auth stored in session
+use Utils;
+use Context;
+use MdpConfig;
+use Database;
+use Session;
+use Auth::Auth;
+
+my $C = new Context;
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('logout'),
+                          );
+$C->set_object('MdpConfig', $config);
+
+
+my $cookie_name = $config->get('cookie_name');
+
+my %cookies = fetch CGI::Cookie;
+my $instituion_name;
+if (defined($cookies{$cookie_name}))
+{
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+    $instituion_name = $auth->get_institution_name($C);
+
+    my $sid = $cookies{$cookie_name}->value;
+    my $ses = new Session($C, $sid, 0);
+
+    $ses->set_persistent('authenticated_via', undef);
+    $ses->set_persistent('entity_id', undef);
+    $ses->close();
+}
+
+my $shib_session_cookie_name;
+foreach my $key ( keys %cookies ) {
+    if ( $key =~ m,_shibsession_, ) {
+        $shib_session_cookie_name = $key;
+        # print STDERR "AHOY LOGOUT $shib_session_cookie_name\n";
+        last;
+    }
+}
+
+# redirect to central weblogin server
+# print "Status: 302" . $CGI::CRLF;
+
+# # expire and nullify service cookie
+# my $cookie_domain = Utils::get_cookie_domain();
+# print( "Set-Cookie: $ENV{ COSIGN_SERVICE }=null; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+# print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+
+# print( "Location: $central$query_string" . $CGI::CRLF . $CGI::CRLF );
+
+_log_ga($C, $instituion_name);
+
+
+my $status = $redirect ? 302 : 200;
+print "Status: $status" . $CGI::CRLF;
+print "Content-Type: text/html" . $CGI::CRLF;
+
+# expire and nullify service cookie
+my $cookie_domain = Utils::get_cookie_domain();
+print( "Set-Cookie: MDPsid=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT; secure" . $CGI::CRLF );
+print( "Set-Cookie: HTstatus=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+print( "Set-Cookie: _saml_idp=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF );
+print( "Set-Cookie: $shib_session_cookie_name=null; domain=$cookie_domain; path=/; expires=Thu, 27-Jan-1977 00:00:00 GMT" . $CGI::CRLF ) if ( $shib_session_cookie_name );
+print( "Location: $redirect" . $CGI::CRLF) if ( $status == 302 );
+
+if ( $status == 302 ) {
+    $redirect = qq{href="$redirect"};
+} else {
+    # no redirect so punt
+    $redirect = qq{href="#" onclick="history.back(); return false"};
+}
+
+print $CGI::CRLF;
+print <<HTML;
+<html>
+  <head>
+    <title>HathiTrust - Logout</title>
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  </head>
+
+  <body>
+
+    <div class="modal show d-block">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title">Log out</h1>
+                </div>
+                <div class="modal-body">
+                    <p>You have logged out!</p>
+                    <p>You are still logged in to $instituion_name.</p>
+                    <p><a class="btn btn-primary" $redirect><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Go Back</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+  </body>
+</html>
+HTML
+
+exit( 0 );
+
+sub _log_ga {
+    my ( $C, $instituion_name ) = @_;
+
+    # require Net::Google::Analytics::MeasurementProtocol;
+    require UUID::Tiny;
+
+    # hard-coded values, bleh!
+    my $debug = 0;
+    my $ga = Net::Google::Analytics::MeasurementProtocol->new(
+                tid => 'UA-954893-23', 
+                cid => '565e2af8-cf17-42bb-bef5-9b4cbc80aeb4',
+                ua  => 'HathiTrust/logout',
+                an => 'logout',
+                debug => $debug,
+            );
+
+    my @dp = ( qq{/cgi/logout/} );
+    push @dp, $instituion_name;
+    my $dp = join('', @dp);
+    my $dl = ( $ENV{SERVER_PORT} eq 443 ? 'https://' : 'http://' ) . $ENV{SERVER_NAME} . $dp;
+
+    my $cid = UUID::Tiny::create_uuid_as_string(5, $ENV{REMOTE_ADDR});
+    my $res = $ga->send(
+        'pageview', {
+            dt => 'Logout',
+            ds => 'logout', 
+            dh => $ENV{SERVER_NAME},
+            dl => $dl,
+            dp => $dp,
+            cd => $dl,
+            ua  => $ENV{HTTP_USER_AGENT},
+            uip => ( $ENV{REMOTE_ADDR} || q{127.0.0.1} ),
+        }
+    );
+
+    print STDERR $res->content if ( $debug );
+}
