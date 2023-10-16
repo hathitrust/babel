@@ -1,0 +1,4 @@
+            <div id="htextopts" class="request">
+              <label class="request" for="htdebug">debug <span class="unreq">&#2063;</span></label>
+              <input id="htdebug" name="debug" class="request digits"> <span class="tiny">(debug)</span></input>
+            </div>
