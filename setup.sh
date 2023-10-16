@@ -23,22 +23,10 @@ echo
 echo 📥 Cloning repositories via $GIT_BASE...
 echo
 
-git clone --recurse-submodules $GIT_BASE/imgsrv
-git clone --recurse-submodules $GIT_BASE/imgsrv-sample-data ./sample-data
 git clone --recurse-submodules $GIT_BASE/catalog
-git clone --recurse-submodules $GIT_BASE/common
-git clone --recurse-submodules $GIT_BASE/pt
-git clone --recurse-submodules $GIT_BASE/mb
-git clone --recurse-submodules $GIT_BASE/ls
-git clone --recurse-submodules $GIT_BASE/ping
-git clone --recurse-submodules $GIT_BASE/ssd
+git clone --recurse-submodules $GIT_BASE/imgsrv-sample-data ./sample-data
 git clone --recurse-submodules $GIT_BASE/hathitrust_catalog_indexer
-git clone --recurse-submodules $GIT_BASE/slip
 git clone --recurse-submodules $GIT_BASE/lss_solr_configs
-git clone --recurse-submodules $GIT_BASE/mdp-lib
-git clone --recurse-submodules $GIT_BASE/plack-lib
-git clone --recurse-submodules $GIT_BASE/slip-lib
-git clone --recurse-submodules $GIT_BASE/mdp-web
 git clone --recurse-submodules $GIT_BASE/ptsearch-solr
 git clone --recurse-submodules $GIT_BASE/firebird-common
 
@@ -53,6 +41,12 @@ APACHE_RUN_GROUP="$(id -g)"
 BABEL_HOME="$(dirname $(realpath $0))"
 
 EOT
+
+echo
+echo 🌐 Fetching geoip sample database
+echo
+
+curl -o ./geoip/GeoIP2-Country.mmdb 'https://raw.githubusercontent.com/maxmind/MaxMind-DB/main/test-data/GeoIP2-Country-Test.mmdb'
 
 echo
 echo 💎 Setting up stage_item...

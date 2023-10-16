@@ -4,30 +4,18 @@ vendor
 .htd.ini
 stage-item/*.xml
 stage-item/*.zip
+slip/sample
 apache/auth/active_auth.conf
-
 
 # other repositories
 
 catalog/
-common/
 hathitrust_catalog_indexer/
-ht-pairtree/
-imgsrv-sample-data/
-imgsrv/
 lss_solr_configs/
-pt/
 sample-data/
-slip/
-ssd/
-ping/
-mb/
-ls/
-mdp-lib/
-plack-lib/
-slip-lib/
-mdp-web/
-logs/
-cache/
 ptsearch-solr/
 firebird-common/
+
+logs/
+cache/
+geoip/
