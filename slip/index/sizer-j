@@ -1,0 +1,255 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+sizer-j
+
+=head1 USAGE
+
+% sizer-j -r run [-H host]
+
+=head1 DESCRIPTION
+
+Now just determines release status.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Context;
+use MdpConfig;
+use Semaphore;
+
+
+# Local
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Log;
+use SLIP_Utils::Released;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+
+
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot run sized. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+sub sz_get_usage {
+    my $s .= qq{Usage: sizer-j -r run -S [-T]
+                  where -S updates the snapshot status
+                        -T test compilation\n};
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_S, $opt_T);
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $ops = getopts('dr:STzu');
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = sz_get_usage();
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $SNAPSHOT = $opt_S; # Required
+if (! $SNAPSHOT) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = sz_get_usage();
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+}
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+# Doing a lot of commits in the shard loop below may take more time
+# that allowed for in cron
+my $Lock_File = Sl_Utils::slip_semaphore_file("sizer-$RUN");
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    __output("could not get semaphore. exit...\n");
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'sizer-j');
+
+# Only determeind release status a run that exists.  When re-numbering
+# from re-indexing run 10 to production run 11, run 11 will first be
+# deleted.
+
+my $ct = Db::Test_j_rights_timestamp($C, $DBH, $RUN);
+if ($ct == 0) {
+    __output(qq{Nothing to release: run=$RUN not in db tables.  Exit.\n});
+    exit 0;
+}
+
+eval {
+    sz_update_release_status($C, $DBH, $RUN);
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
+
+__output("exit\n");
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item __get_release_status
+
+Description: If it is after 6 a.m. today and there is not a snapshot with
+             today's date: error
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_release_status {
+    my ($C) = @_;
+
+    my $status;
+
+    my $todays_iso_date = `date '+%F'`;
+    chomp($todays_iso_date);
+    my $unix_today_at_6am = Utils::Time::unix_Time($todays_iso_date . 'T06:00:00');
+    my $unix_now = time();
+
+    if ($unix_now > $unix_today_at_6am) {
+        my ($index_released, $m) = SLIP_Utils::Released::released();
+        if ($index_released) {
+            $status = $SLIP_Utils::States::Srl_Rel_Ok;
+        }
+        else {
+            $status = $SLIP_Utils::States::Srl_Rel_Error
+        }
+    }
+    else {
+        $status = $SLIP_Utils::States::Srl_Rel_Pending;
+    }
+
+    __output(qq{Release status=$status\n});
+
+    return $status;
+}
+
+# ---------------------------------------------------------------------
+
+=item sz_update_release_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub sz_update_release_status {
+    my ($C, $dbh, $run) = @_;
+
+    my $status = __get_release_status($C);
+
+    my $config = $C->get_object('MdpConfig');
+    my @shards = $config->get('num_shards_list');
+
+    # update the release status
+    foreach my $shard (@shards) {
+        Db::set_shard_release_state($C, $dbh, $run, $shard, $status)
+            unless ($status == $SLIP_Utils::States::Srl_Rel_Wrong_Host);
+    }
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-9, 2013 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

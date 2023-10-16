@@ -1,0 +1,301 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+commit-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Commit a given shard. Runs only from the command line.
+Always issues a commit.
+
+
+etc.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Semaphore;
+
+# Local
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot commit. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+# Flush i/o
+$| = 1;
+
+sub com_get_usage {
+    my $s .= qq{Usage: commit-j -r run [-R shard][-t timeout][-d][-T]
+       where -R missing imples all shards, interactive mode only\n};
+    return $s;
+}
+
+our ($opt_r, $opt_R, $opt_t, $opt_d, $opt_T);
+
+my $ops = getopts('r:R:t:dT');
+
+# Required
+my $RUN = $opt_r;
+my $TIMEOUT = $opt_t; # optional
+
+if (! $RUN) {
+    my $s = qq{run (-r) parameter missing } . com_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+if (! $INTERACTIVE) {
+    my $s = qq{interactive only } . com_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+# Do not try to commit this shard while I am running already
+my $lock_shard = $opt_R;
+my $Lock_File = Sl_Utils::slip_semaphore_file("commit-$lock_shard");
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
+}
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'commit-j');
+
+my $HOST = 'undefined';
+my $SHARD = $opt_R; # optional
+my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
+
+eval {
+    if (
+        defined($SHARD)
+        &&
+        (! grep(/^$SHARD$/, @NUM_SHARDS_LIST))
+       ) {
+        my $s = qq{bad shard arg="$SHARD"} . cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+
+    my @shards = defined($SHARD) ? ($SHARD) : @NUM_SHARDS_LIST;
+    foreach my $__shard (@shards) {
+        $SHARD = $__shard;
+        $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
+
+        __output("commit-j: COMMIT shard=$SHARD timeout=$TIMEOUT\n");
+        handle_commit_rc($C, $DBH, $RUN, $SHARD, $HOST,
+                         c_commit($C, $RUN, $DBH, $SHARD, $TIMEOUT));
+    }
+    # POSSIBLY NOTREACHED
+};
+if ($@) {
+    handle_commit_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
+    # NOTREACHED
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item handle_commit_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_commit_rc {
+    my ($C, $dbh, $run, $shard, $host, $rc) = @_;
+
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ run=$run shard=$shard host=$host\n};
+
+    # Have we lost the database?
+    my $connection_still_alive = $dbh->ping();
+    if ($connection_still_alive) {
+        if ($rc > 0) {
+            # Turn off this shard.
+            Db::update_shard_enabled($C, $dbh, $run, $shard, 0);
+        }
+    }
+
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc if ($rc > 0);
+}
+
+# ---------------------------------------------------------------------
+
+=item c_commit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_commit {
+    my ($C, $run, $dbh, $shard, $timeout) = @_;
+
+    my $rc = 0;
+
+    my ($index_state, $stats_ref, $elapsed);
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
+    ($index_state, $stats_ref) = $indexer->commit_updates($C);
+    $elapsed = $$stats_ref{'commit'}{'elapsed'};
+
+    my $e = sprintf(qq{%.3f}, $elapsed);
+
+    my $success_str;
+    if (! Search::Constants::indexing_failed($index_state)) {
+        $success_str = SLIP_Utils::Common::IXconstant2string(IX_INDEXED);
+    }
+    else {
+        $success_str = SLIP_Utils::Common::IXconstant2string($index_state);
+        $rc = $SLIP_Utils::States::RC_SOLR_ERROR;
+    }
+
+    Log_commit($C, $run, $shard, $index_state, $e);
+    my $s = qq{COMMIT: run=$RUN shard=$shard index_state=$success_str elapsed=$e\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_commit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_commit {
+    my ($C, $run, $shard, $index_state, $elapsed) = @_;
+
+    my $s = qq{***COMMIT: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard index_state=$index_state $elapsed};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+

@@ -1,0 +1,651 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+check-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Perform health checks on index. Check correct number of segments and
+run Lucene CheckIndex on a given shard. driver-j will only enable
+check-j when all shards have finished optimizing to ensure enough
+memory to run checkIndex.
+
+As long as check-j runs from cron on the machine (beeftea-*) running
+Lucene checkIndex it does not need to honor STOPSLIP once it is
+executing because the machine would not be taken out of service while
+checkIndex running. It will exit before it starts the checkIndex
+program however, if STOPSLIP is set, which is OK because it is
+re-tried from cron every minute and runs if enabled.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Semaphore;
+
+# Local
+use Db;
+use Scheduler;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Processes;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot check. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+# Flush i/o
+$| = 1;
+
+sub ck_get_usage {
+    my $s .= qq{Usage: check-j -r run -R shard -On [-d][-n]
+       where the long-running Lucene checkIndex program runs on a schedule
+             -O is number of segments to check for
+             -n runs without calling check-shard or Lucene checkIndex. NOTE: Sets done db flag.\n};
+    return $s;
+}
+
+our ($opt_r, $opt_R, $opt_O, $opt_d, $opt_n);
+
+my $ops = getopts('r:R:dnO:');
+
+# Ensure we do not try to checkIndex while tomcat is shutting down and
+# taking a long time because of large merges. 120*60 = 2 hours.
+use constant TOMCAT_MAX_TRIES => 120;
+use constant TOMCAT_TRIES_WAIT => 60; # 1.0 minute
+
+my $NOOP = $opt_n; # optional
+my $RUN = $opt_r; # Required
+unless ($RUN) {
+    my $s = qq{run (-r) parameter missing } . ck_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $SHARD = $opt_R; # Required
+unless (defined $SHARD) {
+    my $s = qq{shard (-R) parameter missing } . ck_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $LIMIT_SEGS = $opt_O; # Required
+unless (defined $LIMIT_SEGS) {
+    my $s = qq{limit_segs (-O) param missing: } . ck_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+# Do not try to check this shard while I am running already
+my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
+my $Lock_File = Sl_Utils::slip_semaphore_file("check-" . $lock_str);
+my $Semaphore = new Semaphore($Lock_File);
+unless ($Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,me';
+}
+
+my $C = new Context;
+my $SCRIPTS_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{check-j run=$RUN shard=$SHARD});
+
+my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $SHARD);
+
+
+
+my $check_enabled =
+  (
+   $NOOP
+   ||
+   $INTERACTIVE
+   ||
+   Db::Select_check_enabled($C, $DBH, $RUN, $SHARD)
+  );
+
+# Adjust $LIMIT_SEGS for full optimize case
+if (Db::optimize_shard_is_selected($C, $DBH, $RUN, $SHARD)) {
+    $LIMIT_SEGS = 1;
+}
+
+my $CHECK_INDEX = 0;
+my $check_index_supported = $config->get('check_index_supported');
+
+if ( $check_index_supported && Sl_Utils::checkIndex_day($C) ) {
+    $CHECK_INDEX = 1;
+}
+
+######
+$CHECK_INDEX = 1 if $ENV{"FORCE_CHECK_INDEX"};
+######
+
+if ($check_enabled) {
+    eval {
+        my $s =
+          "check-j: CHECK shard=$SHARD Lucene checkIndex="
+            . ($CHECK_INDEX ? 'YES' : 'no')
+              . ", check for segments <= $LIMIT_SEGS"
+                . ($NOOP ? " ---> NOOP" : "") ;
+        __output(qq{$s\n});
+        Log_check($C, $RUN, $SHARD, $s);
+        handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST,
+                        c_check($C, $RUN, $DBH, $SHARD, $LIMIT_SEGS, $CHECK_INDEX));
+    };
+    if ($@) {
+        print $@, "\n";
+        Log_check_error($C, $RUN, $SHARD, "Critical error: $@");
+        handle_check_rc($C, $DBH, $RUN, $SHARD, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
+        # NOTREACHED
+    }
+}
+else {
+    my $s = "check-j not enabled for shard=$SHARD";
+    __output(qq{$s\n});
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item handle_check_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_check_rc {
+    my ($C, $dbh, $run, $shard, $host, $rc) = @_;
+
+    my $state = 'undef';
+    if ($rc > 0) {
+        # Set shard state to 'error'
+        $state = $SLIP_Utils::States::Sht_Check_Error;
+    }
+    else {
+        # Set shard state to 'done'
+        $state = $SLIP_Utils::States::Sht_Checked;
+        # Record the time this successful optimize
+        Db::set_shard_check_done($C, $dbh, $run, $shard);
+    }
+
+    # Set terminal state
+    Db::set_shard_check_state($C, $dbh, $run, $shard, $state);
+    # Self-stop.  driver-j also disables check-j as extra measure.
+    Db::set_check_enabled($C, $dbh, $run, $shard, 0);
+
+    # Log
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
+        . qq{ run=$run shard=$shard host=$host}
+          . qq{ [stop][self] State=$state};
+    __output(qq{$s\n});
+    __non_interactive_err_output($rc, $s);
+
+    if ($rc > 0) {
+        Log_check_error($C, $run, $shard, $s);
+    }
+    else {
+        Log_check($C, $run, $shard, $s);
+    }
+
+    exit $rc if ($rc > 0);
+}
+
+# ---------------------------------------------------------------------
+
+=item __check_c_sysrc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __check_c_sysrc {
+    my ($sysrc, $C, $run, $shard, $s, $error) = @_;
+
+    my $rc = 0;
+
+    if ($sysrc > 0) {
+        my $ss = qq{check-j system_rc=$sysrc attempting $s run=$run shard=$shard error: $error};
+        $rc = $SLIP_Utils::States::RC_CHILD_ERROR;
+        __output("$ss\n");
+        __non_interactive_err_output($rc, $ss);
+        Log_check_error($C, $run, $shard, $ss);
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item __run_check_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __run_check_shard {
+    my ($C, $run, $shard, $num_segs) = @_;
+
+    return 0 if $NOOP;
+
+    my $cmd = qq{$SCRIPTS_DIR/segsizes -r$run -C$shard};
+    my $output = `$cmd 2>&1`;
+    chomp($output);
+    my $sysrc = $? >> 8;
+    my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "check num_segs=$num_segs", $output);
+
+    if ($rc == 0) {
+        my $seg_ct = $output;
+        if ($seg_ct > $num_segs) {
+            $rc = $SLIP_Utils::States::RC_WRONG_NUM_SEGS;
+            my $msg = "__run_check_shard num_segs=$num_segs, wrong number seen: $seg_ct";
+            __output("$msg\n");
+            Log_check($C, $run, $shard, $msg);
+        }
+        else {
+            my $msg = "__run_check_shard num_segs=$num_segs, seen: $seg_ct OK";
+            __output("$msg\n");
+            Log_check($C, $run, $shard, $msg);
+        }
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item __run_s_tomcat
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __run_s_tomcat {
+    my ($C, $run, $shard, $action) = @_;
+
+    return 0 if $NOOP;
+
+    my $rc = 0;
+    my $fail_rc = ($action eq 'stop')
+      ? $SLIP_Utils::States::RC_TOMCAT_STOP_FAIL
+        : $SLIP_Utils::States::RC_TOMCAT_START_FAIL;
+
+    my $test = ($action eq 'stop') ? 0 : 1;
+
+    # Try to act on a tomcat
+    my $cmd = qq{sudo /etc/init.d/tomcat-lss $action $shard};
+    my $output = `$cmd 2>&1`;
+
+    # The rc from tomcat-lss is unreliable. Test result by looking at
+    # process table to make sure sure it stopped or started
+    my $tomcat_pattern = $C->get_object('MdpConfig')->get('tomcat_pattern');
+    $tomcat_pattern =~ s,__SHARD__,$shard,;
+
+    my $tries = 0;
+    while (1) {
+        last if (SLIP_Utils::Processes::is_tomcat_running($C, $tomcat_pattern) == $test);
+        sleep TOMCAT_TRIES_WAIT;
+
+        $tries++;
+        last if ($tries > TOMCAT_MAX_TRIES);
+    }
+
+    if ($tries > TOMCAT_MAX_TRIES) {
+        $rc = $fail_rc;
+        my $s = qq{check-j tomcat failed to $action run=$run shard=$shard};
+        __output("$s\n");
+        __non_interactive_err_output($rc, $s);
+        Log_check_error($C, $run, $shard, $s);
+    }
+    else {
+        my $s = qq{check-j success: tomcat action=$action run=$run shard=$shard};
+        __output("$s\n");
+        Log_check($C, $run, $shard, "__run_s_tomcat (action=$action): " . $output);
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item _get_shard_index_directory($C, $shard)
+
+ Get a string holding the root directory of a shard
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub _get_shard_index_directory {
+    my ($C, $shard) = @_;
+    return $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
+}
+
+# ---------------------------------------------------------------------
+
+
+
+# ---------------------------------------------------------------------
+
+=item last_run_unixtime($run, $shard)
+
+Get the last run time (as unix timestamp) for this shard. Wouldn't it be nice if this
+were all in a Check object of some sort?
+
+Should probably live in slip_lib/lib/Db.pm
+
+=cut
+
+# ---------------------------------------------------------------------
+
+use constant START_OF_EPOCH => 0;
+sub last_run_unixtime {
+    my ($run, $shard) = @_;
+
+    my $statement = qq{SELECT UNIX_TIMESTAMP(checkd_time) FROM slip_shard_control WHERE run=? AND shard=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $run, $shard);
+    DEBUG('lsdb', qq{DEBUG: $statement : $run, $shard});
+
+    my $dt =  $sth->fetchrow_array;
+    return ($dt || START_OF_EPOCH);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item segments_that_need_updating($C, $shard)
+
+Return a list of segent basenames that need their index checked
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub segments_that_need_updating {
+    my ($C, $run, $shard) = @_;
+
+    # It would probably make sense to cache this, but eh. It's not
+    # the slowest part by a long shot.
+
+    my $last_run_time = last_run_unixtime($run, $shard);
+    my $shard_dir = _get_shard_index_directory($C, $shard);
+
+    unless (-e $shard_dir and -d $shard_dir) {
+        #error out; dir doesn't exist
+    }
+    $shard_dir .= '/' unless ($shard_dir =~ m,/$,);
+
+    my @posfiles = glob( $shard_dir."*pos" );
+
+    my @segments_that_need_updating;
+    foreach my $posfile (@posfiles) {
+        my $segment = segment_basename($posfile);
+        my $mod_time = (stat($posfile))[9]; # Modification time
+        push @segments_that_need_updating, $segment if ($mod_time > $last_run_time);
+    }
+
+    return @segments_that_need_updating;
+
+}
+
+
+sub segment_basename {
+    my $full_shard_file_path = shift;
+
+    my $filename =( split('/', $full_shard_file_path))[-1];
+
+    $filename =~ m/^(_.+?)_/;
+    return $1;
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __run_CheckIndex
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+
+sub __run_CheckIndex {
+
+    my ($C, $run, $shard) = @_;
+
+    return 0 if $NOOP;
+
+    my $start = time;
+
+    # Try to act on a tomcat
+
+
+    my $cmd = $C->get_object('MdpConfig')->get('check_index_java_cmd');
+    $cmd =~ s,__SHARD__,$shard,g;
+    $cmd =~ s,\s*;\s*$,,;
+
+    my @segs_to_update = segments_that_need_updating($C, $run, $shard);
+
+    my $sysrc;
+    my $output;
+    if (scalar(@segs_to_update) > 0) {
+        foreach my $segment (@segs_to_update) {
+            $cmd .= " -segment $segment";
+        }
+        $output = `$cmd 2>&1`;
+        $sysrc = $?;
+    } else {
+        SLIP_Utils::Log::this_string($C, "No segments in $run/$shard need updating", 'indexer_logfile', '__RUN__', $run);
+        $output =  "No segments in $run/$shard need updating";
+        $sysrc = 0;
+    }
+
+    my $rc = __check_c_sysrc($sysrc, $C, $run, $shard, "Lucene checkIndex", $output);
+
+    # Another test
+    if ($rc == 0) {
+        my $s = 'No problems were detected with this index.';
+        unless ( grep($s, $output) ) {
+            $rc = __check_c_sysrc(256, $C, $run, $shard, "Lucene checkIndex", $output);
+        }
+    }
+
+    if ($rc == 0) {
+        my $msg = qq{Lucene checkIndex sysrc="$sysrc" } . $output;
+        __output("$msg\n");
+        Log_check($C, $run, $shard, $msg);
+    }
+
+
+
+
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_check
+
+Check number of segments is correct.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_check {
+    my ($C, $run, $dbh, $shard, $num_segs, $check_index) = @_;
+
+    # Count segments
+    my $rc = __run_check_shard($C, $run, $shard, $num_segs);
+    return $rc if ($rc > 0);
+
+    # CheckIndex ?
+    if ($check_index) {
+
+        # Try to stop a tomcat to free up memory
+        unless ($ENV{"LEAVE_TOMCAT_ALONE"}) {
+            $rc = __run_s_tomcat( $C, $run, $shard, 'stop' );
+            return $rc if ($rc > 0);
+        }
+        # CheckIndex
+        $rc = __run_CheckIndex($C, $run, $shard);
+        return $rc if ($rc > 0);
+
+
+        # Try to re-start a tomcat
+        unless ($ENV{"LEAVE_TOMCAT_ALONE"}) {
+            $rc = __run_s_tomcat( $C, $run, $shard, 'start' );
+            return $rc if ($rc > 0);
+        }
+
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_check
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_check {
+    my ($C, $run, $shard, $s) = @_;
+
+    my $s0 = qq{***CHECK: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
+    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_check_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_check_error {
+    my ($C, $run, $shard, $error) = @_;
+
+    my $s = qq{***CHECK [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard, $error};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-13 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+

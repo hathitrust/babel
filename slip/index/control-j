@@ -1,0 +1,1516 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+control-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Enable or disable one or more shards to receive updates from running
+producers.
+
+Change the number of producers allowed to run on a given host.
+
+Initialize a run by setting the shard stats, offset into slip_rights,
+index size, error list, indexed list and queue to empty.
+
+etc.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+
+# Local
+use Db;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+
+# Flush i/o
+$| = 1;
+
+# ---------------------------------------------------------------------
+
+=item cont_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub cont_get_usage {
+    my $s .= qq{Usage: control-j -k<command> [<command_options>][-G] | [-T]
+
+       control-j -k stop|start -r run [-R shard][-h host]
+          starts/stops indexer on one or all shard(s) and/or host(s)
+
+       control-j -k stop|start -r run -e
+          -e starts/stops enqueuer-j
+
+       control-j -k stop|start -r run -D
+          -D starts/stops driver-j
+
+       control-j -k resetdriver -r run
+          resets driver shard states and sets driver stage=Build_Wait
+
+       control-j -k resetstats -r run
+          zeros slip_shard_stats and slip_rate_stats for incremental recording
+
+       control-j -k reseterrors -r run
+          delete all items in slip_errors for a given run
+
+       control-j -k resetqueue -r run
+          delete all items in queue for given run (safely)
+
+       control-j -k setholdingsversion -r run -v version
+          set last version loaded to earlier version to reprocess print holdings update
+
+       control-j -k Qtimestamp -r run [-tYYYY-MM-DD hh:mm:ss]
+          set queue timestamp to $Db::MYSQL_ZERO_TIMESTAMP or value of -t
+            re-queue ids in slip_rights newer than that timestamp, to be re-indexed
+
+       control-j -k Vtimestamp -r run [-tYYYYMMDD]
+          set vSolr timestamp to $Db::VSOLR_ZERO_TIMESTAMP or value of -t
+            re-query vSolr for ids newer than that timestamp, to be re-added slip_rights
+
+       control-j -k stop|start -V
+          -V starts/stops rights-j
+
+       control-j -k stop|start -r run -R shard -O
+          -O starts/stops optimize-j
+
+       control-j -k stop|start -r run -R shard -C
+          -C starts/stops check-j
+
+       control-j -k conf -r run
+          [-h host] -n num_producers
+                    and/or
+          -m producers_per_shard [-R <shard>]
+          configure host names and number of producers per host
+             and/or
+          number of producers per shard for <shard> or all shards
+
+       control-j -k restore -r run [-s error_type]
+          move ids from error list back to queue
+            where -s defaults to ALL errors else one of
+              o=ocr i=indexing m=metadata c=critical s=server
+
+       control-j -k unstick -r run
+          mark queued ids with state "available" again when left behind as "processing"
+
+       control-j -k init -r run [-t 'yyyy-mm-dd hh:mm:ss']
+          initialize a run, zero everything and optionally setting queue time pointer
+
+       control-j -k delete -r run
+          delete a run entirely from the database
+
+       Global switches
+          -G ignore STOPSLIP file
+          -T exit after compilation\n};
+    return $s;
+}
+
+our ($opt_k, $opt_r, $opt_R, $opt_m, $opt_n, $opt_h, $opt_e, $opt_d, $opt_D, $opt_V, $opt_t, $opt_O, $opt_C, $opt_T, $opt_s, $opt_G, $opt_v);
+
+my $ops = getopts('k:r:R:n:m:h:edDVOt:CTs:Gv:');
+
+# Required
+my $KOMMAND = $opt_k;
+my $RUN = $opt_r;
+
+my $ENQUEUER = $opt_e;
+my $DRIVER = $opt_D;
+my $OPTIMIZE = $opt_O;
+my $CHECK = $opt_C;
+my $RIGHTS = $opt_V;
+my $HOLDINGS_VERSION = $opt_v;
+my $TIMESTAMP = $opt_t;
+my $ERROR_TYPE = $opt_s || '';
+my $IGNORE_STOPSLIP = $opt_G;
+
+my $INTERACTIVE = $ENV{TERM};
+unless ($IGNORE_STOPSLIP) {
+    if ($INTERACTIVE) {
+        if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+            __output("Cannot control SLIP. STOPSLIP in place!!\n");
+            exit 0;
+        }
+    }
+    else {
+        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+    }
+}
+
+unless ($KOMMAND) {
+    my $s = cont_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+unless ($RUN) {
+    my $s = cont_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'control-j');
+
+my @NUM_SHARDS_LIST = $C->get_object('MdpConfig')->get('num_shards_list');
+
+eval {
+
+    if ($KOMMAND eq 'conf') {
+        my $ok = 0;
+        my $num_producers = $opt_n;
+        my $host = $opt_h;
+        my $producers_per_shard = $opt_m;
+        my $shard = $opt_R; # optional
+        if (defined($num_producers)) {
+            __validate_hostname($C, $RUN, $host) if (defined($host));
+            c_configure_host($C, $DBH, $RUN, $num_producers, $host);
+            $ok = 1;
+        }
+        if (defined($producers_per_shard)) {
+            $ok = 1;
+            c_configure_shard($C, $DBH, $RUN, $shard, $producers_per_shard);
+        }
+        if (! $ok) {
+            my $s = qq{missing one of -m -n) options } . cont_get_usage();
+            my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+            __output($s);
+            __non_interactive_err_output($rc, $s);
+            exit $rc;
+        }
+        __validate_host_vs_shard_config($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'restore') {
+        my %map = (
+                   'i' => IX_INDEX_FAILURE,
+                   's' => IX_SERVER_GONE,
+                   'o' => IX_DATA_FAILURE,
+                   'm' => IX_METADATA_FAILURE,
+                   'n' => IX_NO_INDEXER_AVAIL,
+                   'c' => IX_CRITICAL_FAILURE,
+                   'g' => IX_GENERATOR_ERROR,
+                   ''  => undef,
+                  );
+        if ($ERROR_TYPE) {
+            unless ( grep(/^$ERROR_TYPE$/, ( qw/i s o m n c g/ )) ) {
+                my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+                my $s = qq{-s option=$ERROR_TYPE not valid\n} . cont_get_usage();
+                __output($s);
+                __non_interactive_err_output($rc, $s);
+                exit $rc;
+            }
+        }
+
+        c_restore($C, $DBH, $RUN, $map{$ERROR_TYPE});
+    }
+    elsif ($KOMMAND eq 'unstick') {
+        c_unstick($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'Qtimestamp') {
+        my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
+        Db::init_j_rights_timestamp($C, $DBH, $RUN, $time);
+        __output(qq{\tset queue timestamp to } . ($time ? $time : $Db::MYSQL_ZERO_TIMESTAMP) . qq{\n});
+    }
+    elsif ($KOMMAND eq 'Vtimestamp') {
+        my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
+        Db::init_vSolr_timestamp($C, $DBH, $time);
+        __output(qq{\tset vSolr timestamp to } . ($time ? $time : $Db::VSOLR_ZERO_TIMESTAMP) . qq{\n});
+    }
+    elsif ($KOMMAND eq 'resetdriver') {
+        my $driver_driven = $CONFIG->get('driver_driven');
+        if ($driver_driven) {
+            c_Reset_driver($C, $DBH, $RUN);
+        }
+        else {
+            my $s = qq{run=$RUN not configured to be driver driven\n};
+            my $rc = 0;
+            __output($s);
+            exit $rc;
+        }
+    }
+    elsif ($KOMMAND eq 'resetstats') {
+        c_Reset_stats($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'reseterrors') {
+        c_Reset_errors($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'resetqueue') {
+        c_Reset_queue($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'setholdingsversion') {
+        unless ( defined($HOLDINGS_VERSION) && $HOLDINGS_VERSION > 0 ) {
+            my $s = qq{holdings version not supplied\n} . cont_get_usage();
+            my $rc = 0;
+            __output($s);
+            exit $rc;
+        }
+        c_set_holdings_version($C, $DBH, $RUN, $HOLDINGS_VERSION);
+    }
+    elsif (($KOMMAND eq 'start') || ($KOMMAND eq 'stop')) {
+        my $enabled = ($KOMMAND eq 'start') ? 1 : 0;
+
+        if ($ENQUEUER) {
+            c_enqueuer_control($C, $DBH, $RUN, $enabled);
+        }
+        elsif ($DRIVER) {
+            c_driver_control($C, $DBH, $RUN, $enabled);
+        }
+        elsif ($RIGHTS) {
+            c_rights_control($C, $DBH, $enabled);
+        }
+        elsif ($OPTIMIZE) {
+            my $shard = $opt_R;
+            __validate_shard($C, $RUN, $shard);
+            # POSSIBLY NOTREACHED
+            c_optimize_control($C, $DBH, $RUN, $shard, $enabled);
+        }
+        elsif ($CHECK) {
+            my $shard = $opt_R;
+            __validate_shard($C, $RUN, $shard);
+            # POSSIBLY NOTREACHED
+            c_check_control($C, $DBH, $RUN, $shard, $enabled);
+        }
+        else {
+            my $shard = $opt_R; # optional
+            my $host = $opt_h; # optional
+
+            if (defined($host)) {
+                __validate_hostname($C, $RUN, $host);
+            }
+            if (defined($shard)) {
+                __validate_shard($C, $RUN, $shard);
+            }
+            c_producer_control($C, $DBH, $RUN, $shard, $host, $enabled);
+        }
+    }
+    elsif ($KOMMAND eq 'init') {
+        c_init($C, $DBH, $RUN);
+    }
+    elsif ($KOMMAND eq 'delete') {
+        c_delete($C, $DBH, $RUN);
+    }
+    else {
+        my $s = cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+};
+if ($@) {
+    my $s = qq{control-j critical error: $@};
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+#
+# --------------------- Controls -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item __validate_host_vs_shard_config
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_host_vs_shard_config {
+    my ($C, $dbh, $run) = @_;
+
+    my $host_count_producers = 0;
+    my @hosts = SLIP_Utils::Common::get_producer_host_list($C);
+    foreach my $host (@hosts) {
+        $host_count_producers += Db::Select_num_producers($C, $DBH, $RUN, $host);
+    }
+
+    my $shard_count_producers = 0;
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+    foreach my $shard (@shards) {
+        $shard_count_producers += Db::Select_shard_num_producers($C, $dbh, $run, $shard);
+    }
+
+    my $host_count = qq{producers over hosts($host_count_producers)};
+    my $shard_count = qq{producers over shards($shard_count_producers)};
+
+    if ($host_count_producers < $shard_count_producers) {
+        __output(qq{\tWARN $host_count < $shard_count\n\t\tShards want more producers that hosts allow. Increase num_producers per host?\n});
+    }
+    elsif ($host_count_producers > $shard_count_producers) {
+        __output(qq{\tINFO $host_count > $shard_count\n\t\tHosts allow more producers than shards need. Decrease num_producers per host?\n});
+    }
+    else {
+        __output(qq{\tINFO $host_count = $shard_count\n\t\toptimal shard vs host config\n\n});
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __validate_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_shard {
+    my $C = shift;
+    my $run = shift;
+    my $shard = shift;
+
+    if (! defined($shard)) {
+        my $s = qq{bad shard arg="$shard"} . cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+
+    if (! grep(/^$shard$/, @NUM_SHARDS_LIST)) {
+        my $s = qq{bad shard arg="$shard"} . cont_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __validate_hostname
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_hostname {
+    my $C = shift;
+    my $run = shift;
+    my $host = shift;
+
+    my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    if (! grep(/^$host$/, @host_list)) {
+        __output(qq{\nhost="$host" is not in the config for run=$run\n});
+        __confirm("\n\tPossible typo.  Proceed anyway? [N] ");
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __Initialize_shards
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Initialize_shards {
+    my ($C, $dbh, $run) = @_;
+
+    foreach my $__shard (@NUM_SHARDS_LIST) {
+        __output(qq{\tinitialize shard control for shard=$__shard ...});
+        Db::init_shard_control($C, $dbh, $run, $__shard);
+        __output(qq{Done.\n});
+    }
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item driver_initialization
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub driver_initialization {
+    my ($C, $dbh, $run) = @_;
+
+    my $driver_driven = $C->get_object('MdpConfig')->get('driver_driven');
+    if (! $driver_driven) {
+        __output(qq{run=$run not configured for driver-j management ... exit. });
+        return;
+    }
+
+    __output(qq{\tset stage=Build_Wait, disable driver-j for run=$run ... });
+    SLIP_Utils::Db_driver::init_driver($C, $dbh, $run, $SLIP_Utils::States::St_Build_Wait);
+    __output(qq{Done.\n\n});
+
+     __Initialize_shards($C, $dbh, $run);
+
+    foreach my $__shard (@NUM_SHARDS_LIST) {
+        __output(qq{\tdisable optimize-j scripts for shard=$__shard ...});
+        Db::set_optimize_enabled($C, $dbh, $run, $__shard, 0);
+        __output(qq{Done.\n});
+
+        __output(qq{\tdisable check-j scripts for shard=$__shard ...});
+        Db::set_check_enabled($C, $dbh, $run, $__shard, 0);
+        __output(qq{Done.\n});
+    }
+
+    # According to run-N.conf:
+    __configure_init_hosts($C, $dbh, $run);
+    __configure_init_shards($C, $dbh, $run);
+    __validate_host_vs_shard_config($C, $dbh, $run);
+
+    # Disable all hosts
+    __c_host_control($C, $dbh, $run, undef, 0);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item non_driver_initialization
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub non_driver_initialization {
+    my ($C, $dbh, $run) = @_;
+
+    # Just shards and hosts according to run-N.conf
+    __Initialize_shards($C, $dbh, $run);
+    __configure_init_hosts($C, $dbh, $run);
+    __configure_init_shards($C, $dbh, $run);
+    __validate_host_vs_shard_config($C, $dbh, $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item __configure_init_hosts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __configure_init_hosts {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+
+    # delete hosts not from this config left over from previous
+    # configurations for this run
+    Db::Delete_host_control($C, $dbh, $run);
+
+    my @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    my $producers_per_host = $config->get('producers_per_host');
+    foreach my $host (@host_list) {
+        c_configure_host($C, $dbh, $run, $producers_per_host, $host);
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __configure_init_shards
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __configure_init_shards {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $producers_per_shard = $config->get('producers_per_shard');
+
+    foreach my $shard (@NUM_SHARDS_LIST) {
+        c_configure_shard($C, $dbh, $run, $shard, $producers_per_shard);
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_init
+
+Initialize a run by setting the shard stats, offset into slip_rights,
+index size and queue to empty.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_init {
+    my ($C, $dbh, $run) = @_;
+
+    __confirm("\n\n!!!(This will zero the queue, all stats and controls and timestamps for Run=$run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
+
+    __confirm("\n\t\t\tREALLY? [N] ");
+
+    __output(qq{\n\tset slip_holdings.{last_loaded_version,last_processed_version} to holdings_deltas.MAX(version) ... });
+    Db::init_holdings_version($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    my $time = defined($TIMESTAMP) ? $TIMESTAMP : undef;
+    __output(qq{\n\tset queue timestamp to } . ($time ? $time : $Db::MYSQL_ZERO_TIMESTAMP) . q{ ... });
+    Db::init_j_rights_timestamp($C, $dbh, $run, $time);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete errors ... });
+    Db::Delete_errors($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete indexed ... });
+    Db::Delete_indexed($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdisable enqueuer ... });
+    Db::set_enqueuer_enabled($C, $dbh, $run, 0);
+    __output(qq{Done.\n});
+
+    __output(qq{\tzero shard stats ... });
+    Db::Reset_shard_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tzero rate stats ... });
+    Db::Reset_rate_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete queue ... });
+    Db::Delete_queue($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete hosts config ... });
+    Db::Delete_host_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    # If run is driver_driven
+    my $config = $C->get_object('MdpConfig');
+
+    my $driver_driven = $config->get('driver_driven');
+    if ($driver_driven) {
+        # Lots of stuff including shards.
+        driver_initialization($C, $dbh, $run);
+    }
+    else {
+        # Just shards and hosts according to run-N.conf
+        non_driver_initialization($C, $dbh, $run);
+    }
+
+    Log_init($C, $run);
+    __output(qq{\n\tInitialized run=$run\n\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_delete
+
+Delete all record of a run from all database tables.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_delete {
+    my ($C, $dbh, $run) = @_;
+
+    __confirm("\n\n!!!(This will delete ALL RECORD of the run from the database for Run=$run !!!\n\n\t ARE YOU ABSOLUTELY 100% SURE ABOUT THIS!? [N] ");
+
+    __confirm("\n\t\t\tREALLY? [N] ");
+
+    __output(qq{\n\tdelete holdings version ... });
+    Db::delete_holdings_record($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\n\tdelete queue timestamp ... });
+    Db::delete_j_rights_timestamp($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete errors ... });
+    Db::Delete_errors($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete indexed ... \n});
+    Db::Delete_indexed($C, $dbh, $run, 'verbose');
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete enqueuer record ... });
+    Db::delete_enqueuer($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete shard stats ... });
+    Db::Reset_shard_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete rate stats ... });
+    Db::Reset_rate_stats($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete queue ... });
+    Db::Delete_queue($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete hosts ... });
+    Db::Delete_host_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete driver ... });
+    SLIP_Utils::Db_driver::delete_driver($C, $dbh, $run);
+    __output(qq{Done.\n\n});
+
+    __output(qq{\tdelete shard control ... });
+    Db::delete_shard_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete optimize control ... });
+    Db::delete_optimize_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete check control ... });
+    Db::delete_check_control($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    __output(qq{\tdelete timeouts ... });
+    Db::delete_timeouts($C, $dbh, $run);
+    __output(qq{Done.\n});
+
+    Log_delete($C, $run);
+    __output(qq{\n\tDELETED run=$run\n\n});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_configure_host
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_configure_host {
+    my ($C, $dbh, $run, $num_producers, $host) = @_;
+
+    my $producers_per_host = $C->get_object('MdpConfig')->get('producers_per_host');
+
+    my @host_list;
+    if (! defined($host)) {
+        @host_list = SLIP_Utils::Common::get_producer_host_list($C);
+    }
+    else {
+        @host_list = ($host);
+    }
+
+    foreach my $host (@host_list) {
+        Db::update_host_num_producers($C, $dbh, $run, $num_producers, $host);
+        my $producers_on_host_enabled = Db::Select_num_producers($C, $dbh, $run, $host);
+
+        Log_configure_host($C, $run, $host, $num_producers);
+        __output(qq{\tCONFIGURE run=$run host_num_producers=$num_producers host=$host enabled=$producers_on_host_enabled\n});
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_configure_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_configure_shard {
+    my ($C, $dbh, $run, $shard, $producers_per_shard) = @_;
+
+    my @num_shards_list;
+    if (defined $shard) {
+        @num_shards_list = ($shard);
+    }
+    else {
+        @num_shards_list = @NUM_SHARDS_LIST;
+    }
+
+    foreach my $__shard (@num_shards_list) {
+        Db::update_shard_num_producers($C, $dbh, $run, $__shard, $producers_per_shard);
+
+        Log_configure_shard($C, $run, $__shard, $producers_per_shard);
+        __output(qq{\tCONFIGURE run=$run shard=$__shard producers_per_shard=$producers_per_shard\n});
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_restore
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_restore {
+    my ($C, $dbh, $run, $type) = @_;
+
+    my $num_restored = Db::insert_restore_errors_to_queue($C, $dbh, $run, $type);
+    my $error_type =
+      (defined $type)
+        ? SLIP_Utils::Common::IXconstant2string($type)
+          : 'All Error Types';
+    Log_restore($C, $run, $num_restored, $error_type);
+    __output(qq{\tRESTORE run=$run restored=$num_restored type=$error_type\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_stats
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_stats {
+    my ($C, $dbh, $run) = @_;
+
+    Db::Reset_shard_stats($C, $dbh, $run);
+    Db::Reset_rate_stats($C, $dbh, $run);
+
+    Log_stats($C, $run);
+    __output(qq{\tSTATS RESET run=$run\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_errors {
+    my ($C, $dbh, $run) = @_;
+
+    my $ct = Db::Delete_errors($C, $dbh, $run);
+
+    Log_errors_reset($C, $run, $ct);
+    __output(qq{\tERRORS RESET run=$run deleted=$ct\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_queue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_queue {
+    my ($C, $dbh, $run) = @_;
+
+    my $ct = Db::Delete_queue($C, $dbh, $run);
+
+    Log_queue_reset($C, $run, $ct);
+    __output(qq{\tQUEUE RESET run=$run deleted=$ct\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_set_holdings_version
+
+Set to earlier loaded version that is earlier than the last version
+that is catalog ready. Setting version to one that is equal or newer
+that the last version that is catalog ready means that that version
+would not be loaded into teh indexing queue and therefore not
+processed.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_set_holdings_version {
+    my ($C, $dbh, $run, $version) = @_;
+
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+    my $last_catalog_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+
+    if ($version > $last_catalog_ready_version) {
+        __output(qq{\tERROR: setting slip_holdings_version.last_loaded_version to $version would lose holdings metadata. $version would be more recent than the last version indexed by VuFind Solr.\n});
+        return;
+    }
+
+    Db::set_holdings_version($C, $dbh, $run, $version);
+    Db::update_last_processed_holdings_version($C, $dbh, $run, $version);
+
+    Log_holdings_set($C, $run, $version);
+    __output(qq{\tHOLDINGS VERSION SET run=$run version=$version\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_unstick
+
+Description: Some error conditions leave items in the state of
+$Utils:States::Q_PROCESSING but not owned in any allocated producer's
+slice.  Mark them as available.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_unstick {
+    my ($C, $dbh, $run) = @_;
+
+    # No shards should be enabled because the query for id to unstick
+    # can only be based on proc_status=Q_PROCESSING and running
+    # producers are continually marking ids with this value.
+    if (shards_enabled($C, $dbh, $run)) {
+        __output(qq{\tshards ENABLED, unstick fails\n});
+    }
+    else {
+        my $num_unstuck = Db::update_unstick_inprocess($C, $dbh, $run);
+        Log_unstuck($C, $run, $num_unstuck);
+        __output(qq{\tUNSTICK run=$run unstuck=$num_unstuck\n});
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item c_enqueuer_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_enqueuer_control {
+    my ($C, $dbh, $run, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    Db::set_enqueuer_enabled($C, $dbh, $run, $enabled);
+    Log_enqueuer_start_stop($C, $run, $what);
+    __output(qq{\t$what enqueuer run=$run\n});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_rights_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_rights_control {
+    my ($C, $dbh, $enabled) = @_;
+
+    Db::set_rights_enabled($C, $dbh, $enabled);
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+    Log_rights($C, $what);
+    __output(qq{\t$what rights\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_optimize_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_optimize_control {
+    my ($C, $dbh, $run, $shard, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    Db::set_optimize_enabled($C, $dbh, $run, $shard, $enabled);
+    Log_optimize_start_stop($C, $run, $shard, $what);
+    __output(qq{\t$what optimize shard=$shard\n});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_check_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_check_control {
+    my ($C, $dbh, $run, $shard, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    Db::set_check_enabled($C, $dbh, $run, $shard, $enabled);
+    Log_check_start_stop($C, $run, $shard, $what);
+    __output(qq{\t$what check shard=$shard\n});
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_driver_control
+
+Slaves stay in whatever state they were in when the driver was turned
+off.  If the driver is turned back on, it can resume unless there was
+an error. Maybe.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_driver_control {
+    my ($C, $dbh, $run, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    SLIP_Utils::Db_driver::set_driver_enabled($C, $dbh, $run, $enabled);
+    Log_driver_start_stop($C, $run, $what);
+    __output(qq{\t$what driver run=$run\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item c_Reset_driver
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_Reset_driver {
+    my ($C, $dbh, $run) = @_;
+
+    driver_initialization($C, $dbh, $run);
+
+    my $flags_dir = $C->get_object('MdpConfig')->get('shared_flags_dir');
+    my $busy_file = $flags_dir . '/' . 'busy';
+
+    my $driver_Lock_File = Sl_Utils::slip_semaphore_file("driver-$run");
+
+    my $s;
+    my $dev = $ENV{HT_DEV};
+
+    if ($dev) {
+        $s = "\n\tDev: $flags_dir read-only: cannot rm production busy file=$busy_file or $driver_Lock_File: HAND REMOVE\n\n";
+    }
+    else {
+        if (-e $busy_file) {
+            $s = `rm $busy_file`;
+        }
+        else {
+            $s = "No busy file\n";
+        }
+    }
+    if (-e $driver_Lock_File) {
+        $s = `rm $driver_Lock_File`;
+    }
+
+    __output($s);
+
+    Log_driver_start_stop($C, $run, 'DISABLE');
+}
+
+# ---------------------------------------------------------------------
+
+=item c_producer_control
+
+Declare which shards can be targets of producers and on which hosts.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_producer_control {
+    my ($C, $dbh, $run, $shard, $host, $enabled) = @_;
+
+    if (! (defined($host) || (defined($shard)))) {
+        # Affect all shards and all hosts
+        __c_host_control($C, $dbh, $run, undef, $enabled);
+        __c_shard_control($C, $dbh, $run, undef, $enabled);
+    }
+    else {
+        if (defined($host)) {
+            # Affect this host
+            __c_host_control($C, $dbh, $run, $host, $enabled);
+        }
+
+        if (defined($shard)) {
+            # Affect this shard
+            __c_shard_control($C, $dbh, $run, $shard, $enabled);
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __c_shard_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __c_shard_control {
+    my ($C, $dbh, $run, $shard, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    if (! defined $shard) {
+        # Enable or disable all shards
+        foreach my $__shard (@NUM_SHARDS_LIST) {
+            Db::update_shard_enabled($C, $dbh, $run, $__shard, $enabled);
+            Log_control($C, $run, 'shard', $__shard, $enabled);
+            __output(qq{\t$what run=$run shard=$__shard\n});
+        }
+    }
+    else {
+        Db::update_shard_enabled($C, $dbh, $run, $shard, $enabled);
+        Log_control($C, $run, 'shard', $shard, $enabled);
+        __output(qq{\t$what run=$run shard=$shard\n});
+    }
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __c_host_control
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __c_host_control {
+    my ($C, $dbh, $run, $host, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    if (! defined $host) {
+        # Enable or disable all hosts
+        my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
+        foreach my $hashref (@$ref_to_ary_of_hashref) {
+            my $__host = $$hashref{'host'};
+            Db::update_host_enabled($C, $dbh, $run, $__host, $enabled);
+            Log_control($C, $run, 'host', $__host, $enabled);
+            __output(qq{\t$what run=$run host=$__host\n});
+
+            # clear count when stale
+            Db::update_host_num_running($C, $dbh, $run, $__host, 0);
+            __output(qq{\tset producers_running=0 on $__host\n});
+    }
+    }
+    else {
+        Db::update_host_enabled($C, $dbh, $run, $host, $enabled);
+        Log_control($C, $run, 'host', $host, $enabled);
+        __output(qq{\t$what run=$run host=$host\n});
+    }
+}
+
+
+#
+# --------------------- Logging -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item Log_configure_host
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_configure_host {
+    my ($C, $run, $host, $num_producers) = @_;
+
+    my $s = qq{***CONTROL[CONFIGURE]: } . Utils::Time::iso_Time() . qq{ r=$run h=$host num_producers=$num_producers};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_configure_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_configure_shard {
+    my ($C, $run, $shard, $producers_per_shard) = @_;
+
+    my $s = qq{***CONTROL[CONFIGURE]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard, producers_per_shard=$producers_per_shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_restore
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_restore {
+    my ($C, $run, $num_restored, $type) = @_;
+
+    my $s = qq{***CONTROL[RESTORE]: } . Utils::Time::iso_Time() . qq{ r=$run restored=$num_restored, error_type=$type};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_stats
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_stats {
+    my ($C, $run) = @_;
+
+    my $s = qq{***CONTROL[STATS RESET]: } . Utils::Time::iso_Time() . qq{ r=$run };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_errors_reset
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_errors_reset {
+    my ($C, $run, $ct) = @_;
+
+    my $s = qq{***CONTROL[ERRORS RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_queue_reset
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_queue_reset {
+    my ($C, $run, $ct) = @_;
+
+    my $s = qq{***CONTROL[QUEUE RESET]: } . Utils::Time::iso_Time() . qq{ r=$run reset=$ct };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_holdings_set
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_holdings_set {
+    my ($C, $run, $version) = @_;
+
+    my $s = qq{***CONTROL[HOLDINGS VERSION SET]: } . Utils::Time::iso_Time() . qq{ r=$run version=$version };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_unstuck
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_unstuck {
+    my ($C, $run, $num_unstuck) = @_;
+
+    my $s = qq{***CONTROL[UNSTICK]: } . Utils::Time::iso_Time() . qq{ r=$run unstick=$num_unstuck};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_init
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_init {
+    my ($C, $run, $offset) = @_;
+
+    my $s = qq{***CONTROL[INITIALIZE]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_delete
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_delete {
+    my ($C, $run) = @_;
+
+    my $s = qq{***CONTROL[DELETE]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_driver_start_stop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_driver_start_stop {
+    my ($C, $run, $what) = @_;
+
+    my $s = qq{***CONTROL[DRIVER $what]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_optimize_start_stop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_optimize_start_stop {
+    my ($C, $run, $shard, $what) = @_;
+
+    my $s = qq{***CONTROL[OPTIMIZE $what]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_check_start_stop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_check_start_stop {
+    my ($C, $run, $shard, $what) = @_;
+
+    my $s = qq{***CONTROL[CHECK $what]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_enqueuer_start_stop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_enqueuer_start_stop {
+    my ($C, $run, $what) = @_;
+
+    my $s = qq{***CONTROL[ENQUEUER $what]: } . Utils::Time::iso_Time() . qq{ r=$run};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_rights {
+    my ($C, $what) = @_;
+
+    my $s = qq{***CONTROL[RIGHTS $what]: };
+    SLIP_Utils::Log::this_string($C, $s, 'rights_logfile', '___RUN___', 'rights');
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_control
+
+Description; Procdeural interface
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_control {
+    my ($C, $run, $which, $val, $enabled) = @_;
+
+    my $what = $enabled ? 'ENABLE' : 'DISABLE';
+
+    my $s = qq{***CONTROL $what: } . Utils::Time::iso_Time() . qq{ r=$run $which=$val};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item shards_enabled
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub shards_enabled {
+    my ($C, $dbh, $run) = @_;
+
+    my $any_shard_enabled = 0;
+    foreach my $__shard (@NUM_SHARDS_LIST) {
+        my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
+        $any_shard_enabled |= $shard_enabled;
+    }
+
+    return $any_shard_enabled;
+}
+
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-13 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
