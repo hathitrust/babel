@@ -1,6 +1,0 @@
-[submodule "vendor/common-lib/lib"]
-    path = vendor/common-lib/lib
-    url = ../mdp-lib.git
-[submodule "web/common-web"]
-    path = web/common-web
-    url = ../mdp-web.git
