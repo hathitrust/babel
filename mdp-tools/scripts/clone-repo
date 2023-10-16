@@ -1,0 +1,193 @@
+#!/usr/bin/env perl
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+use File::Basename;
+my $LOCATION = dirname(__FILE__);
+
+use ToolLib;
+
+sub clone_app_usage {
+    my $s = qq{Usage: clone-repo [options] [<app>[<app>+]]
+           where <app> is the application of which to clone its central repo, init and update its submodules.
+                 -s clone under staging area: test, beta-{1,2,...} (e.g. /htapps/test.babel or /htapps/beta-3.babel )
+                    instead of /htapps/user.babel
+                 -f force rename (mv) existing clone, then clone
+                 -A all apps
+                 -S <service>, babel (default), www, catalog
+                 -h print help\n};
+    return $s;
+}
+
+if (! scalar @ARGV) {
+    print clone_app_usage();
+    exit 0;
+}
+
+our ($opt_h, $opt_s, $opt_f, $opt_A, $opt_S);
+my $ops = getopts('hs:fAS:');
+
+my $help = $opt_h;
+$ToolLib::VERBOSE = 1;
+
+if ($help) {
+    print clone_app_usage();
+    exit 0;
+}
+
+my @all_valid_services = @ToolLib::all_valid_services;
+my $SERVICE = $opt_S;
+if ($SERVICE) {
+    if (! grep(/^$SERVICE$/, @all_valid_services)) {
+        PrintN("$SERVICE is not a valid beta staging area\n");
+        print stage_app_usage();
+        exit 1;
+    }
+    $ToolLib::SERVICE = $SERVICE;
+    PrintY("deploying to $SERVICE\n");
+}
+
+my $STAGE = $opt_s;
+if ($STAGE) {
+    my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
+    if (! grep (/^$STAGE$/, @staging_areas)) {
+        PrintN("Invalid staging area=$STAGE\n");
+        print clone_app_usage();
+        exit 1;
+    }
+}
+
+my $FORCE = $opt_f;
+
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $LOCATION/../lib/Config/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+    if (! scalar(@apps)) {
+        PrintN("Missing <app> argument\n");
+        print clone_app_usage();
+        exit 1;
+    }
+}
+
+my $rc = 0;
+my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";    
+    my $app_repo = $app . '.git';
+    my $time = time;
+    
+    my $cmsg = qq{Clone ($app_repo)  under $app_dir and update submodules.} . ($FORCE ? " FORCE rename to $app.$time" : "") . qq{\n};
+    
+    PrintY($cmsg);
+
+    if (! __validate_clone_app($repo_root, $app_root, $app_repo, $app_dir, $app)) {
+        next;
+        $rc |= 1;
+    }
+    if (! G_clone($app_root, $repo_root, $app_repo, $app_dir)) {
+        next;
+        $rc |= 1;
+    }
+    if (! G_init_submodules($app_dir)) {
+        next;
+        $rc |= 1;
+    }
+    if (! G_update_submodules($app_dir)) {
+        next;
+        $rc |= 1;
+    }
+    PrintY(qq{Clone succeeds\n});
+}
+
+exit $rc;
+
+# ---------------------------------------------------------------------
+
+=item __validate_clone_app
+
+Make some reasonable checks to derermine the validity of cloning an app.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_clone_app {
+    my ($repo_root, $app_root, $app_repo, $app_dir, $app) = @_;
+
+    print qq{Validating application ($app) ... };
+
+    if (-d $repo_root && ! -e "$repo_root/$app_repo") {
+        PrintN(qq{ERROR: no central repo: $repo_root/$app_repo does not exist\n});
+        return 0;
+    }
+    if (-e "$app_dir") {
+        if ($FORCE) {
+            my $time = time;
+            
+            if (! query_yn("\nWARN: This will force rename of existing clone to $app.$time. \n\tContinue?", 'y')) {
+                return 0;
+            }
+            else {
+                print "Renaming $app_dir ... ";
+                `mv -f $app_dir $app_dir.$time`;
+                PrintY(qq{OK\n});
+            }
+        }
+        else {
+            PrintN(qq{ERROR: application appears to exist already under $app_dir\n});
+            return 0;
+        }
+    }
+
+    PrintY(qq{OK\n});
+    return 1;
+}
+
+
+
+
+__END__
+
+=head1 NAME
+
+clone-repo - Clonf an application repository, init and update it's submodules, if any.
+
+=head1 SYNOPSIS
+
+clone-repo [options] app.git
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-v>
+
+Verbose status
+
+=item B<-t>
+
+Clone under test.babel
+
+=item B<-f>
+
+Clone even if clone exists.  I.e., remove clone and re-clone.
+
+
+=back
+
+=head1 DESCRIPTION
+
+B<clone-repo> will attempt clone central repository "app.git" at /htapps/whoami.babel/app  including initializing and updating all submodules.
+
+=cut

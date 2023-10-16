@@ -1,0 +1,239 @@
+#!/usr/bin/env perl
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_A, $opt_h, $opt_f);
+my $ops = getopts('Ahf:');
+
+sub Usage {
+    return "git-super-status [<app> [<app>]+ | -A] ][-f <branch>] | -h
+  Fetches origin for <app> and for current branch shows
+    . uncommitted changes
+    . push/merge/pull/rebase status
+    . submodule status
+    . tags 
+    . branch list
+    OPTIONS
+      -A lists all apps
+      -h help
+      -f show only for apps having <branch> (implies -A) \n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+my @apps;
+
+my $filter_branch_match = 0;
+my $filter_branch = $opt_f;
+if ($filter_branch) {
+    $opt_A = 1;
+}
+
+if ($opt_A) {
+    @apps = ToolLib::get_app_list($app_root);
+}
+else {
+    @apps = @ARGV;
+}
+
+if (! scalar(@apps)) {
+    print Usage();
+    exit 0;
+}
+
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";
+
+    if (! chdir_to_app_dir($app_dir)) {
+        exit 1;
+    }
+
+    my ($branches, $curr_branch) = get_branches();
+
+    if ($filter_branch) {
+        if ($branches =~ m,$filter_branch,s) {
+            $filter_branch_match++;
+        }
+        else {
+            next;
+        }
+    }
+
+    print "\n-----------------------------------------------------------\n";
+    PrintY("Checking $app @ $app_dir on branch: ");
+    PrintM("$curr_branch\n");
+
+    print "FETCH ...";
+    if (! G_fetch_origin($app_dir)) {
+        next;
+    }
+
+    print("BRANCHES:\n$branches\n");
+
+    get_git_status();
+
+    if ($curr_branch =~ m,master,) {
+        print_push_pull_status(1);        
+    }
+    else {
+        print_push_pull_status(0);    
+    }
+    
+
+    print_last_deployment($app_dir);
+
+    print_submodule_status($app_dir);
+}
+
+if ($filter_branch && (! $filter_branch_match)) {
+    PrintN("branch=$filter_branch does not exist for any of your apps\n");
+}
+
+exit 0;
+
+# ---------------------------------------------------------------------
+
+=item get_git_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_git_status {
+    
+    my @output = qx(git status);
+    my $clean = (grep(/working directory clean/, @output));
+    map { $_ =~ s/^#[ ]//g } @output;
+    map { $_ =~ s/^#//g } @output;
+    @output = map { "\t$_" } @output;
+
+    $clean ? print "PROJECT STATUS:\n" : PrintN("PROJECT STATUS:\n");
+    print join('', @output);
+}
+# ---------------------------------------------------------------------
+
+=item get_branches
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_branches {
+
+    my @branches = qx(git branch);
+    my ($curr_branch) = grep(/\* /, @branches);
+    $curr_branch =~ s,\*[ ]|\n,,g;
+    @branches = map { "\t$_" } @branches;
+    my $branches = join("", @branches);    
+    $branches =~ s,\* (\S+),  $1(current),;
+
+    return ($branches, $curr_branch);
+}
+
+# ---------------------------------------------------------------------
+
+=item print_push_pull_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub print_push_pull_status {
+    my $master_branch = shift;
+    
+    my $op_1 = $master_branch ? "pushed" : "merged";
+    
+    my @output = qx(git log --oneline origin/master..HEAD);
+    if (scalar @output) {
+        PrintN("\tNOT $op_1:\n");
+        print map { "\t\t$_" } @output;
+    }
+    else {
+        print "\tAll $op_1: "; PrintY("OK\n");
+    }
+    
+    my $op_2 = $master_branch ? "pulled" : "rebased on master";
+    
+    @output = qx(git log --oneline HEAD..origin/master);
+    if (scalar @output) {
+        PrintN("\tNot $op_2:\n");
+        print map { "\t\t$_" } @output;
+    }
+    else {
+        print "\tAll $op_2: ";  PrintY("OK\n");
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item print_last_deployment
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub print_last_deployment {
+    my $app_dir = shift;
+
+    print "\nLAST DEPLOYMENT:\n";
+    chdir_to_app_dir($app_dir);
+    my $last = `git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname) %(taggerdate)'`;
+    $last =~ s,refs/tags/,,g;
+    my ($tag, $date) = ($last =~ m,^(.*?)\s+(.*),);
+    printf("\tTag: %-20s  Date: %s\n", $tag, $date);
+}
+
+# ---------------------------------------------------------------------
+
+=item print_submodule_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub print_submodule_status {
+    my $app_dir = shift;
+
+    print "\nSUB-PROJECT STATUS (submodules):\n";
+    my @submodules = `git submodule status`;
+    if (! scalar(@submodules)) {
+        print "No submodules\n";
+        return 0;
+    }
+
+    PrintY("\t\t\tINDEX\tREMOTE\tINITIALIZED\n");
+
+    foreach my $submodule (@submodules) {
+        my ($char, $sha, $path) = ($submodule =~ m,^\s*(\+|\-)?([0-9a-f]+)\s+(.*?)\s+.*$,);
+        chdir_to_app_dir("$app_dir/$path");
+        my $remote_sha = `git ls-remote --heads origin master`;
+        ($remote_sha) = ($remote_sha =~ m,([0-9a-f]+),);
+
+        printf("%22s", $path);
+        ($char eq "+")
+          ? PrintN("\tNO") : PrintY("\tyes") ;
+        ($sha ne $remote_sha)
+          ? PrintN("\tNO") : PrintY("\tyes") ;
+        ($char eq "-")
+          ? PrintN("\tNO") : PrintY("\tyes") ;
+        print("\n");
+    }
+
+    return 1;
+}
+

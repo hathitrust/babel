@@ -1,0 +1,138 @@
+#!/usr/bin/env perl
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_A, $opt_h);
+my $ops = getopts('Ah');
+
+sub Usage {
+    return "git-updateme [<app> [<app>]+ | -A] ] | -h
+    If <app>'s working directory is clean (to avoid merging), executes 'git pull origin master' 
+    and 'git submodule foreach git pull origin master'
+    OPTIONS
+      -A process all apps you have
+      -h help \n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+my @apps;
+
+if ($opt_A) {
+    @apps = ToolLib::get_app_list($app_root);
+}
+else {
+    @apps = @ARGV;
+}
+
+if (! scalar(@apps)) {
+    print Usage();
+    exit 0;
+}
+
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";
+
+    if (! chdir_to_app_dir($app_dir)) {
+        exit 1;
+    }
+
+    my ($branches, $curr_branch) = get_branches();
+
+    print "\n------ Updating $app @ $app_dir ------\n";
+    if ($curr_branch !~ m,master,) {
+        PrintN("Master branch not checked out for $app @ $app_dir. Skipping.\n");
+        next;
+    }
+    else {
+        if (! working_directory_clean()) {
+            PrintN("Working directory $app_dir has uncommitted changes. Not updating to avoid merge. Skipping.\n");
+            next;
+        }
+
+        if (! update_app($app_dir)) {
+            PrintN("Failed to update $app @ $app_dir. ");
+        }
+    }
+}
+
+exit 0;
+
+# ---------------------------------------------------------------------
+
+=item working_directory_clean
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub working_directory_clean {    
+    my @output = qx(git status);
+    my $clean = (grep(/working directory clean/, @output));
+    if (! $clean) {
+        $clean = (! grep(/Changed but not updated/, @output));
+    }
+
+    return $clean;
+}
+
+# ---------------------------------------------------------------------
+
+=item update_app
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub update_app {
+    my $app_dir = shift;
+
+    my $output;
+    my $cmd = "git pull origin master -v";
+    return 0
+      if (! execute_command($cmd));
+
+    my $cmd_s = "git submodule foreach git pull origin master -v";
+    return 0
+      if (! execute_command($cmd_s));
+
+    execute_command("git submodule status");
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item get_branches
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_branches {
+
+    my @branches = qx(git branch);
+    my ($curr_branch) = grep(/\* /, @branches);
+    $curr_branch =~ s,\*[ ]|\n,,g;
+    @branches = map { "\t$_" } @branches;
+    my $branches = join("", @branches);    
+    $branches =~ s,\* (\S+),  $1(current),;
+
+    return ($branches, $curr_branch);
+}
+
+
+

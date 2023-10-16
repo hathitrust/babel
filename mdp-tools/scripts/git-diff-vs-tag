@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+git-diff-vs-tag - List tags
+
+=head1 SYNOPSIS
+
+git-diff-vs-tag [-h] app [tag]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<tag>
+
+Diff against this tag else last tag
+
+=back
+
+=head1 DESCRIPTION
+
+B<git-diff-vs-tag> will show a diff in $EDITOR vs the last tag or tag argument.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_h, $opt_r);
+my $ops = getopts('hr:');
+
+my $help = $opt_h;
+my $repo = $opt_r;
+
+if ($help) {
+    print git_diff_vs_usage();
+    exit 0;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots($repo);
+my $app = shift;
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    print git_diff_vs_usage();
+    exit 1;
+}
+
+my $tag = shift || G_last_tag();
+
+my $rc = G_handle_diff($app, "$app_root/$app");
+
+exit $rc;
+
+#
+# Subroutines
+#
+
+# ---------------------------------------------------------------------
+sub git_diff_vs_usage {
+    my $s = qq{Usage: git-diff-vs-tag [-h][-r <repo>] <app> [<tag>]
+           where <app> is the application to diff against last deployed tag or <tag>
+             -r <repo> is where the HEAD is taken from. Defaults to users local repo for <app>.
+                Other options are e.g. 'test', 'beta-{1,2,...}' etc. 
+             -h print help
+                Note: a list of tags is available from git-list-tags command\n};
+    return $s;
+}
+
+__END__;
+
