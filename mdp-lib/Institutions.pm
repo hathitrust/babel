@@ -22,7 +22,6 @@ institution-specific data.
    `mapto_name`       varchar(256)          DEFAULT NULL,
    `map_to_entityID`  varchar(256)          DEFAULT NULL,
    `enabled`          tinyint(1)   NOT NULL DEFAULT '0',
-   `orph_agree`       tinyint(1)   NOT NULL DEFAULT '0',
    `entityID`         varchar(256)          DEFAULT NULL,
               PRIMARY KEY (`inst_id`)
  );
