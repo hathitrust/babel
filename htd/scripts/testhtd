@@ -1,0 +1,302 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+
+=head1 NAME
+
+testhtd
+
+=head1 USAGE
+
+$ $SDRROOT/htd/scripts/testhtd
+
+=head1 DESCRIPTION
+
+Drive the Data API over rights.attr, rights.source, REMOTE_ADDR, and
+SERVER_PORT.  These are basically all the inputs to access
+determination.
+
+=head1 OPTIONS
+
+=over 8
+
+=item --help
+
+Prints this message and exits.
+
+=back
+
+=cut
+
+# These attrs collapse the various values to representative values.
+# 1 represents 1,7,18
+# 2 represents 2,3,4,5,6,16
+# 8 represents 8 (deleted)
+# 9 represents 9 (pdus)
+# 10 represents 10,11,12,13,14,15,17
+my %test_attrs = (
+                  1  => 'pd', 
+                  2  => 'ic', 
+                  8  => 'nobody', 
+                  9  => 'pdus', 
+                  10 => 'cc',
+                 );
+
+# These sources collapse the various values to representative values.
+# 1 represents 1 (google) 
+# 2 represents 2,4,5,8,9
+# 3 represents 3
+# 6 represents 6,7
+my %test_profiles = (
+                    1 => 'open', 
+                    2 => 'google', 
+                    3 => 'page', 
+                    4 => 'page+lowres',
+                   );
+
+# Here and there
+my %test_addrs = (
+                  '141.211.43.195' => 'us', 
+                  '147.96.1.135'   => 'nonus',
+                 );
+
+# SSL v. non-SSL
+my %test_ports = (
+                  80  => 'http', 
+                  443 => 'https',
+                 );
+
+my %resources = (
+                 'structure'    => 0,
+                  aggregate    => 0,
+                  volume/meta         => 0,
+                  volume/pagemeta     => 1,
+                  volume/pageimage    => 1,
+                  volume/pageocr      => 1,
+                  volume/pagecoordocr => 1,
+                );
+
+my $COMMAND;
+
+$ENV{UNDER_TEST} = 1;
+
+foreach my $attr (keys %test_attrs) {
+    $ENV{TEST_ATTR} = $attr;
+
+    foreach my $profile (keys %test_profiles) {
+        $ENV{TEST_PROFILE} = $profile;        
+
+        foreach my $addr (keys %test_addrs) {
+            $ENV{REMOTE_ADDR} = $addr;
+            
+            foreach my $port (keys %test_ports) {
+                $ENV{SERVER_PORT} = $port;
+                
+                foreach my $resource (keys %resources) {
+                    printf("%-15s %-18s %-25s %-10s %-21s", 
+                           qq{attr=$attr ($test_attrs{$attr})},
+                           qq{profile=$profile ($test_profiles{$profile})},
+                           qq{addr=$addr ($test_addrs{$addr})},
+                           qq{port=$test_ports{$port}},
+                           qq{resource=$resource},
+                          );
+                    
+                    $COMMAND = make_cmd($resource, $resources{$resource}, 1);
+                    
+                    my $output = `$COMMAND`;
+                    $output = parse_output($output);
+                    print qq{ code=$output};
+                    
+                    my $assertion = assertions(
+                                               $output, 
+                                               $test_attrs{$attr}, 
+                                               $test_sources{$source}, 
+                                               $test_addrs{$addr}, 
+                                               $test_ports{$port}, 
+                                               $resource
+                                              );
+                    $assertion  ? PrintY(" [ok]\n") : PrintN(" [FAIL]\n");
+                    
+                }                
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __assert {
+    my $condition = shift;
+    return $condition;
+}
+
+# ---------------------------------------------------------------------
+
+=item assertions
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub assertions {
+    my ($code, $attr, $source, $addr, $port, $resource) = @_;
+
+    my $metadata_resource = grep(/^$resource$/, qw(meta pagemeta structure));
+    my $pdus = ($attr eq 'pdus');
+    my $us = ($addr eq 'us');
+    my $open_source = ($source eq 'open');
+    my $pd = grep(/^$attr$/, qw(pd cc));
+    my $nobody = ($attr eq 'nobody');
+    my $google_source = ($source eq 'google');
+    my $pagecoordocr = ($resource eq 'pagecoordocr');
+
+    
+    my $val = 1;
+    
+    print "$COMMAND\n" if ($code eq '500');
+                 
+    # no metadata constraints
+    if ($metadata_resource) {
+        $val &&= __assert($code eq '200');
+    }
+    else {
+        # attr constraints
+        if ($pdus) {
+            $val &&= __assert($us && $code eq '200');
+        }
+        if ($pd) {
+            if ($open_source) {
+                $val &&= __assert(
+                                  ($code eq '200')
+                                  ||
+                                  (($code eq '404') && $pagecoordocr)
+                                 );
+            }
+            elsif ($google_source) {
+                if ($resource eq 'aggregate') {
+                    $val &&= __assert(($port eq 'http') && ($code eq '303'));
+                    $val &&= __assert(($port eq 'https') && ($code eq '200'));
+                }
+            }
+        }
+        if ($nobody) {
+            $val &&= __assert(
+                              (($port eq 'http') && ($code eq '303'))
+                              ||
+                              (($port eq 'https') && ($code eq '403'))
+                             );
+        }
+        
+        
+    }
+    
+    return $val;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub make_cmd {
+    my $resource = shift;
+    my $seq = shift;
+    my $local = shift;
+
+    my $id = q{mdp.39015015394847};
+    
+    my $htd_cmd = qq{$ENV{SDRROOT}/htd/cgi/htd  action=/$resource/$id};
+    $htd_cmd .= qq{/$seq} if ($seq);
+    $htd_cmd .= qq{ debug=local} if ($local);
+    
+    return $htd_cmd;
+}
+
+# ---------------------------------------------------------------------
+
+=item Name 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub parse_output {
+    my $o = shift;
+
+    # massage away cruft
+    my ($output) = ($o =~ m,Status:\s*(\d{3}),);
+    return $output;
+}
+
+
+
+
+sub on {
+    return unless ($ENV{TERM} eq 'xterm');
+    my $color = shift;
+    print "\033[1;${color}m";
+}
+sub off {
+    return unless ($ENV{TERM} eq 'xterm');
+    print "\033[0m";
+}
+
+sub PrintY {
+    my $s = shift;
+    on(30);
+    print $s;
+    off();
+}
+sub PrintN {
+    my $s = shift;
+    on(31);
+    print $s;
+    off();
+}
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
