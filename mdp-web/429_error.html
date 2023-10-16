@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"
+  data-app="pt">
+  <head> 
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta charset="utf-8" />
+
+    <title>Hathi Trust Digital Library - Resource Unavailable</title>
+
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
+    <script type="module" src="/common/firebird/dist/assets/index.js"></script>
+  </head>
+  
+  <body class="staticPage apps" style="opacity: 0; visibility: hidden;">
+
+    <div id="root">
+    
+      <hathi-website-header data-prop-search-state="toggle" data-prop-user-navigation="false"></hathi-website-header>
+      
+      <main id="main" class="main-container error">
+
+        <div class="container mt-4">
+          <section class="m-3 col-md-6 bg-vaguely-faded">
+            <h1>Resource Temporarily Unavailable</h1>
+
+            <div class="alert alert-warning message_error rounded-4 mt-4">
+              
+                <p>You have temporarily exceeded viewing limits. ___CHOKED_UNTIL___</p>
+                <p>Viewing limits protect HathiTrust resources from abuse and help ensure a consistent experience for everyone.</p>
+
+            </div>
+
+            <!-- PHOTOCOPIER_USAGE -->
+            
+            <p><a class="btn btn-primary" href="__REQUEST_URL__">Reload Page</a></p>
+
+          </section>
+        </div>
+      </main>
+
+      <hathi-website-footer></hathi-website-footer>
+
+    </div>
+  </body>
+</html>
+

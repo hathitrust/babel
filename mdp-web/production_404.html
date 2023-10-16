@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" xml:lang="en" xmlns= "http://www.w3.org/1999/xhtml" data-app="pt">
+  <head> 
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta charset="utf-8" />
+    <title>Not Found | Hathi Trust Digital Library</title>
+
+    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
+    <script type="module" src="/common/firebird/dist/assets/index.js"></script>
+
+  </head>
+  
+  <body class="staticPage apps" style="opacity: 0; visibility: hidden;">
+
+    <div id="root">
+
+      <hathi-website-header data-prop-search-state="toggle" data-prop-user-navigation="false"></hathi-website-header>
+
+      <main id="main" class="main-container error">
+
+        <div class="container mt-4">
+
+          <section class="m-3 col-md-6 bg-vaguely-faded">
+
+            <h1>This item does not exist.</h1>
+            <p>
+              We couldn't locate that item in the repository.
+            </p>
+
+            <p data-hathi-trigger="hathi-feedback-form-modal" id="feedback-form">
+              <button type="button" class="btn btn-primary"><span>Report the Problem</span></button>
+            </p>
+  
+            <hathi-feedback-form-modal data-prop-form="error" data-prop-is-open="false"></hathi-feedback-form-modal">          
+
+          </section>
+
+        </div>
+
+      </main>
+
+      <hathi-website-footer></hathi-website-footer>
+
+    </div>
+
+    
+  </body>
+</html>
+
