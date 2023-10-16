@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Time::HiRes;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+
+    ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/mb/UNAVAILABLE");
+
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use Utils::Settings;
+my $settings = Utils::Settings::load('mb');
+
+use Attribute::Handlers;
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+use Plack::Builder;
+use Plack::Builder::Conditionals::Choke;
+
+use Plack::Handler::CGI;
+
+use CGI::Emulate::PSGI;
+use CGI::Compile;
+
+my $script_filename = __FILE__;
+$script_filename =~ s,\.choke,,;
+my $sub = CGI::Compile->compile($script_filename);
+my $mb_app = CGI::Emulate::PSGI->handler($sub);
+
+use Download::Builder;
+
+my $router_app = sub {
+    my ( $env ) = @_;
+    my $request = Plack::Request->new($env);
+    if ( $request->param('a') && $request->param('a') =~ m,download, ) {
+        my $download_app = Download::Builder->new->to_app;
+        return $download_app->($env);
+    }
+    return $mb_app->($env);
+};
+
+my $app = builder {
+
+    enable "PopulateENV", app_name => 'mb';
+
+    enable "SSO";
+
+    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
+      "HTErrorDocument", 500 => (defined $ENV{UNAVAILABLE} ? "/mb/web/collection_builder_unavailable.html" : "/mdp-web/production_error.html");
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+
+    enable 'Choke::Cache::Filesystem';
+
+    enable
+        match_if param('a', 'download-status'),
+            'Choke::Requests',
+                %{ $$settings{choke}{'status'} }
+            ;
+
+    # probably do some generous throttling
+    enable
+        match_if unchoked(),
+            'Choke::Requests',
+                %{ $$settings{choke}{'default'} }
+            ;
+
+
+    $router_app;
+};
+
+Plack::Handler::CGI->new->run($app);

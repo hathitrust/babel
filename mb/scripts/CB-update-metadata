@@ -1,0 +1,349 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+CB-update-metadata
+
+=head1 USAGE
+
+/htapps/babel/mb/scripts/CB-update-metadata sorting [-L]
+
+=head1 DESCRIPTION
+
+Update ht_web.mb_item metadata using next generation enumchron data from catalog.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -L
+
+Live
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# Flush i/o
+$| = 1;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Getopt::Std;
+
+binmode(STDOUT, ":utf8");
+
+our ($opt_L, $opt_I);
+
+my $ops = getopts('LI:');
+my $LIVE = $opt_L;
+my $ID = $opt_I;
+
+use constant GLOBAL_UPDATE_SLICE_SIZE => 1000;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Utils;
+use Utils::Time;
+use Context;
+use Database;
+use MdpConfig;
+use Debug::DUtils;
+use MBooks::MetaDataGetter;
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+my $C = new Context;
+my $CONFIG = new MdpConfig(
+                           Utils::get_uber_config_path('mb'),
+                           $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $CONFIG);
+
+# Database connection
+my $db = new Database('ht_maintenance');
+my $DBH = $db->get_DBH($C);
+$C->set_object('Database', $db);
+
+my $MDG = new MBooks::MetaDataGetter($C, []);
+
+my $LOGFILE = 'metadata_update_logfile';
+
+my $Item_Table_Name = 'mb_item';
+my $use_test_tables = $CONFIG->get('use_test_tables');
+if ($use_test_tables) {
+    $Item_Table_Name = $CONFIG->get('test_item_table_name');
+}
+
+my $START = time;
+my ($num_seen, $num_updated, $failed_metadata_missing_ids_ref, $failed_query_operation_ids_ref) = UPM_do_update_metadata($C, $ID);
+ 
+my $num_metadata_missing = scalar @$failed_metadata_missing_ids_ref;
+my $num_update_failed = scalar @$failed_query_operation_ids_ref;
+
+my $mm = join("\n", @$failed_metadata_missing_ids_ref) || 'none';
+my $mq = join("\n", @$failed_query_operation_ids_ref) || 'none';
+
+my $elapsed = sprintf("elapsed=%.2f hours", (time - $START)/60/60);
+
+my $report = 
+  qq{Report: $elapsed num_seen=$num_seen num_updated=$num_updated\n}
+  . qq{num_metadata_missing=$num_metadata_missing num_update_failed=$num_update_failed\n}
+  . qq{failed_queries=$mq\n}
+  . qq{missing_metadata=$mm\n};
+
+
+__P(  $report );
+
+
+exit 0;
+
+
+
+# ---------------------------------------------------------------------
+
+=item __upm_get_id_slice
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __upm_get_id_slice {
+    my ($C, $offset, $id) = @_;
+    
+    my $ref_to_arr_of_arr_ref = [];
+    
+    if (defined $id) {
+        return [$id];
+    }
+    # POSSIBLY NOTREACHED
+
+    eval {
+        my $statement = qq{SELECT extern_item_id FROM $Item_Table_Name LIMIT ?, ?};
+        my $sth = DbUtils::prep_n_execute($DBH, $statement, $offset, GLOBAL_UPDATE_SLICE_SIZE);
+        $ref_to_arr_of_arr_ref = $sth->fetchall_arrayref([0]);
+    };
+    if ($@) {
+        __P( "failed slice offset=$offset: $@\n" );
+        return undef
+    }
+    # POSSIBLY NOTREACHED
+
+    my $ids_arr_ref = [ map {$_->[0]} @$ref_to_arr_of_arr_ref ];
+    
+    __P( "slice offset=$offset: $@\n" );
+
+    return $ids_arr_ref;
+}
+
+# ---------------------------------------------------------------------
+
+=item __upm_get_vufind_metadata_hashrefs
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __upm_get_vufind_metadata_hashrefs {
+    my $C = shift;
+    my ($id_arr_ref, $failed_query_operation_ids_ref) = @_;
+
+    $MDG->metadata_getter_set_ids($C, $id_arr_ref);
+    my $metadata_arr_ref = $MDG->metadata_getter_get_metadata($C);
+
+    unless ($metadata_arr_ref && scalar @$metadata_arr_ref) {
+        push($failed_query_operation_ids_ref, @$id_arr_ref); 
+        __P( qq{Could not get metadata from vufind\n} );
+        return undef;
+    }
+
+    return $metadata_arr_ref;
+}
+
+# ---------------------------------------------------------------------
+
+=item __upm_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __upm_update_metadata {
+    my ($C, $ref_to_arr_of_metadata_hashref, $failed_query_operation_ids_ref) = @_;
+
+    foreach my $hashref (@$ref_to_arr_of_metadata_hashref) {
+        my $id = $hashref->{extern_item_id};
+        if ($LIVE) {
+            eval {
+                
+                DbUtils::update_row_by_key($DBH, $Item_Table_Name, $hashref, 'extern_item_id', $id);
+            };
+            if ($@) {
+                __P( qq{Could not update id=id: $@\n} );
+                push(@$failed_query_operation_ids_ref, $id);
+            }
+            else {
+                __P( qq{updated id=$id\n} );
+            }
+        }
+        else {
+            __P( qq{Would update id=$id\n} );
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item UPM_do_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub UPM_do_update_metadata {
+    my ($C, $id) = @_;
+    
+    __P(qq{Update all metadata in $Item_Table_Name ...\n});
+
+    my $offset = 0;
+
+    my $num_seen = 0;
+    my $num_updated = 0;
+
+    my $failed_metadata_missing_ids_ref = [];
+    my $failed_query_operation_ids_ref = [];
+
+    while (1) {
+        # Big mysql query
+        my $ids_arr_ref =  __upm_get_id_slice($C, $offset, $id);
+
+        last unless (defined $ids_arr_ref);
+
+        last unless (scalar @$ids_arr_ref);
+
+        $num_seen += scalar @$ids_arr_ref;
+        $offset += GLOBAL_UPDATE_SLICE_SIZE;
+
+        # Big VuFind Solr query
+
+        my $ref_to_arr_of_metadata_hashref = __upm_get_vufind_metadata_hashrefs($C, $ids_arr_ref, $failed_query_operation_ids_ref);
+        
+        last unless (defined $ref_to_arr_of_metadata_hashref);
+
+        # All there?
+        unless (scalar @$ref_to_arr_of_metadata_hashref == scalar @$ids_arr_ref) {
+            foreach my $id (@$ids_arr_ref) {
+                my $seen = 0;
+                foreach my $hashref (@$ref_to_arr_of_metadata_hashref) {
+                    if ($hashref->{extern_item_id} eq $id) {
+                        $seen = 1;
+                        last;
+                    }
+                }
+                unless ($seen) {
+                    __P( qq{Could not get metadata for id=$id\n} );
+                    push(@$failed_metadata_missing_ids_ref, $id);
+                }
+            }
+        }
+
+        __upm_update_metadata($C, $ref_to_arr_of_metadata_hashref, $failed_query_operation_ids_ref);
+        $num_updated = $num_seen - scalar @$failed_query_operation_ids_ref;
+
+        my $elapsed = (time - $START);
+        my $checkpoint = sprintf("%.2f ids/sec elapsed=%.2f minutes\n", $num_updated/$elapsed, $elapsed/60);
+        __P( $checkpoint );
+
+        last if (defined $id);
+    }
+    
+    return ($num_seen, $num_updated, $failed_metadata_missing_ids_ref, $failed_query_operation_ids_ref);
+}
+
+# ---------------------------------------------------------------------
+
+=item __P
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __P {
+    my $msg = shift;
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
+
+    chomp($msg);
+    Utils::Logger::__Log_simple($msg);
+}
+
+# ---------------------------------------------------------------------
+
+=item __O
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __O {
+    my $msg = shift;
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
+}
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2014 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

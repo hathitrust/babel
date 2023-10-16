@@ -1,0 +1,77 @@
+#
+# Comments and newlines are ignored
+#
+# Section information must start with string Section followed by a
+# colon and the section name.  These will be translated into comments in
+# the XSL.  Sections currently only implemented for javascript includes.
+#
+
+# Paths below to HathiTrust *shared* css and js, i.e. web files in
+# /mdp-web MUST be coded //common-web/...  They are transformed by
+# View::_render_template().
+
+# If debug=local is set, //common-web/... is transformed to
+# /mdp-web/... otherwise to /appname/common-web/...  This means that
+# css and js will come from either the shared web repo mdp-web.git or
+# from its submodule under /appname/vendors/common-web, whichever is
+# more convienent for the developer.
+
+# If, in local.conf, debug_uncompressed_css=1 and/or
+# debug_uncompressed_js=1, then the paths that will load that begin
+# with //common-web/ are affected according to the debug=local
+# switch. If a switch in local.conf is NOT set, then the concatenated
+# file will load from /appname/web.
+
+# The concatenator script make-concat always draws the shared files to
+# concatenate from /appname/web/common-web.  This means that changes
+# to shared web files in /mdp-web must be committed, pushed and pulled
+# into the common-web submodule to be seen in the concatenated-min
+# files.  So that usually the last phase of development.
+
+# NOTE: paths WITHIN shared web files like graphics/foo.gif MUST be
+# relative and MUST be coded withthe dot-slash syntax
+# './graphics/foo.gif so the concatenator can change the path to
+# common-web/graphics. This means that when a shared web file is
+# loaded from /mdp-web it will find its paths relative to itself but
+# when it is concatenated into concatenated-min under /appname/web it
+# will find its paths in common-web, i.e. relative to its new location
+
+Section:LOCAL_JS 
+# These should be listed with the unminimized name.  The script will
+# run yuicompress on them
+//common-web/jquery/jQuery-URL-Parser/purl.js
+# //common-web/jquery/jquery.trap.min.js
+/mb/web/js/mb.js
+/mb/web/js/tracking.js
+/mb/web/js/help_modals.js
+//common-web/js/google_covers.js
+//common-web/js/collection_tools.js
+//common-web/js/search_tools.js
+//common-web/js/social_links.js
+
+Section:COLLLIST_JS
+Test://CurrentCgi/Param[@name='a'] = 'listcs'
+# /mb/web/js/jquery.placeholder.js
+/mb/web/js/date.js
+/mb/web/js/listcs_collection_tools.js
+
+# list_colls.js is loaded at the end of the document
+
+# XXX after decision to go directly to the search results page and not
+# do ajax search is finalized remove this comment and the next two lines
+#/mb/web/js/searchAjaxCommon.js
+#/mb/web/js/searchAjaxItems.js
+
+#Section:CSS
+# css files, note last one overides earlier
+#/mb/web/yui2-lib/build/fonts/fonts-min.css
+#/mb/web/yui2-lib/build/container/assets/skins/sam/container.css
+#//common-web/jquery/boxy/boxy.css
+#//common-web/feedback.css
+#//common-web/MBooksCol.css
+#/mb/web/mb.css
+
+#Section:COLLLIST_CSS
+#Test://CurrentCgi/Param[@name='a'] = 'listcs'
+#/mb/web/list_colls.css
+#/mb/web/awesome.css
