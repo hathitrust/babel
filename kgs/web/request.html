@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>  
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>HathiTrust Key Service - Key Request</title>
+    <meta http-equiv="Content-Language" content="en-us" />
+    <script  type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+    <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
+    <link rel="stylesheet" type="text/css" href="/kgs/kgs.css"/>    
+    <script type="text/javascript">
+      $(document).ready(function(){
+      $("#kgs_request").validate();
+      });
+    </script>
+  </head>
+  <body>
+    <div id="KGSMasterContainer">
+      ___HEADER_CHUNK___
+      <div id="KGScontainer">
+        <h1 class="heading">HathiTrust Data API key request</h1>
+        <p>The HathiTrust Data API provides access to data and metadata resources. URLs must include an access key and be signed with a secret key. An access key and signature are required to request any resource. </p>
+        <p>Consult the <a href="http://www.hathitrust.org/data_api">HathiTrust Data API document</a> to see an example program to send a basic signed request to our sample server.  Copy and edit it to use the keys you request here as a starting point to access the Data API using signed URLs.</p>
+        <p>Access to restricted data resources may be requested. Some use cases we envision can also be found in the <a target="top" href="http://www.hathitrust.org/data_api">HathiTrust Data API document</a>.  Those interested should contact <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> with a brief but detailed description of the intended use. </p>
+        
+        <form class="kgs_request_form" id="kgs_request" method="get" action="/cgi/kgs/register">
+          <fieldset class="request">
+            <legend>Please submit the following information to request keys</legend>
+            <div class="request">
+              <label class="request">required field <span class="req">* </span></label>
+            </div>
+            <br/><br/>
+            <div class="request">
+              <label class="request" for="htname">name <span class="req">* </span></label>
+              <input id="htname" name="name" class="request required"/>
+            </div>
+            <div class="request">
+              <label class="request" for="htorg">organization <span class="req">* </span></label>
+              <input id="htorg" name="org" class="request required"/>
+            </div>
+            <div class="request">
+              <label class="request" for="htemail">e-mail <span class="req">* </span></label>
+              <input id="htemail" name="email" class="request required email" />
+            </div>
+            <div class="request">
+              <input class="submit" id="request" type="submit" value="Submit"/>
+            </div>
+
+          </fieldset>
+        </form>
+        
+        <h2 class="subheading">Instructions</h2>
+        <ul>
+          <li>When we receive your information, we'll send email containing a link to the registration page. You may need to allow <b>___HATHITRUST_EMAIL_ADDRESS___</b> to pass your spam filter.</li>
+          <li>Follow the registration link in the email to view your keys.  Copy them to a secure location and treat them the same as passwords.</li>
+          <li>The registration link is <b>time-sensitive</b> and <b>one-time-only</b>.  It expires after the first visit and absolutely after 24 hours.</li>    
+          <li>A given email address is limited to ___MAX_ATTEMPTED_REGISTRATIONS___ unconfirmed requests for API
+keys and up to ___MAX_ACTIVE_REGISTRATIONS___ confirmed requests. When you visit the registration link,
+your request becomes confirmed.</li>
+          <li>Please contact us at <a href="mailto:___HATHITRUST_EMAIL_ADDRESS___">___HATHITRUST_EMAIL_ADDRESS___</a> if you need assistance. </li>
+        </ul>
+      </div>
+    </div>
+    ___GOOGLE_ANALYTICS___
+  </body>
+</html>
