@@ -1,0 +1,128 @@
+#!/usr/bin/env perl
+
+use CGI;
+
+#XXX WARNING: this map no longer in use.  
+my $LS_MAP = {
+    all => 'ocr',
+    title => 'title',
+    author => 'author',
+    subject => 'subject',
+    isbn => 'isn',
+    publisher => 'publisher',
+    seriestitle => 'series',
+    ocronly =>'ocronly',
+    pubyear => ''
+};
+
+
+#XXX currently ls does not allow searching by publication year only limiting by
+# solr query would search for publishDate:query
+#   redo solr? or kludge?
+
+my $cgi = new CGI;
+my $base = $cgi->url(-full => 1);
+
+my $target = $cgi->param('target');
+my $searchtype = $cgi->param('searchtype');
+$searchtype = 'isn' if ( $searchtype eq 'isbn' );
+my $q1 = $cgi->param('q1');
+my $ft = $cgi->param('ft');
+my $dest_cgi = new CGI({});
+my $dest_url; my $dest_base;
+
+my $LS_DOMAIN = qq{babel.hathitrust.org};
+my $CATALOG_DOMAIN = qq{catalog.hathitrust.org};
+
+my $SCHEME = qq{https};
+# if ( $cgi->https() ) {
+#     $SCHEME = qq{https};
+# }
+
+my $referer = $cgi->referer();
+if ( $referer =~ m,mrnibbs.umdl.umich.edu, ) {
+    $LS_DOMAIN = qq{mrnibbs.umdl.umich.edu};
+    $CATALOG_DOMAIN = qq{mrnibbs.umdl.umich.edu};
+} elsif ( $referer =~ m,test\.www\.hathitrust\.org, ) {
+    $LS_DOMAIN = qq{beta-3.babel.hathitrust.org};
+    $CATALOG_DOMAIN = qq{beta-3.catalog.hathitrust.org};
+} elsif ( $referer =~ m,beta-3, ) {
+    $LS_DOMAIN = qq{beta-3.babel.hathitrust.org};
+    $CATALOG_DOMAIN = qq{beta-3.catalog.hathitrust.org};
+} elsif ( ( $referer =~ m,/test\., && $referer !~ m,\.babel, ) || $referer =~ m,/xxbeta-3, ) {
+    # referer is a test instance; update links
+    $LS_DOMAIN = qq{test.$LS_DOMAIN};
+    $CATALOG_DOMAIN = qq{test.$CATALOG_DOMAIN};
+} elsif ( ( $referer =~ m,/preview\., && $referer !~ m,\.babel, ) ) {
+    # referer is a preview instance; update links
+    $LS_DOMAIN = qq{preview.$LS_DOMAIN};
+    $CATALOG_DOMAIN = qq{preview.$CATALOG_DOMAIN};
+} elsif ( $referer =~ m,/(.*)\.babel, ) {
+    # referer is a babel dev instance
+    my $babel_prefix = (split(/\./, $ENV{SERVER_NAME}))[0];
+    my $prefix = $babel_prefix; $prefix =~ s,\-full,,;
+    $LS_DOMAIN = $ENV{SERVER_NAME};
+    $CATALOG_DOMAIN = qq{$prefix.$CATALOG_DOMAIN};
+} elsif ( my ( $prefix ) = $referer =~ m,https?://(.*)\.catalog., ) {
+    # referer is a catalog dev instance
+    $CATALOG_DOMAIN = qq{$prefix.$CATALOG_DOMAIN};
+    my $babel_prefix = $prefix;
+    unless ( $babel_prefix =~ m,^beta, ) { $babel_prefix .= '-full'; }
+    $LS_DOMAIN = qq{$babel_prefix.$LS_DOMAIN};
+}
+# still needs to handle case of a catalog dev server
+
+my $LS_URL = qq{$SCHEME://$LS_DOMAIN/cgi/ls};
+my $CATALOG_URL = qq{$SCHEME://$CATALOG_DOMAIN/Search/Home};
+
+if ( $target eq 'ls' ) {
+#  XXX hardcode debug env for now  $dest_base = qq{http://babel.hathitrust.org/cgi/ls};
+    # $dest_base = qq{http://tburtonw-full.babel.hathitrust.org/cgi/ls};
+    $dest_base = $LS_URL;
+    #   no field types for ls, just the default everything "ocr" search
+    #    $dest_cgi->param('field1', $$LS_MAP{$searchtype});
+    $dest_cgi->param('field1', 'ocr');
+    $dest_cgi->param('q1', $q1);
+    $dest_cgi->param('a', 'srchls');
+    if ($ft eq "ft")
+    {
+        $dest_cgi->param('lmt', 'ft');
+    }
+    
+} else {
+  # $dest_base = qq{http://dueberb.catalog.hathitrust.org/Search/Home};
+    $dest_base = $CATALOG_URL;
+    $dest_cgi->param('lookfor', $q1);
+    $dest_cgi->param('searchtype', $searchtype);
+    if ($ft eq "ft")
+    {
+        $dest_cgi->param('ft', 'ft');
+        $dest_cgi->param('setft', 'true');
+    }
+    else 
+    {
+        $dest_cgi->param('ft', '');
+        $dest_cgi->param('setft', 'false');
+    }
+
+}
+
+my @filters = $cgi->multi_param('filter[]');
+if ( scalar @filters ) {
+    $dest_cgi->multi_param('filter[]', @filters);
+}
+
+my $dest_url = $dest_cgi->url(-full=>1, -query=>1);
+$dest_url =~ s,$base,$dest_base,;
+if ( $target eq 'catalog' ) {
+    $dest_url =~ s,;,&,g;
+}
+
+if ( $cgi->param('debug') ) {
+    print $cgi->header('text/plain');
+    print "TARGET = $target\n";
+    print $dest_url, "\n";
+    print $cgi->url(-full=>1, -query=>1);
+} else {
+    print $cgi->redirect($dest_url);
+}

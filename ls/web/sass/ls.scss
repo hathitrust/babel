@@ -1,0 +1,264 @@
+@import "../../../common/web/unicorn/sass/base";
+
+/** ls.scss
+*
+*
+**/
+
+/***
+ls.css
+  Unicorn version.  Stuff only needed by ls. 
+   mostly for facets
+   see oldls.css for old code
+   Probably will need to pull in most of it for advanced search page
+***/
+
+
+.main.noresults .mainsearch {
+  margin-left: 5rem;
+  width: 72%;
+  border-bottom-color: transparent;
+}
+
+.zero
+{
+        background:#000000;
+}
+
+
+/**  Facet styling **/
+
+ol.filters, ul.filters {
+    list-style: none outside none;
+}
+
+ul.filters li{
+        text-indent: -20px;
+}
+.removeFacetIcon {
+    padding-right: 3px;
+    position: relative;
+    top: 3px;
+     border: medium none;   
+}
+
+.selectedfieldname {
+    font-weight: bold;
+}
+
+#selectedFacets {
+  p {
+    margin-top: 1em; margin-bottom: 0.5em;
+  }
+}
+
+.query-summary {
+
+  display: block;
+  // background: #eee;
+  margin: 8px 0;
+
+  ul {
+    padding: 0;
+    li {
+      float: left;
+      display: block;
+      // background: #ccc;
+      margin-right: 4px;
+      margin-bottom: 0;
+      padding: 0;
+      // height: 40px;
+
+      &:first-child {
+        border: 1px solid transparent;
+
+        .btn {
+          padding: 4px 12px;
+        }
+      }
+
+      > .query-item {
+        display: inline-block;
+        padding: 4px;
+        margin-bottom: 4px;
+        font-size: 14px;
+        line-height: 20px;
+        border: 1px solid #ddd;
+        font-weight: normal;
+
+        &:hover {
+          background: #e6e6e6;
+          cursor: pointer; 
+        }
+      }
+
+    }
+  }
+
+  &:after {
+    display: table;
+    content: '';
+    clear: both;
+  }
+}
+
+.shareLinks {
+  .btn-group .btn {
+    font-size: 11px;
+    font-size: 1.1rem;
+    padding: 4px;
+    padding: 0.4rem;
+    padding-left: 8px;
+    padding-left: 0.8rem;
+    padding-right: 8px;
+    padding-right: 0.8rem;  
+  }
+
+  input[type=text] {
+    font-size: 12px;
+    font-size: 1.2rem;
+    height: 18px;
+    height: 1.8rem;
+    cursor: default;
+  }
+}
+
+.form-download-metadata {
+    margin-top: 1.5rem;
+
+    a.download-help-link {
+        display: inline-block;
+        position: relative;
+        @include rem(height, 18);
+        @include rem(width, 18);
+        @include rem(margin-left, 5);
+        background-image: url(/common/unicorn/img/icon_question.png);
+        background-repeat: no-repeat;
+        text-indent: -10000px;
+        text-transform: capitalize;
+        clip: rect(0,0,0,0);
+        cursor: pointer;
+    }
+
+
+}
+
+.spinner-download-metadata {
+    margin-left: 8px;
+    height: 10px;
+    position: relative;
+    display: inline-block;
+    background: white;
+}
+
+/*Typing Loader*/
+.spinner-download-metadata.active .typing_loader{
+    width: 6px;
+    height: 6px;
+    top: 2px;
+    border-radius: 50%;
+    -webkit-animation: typing 1s linear infinite alternate;
+       -moz-animation: Typing 1s linear infinite alternate;
+            animation: typing 1s linear infinite alternate;
+    // margin: 46px auto; /* Not necessary- its only for layouting*/  
+    margin: 0 auto;
+    position: relative;
+    // left: -12px;
+}
+
+@keyframes typing{
+   0%{
+        background-color: rgba(0,0,0, 1);
+        box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                    24px 0px 0px 0px rgba(0,0,0,0.2);
+      }
+    25%{ 
+        background-color: rgba(0,0,0, 0.4);
+        box-shadow: 12px 0px 0px 0px rgba(0,0,0,1), 
+                    24px 0px 0px 0px rgba(0,0,0,0.2);
+    }
+    75%{ background-color: rgba(0,0,0, 0.4);
+        box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                    24px 0px 0px 0px rgba(0,0,0,1);
+      }
+}
+
+*.showfacet
+{ 
+
+  }
+*.hidefacet
+{ 
+  display: none;
+  visibility: hidden;
+}
+
+span.moreless
+{ 
+  font-style:italic;
+} 
+
+#DlpsDev {
+  position: absolute;
+  right: 10px;
+  background: #666;
+  color: yellow;
+  padding: 8px;
+}
+
+.mainsearch {
+    .search-extra-options {
+        margin-top: 0;
+        font-size: 90%;
+        @include rem(padding-bottom, 16);
+        // @include rem(margin-bottom, 16);
+    }
+
+    @include rem(margin-bottom, 16);
+}
+
+.SearchResults_status {
+  @include rem(padding-top, 20);
+  @include rem(padding-bottom, 20);
+  @include rem(font-size, 16);
+
+
+  span {
+    font-weight: bold;
+  }
+}
+
+.main.mb {
+  .SearchResults_status {
+    @include rem(font-size, 13);
+  }
+}
+
+.modify_link {
+  @include rem(margin-top, 16);
+}
+
+// .SearchResults_status {
+//     color: #4f4f4f;
+//     font-size: 1.2em;
+//     margin: 0;
+//     padding: 20px 5px 20px;
+//     position: relative;
+// }
+// .SearchResults_status span{
+//                font-weight:bold;
+// }
+
+span.AnyAll  {  
+               font-weight:normal;
+               font-style:italic; 
+               }
+
+
+
+
+
+
+
+
+

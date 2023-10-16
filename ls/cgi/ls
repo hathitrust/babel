@@ -1,0 +1,216 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+Large-scale search main program (ls)
+
+=head1 USAGE
+
+http://babel.hathitrust.org/cgi/ls? ... URL parameters ...
+
+=head1 DESCRIPTION
+
+This is a prototype HathiTrust application supporting full-text search
+over large-scale indexes of OCR.
+
+=head1 OPTIONS
+
+=over 8
+
+=item debug=opt1,opt2,...,optN
+
+Debug options
+
+=back
+
+=cut
+
+use strict;
+umask 0000;
+
+BEGIN {
+    ##$ENV{DEBUG_LOCAL} = 1;
+
+    ( delete $ENV{HT_DEV}, $ENV{UNAVAILABLE} = 1 ) if (-e "$ENV{SDRROOT}/ls/UNAVAILABLE");
+}
+
+# ----------------------------------------------------------------------
+# Performance check-pointing
+# ----------------------------------------------------------------------
+use Time::HiRes;
+
+BEGIN {
+    ( $main::realSTART ) = Time::HiRes::time();
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+
+BEGIN {
+
+    my $use_fakes = 0;
+    my $fake_domain = 'ucop.edu';
+    my $fake_entity_id = 'urn:mace:incommon:ucop.edu';
+    my $fake_affiliation = 'member';
+
+    if ($use_fakes) {
+      $ENV{AUTH_TYPE} = q{shibboleth};
+      $ENV{REMOTE_USER} = qq{test\@$fake_domain};
+      $ENV{affiliation} = qq{$fake_affiliation\@$fake_domain;employee\@ucop.edu};
+      $ENV{eppn} = qq{test\@$fake_domain};
+      $ENV{displayName} = q{Test User};
+      $ENV{Shib_Identity_Provider} = qq{$fake_entity_id};
+    }
+}
+
+use Vendors;
+
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ls/cgi');
+    }
+}
+
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+use Config::Tiny;
+# MBooks
+use Utils;
+use Debug::DUtils;
+
+use MdpGlobals;
+use App;
+use Database;
+use MdpConfig;
+use Action::Bind;
+use Context;
+use Session;
+use Auth::Auth;
+use Access::Rights;
+
+use LS::Controller;
+use LS::FacetConfig;
+
+
+$::VERSION = 0.2000;
+
+# ============================ Main ===================================
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+
+my $C = new Context;
+
+# CGI
+my $cgi = new CGI;
+
+Utils::clean_cgi_params($cgi);
+$C->set_object('CGI', $cgi);
+
+
+#
+# Create the application
+#
+my $app = new App($C, 'ls');
+$C->set_object('App', $app);
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('ls'),
+                           $ENV{SDRROOT} . "/ls/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/ls/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $config);
+
+# additional configuration for click_logging and A/B testing
+my $AB_test_config_filename = $ENV{SDRROOT} . '/ls/lib/Config/AB_test_config';
+my $AB_test_config = $config = Config::Tiny->read($AB_test_config_filename);
+ASSERT($AB_test_config, qq{Error in testing config file $AB_test_config_filename: } . Config::Tiny::errstr);
+# 1 disables checking object name
+$C->set_object('AB_test_config', $AB_test_config,1);
+if ($AB_test_config->{'_'}->{'debug_AB'} == 1)
+{
+    if (!defined($cgi->param('debug')))
+    {
+	$cgi->append(
+		     -name  => 'debug',
+		     -value => 'AB'
+		    );
+	$C->set_object('CGI', $cgi);
+    }
+}
+
+
+
+# additional configuration for facets and relevance weighting
+my $facet_config= new LS::FacetConfig($C, $ENV{SDRROOT} . "/ls/lib/Config/facetconfig.pl");
+$C->set_object('FacetConfig', $facet_config);
+
+
+
+
+
+# Database connection
+my $db = new Database('ht_web');
+$C->set_object('Database', $db);
+
+# Session
+my $ses = Session::start_session($C);
+$C->set_object('Session', $ses);
+
+# Auth
+my $auth = new Auth::Auth($C);
+$C->set_object('Auth', $auth);
+
+#
+# Create the application Controller (main logic) class
+#
+my $ctl = new LS::Controller($C);
+
+#
+# Run the application on the framework classes
+#
+$app->run_application($C, $ctl);
+
+exit 0;
+
+
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-2010 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

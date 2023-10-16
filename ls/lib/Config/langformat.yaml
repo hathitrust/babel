@@ -1,0 +1,450 @@
+#
+# langformat.yaml
+# 
+# list of formats and languages
+
+formats:
+  - Archive
+  - Audio
+  - Audio (music)
+  - Audio (spoken word)
+  - Audio CD
+  - Audio LP
+  - Biography
+  - Book
+  - Computer File
+  - Conference
+  - Dictionaries
+  - Directories
+  - Electronic Resource
+  - Encyclopedias
+  - Journal
+  - Manuscript
+  - Map
+  - Maps-Atlas
+  - Microform
+  - Mixed Material
+  - Music
+  - Musical Score
+  - Newspaper
+  - Photographs &amp; Pictorial Works
+  - Serial
+  - Statistics
+  - Video (DVD)
+  - Video (VHS)
+  - Visual Material
+
+
+languages:
+  - Abkhazian
+  - Achinese
+  - Acoli
+  - Adangme
+  - Adyghe
+  - Afrikaans
+  - Afro-Asiatic
+  - Aljamía
+  - Akan
+  - Akkadian
+  - Albanian
+  - Aleut
+  - Algonquian
+  - Altaic
+  - Amharic
+  - Ancient Egyptian
+  - Ancient Greek
+  - Apache
+  - Arabic
+  - Aramaic
+  - Arapaho
+  - Armenian
+  - Aromanian
+  - Artificial
+  - Assamese
+  - Asturian
+  - Athapascan
+  - Australian
+  - Austronesian
+  - Avaric
+  - Avestan
+  - Awadhi
+  - Aymara
+  - Azerbaijani
+  - Balinese
+  - Baltic
+  - Baluchi
+  - Bambara
+  - Bamileke
+  - Bantu
+  - Basa
+  - Bashkir
+  - Basque
+  - Batak
+  - Beja
+  - Belarusian
+  - Bemba
+  - Bengali
+  - Berber
+  - Bhojpuri
+  - Bihari
+  - Bikol
+  - Bini
+  - Bislama
+  - Bosnian
+  - Braj
+  - Breton
+  - Buginese
+  - Bulgarian
+  - Buriat
+  - Burmese
+  - Catalan
+  - Caucasian
+  - Cebuano
+  - Celtic
+  - Central American Indian
+  - Central Khmer
+  - Chagatai
+  - Chamic
+  - Chamorro
+  - Chechen
+  - Cherokee
+  - Cheyenne
+  - Chibcha
+  - Chichewa
+  - Chinese
+  - Chinook
+  - Chipewyan
+  - Choctaw
+  - Church Slavic
+  - Chuvash
+  - Coptic
+  - Cornish
+  - Corsican
+  - Cree
+  - Creek
+  - Creole
+  - Creoles
+  - Crimean Tatar
+  - Croatian
+  - Cushitic
+  - Czech
+  - Dakota
+  - Danish
+  - Dargwa
+  - Delaware
+  - Dinka
+  - Divehi
+  - Dogri
+  - Dravidian
+  - Duala
+  - Dutch
+  - Dyula
+  - Dzongkha
+  - Efik
+  - Elamite
+  - English
+  - Esperanto
+  - Estonian
+  - Ewe
+  - Ewondo
+  - Fang
+  - Fanti
+  - Faroese
+  - Fijian
+  - Filipino
+  - Finnish
+  - Finno-Ugrian
+  - Fon
+  - French
+  - Friulian
+  - Fulah
+  - Ga
+  - Gaelic
+  - Galician
+  - Ganda
+  - Gayo
+  - Gbaya
+  - Geez
+  - Georgian
+  - German
+  - Germanic
+  - Gilbertese
+  - Gondi
+  - Gorontalo
+  - Gothic
+  - Greek
+  - Guarani
+  - Gujarati
+  - Haida
+  - Hausa
+  - Hawaiian
+  - Hebrew
+  - Herero
+  - Hiligaynon
+  - Himachali
+  - Hindi
+  - Hittite
+  - Hmong
+  - Hungarian
+  - Iban
+  - Icelandic
+  - Igbo
+  - Ijo
+  - Iloko
+  - Indic
+  - Indo-European
+  - Indonesian
+  - Ingush
+  - Interlingua
+  - Inuktitut
+  - Inupiaq
+  - Iranian
+  - Irish
+  - Iroquoian
+  - Italian
+  - Japanese
+  - Javanese
+  - Judeo-Arabic
+  - Judeo-Persian
+  - Kabyle
+  - Kachin
+  - Kalaallisut
+  - Kalmyk
+  - Kamba
+  - Kannada
+  - Kanuri
+  - Kara-Kalpak
+  - Karelian
+  - Karen
+  - Kashmiri
+  - Kawi
+  - Kazakh
+  - Khasi
+  - Khoisan
+  - Khotanese
+  - Kikuyu
+  - Kinyarwanda
+  - Kirghiz
+  - Komi
+  - Kongo
+  - Konkani
+  - Korean
+  - Kosraean
+  - Kpelle
+  - Kru languages
+  - Kuanyama
+  - Kumyk
+  - Kurdish
+  - Kurukh
+  - Ladino
+  - Lahnda
+  - Lamba
+  - Land Dayak
+  - Lao
+  - Latin
+  - Latvian
+  - Lezghian
+  - Lingala
+  - Lithuanian
+  - Low German
+  - Lozi
+  - Luba-Katanga
+  - Luba-Lulua
+  - Luiseno
+  - Lunda
+  - Luo
+  - Lushai
+  - Luxembourgish
+  - Macedonian
+  - Madurese
+  - Magahi
+  - Maithili
+  - Makasar
+  - Malagasy
+  - Malay
+  - Malayalam
+  - Maltese
+  - Manchu
+  - Mandingo
+  - Manipuri
+  - Manobo
+  - Manx
+  - Maori
+  - Mapudungun
+  - Marathi
+  - Mari
+  - Marshallese
+  - Marwari
+  - Mayan
+  - Mende
+  - Mi-kmaq
+  - Middle English
+  - Middle French
+  - Middle High German
+  - Middle Irish
+  - Minangkabau
+  - Mohawk
+  - Moldavian
+  - Mon-Khmer
+  - Mongo
+  - Mongolian
+  - Mossi
+  - Multiple
+  - Munda
+  - Music
+  - Nahuatl
+  - Navajo
+  - Ndonga
+  - Nepal Bhasa
+  - Nepali
+  - Niger-Kordofanian
+  - Nilo-Saharan
+  - Niuean
+  - Nogai
+  - North American Indian
+  - North Ndebele
+  - Norwegian
+  - Norwegian Bokm?l
+  - Norwegian Nynorsk
+  - Nubian
+  - Nzima
+  - Occitan
+  - Ojibwa
+  - Old English
+  - Old French
+  - Old High German
+  - Old Irish
+  - Old Norse
+  - Old Persian
+  - Old Proven?al
+  - Oriya
+  - Oromo
+  - Ossetian
+  - Otomian
+  - Ottoman Turkish
+  - Pahlavi
+  - Palauan
+  - Pali
+  - Pampanga
+  - Pangasinan
+  - Panjabi
+  - Papiamento
+  - Papuan
+  - Pedi
+  - Persian
+  - Philippine
+  - Pohnpeian
+  - Polish
+  - Portuguese
+  - Prakrit languages
+  - Pushto
+  - Quechua
+  - Rajasthani
+  - Rapanui
+  - Rarotongan
+  - Romance
+  - Romanian
+  - Romansh
+  - Romany
+  - Rundi
+  - Russian
+  - Salishan
+  - Samaritan Aramaic
+  - Sami languages
+  - Samoan
+  - Sango
+  - Sanskrit
+  - Santali
+  - Sardinian
+  - Sasak
+  - Scots
+  - Selkup
+  - Semitic
+  - Serbian
+  - Serer
+  - Shan
+  - Shona
+  - Sichuan Yi
+  - Sidamo
+  - Sign Language
+  - Sindhi
+  - Sinhala
+  - Sino-Tibetan
+  - Siouan
+  - Skolt Sami
+  - Slave
+  - Slavic
+  - Slovak
+  - Slovenian
+  - Sogdian
+  - Somali
+  - Songhai
+  - Soninke
+  - Sorbian
+  - South American Indian
+  - Southern Altai
+  - Southern Sotho
+  - Spanish
+  - Sumerian
+  - Sundanese
+  - Susu
+  - Swahili
+  - Swati
+  - Swedish
+  - Syriac
+  - Tagalog
+  - Tahitian
+  - Tai
+  - Tajik
+  - Tamashek
+  - Tamil
+  - Tatar
+  - Telugu
+  - Tetum
+  - Thai
+  - Tibetan
+  - Tigre
+  - Tigrinya
+  - Timne
+  - Tiv
+  - Tlingit
+  - Tok
+  - Tokelau
+  - Tonga
+  - Tsimshian
+  - Tsonga
+  - Tswana
+  - Tumbuka
+  - Turkish
+  - Turkmen
+  - Tuvalu
+  - Tuvinian
+  - Twi
+  - Udmurt
+  - Ugaritic
+  - Uighur
+  - Ukrainian
+  - Umbundu
+  - Undetermined
+  - Unknown
+  - Urdu
+  - Uzbek
+  - Vietnamese
+  - Votic
+  - Wakashan
+  - Walamo
+  - Waray
+  - Welsh
+  - Western Frisian
+  - Wolof
+  - Xhosa
+  - Yakut
+  - Yao
+  - Yiddish
+  - Yoruba
+  - Yupik
+  - Zapotec
+  - Zenaga
+  - Zhuang
+  - Zulu
+  - Zuni

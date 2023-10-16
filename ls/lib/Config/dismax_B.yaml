@@ -1,0 +1,536 @@
+# dismax stuff; for now, just all
+
+ab: "B"
+
+
+#
+
+year:
+  qf:
+    - [publishDateRange, 25000]
+  mm: "100%"
+  tie: 0.9
+
+publisher:
+  qf:
+    - [publisher, 25000]
+  mm: "100%"
+  tie: 0.9
+
+
+serialtitle:
+  pf:
+    - [serialTitle_ab, 25000]
+    - [serialTitle_a, 15000]
+    - [serialTitleProper, 1200]
+    - [serialTitle_restProper, 400]
+  qf:
+    - [serialTitleProper, 120]
+    - [serialTitle_restProper, 40]
+    - [serialTitle, 30]
+    - [serialTitle_rest, 10]
+  mm: "100%"
+  tie: 0.1
+
+
+title:
+  pf:
+    - [title_ab, 25000]
+    - [title_a, 15000]
+    - [titleProper, 1200]
+    - [title_topProper, 600]
+    - [title_restProper, 400]
+    - [series, 300]
+    - [series2, 300]
+  qf:
+    - [titleProper, 120]
+    - [title_topProper, 60]
+    - [title_restProper, 40]
+    - [series, 50]
+    - [series2, 50]
+    - [title, 30]
+    - [title_top, 20]
+    - [title_rest, 10]
+  mm: "100%"
+  tie: 0.1
+
+debugtitle:
+  pf:
+  qf:
+    - [title, 300]
+    - [Vtitle,300] 
+  mm: "100%"
+  tie: 0.1
+
+
+journaltitle:
+  pf:
+    - [title_ab, 25000]
+    - [title_a, 15000]
+    - [titleProper, 1200]
+    - [title_topProper, 600]
+    - [title_restProper, 400]
+    - [series, 300]
+    - [series2, 300]
+  qf:
+    - [titleProper, 120]
+    - [title_topProper, 60]
+    - [title_restProper, 40]
+    - [series, 50]
+    - [series2, 50]
+    - [title, 30]
+    - [title_top, 20]
+    - [title_rest, 10]
+  mm: "100%"
+  tie: 0.1
+
+
+subject2:
+  pf:
+    - [topicProper, 5]
+    - [topic, 1]
+  qf:
+    - [topicProper, 5]
+    - [topic, 1]
+  mm: "100%"
+  tie: 0.1    
+
+subject:
+  pf:
+    - [topicProper, 5]
+    - [topic, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era , 1]
+  qf:
+    - [topicProper, 5]
+    - [topic, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era , 1]
+  mm: "100%"
+  tie: 0.1    
+
+
+hlb3:
+  pf:
+    - [hlb3, 10]
+  qf:
+    - [hlb3, 1]
+  mm: "100%"
+  tie: 0.1    
+  
+realauth:
+  pf:
+    [authorStr, 10]
+  qf:
+    [authorStr, 1]
+  mm: "100%"
+  tie: 0.1
+
+author:
+  pf:
+    - [author, 25000]
+    - [author2, 20000]
+    - [author_top, 5000]
+    - [author_rest, 1000]
+  qf:
+    - [author, 10]
+    - [author2, 5]
+    - [author_top, 2]
+    - [author_rest, 1]
+  mm: "100%"
+  tie: 0.1  
+
+  
+all:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.5
+# may want to rename this to allocr to imply its OCR plus all MARC
+#fields   
+
+#  ocr = 500,000 give OCR higher relative rankings
+# ocr = 50,000  MARC fields get higher relative ankings
+# tie =0.9  sum weights for each field instead of using only the
+# resulting score for the highest match i.e. tie = 0.1
+
+#XXX removed fields not currently in index schema.  put back in when
+# reindex happens  see ocr_with_missing_fields below 
+
+# ocr only
+ocronly:
+  qf:
+    - [ocr, 500000]
+  mm: "100%"
+  tie: 0.9
+
+#ocr only
+ocr:
+  pf:
+    - [title_ab, 10000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 50000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [issn, 1]
+    - [isbn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [id, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.9
+
+# ocr with pf2 and pf3
+# pf 3 = 1/2 pf values
+# pf 2 = 1/10th pf values, probably too low
+
+ocrpf:
+  pf:
+    - [title_ab, 10000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  pf3:
+    - [title_ab, 5000]
+    - [titleProper, 750]
+    - [title_topProper, 500]
+    - [title_restProper, 400]
+    - [series, 50]
+    - [series2, 50]
+    - [author, 800]
+    - [topicProper, 100]
+    - [fullgenre, 100]
+    - [hlb3, 100]
+    - [allfieldsProper, 50]    
+  pf2:
+    - [title_ab, 1000]
+    - [titleProper, 150]
+    - [title_topProper, 100]
+    - [title_restProper, 80]
+    - [series, 10]
+    - [series2, 10]
+    - [author, 160]
+    - [topicProper, 20]
+    - [fullgenre, 20]
+    - [hlb3, 20]
+    - [allfieldsProper, 10]    
+  qf:
+    - [ocr, 50000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [issn, 1]
+    - [isbn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [id, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.9
+
+
+
+
+
+
+# OCR copy  with fields that were commented out but maybe should be
+#put back in after re-indexing
+
+#XXX commented out field not currently in index schema.  put back in when
+# reindex happens
+
+ocr_with_missing_fields:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 50000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.9
+
+
+
+
+# 
+#  This is here so we can switch between two sets of weightings
+# for now its using ocr = 500,000 which should weight OCR higher
+# relative to MARC
+ocr2:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 500000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.9
+
+
+
+#This is here to experiment with
+debugocr:
+  pf:
+    - [title_ab, 10000]
+    - [title_a, 8000]
+    - [titleProper, 1500]
+    - [title_topProper, 1000]
+    - [title_restProper, 800]
+    - [series, 100]
+    - [series2, 100]
+    - [author, 1600]
+    - [author2, 800]
+    - [author_top, 100]
+    - [author_rest, 50]
+    - [fullgeographic, 200]
+    - [topicProper, 200]
+    - [fullgenre, 200]
+    - [hlb3, 200]
+    - [allfieldsProper, 100]    
+  qf:
+    - [ocr, 500000]
+    - [allfieldsProper, 2]
+    - [allfields, 1]
+    - [titleProper, 50]
+    - [title_topProper, 30]
+    - [title_restProper, 15]
+    - [title, 10]
+    - [title_top, 5]
+    - [title_rest, 2]
+    - [series, 5]
+    - [series2, 5]
+    - [author, 80]
+    - [author2, 50]
+    - [author_top, 30]
+    - [author_rest, 15]
+    - [issn, 1]
+    - [isbn, 1]
+    - [lccn, 1]
+    - [oclc, 1]
+    - [sdrnum, 1]
+    - [ctrlnum, 1]
+    - [ht_id, 1]
+    - [isn_related, 1]
+    - [rptnum, 1]
+    - [topicProper, 2]
+    - [topic, 1]
+    - [hlb3, 1]
+    - [fullgeographic, 1]
+    - [fullgenre, 1]
+    - [era, 1]
+  mm: "100%"
+  tie: 0.9
+
+
+
+#
+# XXX Experimental!!!  attempt to translate boost queries with special
+#vuFind processing to dismax  see searchspecs.yaml
+#
+isn:
+  pf:
+    - [issn, 100]
+    - [isbn, 100]
+    - [lccn, 100]
+    - [ctrlnum, 100]
+    - [rptnum, 100]
+    - [oclc, 100]
+    - [sdrnum, 100]
+    - [isn_related, 100]
+    - [ht_id, 100]
+  qf:
+    - [issn, 100]
+    - [isbn, 100]
+    - [lccn, 100]
+    - [ctrlnum, 100]
+    - [rptnum, 100]
+    - [oclc, 100]
+    - [sdrnum, 100]
+    - [isn_related, 100]
+    - [ht_id, 100]
+  mm: "100%"
+  tie: 0.1
+  
