@@ -1,0 +1,352 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename qw(dirname);
+use IO::File;
+autoflush STDOUT 1;
+
+use Plack::Runner;
+
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use Time::HiRes qw(time);
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ping/cgi');
+    }
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+use Identifier;
+
+use MdpConfig;
+use Auth::Auth;
+use Utils;
+use Database;
+use Session;
+
+use Institutions;
+
+use Plack::Request;
+use Plack::Response;
+
+use URI::Escape;
+
+use Ping::Utils;
+use JSON::XS;
+use Utils::Settings;
+
+use MIME::Base64;
+
+use Auth::Logging;
+
+{
+    package App;
+
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+
+    sub get_app_name {
+        my $self = shift;
+        return "ping";
+    }
+
+}
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    sub _body {
+        my ( $callback, $logged_in, $info, $msg, $idp_list, $expired ) = @_;
+
+
+        my $print_disabled = $$info{u} ? 'true' : 'false';
+        my $emergency_access = $$info{x} ? 'true' : 'false';
+        $expired = $expired ? 'true' : 'false';
+        my $idp_list_json = ref($idp_list) ? encode_json($idp_list) : 'null';
+        my $institution_name = uri_escape_utf8($$info{institution_name} || '');
+        my $institution_code = uri_escape_utf8($$info{institution_code} || '');
+        my $mapped_institution_name = uri_escape_utf8($$info{mapped_institution_name} || '');
+        my $mapped_institution_code = uri_escape_utf8($$info{mapped_institution_code} || '');
+        my $providerName = uri_escape_utf8($$info{providerName} || '');
+        my $affiliation = $$info{affiliation} || '';
+        unless ( $affiliation ) {
+            if ( $providerName ) {
+                $affiliation = 'Guest';
+            }
+        }
+
+        my $auth_type = $$info{auth_type} || 'null';
+        my $r = ref($$info{r}) ? q{JSON.parse('} . encode_json($$info{r}) . q{')} : 'null';
+
+        # my $is_cosign_active = $MdpGlobals::is_cosign_active ? 'true' : 'false';
+
+        $auth_type = qq{"$auth_type"} unless ( $auth_type eq 'null' );
+        my $notificationData_array = q{[]};
+        if ( ref($$info{notificationData}) ) {
+            $notificationData_array = encode_json($$info{notificationData});
+        }
+
+        my $analytics_settings = q{null};
+        if ( ref($$info{analyticsSettings}) ){
+            $analytics_settings = encode_json($$info{analyticsSettings});
+        }
+        my $hotjar_settings = q{null};
+        if ( ref( $$info{hotjarSettings} ) ) {
+            $hotjar_settings = encode_json( $$info{hotjarSettings} );
+        }
+
+        my $retval = <<JAVASCRIPT;
+var HT = HT || {};
+HT.login_status = {};
+HT.login_status.logged_in = $logged_in;
+HT.login_status.institutionName = decodeURIComponent('$institution_name');
+HT.login_status.institutionCode = decodeURIComponent('$institution_code');
+HT.login_status.mappedInstitutionName = decodeURIComponent('$mapped_institution_name');
+HT.login_status.mappedInstitutionCode = decodeURIComponent('$mapped_institution_code');
+HT.login_status.affiliation = decodeURIComponent('$affiliation');
+HT.login_status.providerName = decodeURIComponent('$providerName');
+HT.login_status.expired = $expired;
+HT.login_status.authType = $auth_type;
+HT.login_status.message = "$msg";
+HT.login_status.u = $print_disabled;
+HT.login_status.x = $emergency_access;
+HT.login_status.idp_list = $idp_list_json;
+HT.login_status.r = $r;
+HT.login_status.notificationData = $notificationData_array;
+HT.analyticsSettings = $analytics_settings;
+HT.hotjarSettings = $hotjar_settings;
+JAVASCRIPT
+
+        $retval .= <<JAVASCRIPT;
+HT.shibboleth_alert = function() {
+    alert("Please quit your browser to log out of Shibboleth.");
+    return false;
+}
+
+HT.get_pong_target = function(target) {
+    return "https://$ENV{SERVER_NAME}/cgi/ping/pong?target=" + target;
+}
+
+HT.login_href = function() {
+    if ( HT.login_status.logged_in ) {
+        if ( HT.login_status.authType == 'shibboleth' ) {
+            return "";
+        } else {
+            return "https://$ENV{SERVER_NAME}/cgi/logout?" + window.location.href;
+        }
+    }
+    // not logged in
+    var target_1 = encodeURIComponent("https://$ENV{SERVER_NAME}/cgi/ping/pong?target=");
+    return "http://$ENV{SERVER_NAME}/cgi/wayf?target=" + target_1 + encodeURIComponent(window.location.href);
+}
+
+HT.login_link = function() {
+    var href = HT.login_href();
+    var link;
+    if ( HT.login_status.logged_in ) {
+        link = HT.login_status.affiliation;
+        if ( HT.login_status.providerName ) {
+            link += " (" + HT.login_status.providerName + ")";
+        }
+        link += ' <a href="https://$ENV{SERVER_NAME}/cgi/logout" id="loginLink">(logout)</a>';
+    } else {
+        link = '<a href="' + href + '">Login</a>';
+    }
+
+    return link;
+}
+JAVASCRIPT
+
+        if ( $callback ) {
+            $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
+        }
+    }
+
+    my $C = new Context;
+    $C->set_object('App', new App);
+
+    my $original_request = $request->referer || '';
+
+    my $callback = $request->param('callback') || qq{ping_handler};
+
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('ping'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
+                              );
+    $C->set_object('MdpConfig', $config);
+
+    # now need to hit the database
+    $C->set_object('MdpConfig', $config);
+
+    my $cgi = new CGI;
+    $C->set_object('CGI', $cgi);
+
+    # Database connection
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    # get an Auth object to trigger cgi/shcgi redirection
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+
+    # Session
+    # by putting this here, we are saying that EVERYONE will get a session
+    # even just by browsing www and catalog
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    if ( my @tmp = ( $original_request =~ m{/cgi/(mb)|/cgi/(ls)|(catalog).hathitrust.org|(www).hathitrust.org} ) ) {
+        # my $original_referer = MIME::Base64::decode_base64(substr(($request->path_info || '/'), 1));
+        my $original_referer = $request->param('ref');
+        my ( $original_host, $original_request_uri ) = ( $original_request =~ m{https://([^/]+)(/.*)});
+        my $app_name = (grep defined && /\w+/,@tmp)[0];
+        Auth::Logging::log_access($C, $app_name, undef, {
+            HTTP_REFERER => $original_referer,
+            REQUEST_URI => $original_request_uri,
+            HTTP_HOST   => $original_host,
+        });
+    }
+
+    # if REMOTE_USER is set, we're done
+    if ( $$env{REMOTE_USER} ) {
+
+        # # Database connection to look up mdp.ht_institutions table
+        # my $db = new Database('ht_web');
+        # $C->set_object('Database', $db);
+
+        # my $cgi = new CGI;
+        # $C->set_object('CGI', $cgi);
+
+        # # Session
+        # my $ses = Session::start_session($C);
+        # $C->set_object('Session', $ses);
+
+        my $info = Ping::Utils::identify_user($C, $env, $config);
+
+        $response = Plack::Response->new(200);
+        $response->content_type('application/javascript');
+        if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! exists($request->cookies->{HT_AUTHTYPE}) ) {
+            $response->cookies->{HT_AUTHTYPE} = {
+                'value' => 'shibboleth',
+                'path' => '/',
+                'domain' => '.hathitrust.org',
+                'secure' => 1,
+            };
+        }
+
+        my $escapedProviderName = uri_escape_utf8($$info{providerName});
+        $response->cookies->{HTproviderName} = {
+            value => $escapedProviderName,
+            path => '/',
+            domain => '.hathitrust.org',
+            secure => 1,
+        } unless ( exists($request->cookies->{HTproviderName}) && $request->cookies->{HTproviderName} eq $escapedProviderName );
+        $response->cookies->{'HTstatus'} = {
+            'value' => encode_json($info),
+            'path'  => '/',
+            'domain' => Utils::get_cookie_domain()
+        };
+        
+        $$info{notificationData} = Ping::Notifications::get_notification_data($C);
+
+        if ( my $analytics_settings = Utils::Settings::load('ping', 'analytics') ) {
+            $$info{analyticsSettings} = $analytics_settings;
+        }
+
+        if ( my $hotjar_settings = Utils::Settings::load('ping', 'hotjar') ) {
+            $$info{hotjarSettings} = $hotjar_settings;
+        }
+
+        $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
+        return $response->finalize;
+    }
+
+    # get the institutions
+    my $idp_list = Institutions::get_idp_list($C);
+
+    my $cookies = $request->cookies;
+
+    $response = Plack::Response->new(200);
+    $response->content_type('application/javascript');
+
+    my $cookie_name = $config->get('cookie_name');
+    $response->cookies->{$cookie_name} = {
+        'value' => $ses->get_session_id(),
+        'path' => '/',
+        'domain' => Utils::get_cookie_domain(),
+        'httponly' => 1
+    };
+
+    my $logged_out = $ses->get_persistent('logged_out', 0);
+    if ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} ne '' ) {
+        $logged_out = 1;
+    }
+    $response->cookies->{'HTstatus'} = {
+        value  => '',
+        path   => '/',
+        domain => Utils::get_cookie_domain(),
+        expires => 'Thu, 01-Jan-1970 00:00:00 GMT'
+    };
+
+    my $info = {
+        institution_name => '',
+        institution_code => '',
+        mapped_institution_code => '',
+        mapped_institution_name => '',
+        affiliation => '',
+        providerName => '',
+        authType => undef,
+        u => 0,
+        x => 0,
+        r => undef,
+    };
+
+    if ( my $analytics_settings = Utils::Settings::load('ping', 'analytics') ) {
+        $$info{analyticsSettings} = $analytics_settings;
+    }
+
+    if ( my $hotjar_settings = Utils::Settings::load( 'ping', 'hotjar' ) ) {
+        $$info{hotjarSettings} = $hotjar_settings;
+    }
+
+    # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
+    # $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
+    $response->body(_body($callback, 'false', $info, "NOT LOGGED IN", $idp_list, $logged_out));
+    return $response->finalize;
+
+};
+
+Plack::Runner->new->run($app);
