@@ -1,7 +1,7 @@
 <script>
   import { getContext } from 'svelte';
   import { tooltip } from '../../lib/tooltip';
-  
+
   const emitter = getContext('emitter');
 
   export let sticky = false;
@@ -20,29 +20,25 @@
   export let allowRotate = false;
 
   // let isOpen = true; // selected || null;
-  let isDisabled = ( view == 'thumb' && ! allowFullDownload );
+  let isDisabled = view == 'thumb' && !allowFullDownload;
 
-  export let rotateScan = function() { }
-  export let updateZoom = function() { }
-  export let togglePageSelection = function() { }
-  export let openLightbox = function() {}
+  export let rotateScan = function () {};
+  export let updateZoom = function () {};
+  export let togglePageSelection = function () {};
+  export let openLightbox = function () {};
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<details 
-  class="page-menu {side} view-{view}" 
+<details
+  class="page-menu {side} view-{view}"
   class:sticky-top={sticky}
   data-seq={seq}
   open={isOpen}
   aria-hidden={!focused}
-  tabindex={focused && ! isDisabled ? 0 : -1}
+  tabindex={focused && !isDisabled ? 0 : -1}
   disabled={isDisabled ? true : null}
-  >
-  <summary 
-    class="btn-dark shadow"
-    aria-hidden={!focused}
-    tabindex={focused ? 0 : -1}
-    >
+>
+  <summary class="btn-dark shadow" aria-hidden={!focused} tabindex={focused ? 0 : -1}>
     <div class="d-flex align-items-center justify-content-between px-2 py-1 gap-2 rounded">
       <span class="seq">
         #{seq}
@@ -51,87 +47,83 @@
         {/if}
       </span>
       <span class="arrow">
-        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        <i class="fa-solid fa-chevron-down" aria-hidden="true" />
       </span>
     </div>
   </summary>
   <div class="d-flex flex-column gap-1 align-items-center width-min-content menu-items">
     {#if allowFullDownload}
-    <button 
-      type="button" 
-      class="btn btn-light border border-dark"
-      use:tooltip
-      on:click|stopPropagation={togglePageSelection}
-      aria-label={selected ? `Page scan #${seq} is selected` : `Select page scan #${seq}`}
-      aria-pressed={selected}
-      aria-hidden={!focused}
-      tabindex={focused ? 0 : -1}
-      ><i 
-        class="fa-regular"
-        class:fa-square={!selected}
-        class:fa-square-check={selected}></i>
-    </button>
+      <button
+        type="button"
+        class="btn btn-light border border-dark"
+        use:tooltip
+        on:click|stopPropagation={togglePageSelection}
+        aria-label={selected ? `Page scan #${seq} is selected` : `Select page scan #${seq}`}
+        aria-pressed={selected}
+        aria-hidden={!focused}
+        tabindex={focused ? 0 : -1}
+        ><i class="fa-regular" class:fa-square={!selected} class:fa-square-check={selected} />
+      </button>
     {/if}
     {#if isUnusual}
-    <button 
-      type="button"
-      class="btn btn-light border border-dark"
-      use:tooltip
-      on:click|stopPropagation={openLightbox}
-      data-bs-placement={side == 'verso' ? 'right' : 'left'}
-      aria-label="Open foldout for page scan #{seq}"
-      aria-hidden={!focused}
-      tabindex={focused ? 0 : -1}
-      ><i 
-        aria-hidden="true"
-        class="fa-solid fa-up-right-from-square fa-flip-horizontal"></i>
+      <button
+        type="button"
+        class="btn btn-light border border-dark"
+        use:tooltip
+        on:click|stopPropagation={openLightbox}
+        data-bs-placement={side == 'verso' ? 'right' : 'left'}
+        aria-label="Open foldout for page scan #{seq}"
+        aria-hidden={!focused}
+        tabindex={focused ? 0 : -1}
+        ><i aria-hidden="true" class="fa-solid fa-up-right-from-square fa-flip-horizontal" />
       </button>
     {/if}
     <!-- if we disable the button then we have to disable pageZoom if rotated and bleh-->
     <!-- disabled={pageZoom > 1 ? true : null} -->
     {#if allowRotate && format == 'image'}
-    <button
-      type="button" 
-      class="btn btn-light border border-dark" 
-      use:tooltip
-      aria-label="Rotate page"
-      aria-hidden={!focused}
-      tabindex={focused ? 0 : -1}
-      on:click|stopPropagation={rotateScan}
-     ><i class="fa-solid fa-rotate-right"></i></button>
+      <button
+        type="button"
+        class="btn btn-light border border-dark"
+        use:tooltip
+        aria-label="Rotate page"
+        aria-hidden={!focused}
+        tabindex={focused ? 0 : -1}
+        on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right" /></button
+      >
     {/if}
     {#if allowPageZoom}
-    <div class="btn-group-vertical bg-white" role="group">
-      <button 
-        type="button" 
-        class="btn btn-light border border-dark" 
-        disabled={pageZoom == 2.5}
-        use:tooltip
-        aria-label="Zoom in #{seq}"
-        aria-hidden={!focused}
-        tabindex={focused ? 0 : -1}
-        on:click|stopPropagation={() => updateZoom(0.5)}>
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-      </button>
-      <button 
-        type="button" 
-        class="btn btn-light border border-dark" 
-        disabled={pageZoom == 1}
-        use:tooltip
-        aria-label="Zoom out #{seq}"
-        aria-hidden={!focused}
-        tabindex={focused ? 0 : -1}
-        on:click|stopPropagation={() => updateZoom(-0.5)}>
-        <i class="fa-solid fa-minus" aria-hidden="true"></i>
-      </button>
-    </div>
+      <div class="btn-group-vertical bg-white" role="group">
+        <button
+          type="button"
+          class="btn btn-light border border-dark"
+          disabled={pageZoom == 2.5}
+          use:tooltip
+          aria-label="Zoom in #{seq}"
+          aria-hidden={!focused}
+          tabindex={focused ? 0 : -1}
+          on:click|stopPropagation={() => updateZoom(0.5)}
+        >
+          <i class="fa-solid fa-plus" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="btn btn-light border border-dark"
+          disabled={pageZoom == 1}
+          use:tooltip
+          aria-label="Zoom out #{seq}"
+          aria-hidden={!focused}
+          tabindex={focused ? 0 : -1}
+          on:click|stopPropagation={() => updateZoom(-0.5)}
+        >
+          <i class="fa-solid fa-minus" aria-hidden="true" />
+        </button>
+      </div>
     {/if}
   </div>
 </details>
 
 <style lang="scss">
-
-  :global(body[data-interface="minimal"] .page-menu) {
+  :global(body[data-interface='minimal'] .page-menu) {
     display: none !important;
   }
 
@@ -192,7 +184,7 @@
   }
 
   .page-menu[open] .arrow i::before {
-    content: "\F077";
+    content: '\F077';
   }
 
   .page-menu[disabled] {
@@ -203,7 +195,7 @@
   }
 
   .page-menu summary {
-    --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5);
+    --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), 0.5);
     white-space: nowrap;
     list-style: none;
 
@@ -217,7 +209,7 @@
 
     border-radius: 4px;
 
-    font-family: "Roboto Mono", monospace;
+    font-family: 'Roboto Mono', monospace;
 
     &:hover {
       background-color: var(--bs-btn-hover-bg);
@@ -248,12 +240,14 @@
     --bs-btn-disabled-opacity: 0.4;
   }
 
-  .page-menu summary {list-style: none}
-  .page-menu summary::-webkit-details-marker {display: none; }
+  .page-menu summary {
+    list-style: none;
+  }
+  .page-menu summary::-webkit-details-marker {
+    display: none;
+  }
 
   .width-min-content {
     width: min-content;
   }
-
-
 </style>

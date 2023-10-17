@@ -16,7 +16,6 @@
   prefs.pt = prefs.pt || {};
   prefs.pt.alerts = prefs.pt.alerts || {};
 
-
   const subviews = {};
   subviews['total_access'] = TotalAccessUser;
   subviews['in_library_user'] = InLibraryUser;
@@ -34,15 +33,15 @@
     let key = this.name;
     prefs.pt.alerts[key] = open ? 'open' : 'closed';
     HT.prefs.set(prefs);
-    console.log("-- access.panel.toggle", key, open);
+    console.log('-- access.panel.toggle', key, open);
   }
 </script>
 
 {#if manifest.accessType && manifest.accessType.granted}
-  <svelte:component 
+  <svelte:component
     this={subviews[accessTypeName]}
-    accessType={accessType}
+    {accessType}
     onToggle={onToggle.bind(accessType)}
     expanded={isExpanded(accessType)}
-    ></svelte:component>
+  />
 {/if}

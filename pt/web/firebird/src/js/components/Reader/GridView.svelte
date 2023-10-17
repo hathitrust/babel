@@ -12,43 +12,52 @@
 
   let view;
 
-  export const currentLocation = function() {
+  export const currentLocation = function () {
     return { page: view.item($currentSeq) };
-  }
+  };
 
-  const handleClick = function(event) {
-    if ( event.target.closest('details') ) { return ; }
-    if ( event.target.closest('button') ) { return ; }
+  const handleClick = function (event) {
+    if (event.target.closest('details')) {
+      return;
+    }
+    if (event.target.closest('button')) {
+      return;
+    }
     event.stopPropagation();
     let pageDiv = event.target.closest('div.page');
-    if ( ! pageDiv ) { return ; }
+    if (!pageDiv) {
+      return;
+    }
     emitter.emit('view.switch', { seq: pageDiv.dataset.seq });
-  }
+  };
 
-  const handleKeydown = function(event) {
-    if ( event.target.closest('details') ) { return; }
+  const handleKeydown = function (event) {
+    if (event.target.closest('details')) {
+      return;
+    }
     let pageDiv = event.target.closest('div.page');
-    if ( ! pageDiv ) { return ; }
-    if ( event.code == 'Enter' ) {
+    if (!pageDiv) {
+      return;
+    }
+    if (event.code == 'Enter') {
       emitter.emit('view.switch', { seq: pageDiv.dataset.seq });
-    } else if ( event.code == 'Tab' ) {
-      // should grid view be different about 
+    } else if (event.code == 'Tab') {
+      // should grid view be different about
       // handling which pages are focus-able?
     }
-  }
+  };
 </script>
 
-  <View
-    {container}
-    {startSeq}
-    {currentLocation}
-    format='image'
-    maxHeight={250}
-    zoomScales={[0.5, 0.75, 1.0]}
-    {handleClick}
-    bind:this={view}
-   />
+<View
+  {container}
+  {startSeq}
+  {currentLocation}
+  format="image"
+  maxHeight={250}
+  zoomScales={[0.5, 0.75, 1.0]}
+  {handleClick}
+  bind:this={view}
+/>
 
 <style>
-
 </style>

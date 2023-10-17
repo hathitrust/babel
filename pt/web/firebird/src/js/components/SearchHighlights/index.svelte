@@ -1,5 +1,4 @@
 <script>
-
   import { onMount } from 'svelte';
 
   export let page_coords = [];
@@ -12,25 +11,22 @@
 
   let highlights = [];
 
-  const buildTextHighlights = function() {
+  const buildTextHighlights = function () {};
 
-  }
-
-  const buildHighlights = function() {
-
+  const buildHighlights = function () {
     function parseCoords(value) {
-      var values = value.split(' ')
+      var values = value.split(' ');
       return values.map((v) => parseInt(v, 10));
     }
 
     highlights.length = 0;
-    var timestamp = (new Date).getTime();
+    var timestamp = new Date().getTime();
 
     var scaling = {};
 
-    if ( image ) {
+    if (image) {
       // if ( image.hasAttribute('width') ) {
-      //   scaling.width = parseInt(image.getAttribute('width'), 10); 
+      //   scaling.width = parseInt(image.getAttribute('width'), 10);
       //   scaling.height = parseInt(image.getAttribute('height'), 10);
       // } else {
       //   scaling.width = image.width;
@@ -40,9 +36,9 @@
       scaling.width = canvas.width; // image.offsetWidth;
       scaling.height = canvas.height; // image.offsetHeight;
 
-      console.log("-- search.highlights scaling", scaling.width, scaling.height, canvas);
+      console.log('-- search.highlights scaling', scaling.width, scaling.height, canvas);
 
-      if ( orient == 90 || orient == 270 ) {
+      if (orient == 90 || orient == 270) {
         scaling.width = canvas.height; // image.offsetHeight;
         scaling.height = canvas.width; // image.offsetWidth;
       }
@@ -50,7 +46,7 @@
       scaling.ratio = scaling.width / page_coords[2];
       scaling.ratioY = scaling.height / page_coords[3];
 
-      if ( orient == 90 || orient == 270 ) {
+      if (orient == 90 || orient == 270) {
         scaling.ratio = scaling.width / page_coords[3];
       }
 
@@ -59,37 +55,48 @@
       scaling.ratio *= scaling.ratioZ;
     }
 
-    function textNodesUnder(el){
-      var n, a=[], walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false);
-      while(n=walk.nextNode()) a.push(n);
+    function textNodesUnder(el) {
+      var n,
+        a = [],
+        walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+      while ((n = walk.nextNode())) a.push(n);
       return a;
     }
 
-    for(let i = 0; i < matches.length; i++) {
-
+    for (let i = 0; i < matches.length; i++) {
       // var span = text.parentNode;
       var span = matches[i];
 
-      if ( format == 'image' ) {
+      if (format == 'image') {
         var coords = parseCoords(span.dataset.coords);
         coords[0] *= scaling.ratio;
         coords[2] *= scaling.ratio;
         coords[1] *= scaling.ratio;
         coords[3] *= scaling.ratio;
 
-        if ( orient == 90 || orient == 270 ) {
+        if (orient == 90 || orient == 270) {
           let newCoords = [];
           newCoords[0] = coords[1];
           newCoords[2] = coords[3];
           newCoords[1] = coords[0];
           newCoords[3] = coords[2];
 
-          console.log("-- search.highlights", orient, span.dataset.coords, coords, newCoords, image.offsetWidth, image.offsetHeight, scaling.width, scaling.height);
+          console.log(
+            '-- search.highlights',
+            orient,
+            span.dataset.coords,
+            coords,
+            newCoords,
+            image.offsetWidth,
+            image.offsetHeight,
+            scaling.width,
+            scaling.height
+          );
           coords = [...newCoords];
         }
 
-        var highlight_w0 = Math.abs( coords[2] - coords[0] );
-        var highlight_h0 = Math.abs( coords[3] - coords[1] );
+        var highlight_w0 = Math.abs(coords[2] - coords[0]);
+        var highlight_h0 = Math.abs(coords[3] - coords[1]);
         var highlight_w = highlight_w0 * 1.25;
         var highlight_h = highlight_h0 * 1.25;
 
@@ -98,25 +105,45 @@
         highlight.timestamp = timestamp;
         // highlight.top = coords[1];
         highlight.padding = scaling.padding;
-        highlight.width = `${highlight_w / scaling.width * 100.0}%`;
-        highlight.height = `${highlight_h / scaling.height * 100.0}%`;
-        highlight.top = `${( coords[1] - ( ( highlight_h - highlight_h0 ) / 2 ) ) / scaling.height * 100.0}%`;
-        highlight.left = `${( coords[0] - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;
+        highlight.width = `${(highlight_w / scaling.width) * 100.0}%`;
+        highlight.height = `${(highlight_h / scaling.height) * 100.0}%`;
+        highlight.top = `${((coords[1] - (highlight_h - highlight_h0) / 2) / scaling.height) * 100.0}%`;
+        highlight.left = `${((coords[0] - (highlight_w - highlight_w0) / 2) / scaling.width) * 100.0}%`;
 
-        if ( orient == 90 ) {
-          highlight.top = `${( coords[1] - ( ( highlight_h - highlight_h0 ) / 2 ) ) / scaling.height * 100.0}%`;
-          highlight.left = `${( ( scaling.width - coords[0] ) - ( ( highlight_w - highlight_w0 ) / 0.25 ) ) / scaling.width * 100.0}%`;
-        } else if ( orient == 180 ) {
-          highlight.top = `${( ( scaling.height - coords[1] ) - ( ( highlight_h - highlight_h0 ) / 0.25 ) ) / scaling.height * 100.0}%`;
-          highlight.left = `${( ( scaling.width - coords[0] ) - ( ( highlight_w - highlight_w0 ) / 0.25 ) ) / scaling.width * 100.0}%`;
-        } else if ( orient == 270 ) {
-          highlight.top = `${( ( scaling.height ) - coords[1] - ( ( highlight_h - highlight_h0 ) / 0.25 ) ) / scaling.height * 100.0}%`;
-          highlight.left = `${( ( coords[0] ) - ( ( highlight_w - highlight_w0 ) / 2 ) ) / scaling.width * 100.0}%`;          
+        if (orient == 90) {
+          highlight.top = `${((coords[1] - (highlight_h - highlight_h0) / 2) / scaling.height) * 100.0}%`;
+          highlight.left = `${
+            ((scaling.width - coords[0] - (highlight_w - highlight_w0) / 0.25) / scaling.width) * 100.0
+          }%`;
+        } else if (orient == 180) {
+          highlight.top = `${
+            ((scaling.height - coords[1] - (highlight_h - highlight_h0) / 0.25) / scaling.height) * 100.0
+          }%`;
+          highlight.left = `${
+            ((scaling.width - coords[0] - (highlight_w - highlight_w0) / 0.25) / scaling.width) * 100.0
+          }%`;
+        } else if (orient == 270) {
+          highlight.top = `${
+            ((scaling.height - coords[1] - (highlight_h - highlight_h0) / 0.25) / scaling.height) * 100.0
+          }%`;
+          highlight.left = `${((coords[0] - (highlight_w - highlight_w0) / 2) / scaling.width) * 100.0}%`;
         }
 
-        if ( orient == 90 || seq == 7 ) {
-          console.log("-- search.highlights top", coords[1], ( ( highlight_h - highlight_h0 ) / 2 ), scaling.height, scaling.ratio);
-          console.log("-- search.highlights left", coords[0], ( ( highlight_w - highlight_w0 ) / 2 ), scaling.width, scaling.ratio );
+        if (orient == 90 || seq == 7) {
+          console.log(
+            '-- search.highlights top',
+            coords[1],
+            (highlight_h - highlight_h0) / 2,
+            scaling.height,
+            scaling.ratio
+          );
+          console.log(
+            '-- search.highlights left',
+            coords[0],
+            (highlight_w - highlight_w0) / 2,
+            scaling.width,
+            scaling.ratio
+          );
         }
 
         // var highlight = document.createElement('mark');
@@ -140,7 +167,6 @@
 
         // scan.appendChild(highlight);
         highlights.push(highlight);
-
       } else {
         // span.classList.add('highlight--plaintext', `highlight_${highlight_idx}`);
         const mark = document.createElement('mark');
@@ -150,22 +176,37 @@
         mark.classList.add('highlight--plaintext', 'highlight'); // `highlight_${highlight_idx}`);
         mark.dataset.coords = span.dataset.coords;
         // console.log("-- mark", mark, span, span.parentElement);
-        if ( span.parentElement ) {
+        if (span.parentElement) {
           span.parentElement.replaceChild(mark, span);
         }
       }
     }
 
-    highlights = highlights
+    highlights = highlights;
+  };
+
+  $: if (format == 'image' && image && matches && matches.length && orient >= 0) {
+    buildHighlights();
   }
-
-  $: if (format == 'image' && image && matches && matches.length && orient >= 0) { buildHighlights() }
-  $: if (format == 'plaintext' && matches && matches.length) { buildHighlights(); }
-
+  $: if (format == 'plaintext' && matches && matches.length) {
+    buildHighlights();
+  }
 </script>
 
-<style>
+{#if format == 'image'}
+  {#each highlights as highlight}
+    <mark
+      class="image highlight"
+      data-word={highlight.word}
+      style:width={highlight.width}
+      style:height={highlight.height}
+      style:top={highlight.top}
+      style:left={highlight.left}
+    />
+  {/each}
+{/if}
 
+<style>
   :global(mark.image.highlight) {
     position: absolute;
     opacity: 0.4;
@@ -176,24 +217,12 @@
     /* background: darkorange; */
   }
 
-  :global(html[data-show-highlights="false"] mark.image.highlight) {
+  :global(html[data-show-highlights='false'] mark.image.highlight) {
     display: none !important;
   }
 
-  :global(html[data-show-highlights="false"] mark.highlight),
-  :global(html[data-show-highlights="false"] p.kwic mark) {
+  :global(html[data-show-highlights='false'] mark.highlight),
+  :global(html[data-show-highlights='false'] p.kwic mark) {
     background: transparent;
   }
-
 </style>
-
-{#if format == 'image'}
-{#each highlights as highlight}
-  <mark class="image highlight"
-        data-word={highlight.word} 
-        style:width={highlight.width}
-        style:height={highlight.height}
-        style:top={highlight.top}
-        style:left={highlight.left}></mark>
-{/each}
-{/if}

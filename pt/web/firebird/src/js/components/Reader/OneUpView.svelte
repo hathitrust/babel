@@ -13,19 +13,12 @@
 
   let view;
 
-  export const currentLocation = function() {
+  export const currentLocation = function () {
     return { page: view.item($currentSeq) };
-  }
+  };
 </script>
 
-  <View
-    {container}
-    {startSeq}
-    {currentLocation}
-    format={$currentFormat}
-    bind:this={view}
-   />
+<View {container} {startSeq} {currentLocation} format={$currentFormat} bind:this={view} />
 
 <style>
-
 </style>

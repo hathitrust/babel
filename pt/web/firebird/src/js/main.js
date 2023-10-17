@@ -1,5 +1,5 @@
 // @ts-nocheck
-import '../scss/styles.scss'
+import '../scss/styles.scss';
 
 import { setupHTEnv } from '~firebird-common/src/js/lib/utils';
 import { AnalyticsManager } from '~firebird-common/src/js/lib/analytics';
@@ -12,14 +12,14 @@ window.bootstrap = bootstrap;
 
 import { writable } from 'svelte/store';
 
-// -- favor lib/tooltip.js action because the native bootstrap 
+// -- favor lib/tooltip.js action because the native bootstrap
 // tooltip remains on when buttons are clicked and stay in focus
-// new bootstrap.Tooltip('body', { 
+// new bootstrap.Tooltip('body', {
 //   selector: '[data-bs-toggle="tooltip"]',
 //   title: function() { return this.getAttribute('aria-label'); }
 // });
 
-import App from './App.svelte'
+import App from './App.svelte';
 
 const toCamel = (s) => {
   return s.replace(/([-_][a-z])/gi, ($1) => {
@@ -59,8 +59,9 @@ let app;
 let needLoggedInStatus = true;
 
 HT.postPingCallback = function (login_status) {
-
-  if ( ! needLoggedInStatus ) { return ; }
+  if (!needLoggedInStatus) {
+    return;
+  }
 
   // we need to set loginStatus as long as login_status.authType === undefined
   // because ping sets authType=null and the emptyLoginStatus doesn't set authType
@@ -71,39 +72,41 @@ HT.postPingCallback = function (login_status) {
   HT.loginStatus.set(login_status);
 
   // if the app was already initialized, punt
-  if ( app ) { return ; }
+  if (app) {
+    return;
+  }
 
   let el = document.getElementById('root');
   let props = buildProps(el);
 
   app = new App({
     target: document.getElementById('root'),
-    props: props
-  })
+    props: props,
+  });
   setTimeout(() => {
     document.body.dataset.initialized = true;
   });
-  (new AnalyticsManager(HT)).configure();
-  (new HotjarManager(HT)).configure();
+  new AnalyticsManager(HT).configure();
+  new HotjarManager(HT).configure();
 
-  if ( window.firebirdErrorHandler ) {
+  if (window.firebirdErrorHandler) {
     window.removeEventListener('error', window.firebirdErrorHandler);
   }
 };
 
 let script = document.createElement('script');
 script.async = true;
-script.src = `//${
-  HT.service_domain
-}/cgi/ping?callback=HT.postPingCallback&_${new Date().getTime()}`;
-script.onerror = function() { 
-  HT.postPingCallback(emptyLoginStatus); 
-}
+script.src = `//${HT.service_domain}/cgi/ping?callback=HT.postPingCallback&_${new Date().getTime()}`;
+script.onerror = function () {
+  HT.postPingCallback(emptyLoginStatus);
+};
 document.head.appendChild(script);
 
 setTimeout(() => {
-  if ( document.body.dataset.initialized == 'true' ) { return ; }
-  HT.postPingCallback(emptyLoginStatus)
+  if (document.body.dataset.initialized == 'true') {
+    return;
+  }
+  HT.postPingCallback(emptyLoginStatus);
 }, 500);
 
-export default app
+export default app;

@@ -7,8 +7,7 @@
 
 <div class="alert alert-warning">
   <p>
-    This item is <strong>no longer available</strong> in HathiTrust
-    due to one of the following conditions:
+    This item is <strong>no longer available</strong> in HathiTrust due to one of the following conditions:
   </p>
   <ul class="mb-0">
     <li>It was deleted at the request of the rights holder or has been marked for deletion.</li>
@@ -17,6 +16,6 @@
 </div>
 
 <p class="mt-3">
-  Try a <strong><a href="//{HT.www_domain}/">new search</a></strong> 
+  Try a <strong><a href="//{HT.www_domain}/">new search</a></strong>
   for your item to see if there are other copies or editions of this work available.
 </p>

@@ -13,35 +13,42 @@
   let bsParent = manifest.ui == 'crms' ? null : parent;
   let accordionEl;
 
-  export let id = `${(new Date).getTime()}-${Math.ceil(Math.random() * 1000)}`;
+  export let id = `${new Date().getTime()}-${Math.ceil(Math.random() * 1000)}`;
 
   onMount(() => {
-    if ( onToggle ) {
+    if (onToggle) {
       accordionEl.addEventListener('hide.bs.collapse', (event) => onToggle(event, false));
       accordionEl.addEventListener('show.bs.collapse', (event) => onToggle(event, true));
     }
-  })
+  });
 </script>
 
 <div class="accordion-item {className} panel" bind:this={accordionEl}>
   <h2 class="accordion-header" id="h{id}">
-    <button 
-      class="accordion-button" 
-      class:collapsed={!expanded} 
-      type="button" 
-      data-bs-toggle="collapse" 
-      data-bs-target="#c{id}" 
-      aria-expanded={expanded} 
-      aria-controls="c{id}">
+    <button
+      class="accordion-button"
+      class:collapsed={!expanded}
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#c{id}"
+      aria-expanded={expanded}
+      aria-controls="c{id}"
+    >
       <div class="d-flex gap-2 align-items-center me-1">
-        <slot name="icon"></slot>
-        <slot name="title"></slot>
+        <slot name="icon" />
+        <slot name="title" />
       </div>
     </button>
   </h2>
-  <div id="c{id}" class="accordion-collapse collapse" class:show={expanded} aria-labelledby="h{id}" data-bs-parent="{bsParent}">
+  <div
+    id="c{id}"
+    class="accordion-collapse collapse"
+    class:show={expanded}
+    aria-labelledby="h{id}"
+    data-bs-parent={bsParent}
+  >
     <div class="accordion-body">
-      <slot name="body"></slot>
+      <slot name="body" />
     </div>
   </div>
 </div>

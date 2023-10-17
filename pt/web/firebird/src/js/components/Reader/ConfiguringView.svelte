@@ -5,11 +5,7 @@
 </script>
 
 <div class="loading-reader" class:opacity-0={!show} class:opacity-100={show}>
-  <i 
-    class="fa-solid fa-stroopwafel fa-2xl opacity-75"
-    class:fa-spin={spin}
-    aria-hidden="true"></i>
-
+  <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={spin} aria-hidden="true" />
 </div>
 
 <style>

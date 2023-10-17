@@ -46,8 +46,7 @@
 
   let errorMessage;
 
-  let allowDownload =
-    manifest.allowSinglePageDownload || manifest.allowFullDownload;
+  let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
 
   function callback(argv) {
     console.log('-- callback', downloadInProgress, argv);
@@ -147,9 +146,7 @@
       return;
     }
 
-    let cancelUrl = new URL(
-      `${location.protocol}//${HT.service_domain}${action}`
-    );
+    let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
     let params = new URLSearchParams();
     params.set('id', manifest.id);
     params.set('callback', 'tunnelCallback');
@@ -235,9 +232,7 @@
       let scriptEl = tunnelWindow.document.createElement('script');
       scriptEl.type = 'module';
 
-      let requestUrl = new URL(
-        `${location.protocol}//${HT.service_domain}${action}`
-      );
+      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
       let params = new URLSearchParams();
       params.set('id', manifest.id);
 
@@ -249,10 +244,7 @@
       switch (format) {
         case 'image-jpeg':
         case 'image-tiff':
-          params.set(
-            'format',
-            format == 'image-tiff' ? 'image/tiff' : 'image/jpeg'
-          );
+          params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
           params.set('target_ppi', targetPPI);
           params.set('bundle_format', 'zip');
           break;
@@ -374,9 +366,7 @@
   <svelte:fragment slot="title">Download</svelte:fragment>
   <svelte:fragment slot="body">
     {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
-      <div class="alert alert-secondary">
-        Please choose another view to download individual pages.
-      </div>
+      <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
     {:else if allowDownload}
       <form>
         <fieldset class="mb-3">
@@ -390,9 +380,7 @@
               id="format-pdf"
               bind:group={format}
             />
-            <label class="form-check-label" for="format-pdf">
-              Ebook (PDF)
-            </label>
+            <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
           </div>
           {#if manifest.allowFullDownload}
             <div class="form-check">
@@ -404,9 +392,7 @@
                 id="format-epub"
                 bind:group={format}
               />
-              <label class="form-check-label" for="format-epub">
-                Ebook (EPUB)
-              </label>
+              <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
             </div>
           {/if}
           <div class="form-check">
@@ -418,9 +404,7 @@
               id="format-plaintext"
               bind:group={format}
             />
-            <label class="form-check-label" for="format-plaintext">
-              Text (.txt)
-            </label>
+            <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
           </div>
           {#if manifest.allowFullDownload}
             <div class="form-check">
@@ -432,9 +416,7 @@
                 id="format-archive"
                 bind:group={format}
               />
-              <label class="form-check-label" for="format-archive">
-                Text (.zip)
-              </label>
+              <label class="form-check-label" for="format-archive"> Text (.zip) </label>
             </div>
           {/if}
           <div class="form-check">
@@ -446,9 +428,7 @@
               id="format-image-jpeg"
               bind:group={format}
             />
-            <label class="form-check-label" for="format-image-jpeg">
-              Image (JPEG)
-            </label>
+            <label class="form-check-label" for="format-image-jpeg"> Image (JPEG) </label>
           </div>
           <div class="form-check">
             <input
@@ -459,9 +439,7 @@
               id="format-image-tiff"
               bind:group={format}
             />
-            <label class="form-check-label" for="format-image-tiff">
-              Image (TIFF)
-            </label>
+            <label class="form-check-label" for="format-image-tiff"> Image (TIFF) </label>
           </div>
         </fieldset>
 
@@ -564,9 +542,7 @@
                 id="range-download-volume"
                 bind:group={range}
               />
-              <label class="form-check-label" for="range-download-volume">
-                Whole item
-              </label>
+              <label class="form-check-label" for="range-download-volume"> Whole item </label>
             </div>
             <div class="form-check">
               <input
@@ -578,22 +554,13 @@
                 disabled={format == 'epub' || format == 'plaintext-zip'}
                 bind:group={range}
               />
-              <label class="form-check-label" for="range-selected-pages">
-                Selected page scans
-              </label>
+              <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
             </div>
-            <div
-              class="d-flex justify-content-between"
-              class:d-none={flattenedSelection.length == 0}
-            >
+            <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
               <ul class="list-unstyled mx-4 mb-1">
                 {#each flattenedSelection as sel}
                   <li>
-                    <button
-                      type="button"
-                      class="btn btn-link py-0"
-                      on:click={() => gotoSelection(sel)}>{sel}</button
-                    >
+                    <button type="button" class="btn btn-link py-0" on:click={() => gotoSelection(sel)}>{sel}</button>
                   </li>
                 {/each}
               </ul>
@@ -619,11 +586,7 @@
           >
             Download
             {#if downloadInProgress}
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              />
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
               <span class="visually-hidden">Loading...</span>
             {/if}
           </button>
@@ -636,55 +599,34 @@
           <a
             class="fs-7"
             target="_blank"
-            href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137"
-            >Download Help</a
+            href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Download Help</a
           >
         </p>
         {#if !manifest.allowFullDownload && !HT.login_status.logged_in}
           <p class="fs-7 mt-1 mb-1">
-            <strong
-              ><a href="/cgi/wayf?target={encodeURIComponent(location.href)}"
-                >Log in</a
-              ></strong
-            > to your library to download this item.
+            <strong><a href="/cgi/wayf?target={encodeURIComponent(location.href)}">Log in</a></strong> to your library to
+            download this item.
           </p>
           <p class="fs-7 mt-1 fst-italic">
             If you are not affiliated with a <a
               target="_blank"
-              href="https://www.hathitrust.org/member-libraries/member-list/"
-              >member institution</a
+              href="https://www.hathitrust.org/member-libraries/member-list/">member institution</a
             >, whole book download is not available. (<a
               target="_blank"
-              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137"
-              >Why not?</a
+              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Why not?</a
             >)
           </p>
         {/if}
       </form>
-      <form
-        class="d-none"
-        bind:this={tunnelForm}
-        method="GET"
-        {action}
-        target="download-module-xxx"
-      >
+      <form class="d-none" bind:this={tunnelForm} method="GET" {action} target="download-module-xxx">
         <input type="hidden" name="id" value={manifest.id} />
         <input type="hidden" name="attachment" value="1" />
-        <input
-          type="hidden"
-          name="tracker"
-          value=""
-          bind:this={tunnelFormTracker}
-        />
+        <input type="hidden" name="tracker" value="" bind:this={tunnelFormTracker} />
         <!-- {#each selection.seq as seq}
       <input type="hidden" name="seq" value={seq} />
       {/each} -->
         {#if format == 'image-tiff' || format == 'image-jpeg'}
-          <input
-            type="hidden"
-            name="format"
-            value="image/{format.split('-')[1]}"
-          />
+          <input type="hidden" name="format" value="image/{format.split('-')[1]}" />
           <input type="hidden" name={sizeAttr} value={sizeValue} />
         {:else if format == 'plaintext-zip'}
           <!-- do something else -->
@@ -726,9 +668,7 @@
           />
         </div>
         <p class="fs-7 text-muted">
-          <a
-            target="_blank"
-            href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
+          <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
             >What affects the download speed?</a
           >
         </p>
@@ -739,9 +679,7 @@
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button type="button" class="btn btn-secondary" on:click={cancelDownload}
-        >Cancel</button
-      >
+      <button type="button" class="btn btn-secondary" on:click={cancelDownload}>Cancel</button>
       <!-- <button 
         type="button" 
         class="btn btn-primary"
