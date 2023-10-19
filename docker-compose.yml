@@ -1,7 +1,5 @@
 version: '3'
 
-name: babel-firebird
-
 services:
 
   imgsrv:
