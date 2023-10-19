@@ -84,6 +84,10 @@ FROM babel-base AS imgsrv-fcgi
 WORKDIR /htapps/babel/imgsrv
 CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
 
+FROM babel-base AS test
+
+WORKDIR /htapps/babel
+
 FROM babel-base AS apache
 
 RUN apt-get -y install apache2 libapache2-mod-fcgid

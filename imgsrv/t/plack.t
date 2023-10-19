@@ -9,11 +9,12 @@ use FindBin;
 use HTTP::Request::Common qw(GET);
 use JSON::XS;
 use Plack::Test;
+use Plack::Util;
 use Test::More;
 
 
 subtest "imgsrv.psgi" => sub {
-  my $app = do "$FindBin::Bin/../apps/imgsrv.psgi";
+  my $app = Plack::Util::load_psgi("$FindBin::Bin/../apps/imgsrv.psgi");
   my $test = Plack::Test->create($app);
   subtest "imgsrv/cover" => sub {
     my $res = $test->request(GET "/image?id=test.pd_open"); # HTTP::Response

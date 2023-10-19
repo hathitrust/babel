@@ -183,6 +183,28 @@ services:
     profiles:
       - stage_item
 
+  test:
+    build:
+      context: .
+      target: test
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+      - ${BABEL_HOME}/sample-data/watermarks:/htapps/babel/watermarks
+      - ${BABEL_HOME}/sample-data:/tmp/sample-data
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+      - HT_DEV=docker
+      - REMOTE_ADDR=127.0.0.1
+      - HTTP_HOST=127.0.0.1
+      - APACHE_LOG_DIR=/tmp
+    depends_on:
+      - mysql-sdr
+      - solr-sdr-catalog
+    command: bin/test.sh
+
   # todo: ingest, bound to sample-data
 
 volumes:

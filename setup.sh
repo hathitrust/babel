@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-cat <<EOT
+if [[ "$1" == "SSH" ]]; then
+  proto=$1;
+fi
+
+if [[ -z $proto ]]; then
+  cat <<EOT
 Checking out into $PWD
 
 What should the git URL be?
@@ -8,9 +13,9 @@ What should the git URL be?
  [2] SSH:   git@github.com:hathitrust
 EOT
 
-echo -n "Your choice? [1]: "
-
-read -n 1 proto
+  echo -n "Your choice? [1]: "
+  read -n 1 proto
+fi
 
 GIT_BASE="https://github.com/hathitrust"
 

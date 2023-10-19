@@ -1,0 +1,33 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  # Run tests
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out Repository
+        uses: actions/checkout@v3
+
+      - name: Log in to package registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Dependency Setup
+        run: ./setup.sh SSH
+
+      - name: Docker Setup
+        run: docker-compose build
+
+      - name: Run tests
+        run: docker-compose run test
