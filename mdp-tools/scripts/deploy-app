@@ -24,6 +24,10 @@ Verbose
 
 Verbose
 
+=item B<-n>
+
+Show files that would change (via rsync --dry-run) but do not deploy
+
 =back
 
 =head1 DESCRIPTION
@@ -37,8 +41,8 @@ on the code in this state.
 2) When testing is finished, B<deploy-app> will attempt to checkout
 the 'deployment' branch of the git repository for 'app', merge in the
 above state of the 'master' branch, update all submodules, tag the
-HEAD and rdist to production the resulting contents of test.babel/app
-using rdist.app for the given app.
+HEAD and rsync to production the resulting contents of test.babel/app
+using rsync.files/rsync.exclude for the given app.
 
 If the B<-v> option is supplied, the output will be verbose.
 
@@ -46,9 +50,28 @@ NOTE: plackup monitors a configurable list of files for changes bsed
   on timestamp.  We want plackup to reload app whenever any app file
   changes, not just the cgi.  git checkout gives a new timestamp to
   files, so files in the HTDE, e.g. in beta-{1,2,3,4}, will satisfy this
-  requirement.  However, rdist only updates timestamps on files that
+  requirement.  However, rsync only updates timestamps on files that
   change so B<deploy-app> touches $appdir/bin/rdist.timestamp
   (monitored by plackup) to ensure the reload of the cgi.
+
+=head1 ENVIRONMENT VARIABLES
+
+=over
+
+=item B<TOOLS_ROOT>
+
+Uses mdp-lib from $TOOLS_ROOT/mdp-lib/Utils
+Default: /htapps/test.babel
+
+=item B<TEST_INSTANCE>
+
+Deploy code staged in this test instance.
+Default: test (mapping to /htapps/test.{babel,www})
+
+=head1 METHODS
+
+=over
+
 
 =cut
 
@@ -68,9 +91,9 @@ use ToolLib;
 sub deploy_app_usage {
     my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
       where <app> is the application to tag and deploy or re-deploy from an existing tag
-         -m ictc|macc deploy just to ictc or macc (rdist -m {macc|ictc}.umdl.umich.edu)
+         -m ictc|macc|preview deploy just to ictc, macc, or preview (rsync target) - default: macc + ictc
          -v verbose
-         -A all apps (please don't)
+         -n dry run
          -S <service>, babel (default), www, catalog
          -T maj(or|min(or|ter(tiary
               automatically build tag by incrementing the indicated version number component
@@ -78,12 +101,14 @@ sub deploy_app_usage {
     return $s;
 }
 
-our ($opt_h, $opt_v, $opt_T, $opt_A, $opt_m, $opt_d, $opt_S);
-my $ops = getopts('hvT:Am:dS:');
+our ($opt_h, $opt_v, $opt_T, $opt_n, $opt_m, $opt_d, $opt_S);
+my $ops = getopts('hvT:nm:dS:');
 
 my $FORCE_DIFF = defined($opt_d);
 
 my $VERBOSE = $ToolLib::VERBOSE = $opt_v;
+
+my $DRY_RUN = $opt_n;
 
 my $help = $opt_h;
 if ($help) {
@@ -103,16 +128,7 @@ if ($SERVICE) {
     PrintY("deploying to $SERVICE\n");
 }
 
-my $ALL = $opt_A;
-my @apps;
-if ($ALL) {
-    @apps = `cat $LOCATION/../lib/Config/app-list.txt`;
-    chomp(@apps);
-}
-else {
-    @apps = @ARGV;
-}
-
+my @apps = @ARGV;
 if (! scalar(@apps)) {
     if (defined($opt_T) || defined($opt_m) || defined($opt_v)) {
         PrintN(qq{ERROR: missing app arg\n});
@@ -124,16 +140,16 @@ if (! scalar(@apps)) {
 }
 
 my $VERSION_INCREMENT = __handle_VERSION_INCREMENT($opt_T);
-my $SITE = __handle_SITE($opt_m);
+my @DEST_PREFIXES = __handle_SITE($opt_m);
 
-my ($repo_root, $app_root) = get_HTDE_roots('test');
+my $test_instance = $ENV{'TEST_INSTANCE'} || 'test';
+my ($repo_root, $app_root) = get_HTDE_roots($test_instance);
 my $default_repo_root = $repo_root;
 
 my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};
-    my $app_dir = "$app_root/$app";
-
+    my $app_dir = app_dir($app_root,$app);
 
     PrintY(qq{\nDeploying application ($app) from $app_dir\n});
 
@@ -184,7 +200,7 @@ foreach my $app (@apps) {
         }
     }
 
-    if (! __rdist_app_to_production($app_dir, $SITE, $tag)) {
+    if (! __rsync_app_to_production($app_dir, [@DEST_PREFIXES], $tag)) {
         PrintN($fail_msg);
         next;
         $rc |= 1;
@@ -211,24 +227,23 @@ Description
 sub __handle_SITE {
     my $opt = shift;
 
-    my @sites = ('macc', 'ictc');
-    my $site = $opt;
+    my %sites = (
+      macc => 'nas-macc.umdl.umich.edu:/htapps/',
+      ictc => 'nas-ictc.umdl.umich.edu:/htapps/',
+      preview => 'ht-web-preview.umdl.umich.edu:/htapps/preview.'
+    );
 
-    if (defined($site)) {
-        if (! grep(/^$site$/, @sites)) {
-            PrintN(qq{ERROR: -m arg must be one of: } . join(', ', @sites) . "\n");
-            print deploy_app_usage();
-            exit 1;
-        }
+    if (defined($opt)) {
+      if (not defined $sites{$opt}) {
+          PrintN(qq{ERROR: -m arg must be one of: } . join(', ', keys(%sites)) . "\n");
+          print deploy_app_usage();
+          exit 1;
+      }
 
-        my $domain = '.umdl.umich.edu';
-        my $prefix = 'nas-';
-
-        $site .= $domain;
-        $site = $prefix . $site;
+      return ($sites{$opt})
+    } else {
+      return ($sites{'macc'},$sites{'ictc'})
     }
-
-    return $site;
 }
 
 # ---------------------------------------------------------------------
@@ -433,6 +448,56 @@ sub ___create_timestamp {
 
 # ---------------------------------------------------------------------
 
+=item __rsync_app_to_production
+
+Deploy applications via rsync.
+
+=cut
+# ---------------------------------------------------------------------
+sub __rsync_app_to_production {
+  my $app_dir = shift;
+  my $dest_prefixes = shift;
+  my $tag = shift;
+
+  my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
+
+  foreach my $dest_prefix (@$dest_prefixes) {
+    print qq{Now starting rsync to $dest_prefix ...\n};
+
+    my @rsync_opts = qw(--recursive --links --times --delete 
+                   --delay-updates --stats --human-readable);
+    push(@rsync_opts,qw(--verbose --itemize-changes)) if $VERBOSE;
+    push(@rsync_opts,qw(--dry-run)) if $DRY_RUN;
+
+    my @cmd = ("$app_dir/bin/rsync.app",$dest_prefix,@rsync_opts);
+    print join(' ',@cmd), "\n" if $VERBOSE;
+    
+    system(@cmd);
+
+    if (my $err = $?) {
+      PrintN("ERROR: rsync failure\n");
+      PrintN($err);
+      return 0;
+    }
+
+    ### TODO deal with the app timestamps for reloading
+  }
+
+  my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
+
+  my ($Dd,$Dh,$Dm,$Ds) =
+  Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
+    $year2,$month2,$day2,$hour2,$min2,$sec2);
+
+  my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
+  PrintY($e);
+
+
+  return 1;
+}
+
+# ---------------------------------------------------------------------
+
 =item __rdist_app_to_production
 
 Description
@@ -622,6 +687,7 @@ sub __get_version_string {
     return $version_string;
 }
 
+=back
 
 __END__;
 

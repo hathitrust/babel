@@ -32,10 +32,6 @@ whoami:
 
   - https://__URL_STAGE__.hathitrust.org/cgi/whoami
 
-common:
-  - https://__URL_STAGE__.hathitrust.org/common/HathiTrustDL_logo.png
-  - https://__URL_STAGE__.hathitrust.org/common/favicon.ico
-
 htd:
   - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/type/mdp.39015004314111 __LOCAL__
   - /htapps/__CMD_STAGE__/htd/cgi/htd v=2 action=/volume/pagemeta/mdp.39015004314111/37 __LOCAL__
@@ -120,17 +116,6 @@ ssd:
   - https://__URL_STAGE__.hathitrust.org/cgi/ssd?id=8;ssd=1;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/ssd?id=1;__LOCAL__
 
-access:
-  - /htapps/__CMD_STAGE__/access/cgi/stmts __LOCAL__
-  - /htapps/__CMD_STAGE__/access/cgi/stmts attr=1 access=3 __LOCAL__
-  - /htapps/__CMD_STAGE__/access/cgi/stmts_api attr=1 access=3 fields=stmt_url,stmt_key __LOCAL__
-  - /htapps/__CMD_STAGE__/access/cgi/status_api id=mdp.39015015394847 __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/access/cgi/stmts?__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/access/cgi/stmts?attr=1;access=3;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/access/cgi/stmts_api?attr=1;access=3;fields=stmt_url,stmt_key;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/access/cgi/status_api?id=mdp.39015015394847;__LOCAL__
-
 wayf:
   - /htapps/__CMD_STAGE__/wayf/cgi/wayf __LOCAL__
 
@@ -162,34 +147,3 @@ slip:
   - /htapps/__CMD_STAGE__/slip/index/check-j -r11 -R1 -O2 -n -C __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/stats-item-index-j -r1 -T __LOCAL__
   - /htapps/__CMD_STAGE__/slip/index/renumber-j -T __LOCAL__
-
-useradmin:
-  - /htapps/__CMD_STAGE__/useradmin/cgi/useradmin __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/useradmin?__LOCAL__
-
-usercertify:
-  - /htapps/__CMD_STAGE__/usercertify/cgi/usercertify __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/usercertify?__LOCAL__
-
-userupdate:
-  - /htapps/__CMD_STAGE__/userupdate/cgi/userupdate __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/userupdate?__LOCAL__
-
-userwarn:
-  - /htapps/__CMD_STAGE__/userwarn/scripts/warn_contact.pl __LOCAL__
-
-userlist:
-  - /htapps/__CMD_STAGE__/userlist/cgi/userlist __LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/userlist?__LOCAL__
-
-register:
-  - /htapps/__CMD_STAGE__/register/cgi/register __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/cgi/register?__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/register/crms?__LOCAL__
-
-
-
