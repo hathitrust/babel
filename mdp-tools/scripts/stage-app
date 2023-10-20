@@ -238,7 +238,7 @@ sub stage_origin_master_branch {
 
     foreach my $app (@apps) {
         my $fail_msg = qq{Failed to stage application ($app)\n};
-        my $app_dir = "$app_root/$app";
+        my $app_dir = app_dir($app_root,$app);
 
         if (! validate_existing_app($repo_root, $app_root, $app)) {
             PrintN($fail_msg);

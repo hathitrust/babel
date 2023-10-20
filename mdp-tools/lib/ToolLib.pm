@@ -17,6 +17,7 @@ use Exporter ();
                 get_HTDE_roots
                 get_app_dir_list
                 get_app_list
+                app_dir
 
                 G_list_tags
                 G_last_tag
@@ -42,7 +43,7 @@ use Config::Tiny;
 $ToolLib::VERBOSE = 0;
 $ToolLib::SERVICE = 'babel';
 
-@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4 preview);
+@ToolLib::valid_beta_stages = qw(beta-1 beta-2 beta-3 beta-4 preview test-merged preview-merged);
 @ToolLib::all_valid_stages = (@ToolLib::valid_beta_stages, 'test');
 @ToolLib::all_valid_services = qw(babel www catalog); # aspirational
 
@@ -936,6 +937,24 @@ sub get_HTDE_roots {
     return ($repo_root, $app_root);
 }
 
+=item app_dir
+
+Returns the directory at which the application should be checked out.
+
+=cut
+
+sub app_dir {
+  my $app_root = shift;
+  my $app = shift;
+
+  if( $app eq 'babel' ) {
+    $app_dir = $app_root;
+  } else {
+    $app_dir = "$app_root/$app";
+  }
+}
+
+
 # ---------------------------------------------------------------------
 
 =item validate_existing_app
@@ -943,6 +962,8 @@ sub get_HTDE_roots {
 Make some reasonable checks to derermine the validity of an app name.
 
 SIDE EFFECT: changes the current working directory to "$app_root/$app"
+
+Special case: babel is in $app_root
 
 =cut
 
@@ -952,7 +973,7 @@ sub validate_existing_app {
 
     print qq{Validating application ($app) ... };
 
-    my $app_dir = "$app_root/$app";
+    my $app_dir = app_dir($app_root,$app);
 
     if (! $app) {
         PrintN(qq{\nERROR: '$app' is not a valid app\n});
