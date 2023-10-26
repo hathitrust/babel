@@ -17,7 +17,6 @@
   subviews['private-item'] = PrivateItem;
   subviews['brittle-held-item'] = BrittleHeldItem;
   subviews['emergency-access-affiliate'] = EmergencyAccessAffiliate;
-  // subviews['orphan-candidate-item'] = OrphanCandidateItem;
 
   let externalLinks = manifest.externalLinks;
   let links = externalLinks.filter(link => link.type == 'oclc');
@@ -26,8 +25,6 @@
   let rightsAttribute = manifest.accessRestriction.rightsAttribute;
   let message = manifest.accessRestriction.message;
   if ( rightsAttribute == 8  ) {
-    searchAvailable = false;
-  } else if ( message == 'orphan-candidate-item' ) {
     searchAvailable = false;
   }
 

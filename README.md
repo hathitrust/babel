@@ -63,11 +63,6 @@ mysql -h 127.0.0.1 -p 3307 -u mdp-admin -p
 ```
 Huzzah!
 
-Not yet configured:
-* `http://localhost:8080/cgi/whoami`
-* `http://localhost:8080/cgi/ping`
-* etc
-
 ## How this works (for now)
 
 * catalog runs + php
