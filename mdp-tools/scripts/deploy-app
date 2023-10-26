@@ -469,7 +469,7 @@ sub __rsync_app_to_production {
     push(@rsync_opts,qw(--verbose --itemize-changes)) if $VERBOSE;
     push(@rsync_opts,qw(--dry-run)) if $DRY_RUN;
 
-    my @cmd = ("$app_dir/bin/rsync.app",$dest_prefix,@rsync_opts);
+    my @cmd = ("/usr/bin/bash","$app_dir/bin/rsync.app",$dest_prefix,@rsync_opts);
     print join(' ',@cmd), "\n" if $VERBOSE;
     
     system(@cmd);
