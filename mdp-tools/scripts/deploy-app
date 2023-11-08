@@ -464,9 +464,9 @@ sub __rsync_app_to_production {
   foreach my $dest_prefix (@$dest_prefixes) {
     print qq{Now starting rsync to $dest_prefix ...\n};
 
-    my @rsync_opts = qw(--recursive --links --times --delete 
+    my @rsync_opts = qw(--recursive --links --delete 
                    --delay-updates --stats --human-readable);
-    push(@rsync_opts,qw(--verbose --itemize-changes)) if $VERBOSE;
+    push(@rsync_opts,qw(--verbose)) if $VERBOSE;
     push(@rsync_opts,qw(--dry-run)) if $DRY_RUN;
 
     my @cmd = ("/usr/bin/bash","$app_dir/bin/rsync.app",$dest_prefix,@rsync_opts);
