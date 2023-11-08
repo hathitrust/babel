@@ -46,7 +46,6 @@
 
   <MBooksGlobals>
     <?CHUNK filename="ptglobals.xml"?>
-    <OrphanCandidate><?ORPHAN_CANDIDATE?></OrphanCandidate>
     <UrlRoots><?URL_ROOTS?></UrlRoots>
     <PageLink><?PAGE_LINK?></PageLink>
     <InCopyright><?IN_COPYRIGHT?></InCopyright>

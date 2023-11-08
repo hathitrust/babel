@@ -11,7 +11,6 @@
   extension-element-prefixes="str exsl" xmlns:str="http://exslt.org/strings">
 
   <!-- Global Variables -->
-  <xsl:variable name="gOrphanCandidate" select="/MBooksTop/MBooksGlobals/OrphanCandidate"/>
   <xsl:variable name="gInCopyright" select="/MBooksTop/MBooksGlobals/InCopyright"/>
   <xsl:variable name="gHeld" select="/MBooksTop/MBooksGlobals/Holdings/Held"/>
   <xsl:variable name="gBrittleHeld" select="/MBooksTop/MBooksGlobals/Holdings/BrittleHeld"/>

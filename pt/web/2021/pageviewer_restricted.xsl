@@ -62,31 +62,6 @@
     <!-- </main> -->
   </xsl:template>
 
-  <!-- Orphans -->
-  <xsl:template name="OrphanCandidatePage">
-    <xsl:variable name="copyright_restricted_msg">
-      <i class="icomoon icomoon-locked"></i> 
-      Full view is not available for this item due to copyright &#169; restrictions.
-    </xsl:variable>
-
-    <xsl:variable name="orphan_canditate_msg">
-      <strong>This volume is an Orphan Works candidate.</strong> <ul><li>The Orphan Works Project is a framework for libraries to determine whether books in their collections are subject to copyright but whose copyright holders cannot be identified or contacted.</li><li>If you are a bona fide copyright holder of this volume, please contact us at the
-      <a title="Orphan Works Project" href="https://www.lib.umich.edu/orphan-works/copyright-holders-we-want-hear-you"> Orphan Works Project.</a></li></ul>
-    </xsl:variable>
-
-    <div class="alert alert-info alert-block">
-      <p>
-        <!-- <img style="float: left; padding-left: 8px" src="//common-web/graphics/LimitedLink.png" alt="" /> -->
-        <xsl:copy-of select="$copyright_restricted_msg" />
-      </p>
-    </div>
-
-    <p>
-      <xsl:copy-of select="$orphan_canditate_msg" />
-    </p>
-
-  </xsl:template>
-
   <!-- emergency access user -->
   <xsl:template name="EmergencyAccessAffiliatePage">
     <xsl:variable name="access-type" select="//AccessType" />
@@ -355,11 +330,6 @@
 
         <xsl:when test="$gHeld = 'YES' and //AccessType/Name = 'emergency_access_affiliate'">
           <xsl:call-template name="EmergencyAccessAffiliatePage" />
-        </xsl:when>
-
-        <!-- orphan message -->
-        <xsl:when test="$gOrphanCandidate='true'">
-          <xsl:call-template name="OrphanCandidatePage"/>
         </xsl:when>
 
         <!-- In copyright, no access message -->
