@@ -7,7 +7,6 @@ DEPLOY_DEST=${DEST_PREFIX}babel
 DEPLOY_SRC=/htapps/test-merged.babel
 
 INCLUDE=$(cat <<EOT
-  $DEPLOY_SRC/firebird-common
   $DEPLOY_SRC/htd
   $DEPLOY_SRC/htdc
   $DEPLOY_SRC/imgsrv
