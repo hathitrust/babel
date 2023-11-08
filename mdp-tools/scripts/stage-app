@@ -269,9 +269,7 @@ sub stage_origin_master_branch {
 
         list_submodule_dependencies($app_dir);
 
-        handle_staging_rdist_hook($app);
         handle_staging_post_install_hook($app);
-        emulate_rdist_bin_timestamp($app);
 
         PrintY("Begin sanity checks ...\n");
         print `$LOCATION/sanity-app -s$STAGE $app`;
@@ -379,8 +377,9 @@ sub handle_staging_post_install_hook {
     my $app = shift;
 
     my ($src_repo_root, $src_app_root) = get_HTDE_roots($STAGE);
+    my $app_dir = app_dir($src_app_root,$app);
 
-    my $build_sh = qq{$src_app_root/$app/bin/build.sh};
+    my $build_sh = qq{$app_dir/bin/build.sh};
 
     if (! -e $build_sh) {
       PrintY(qq{No stage post-install script at $build_sh ... skip\n});
@@ -396,80 +395,6 @@ sub handle_staging_post_install_hook {
       PrintY("Stage post-install succeeds.\n");
     }
     return 1;
-}
-
-# ---------------------------------------------------------------------
-
-=item handle_staging_rdist_hook
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_staging_rdist_hook {
-    my $app = shift;
-    my $server = shift;
-    my $dest_app_root = shift;
-
-    my ($src_repo_root, $src_app_root) = get_HTDE_roots();
-
-    my $stage_rdist_script = qq{$src_app_root/$app/bin/rdist.app.stage};
-
-    if (! -e $stage_rdist_script) {
-        PrintY(qq{No stage rdist script ... skip\n});
-    }
-    else {
-        my $opt;
-        if ($server) {
-            $opt .= " -d SERVER=$server.babel.hathitrust.org ";
-        }
-        if ($dest_app_root) {
-            $opt .= " -d APP_dest_root=$dest_app_root";
-        }
-        if ($ENV{RDIST_NO_FORK}) {
-          $opt .= ' -F';
-        }
-
-        my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
-
-        PrintY(qq{Now running stage rdist script=$stage_rdist_script options="$opt"...\n});
-        print qx(rdist $opt -f $stage_rdist_script);
-
-        if ($?) {
-            PrintN("ERROR: rdist stage script failure\n");
-            return 0;
-        }
-        
-        my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
-        
-        my ($Dd,$Dh,$Dm,$Ds) =
-          Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
-                     $year2,$month2,$day2,$hour2,$min2,$sec2);
-        
-        my $e = sprintf("Stage rdist succeeds. Elapsed=%02d:%02d\n", $Dm, $Ds);
-        PrintY($e);
-    }
-
-    return 1;
-}
-
-sub emulate_rdist_bin_timestamp {
-    my $app = shift;
-    my $dest_app_root = shift;
-
-    my ($dest_repo_root, $dest_app_root) = get_HTDE_roots($STAGE);
-    my $dest_app_dir = "$dest_app_root/$app";
-
-    my ($src_repo_root, $src_app_root) = get_HTDE_roots();
-
-    my $stage_rdist_script = qq{$src_app_root/$app/bin/rdist.app.stage};
-
-    if ( -f qq{$src_app_root/$app/bin/rdist.app.timestamp} ) {
-        open(OUT, ">", "$dest_app_dir/bin/rdist.timestamp");
-        print OUT "$app\_" . time(). "\n";
-        close(OUT);
-    }
 }
 
 __END__;
