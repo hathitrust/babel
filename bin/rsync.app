@@ -40,4 +40,4 @@ EXCLUDE=$(cat <<EOT
 EOT
 )
 
-echo /usr/bin/rsync "$@" $EXCLUDE $INCLUDE $DEPLOY_DEST
+/usr/bin/rsync "$@" $EXCLUDE $INCLUDE $DEPLOY_DEST
