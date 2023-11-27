@@ -1085,7 +1085,7 @@
               </xsl:choose>
 
               <p class="fs-7">
-                <a href="#" class="download-help-link">
+                <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2688450579" class="download-help-link">
                   <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                   <span>Help about Downloading Metadata</span>
                 </a>
