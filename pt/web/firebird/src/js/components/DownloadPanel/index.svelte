@@ -395,7 +395,7 @@
               <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
             </div>
           {/if}
-          <div class="form-check">
+          <!-- <div class="form-check">
             <input
               name="format"
               class="form-check-input"
@@ -405,7 +405,7 @@
               bind:group={format}
             />
             <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
-          </div>
+          </div> -->
           {#if manifest.allowFullDownload}
             <div class="form-check">
               <input
