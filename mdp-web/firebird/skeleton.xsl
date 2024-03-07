@@ -77,9 +77,9 @@
         
         <xsl:call-template name="debug-messages" />
 
+        <hathi-cookie-consent-banner></hathi-cookie-consent-banner>
         <xsl:call-template name="skip-to-main-link" />
 
-        <hathi-acceptable-use-banner></hathi-acceptable-use-banner>
         <div id="root">
           <xsl:call-template name="build-root-attributes" />
 
