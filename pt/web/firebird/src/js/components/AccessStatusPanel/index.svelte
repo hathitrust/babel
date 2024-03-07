@@ -1,5 +1,6 @@
 <script>
   import { getContext, onMount } from 'svelte';
+  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
 
   const manifest = getContext('manifest');
   const HT = getContext('HT');
@@ -32,7 +33,9 @@
   function onToggle(event, open) {
     let key = this.name;
     prefs.pt.alerts[key] = open ? 'open' : 'closed';
-    HT.prefs.set(prefs);
+    if ($preferencesConsent === 'true') {
+      HT.prefs.set(prefs);
+    }
     console.log('-- access.panel.toggle', key, open);
   }
 </script>

@@ -2,6 +2,7 @@
   import { onMount, beforeUpdate, tick, getContext } from 'svelte';
   import { get } from 'svelte/store';
   import { tooltip } from '../../lib/tooltip';
+  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
 
   const manifest = getContext('manifest');
   const emitter = getContext('emitter');
@@ -143,6 +144,12 @@
       });
   }
 
+  function setTabPrefs() {
+    if ($preferencesConsent === 'true') {
+      HT.prefs.set({ pt: { submitTarget: targetNewTab } });
+    }
+  }
+
   function clearSearchForm() {
     payload = null;
     status.class = null;
@@ -215,7 +222,7 @@
           class="form-check-input"
           type="checkbox"
           bind:checked={targetNewTab}
-          on:change={() => HT.prefs.set({ pt: { submitTarget: targetNewTab } })}
+          on:change={setTabPrefs}
           id="search-form-target"
         />
         <label class="form-check-label" for="search-form-target"> Open results in a new tab </label>

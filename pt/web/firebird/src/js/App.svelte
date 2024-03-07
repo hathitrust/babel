@@ -1,6 +1,7 @@
 <script>
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
+  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
 
   import dialogPolyfill from 'dialog-polyfill';
 
@@ -12,7 +13,6 @@
 
   // components
   import WebsiteHeader from '~firebird-common/src/js/components/Header';
-  import AcceptableUseBanner from '~firebird-common/src/js/components/AcceptableUseBanner';
 
   import ViewerToolbar from './components/ViewerToolbar';
   import Panel from './components/Panel';
@@ -242,7 +242,9 @@
       $currentView = targetView;
       updateHistory({ view: targetView, seq: $currentSeq });
       HT.live.announce(`Viewing item in ${viewDisplayLabel(targetView)} view.`);
-      HT.prefs.set({ pt: { view: targetView } });
+      if ($preferencesConsent === 'true') {
+        HT.prefs.set({ pt: { view: targetView } });
+      }
     }, 0);
   }
 
@@ -251,7 +253,9 @@
     if ($currentFormat != options.format) {
       $currentFormat = options.format;
       updateHistory({ format: options.format });
-      HT.prefs.set({ pt: { format: options.format } });
+      if ($preferencesConsent === 'true') {
+        HT.prefs.set({ pt: { format: options.format } });
+      }
     }
   }
 
@@ -472,8 +476,6 @@
 {#if isBuildingView}
   <ConfiguringView show={showLoadingView} />
 {/if}
-
-<AcceptableUseBanner />
 
 {#if dragging}
   <div class="mousecatcher" />
