@@ -20,6 +20,7 @@ import { writable } from 'svelte/store';
 // });
 
 import App from './App.svelte';
+import CookieConsentBanner from '~firebird-common/src/js/components/CookieConsentBanner';
 
 const toCamel = (s) => {
   return s.replace(/([-_][a-z])/gi, ($1) => {
@@ -56,6 +57,9 @@ HT.loginStatus = writable(emptyLoginStatus);
 HT.login_status = emptyLoginStatus;
 
 let app;
+export const apps = {};
+apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
+
 let needLoggedInStatus = true;
 
 HT.postPingCallback = function (login_status) {
@@ -82,6 +86,18 @@ HT.postPingCallback = function (login_status) {
   app = new App({
     target: document.getElementById('root'),
     props: props,
+  });
+  Object.keys(apps).forEach((slug) => {
+    document.querySelectorAll(slug).forEach((el) => {
+      if (el.component) {
+        return;
+      }
+      let props = buildProps(el);
+      el.component = new apps[slug]({
+        target: el,
+        props: props,
+      });
+    });
   });
   setTimeout(() => {
     document.body.dataset.initialized = true;
