@@ -20,6 +20,14 @@ export class Manifest {
     this._num2seq = {};
     this._pageNum = { first: null, last: null };
 
+    function htmlDecode(input) {
+      var doc = new DOMParser().parseFromString(input, 'text/html');
+      return doc.documentElement.textContent;
+    }
+
+    this.metadata.publisher = htmlDecode(this.metadata.publisher);
+    this.metadata.title = htmlDecode(this.metadata.title);
+
     if (!this.defaultImage) {
       return;
     }
