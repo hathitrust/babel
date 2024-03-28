@@ -184,6 +184,7 @@
     <hathi-website-header>
       <xsl:call-template name="build-navbar-options" />
     </hathi-website-header>
+    <hathi-alert-banner></hathi-alert-banner>
   </xsl:template>
 
   <xsl:template name="build-navbar-options"></xsl:template>
