@@ -24,6 +24,6 @@
   
   <!-- Minimal header.xml -->
   <?CHUNK filename="header.xml"?>
-  
-</MBooksTop>
 
+  <EasterEgg><?EASTER_EGG?></EasterEgg>
+</MBooksTop>

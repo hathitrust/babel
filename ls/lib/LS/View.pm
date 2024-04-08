@@ -112,7 +112,7 @@ sub execute_view
 
     if ($status == $Operation::Status::ST_OK)
     {
-        $self->SUPER::execute_view(@_);
+        #$self->SUPER::execute_view(@_);
     }
 
     return $status;
@@ -276,9 +276,19 @@ sub output
     }
     else
     {
-        my $transformed_xml_ref = $self->_get_transformed_xml($C);
-        $self->output_HTTP($C, $transformed_xml_ref);
+        #my $transformed_xml_ref = $self->_get_transformed_xml($C);
+        $self->output_HTTP($C, \$self->get_json);
     }
+}
+
+sub get_json {
+  my $self = shift;
+
+  my $bohr = {};
+  #$bohr->{template_data_ref} = $self->{'template_data_ref'};
+  $bohr->{template_name} = $self->{'template_name'};
+  my $json_xs = JSON::XS->new->utf8;
+  return $json_xs->encode($bohr);
 }
 
 

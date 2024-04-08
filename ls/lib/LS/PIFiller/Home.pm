@@ -40,6 +40,15 @@ BEGIN
 #
 #======================================================================
 
+sub handle_EASTER_EGG_PI
+    : PI_handler(EASTER_EGG)
+{
+    my ($C, $act, $piParamHashRef) = @_;
+
+    require POSIX;
+    POSIX::strftime('%F %T', localtime);
+}
+
 1;
 
 

@@ -17,6 +17,7 @@
       <div class="alert alert-info m-auto" role="alert" style="width: 50vw">
         Please enter a search.
       </div>
+      <xsl:call-template name="easter-egg"/>
     </div>
   </xsl:template>
 
@@ -28,5 +29,12 @@
     <xsl:attribute name="data-analytics-report-url">/ls/home</xsl:attribute>
   </xsl:template>
 
+  <xsl:template name="easter-egg">
+    <div class="container">
+      <div class="alert alert-danger m-auto" role="alert" style="width: 50vw">
+        The time is now... <xsl:value-of select="/MBooksTop/EasterEgg"/>
+      </div>
+    </div>
+  </xsl:template>
 
 </xsl:stylesheet>

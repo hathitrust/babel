@@ -778,6 +778,16 @@ sub wrap_string_in_tag
 {
     my ($s, $tag, $attributes_array_ref, $singleton) = @_;
 
+
+    my $bohr = {
+      $tag => $s,
+    };
+    if (defined $attributes_array_ref && scalar @$attributes_array_ref) {
+      $bohr->{$tag . '_attributes'} = $attributes_array_ref;
+    }
+    my $json_xs = JSON::XS->new->utf8;
+    return $json_xs->encode($bohr);
+
     my $open_tag;
     $open_tag .= '<' . $tag;
     if ($attributes_array_ref)
