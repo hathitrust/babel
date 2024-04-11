@@ -288,6 +288,13 @@
   </xsl:template>
 
   <xsl:template name="build-results-list">
+	  <div class="results-container">
+	    <xsl:attribute name="data-gdata">
+		<xsl:value-of select="/MBooksTop/SearchResults/G_CLICK_DATA" />
+	    </xsl:attribute>
+	    <xsl:attribute name="data-logger-url">
+	        <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL" />
+	    </xsl:attribute>
     <xsl:for-each select="//SearchResults//Item">
       <xsl:if test="position() mod 25 = 0">
         <div class="visually-hidden-focusable rounded m-3 border border-4 d-flex gap-4 align-items-center justify-content-center">
@@ -340,10 +347,18 @@
             <xsl:variable name="config" select="$gItemLinkConfig//h:option[@key=$key]" />
             <div class="list-group list-group-horizontal-sm align-items-center">
               <a class="list-group-item list-group-item-action w-sm-50" href="http://catalog.hathitrust.org/Record/{record}">
+		<xsl:attribute name="data-clickdata">
+                    <xsl:value-of select="ItemClickData"/>
+		    </xsl:attribute>
+                  <xsl:attribute name="data-clicktype">catalog</xsl:attribute>
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i> 
                 <span>Catalog Record</span><i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
               <a class="list-group-item list-group-item-action {$config/@class} w-sm-50" href="/cgi/pt?id={ItemID}">
+		<xsl:attribute name="data-clickdata">
+                    <xsl:value-of select="ItemClickData"/>
+                  </xsl:attribute>
+                  <xsl:attribute name="data-clicktype">pt</xsl:attribute>
                 <xsl:if test="fulltext=1 and normalize-space(activated_role)">
                   <xsl:attribute name="data-activated-role">
                     <xsl:value-of select="activated_role" />
@@ -381,6 +396,12 @@
         </div>
       </article>
     </xsl:for-each>
+	 <script type="text/javascript">
+	  let clicklog_script = document.createElement('script');
+	  clicklog_script.src = "/ls/firebird/js/ls_clicklog.js"
+	  document.head.append(clicklog_script);
+         </script>
+    </div>
   </xsl:template>
 
   <xsl:template name="build-sidebar-container">
