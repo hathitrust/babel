@@ -18,17 +18,6 @@ imgsrv:
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;seq=7;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/metadata?id=2;start=0;limit=10;__LOCAL__
 
-feedback:
-  - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=pt ui=embed RecordURL=http%3A%2F%2Fcatalog.hathitrust.org%2FRecord%2F1234567890 SysID=mdp.39015015394847 return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0 SeqNo=7 view=image Quality=someproblems blurry=1 other= Rights=access comments=roger+test+command+line email=roger%40umich.edu submit=Submit __LOCAL__
-  - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=ls id=Large-scale+Search email=foo@foo.com comments=foobar+test+command+line __LOCAL__
-  - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=cb id=Collection+Builder email=foo@foo.com comments=foobar+test+command+line __LOCAL__
-  - /htapps/__CMD_STAGE__/feedback/cgi/feedback m=ht id=HathiTrust+Catalog return=http%3A%2F%2Fcatalog.hathitrust.org%2FRecord%2F000000002 email=foo@foo.com comments=foobar+test+command+line __LOCAL__
-
-  - https://__URL_STAGE__.hathitrust.org/cgi/feedback?m=pt;ui=embed;RecordURL=http%3A%2F%2Fcatalog.hathitrust.org%2FRecord%2F1234567890;SysID=mdp.39015015394847;return=%2Fcgi%2Fpt%3Fid%3Dmdp.39015015394847%3Bpage%3Droot%3Bseq%3D7%3Bview%3Dimage%3Bsize%3D100%3Borient%3D0;SeqNo=7;view=image;Quality=someproblems;blurry=1;other=;Rights=access;comments=roger+test+http;email=roger%40umich.edu;submit=Submit;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/feedback?m=ls;id=Large-scale+Search;email=foo@foo.com;comments=foobar+test+http;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/feedback?m=cb;id=Collection+Builder;email=foo@foo.com;comments=foobar+test+http;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/feedback?m=ht;id=HathiTrust+Catalog;return=http%3A%2F%2Fcatalog.hathitrust.org%2FRecord%2F000000002;email=foo@foo.com;comments=foobar+test+http;__LOCAL__
-
 gr:
   - /htapps/__CMD_STAGE__/gr/cgi/gr id=1 __LOCAL__
   - /htapps/__CMD_STAGE__/gr/cgi/gr id=8 __LOCAL__
