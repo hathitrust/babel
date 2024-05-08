@@ -226,9 +226,12 @@
     <div class="panel accordion-item">
       <h3 class="accordion-header" id="heading-{$id}">
         <button class="accordion-button fw-bold {$collapsed}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{$id}" aria-controls="collapse-{$id}">
-          <xsl:if test="$open">
-            <xsl:attribute name="aria-expanded">true</xsl:attribute>
-          </xsl:if>
+          <xsl:attribute name="aria-expanded">
+            <xsl:choose>
+              <xsl:when test="$open">true</xsl:when>
+              <xsl:otherwise>false</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:value-of select="$heading" />
         </button>
       </h3>
