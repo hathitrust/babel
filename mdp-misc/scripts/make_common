@@ -1,0 +1,324 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Std;
+use File::Basename;
+
+use File::Slurp;
+
+my %opts;
+getopts('t:o:f:x:hvDz', \%opts);
+
+# Note: global variables are UPPERCASE
+my $VERBOSE = $opts{v} || '';
+my $TEMPLATE = $opts{t} || '';
+my $OUT_JS_FILE = $opts{o} || '';
+my $OUT_CONCATENATED_FILE = $OUT_JS_FILE;
+$OUT_CONCATENATED_FILE .= '-to_load-min.js';
+my $DEVELOPMENT = $opts{D} || ''; # See Usage below.
+my $NO_COMPRESS = $opts{z} || '';
+
+my $TO_REMOVE_REF = [];
+
+if ($ENV{'SDRROOT'} !~ /[a-z0-9\-]+\.(babel|catalog|www)/) {
+    die "This program should only be run in a development environment";
+}
+
+
+if ( defined ($opts{h}) || scalar(keys %opts) == 0 ) {
+    &usage;
+    exit;
+}
+
+# if ($DEVELOPMENT) {
+#     print STDERR "WARN: //common-web will be transformed to /mdp-web instead of /$PROGRAM/web/common-web\n\n";
+#     print STDERR "OK? [y] ";
+#     my $ok = <STDIN>;
+#     if (($ok !~ m,y,) && ($ok ne "\n")) {
+#         exit 0;
+#     }
+# }
+
+        
+eval {
+    make_concatenated_files();
+};
+if ($@) {
+    print STDERR "runtime error: $@\n";
+    clean_up();
+    exit 1;
+}
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+
+=item compress_file
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub compress_file {
+    my ($buffer) = @_;
+    
+    if ( $NO_COMPRESS ) {
+        open(my $out, '>', $OUT_CONCATENATED_FILE) or die "cannot open $OUT_CONCATENATED_FILE $!";
+        print $out $buffer;
+        close($out);
+        return;
+    }
+
+    open(my $out, '>', "/tmp/$$.js") or die "cannot open /tmp/$$.js $!";
+    print $out $buffer;
+    close($out);
+    
+    my $yuicompressor = qq{yui-compressor};
+    
+    my $cmd = "$yuicompressor --charset utf8 -o $OUT_CONCATENATED_FILE /tmp/$$.js";
+    if ($VERBOSE) {
+        print STDERR "compressing $OUT_CONCATENATED_FILE\n";
+    }
+
+    my $status = system ($cmd);
+    if ($status == 0) {
+        # push (@{$TO_REMOVE_REF}, $min_filename);
+    }
+    else {
+        # Retry once - sometimes java heap errors correct themselves
+        print STDERR "Error compressing $OUT_CONCATENATED_FILE yuicompressor returned $status\n. RETRYING ONCE \n";
+        $status = system ($cmd);
+        if ($status == 0) {
+            # push (@{$TO_REMOVE_REF}, $min_filename);
+        }
+        else {
+            die "compress_file: Error compressing $OUT_CONCATENATED_FILE yuicompressor returned $status \n";
+        }
+    }
+
+    # return $min_filename;
+}
+
+# ---------------------------------------------------------------------
+
+=item smart_concat
+
+Massage relative paths in files being concatenated, making those paths
+relative to web/common-web/ because that's where the concatenated file
+lands.
+
+=cut
+
+# ---------------------------------------------------------------------
+# sub smart_concat {
+#     my $filename = shift;
+#     my $section_test = shift;
+
+#     print STDERR "concatenating $filename \n" if $VERBOSE;
+#     open (my $in,'<', $filename) or die "can't open $filename $!";
+#     my $slurped = do {local $/; <$in>};
+#     $slurped .=  "\n/* $filename */\n";
+        
+#     if ($filename =~ /js$/) {
+#         if ( ref($section_test) ) {
+#             my ( $label, $test ) = @$section_test;
+#             print {$OPTIONAL_JS{$label}{fh}} $slurped;
+#         } else {
+#             print {$OUT_JS_FH} $slurped;
+#         }
+#     }
+#     elsif ($filename =~ /css$/) {
+#         foreach my $old (keys %CSS_REPLACE_REGEXPS) {
+#             $slurped =~ s,$old,$CSS_REPLACE_REGEXPS{$old},g;
+#         }
+#         if ( ref($section_test) ) {
+#             my ( $label, $test ) = @$section_test;
+#             print {$OPTIONAL_CSS{$label}{fh}} $slurped;
+#         } else {
+#             print {$OUT_CSS_FH} $slurped;
+#         }
+#     }
+#     else {
+#         print STDERR "filename $filename not css or js file\n";
+#     }
+# }
+
+
+#
+# ---------------------------------------------------------------------
+
+=item make_js_include
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+# sub make_js_include
+# {
+    
+#     my $filename = shift;
+#     # my $include = qq{ <script type="text/javascript" src="};
+#     # $include    .= qq|$filename\{\$timestamp\}">|;
+#     # $include    .= qq{</script>};
+#     if ($DEVELOPMENT) {
+#         $filename =~ s,//common-web,/mdp-web,;
+#     }
+#     else {
+#         $filename =~ s,//common-web,/$PROGRAM/common-web,;
+#     }
+#     my $include = qq{to_load.push("$filename<xsl:value-of select="\$timestamp\" />");};
+#     return $include;
+# }
+
+# ---------------------------------------------------------------------
+
+=item make_css_include
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub make_css_include {
+    my $filename = shift;
+    my $include = qq{ <link rel="stylesheet" type="text/css" href="};
+    $include    .= qq|$filename\{\$timestamp\}|;
+    $include    .= qq{"/>};
+    return $include;
+}
+
+# ---------------------------------------------------------------------
+
+=item clean_up
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub clean_up {
+    foreach my $filename (@{$TO_REMOVE_REF}) {
+        print STDERR "deleting $filename\n" if $VERBOSE;
+        unlink($filename) or die "Couldn't delete $filename: $!\n";
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item make_concatenated_files
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub make_concatenated_files {
+    my $jsfiles_ref = [];
+
+    my $in_block = 0; my @output = ();
+    my @template = read_file($TEMPLATE);
+    foreach my $line ( @template ) {
+        chomp $line;
+        if ( $line =~ m,//--BEGIN LOCAL--//,) {
+            $in_block = 1;
+        } elsif ( $line =~ m,//--END LOCAL--//, ) {
+            last;
+        } elsif ( $in_block ) {
+            $line =~ s,^\s*// ,,;
+            push @$jsfiles_ref, $line;
+        }
+    }
+
+    my @buffer = ();
+    foreach my $path ( @$jsfiles_ref ) {
+        my $filename = $path;
+        $filename =~ s,common/unicorn,common/web/unicorn,;
+        push @buffer, read_file("$ENV{SDRROOT}/$filename");
+        push @buffer, qq{\n//--- $filename\n};
+    }
+
+    # my $buffer = join("\n", @buffer);
+    my $buffer = join("", @buffer);
+    compress_file($buffer);
+
+    my $file_idx = scalar @$jsfiles_ref - 1;
+
+    $in_block = 0;
+    foreach my $line ( @template ) {
+        chomp $line;
+        if ( $line =~ m,//--BEGIN LOCAL--//,) {
+            $in_block = 1;
+            push @output, qq{    if ( do_load_uncompressed ) \{};
+        } elsif ( $line =~ m,//--END LOCAL--//, ) {
+            $in_block = 0;
+            my $path = basename($OUT_CONCATENATED_FILE);
+            my $ts = time();
+            push @output, qq{    \} else \{};
+            push @output, qq{        HT.scripts.unshift(prefix + 'common/unicorn/js/$path?_=$ts');};
+            push @output, qq{    \}};
+        } elsif ( $in_block ) {
+            $line =~ s,^\s*// ,,;
+            my $path = $$jsfiles_ref[$file_idx]; $file_idx -= 1;
+            push @output, qq{        HT.scripts.unshift(prefix + '$path');};
+        } else {
+            push @output, $line;
+        }
+    }
+
+    open(my $out, '>', $OUT_JS_FILE) or die "cannot open $OUT_JS_FILE $!";
+    print $out join("\n", @output);
+    close($out);
+
+
+
+}
+
+
+# ---------------------------------------------------------------------
+
+=item usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub usage {
+    my $msg = <<USAGE_MSG;
+  Usage:
+   \t$0 [-v][-x][-f][-h][-D][-z] -c mb|pt|ls|wayf configure for these apps
+
+   \tRead .../lib/Config/js_css_filelist.txt and concatenate and minimize js and css files. 
+   \tNormally, transform "//common-web" to "/{pt,ls,mb}/web/common-web" but see -D option
+
+   \tOutput consists of 3 files:
+   \t\t1) .../web/js/concatenated_common-min.js
+   \t\t2) .../web/concatenated_common-min.css
+   \t\t3) .../web/loads_helper_{mb,pt,ls}.xsl
+
+   \t Options:
+   \t\t-h This usage message
+   \t\t-v verbose
+   \t\t-D transform //common-web to /mdp-web for development ease. No git push/pull 
+   \t\t   required to see changes made in mdp-web under web/common-web
+   \t\t-z do NOT minimize files
+
+   \tDefaults:
+   \t\t filelist = ...lib//Config/js_css_filelist.txt
+   \t\t xsl file = .../web/loads_helper_{mb,pt,ls}.xsl
+   \t\t outputfile = .../web/js/concatenated_common-min.{js,css}
+
+   \t Defaults can be overriden with following options:
+   \t\t-f  <fullpath> to  filelist: list of javascripts to concatenate.
+   \t\t-x name of xsl file to output
+
+USAGE_MSG
+    
+    print STDERR $msg;    
+}
+
+
