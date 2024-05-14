@@ -271,8 +271,8 @@ sub stage_origin_master_branch {
 
         handle_staging_post_install_hook($app);
 
-        PrintY("Begin sanity checks ...\n");
-        print `$LOCATION/sanity-app -s$STAGE $app`;
+        PrintY("Begin validation checks ...\n");
+        print `$LOCATION/validate-app -s$STAGE $app`;
         $rc |= $?;
 
         PrintY(qq{Staging succeeds\n}) unless ($rc);
