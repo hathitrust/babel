@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html data-report="ssdproxy">
+<head>
+  <title>Report: SSDPROXY Downloads</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous" />
+
+  <link rel="stylesheet" type="text/css" href="//unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css"/>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+  <meta charset="utf-8" />
+
+  <style type="text/css">
+
+    .report-toolbar {
+      /*margin: 1rem 0;*/
+      display: flex;
+      justify-content: space-between;
+      max-width: 90vw;
+    }
+
+    form {
+      display: flex;
+      align-items: center;
+    }
+
+    form > * {
+      margin-right: 0.5rem;
+      white-space: nowrap;
+    }
+
+    #report {
+      /*margin: 2rem 4rem;*/
+      font-family: "Consolas", "Lucida Console", "Menlo", monospace;
+      /*font-size: 0.8rem;*/
+    }
+
+    td.nowrap {
+      white-space: nowrap;
+    }
+
+    td.min--350 {
+      min-width: 350px;
+    }
+    td.min--250 {
+      min-width: 250px;
+    }
+
+
+    #report:after {
+      content: "";
+      display: block;
+      position: absolute;
+      right: -4rem;
+      width: 4rem;
+      height: 1px;
+    }
+
+    #action-copy {
+      /*margin-left: 0.25rem;*/
+    }
+
+    .bootstrap-table .fixed-table-container .table thead th {
+      vertical-align: top;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="row">
+
+      <h1>Report: SSDPROXY</h1>
+
+    </div>
+    <div class="row">
+
+      <div class="report-toolbar" id="toolbar">
+        <form class="form-inline" id="form-daterange-filter">
+          <div class="form-group">
+            <label for="d1 d2">Filter between </label>
+            <input class="form-control" type="text" size="11" value="0000-00-00" name="datetime-start" id="d1" />
+            <span style="margin-left: 0.5rem"> - </span>
+            <input class="form-control"  type="text" size="11" value="9999-99-99" name="datetime-end" id="d2" />
+          </div>
+          <button class="btn btn-default" id="action-datetime-filter">Filter</button>
+          <button class="btn btn-default" id="action-clear-datetime-filter" type="button" name="clearDateFilter" title="Clear date filters"><i class="glyphicon glyphicon-trash"></i> </button>
+        </form>
+        <button type="submit" class="btn btn-primary hidden" id="action-copy">Copy</button>
+      </div>
+
+    </div>
+
+  </div>
+  <div class="container container-fluid">
+
+    <table id="report" class="table table-striped table-bordered table-hover table-condensed" 
+    data-pagination="true"
+    data-search="true"
+    data-filter-control="false"
+    data-show-search-clear-button="true"
+    data-show-export="true"
+    data-pagination-v-align="both"
+    data-toolbar="#toolbar">
+      <thead>
+        <tr>
+          <th data-field="datetime" data-sortable="true" 
+              data-filter-control="datepicker"
+              data-filter-datepicker-options='{"format":"yyyy-mm-dd"}'
+              data-filter-algorithm="filter_datetime"
+              data-searchable="false"
+              class="nowrap"
+              >datetime</th>
+          <th data-filter-control="input" data-field="htid"  data-sortable="true" class="nowrap">htid</th>
+          <th data-filter-control="input" data-field="ht_bib_key"  data-sortable="true">ht_bib_key</th>
+          <th data-filter-control="select" data-field="rights_code"  data-sortable="true">rights_code</th>
+          <th data-filter-control="input" data-field="email"  data-sortable="true">email</th>
+          <th data-filter-control="select" data-field="inst_code"  data-sortable="true">inst_code</th>
+          <th data-filter-control="select" data-field="inst_name" class="min--250">inst_name</th>
+          <th data-filter-control="select" data-field="content_provider_code"  data-sortable="true">content_provider_code</th>
+          <th data-filter-control="select" data-field="digitization_agent_code"  data-sortable="true">digitization_agent_code</th>
+          <th data-filter-control="input" data-field="title" class="min--350">title</th>
+          <th data-filter-control="input" data-field="imprint" class="min--350">imprint</th>
+          <th data-filter-control="input" data-field="author" class="min--250">author</th>
+          <th data-filter-control="input" data-field="rights_date_used"  data-sortable="true">rights_date_used</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+  </div>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+  <script type="text/javascript" src="/pt/reports/js/tableExport.js"></script>
+  <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/extensions/export/bootstrap-table-export.min.js"></script>
+  
+  <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+
+  <!-- <script type="text/javascript" src="/pt/reports/js/bootstrap-table-filter-control.js"></script> -->
+  <script type="text/javascript" src="/pt/reports/js/bootstrap-table-daterange-filter.js"></script>
+
+  <script type="text/javascript" src="/pt/reports/js/utils.bootstrap.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+#!/usr/bin/env perl
+
+use strict;
+umask 0000;
+
+# ----------------------------------------------------------------------
+# Performance measurement
+# ----------------------------------------------------------------------
+BEGIN {
+    ( $main::realSTART ) = time;
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the SDRINST and SDRLIB environment variable in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/pt/cgi');
+    }
+}
+
+
+# ----------------------------------------------------------------------
+# Libraries
+# ----------------------------------------------------------------------
+# Perl standard libs
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+# MDP specfic
+use MdpGlobals;
+use Utils;
+use Debug::DUtils;
+use PI;
+use PT::View;
+use Identifier;
+
+
+# ----------------------------------------------------------------------
+# define PTGlobals namespace
+# ----------------------------------------------------------------------
+use PTGlobals;
+
+use PT::MdpItem;
+use PT::SearchUtils;
+use PT::Prolog;
+
+$::VERSION = 3.0000;
+
+# ---------------------------------------------------------------------
+#
+#                           M A I N
+#
+# ---------------------------------------------------------------------
+
+my $prolog = new PT::Prolog;
+
+$prolog->Run(\&ValidityChecks, 'pt');
+
+my $C = $prolog->GetContext();
+my $gDso = $C->get_object('Session');
+my $gMdpItem = $C->get_object('MdpItem');
+
+my $config = $C->get_object('MdpConfig');
+my $run_config = SLIP_Utils::Common::merge_run_config('pt', $config);
+# Stomp $config in Context object
+$C->set_object('MdpConfig', $run_config);
+
+my $cgi = $C->get_object('CGI');
+
+# Any information specific to this request (page, possibly new
+# handler, etc.) is done after initialization
+$gMdpItem->SetCurrentRequestInfo($C, \%PTGlobals::gValidRotationValues );
+
+# ----------------------------------------------------------------------
+#                          Handle search
+# ----------------------------------------------------------------------
+
+my $id = $cgi->param('id');
+
+# Dynamically index the item before searching if necessary. Concurrent
+# indexing of the same id will be serialized at the Tomcat
+# instance. This may become a service.
+my $stats_ref = {};
+
+my ($is_indexed, $Solr_error) =
+  PT::SearchUtils::has_Solr_index_item($C,
+                                       SLIP_Utils::Common::get_run_number($run_config),
+                                       $id,
+                                       $stats_ref);
+# Can't talk to Solr. Don't try to index.  Fall through to
+# Solr_search_item() which will fail and present the usual UI that
+# indicates a system error. Better than showing the "Busy Indexing,
+# Try Again" page.
+unless ($Solr_error) {
+    if ( ! $is_indexed && ! $cgi->param('index') ) {
+        _redirect_to_index($cgi);
+    }
+    PT::SearchUtils::maybe_Solr_index_item($C,
+                                           SLIP_Utils::Common::get_run_number($run_config),
+                                           $id,
+                                           $stats_ref);
+    if ( $cgi->param('index') && ! DEBUG('index,doc,all') ) {
+        # we've indexed, so bounce to get rid of the index parameter
+        _redirect_to_browse($cgi);
+    }
+}
+
+# Search
+my $rs = PT::SearchUtils::Solr_search_item($C, $id, $stats_ref);
+$C->set_object('Search::Result::Page', $rs);
+
+
+# ----------------------------------------------------------------------
+# get XML template and process its PIs
+# ----------------------------------------------------------------------
+
+# Pseudo-controller-like sequence follows
+my $act = $C->get_object('Action');
+$act->execute_action($C);
+
+my $format = $cgi->param('format');
+if (defined $format && $format eq 'json') {
+    my $output = PT::SearchUtils::as_json($C, $rs);
+    print $cgi->header('application/json; charset=utf-8');
+    print $output;
+    exit;
+}
+
+my $vw = new PT::View($C);
+$vw->execute_view($C, $act);
+$vw->output($C);
+
+$C->dispose();
+
+##  exit 0;
+
+
+# ---------------------------------------------------------------------
+#
+#                       end of M A I N
+#
+# ---------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------
+# NAME         :
+# PURPOSE      :
+# CALLS        :
+# INPUT        :
+# RETURNS      :
+# GLOBALS      :
+# SIDE-EFFECTS :
+# NOTES        :
+# ----------------------------------------------------------------------
+sub ValidityChecks
+{
+    my ( $cgi ) = @_;
+
+    # lose any image map params
+    $cgi->delete( 'x' );
+    $cgi->delete( 'y' );
+
+    # There must be a valid id for an item to search within
+    silent_ASSERT(Identifier::validate_mbooks_id($cgi), qq{Invalid document id provided.});
+
+    # one-relative for fisheye. Solr search query adjusts to be
+    # zero-relative.
+    if (! $cgi->param('start')) {
+        $cgi->param ('start', '1');
+    }
+
+    if (! $cgi->param('sz')) {
+        $cgi->param ( 'sz', $PTGlobals::gDefaultSliceSize );
+    }
+    elsif ($cgi->param('sz') > $PTGlobals::gDefaultMaxSliceSize) {
+        $cgi->param ( 'sz', $PTGlobals::gDefaultMaxSliceSize );
+    }
+
+    unless ( $cgi->param('page') ) {
+        $cgi->param( 'page', 'search' );
+    }
+
+    unless ( $cgi->param('sort') ) {
+        $cgi->param('sort', 'seq');
+    }
+
+    return PT::Prolog::ST_EMPTY;
+}
+
+sub _redirect_to_index {
+    my ( $cgi ) = @_;
+    my $idx = $cgi->param('index') || 1;
+
+    $cgi->param('index', $idx);
+    my $url = $cgi->url(-relative => 1, -path_info => 1, -query => 1);
+    print CGI::redirect($url);
+    exit;
+}
+
+sub _redirect_to_browse {
+    my ( $cgi ) = @_;
+    $cgi->delete('index');
+    my $url = $cgi->url(-relative => 1, -path_info => 1, -query => 1);
+    print CGI::redirect($url);
+    exit;
+}
+
+__END__
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+

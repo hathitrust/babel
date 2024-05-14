@@ -1,0 +1,41 @@
+#! /bin/sh
+
+#
+# wrapper for kdu_expand--output metadata to stdout
+#
+
+# determine locations of binaries
+KDUEXPAND=/l/local/bin/kdu_expand
+
+# intermediate file
+TMPRECORD=/tmp/kdu_expand_record-stdout_$$
+
+# flag: output to stdout?
+STDOUT=0
+
+# parse arguments
+KDUEXPANDARGS=""
+while [ -n "$1" ]; do
+  # modify -record argument if present
+  if [ "$1" = "-record" -a \
+       "$2" = "-" ]; then
+    KDUEXPANDARGS="$KDUEXPANDARGS -reduce 10 $1 $TMPRECORD"
+    STDOUT=1
+    shift
+  elif [ "$1" = "-i" ]; then
+      KDUEXPANDARGS="$KDUEXPANDARGS $1 '$2'"
+      shift
+  else
+    KDUEXPANDARGS="$KDUEXPANDARGS '$1'"
+  fi
+  shift
+done
+KDUCMD="$KDUEXPAND $KDUEXPANDARGS 2>&1"
+# eval important for proper handling of spaces in filenames.
+eval $KDUCMD
+
+if [ $STDOUT -eq 1 ]; then
+  /bin/cat $TMPRECORD
+fi
+
+rm -f $TMPRECORD

@@ -1,0 +1,50 @@
+{
+  "name": "firebird-reader",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node ./build-redirects.js",
+    "stage": "NODE_ENV=development vite build && node ./build-redirects.js",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "babel": "NODE_ENV=development vite build --watch"
+  },
+  "devDependencies": {
+    "@popperjs/core": "^2.11.6",
+    "@storybook/addon-essentials": "^7.0.0-rc.3",
+    "@storybook/addon-interactions": "^7.0.0-rc.3",
+    "@storybook/addon-links": "^7.0.0-rc.3",
+    "@storybook/addon-svelte-csf": "^3.0.0-next.3",
+    "@storybook/blocks": "^7.0.0-rc.3",
+    "@storybook/jest": "^0.0.11-next.0",
+    "@storybook/svelte": "^7.0.0-rc.3",
+    "@storybook/svelte-vite": "^7.0.0-rc.3",
+    "@storybook/testing-library": "^0.0.14-next.1",
+    "@sveltejs/vite-plugin-svelte": "^2.0.3",
+    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "bootstrap": "^5.2.3",
+    "emittery": "^1.0.1",
+    "fast-glob": "^3.2.12",
+    "p-queue": "^7.3.4",
+    "prettier": "^2.8.7",
+    "prettier-plugin-svelte": "^2.10.1",
+    "sass": "^1.60.0",
+    "storybook": "^7.0.0-rc.3",
+    "svelte": "^3.55.1",
+    "svelte-preprocess": "^5.0.3",
+    "svelte-splitpanes": "^0.7.13",
+    "vite": "^4.2.0"
+  },
+  "overrides": {
+    "chokidar": "^3.0.0",
+    "fsevents": "^2.0.0"
+  },
+  "dependencies": {
+    "dialog-polyfill": "^0.5.6",
+    "firebird-common": "github:hathitrust/firebird-common",
+    "screenfull": "^6.0.2"
+  }
+}
