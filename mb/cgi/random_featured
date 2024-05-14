@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# ----------------------------------------------------------------------
+# Performance check-pointing
+# ----------------------------------------------------------------------
+
+BEGIN {
+    ( $main::realSTART ) = time;
+}
+
+
+BEGIN {
+    if ( $ENV{'HT_DEV'} ) {
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/mb/cgi');
+    }
+}
+
+
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+# MBooks
+use MdpGlobals;
+use Utils;
+use Debug::DUtils;
+
+use App;
+use Database;
+use MdpConfig;
+use Action::Bind;
+use Context;
+use Session;
+use Auth::Auth;
+use Access::Rights;
+
+use MBooks::Controller;
+
+
+$::VERSION = 1.1200;
+
+# ============================ Main ===================================
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+my $C = new Context;
+
+# CGI
+my $cgi = new CGI;
+$cgi->param('a', 'random');
+Utils::clean_cgi_params($cgi);
+$C->set_object('CGI', $cgi);
+
+#
+# Create the application
+#
+my $app = new App($C, 'mb');
+$C->set_object('App', $app);
+
+# configuration
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('mb'),
+                           $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $db = new Database('ht_web');
+$C->set_object('Database', $db);
+
+# Session
+my $ses = Session::start_session($C);
+$C->set_object('Session', $ses);
+
+# cheating to avoid http/https redirect just to get this feature
+my $auth_sys = $ses->get_persistent('authenticated_via');
+$ses->set_persistent('authenticated_via', undef);
+
+# Auth
+my $auth = new Auth::Auth($C);
+$C->set_object('Auth', $auth);
+
+$ses->set_persistent('authenticated_via', $auth_sys);
+
+#
+# Create the application Controller (main logic) class
+#
+my $ctl = new MBooks::Controller($C);
+
+#
+# Run the application on the framework classes
+#
+$app->run_application($C, $ctl);
+
+
+exit 0;

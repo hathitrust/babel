@@ -1,0 +1,6 @@
+  <?CHUNK filename="items.inc.xml"?>
+
+  <QueryString><?QUERY_STRING?></QueryString>
+  <SearchResults><?SEARCH_RESULTS?></SearchResults>
+  <RelSortHref><?REL_SORT_HREF?></RelSortHref>
+  <SearchResultsAjaxUrl><?SEARCH_RESULTS_AJAX_URL?></SearchResultsAjaxUrl>

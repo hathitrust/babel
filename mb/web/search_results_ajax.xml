@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>search_results_ajax.xsl</Filename>
+  </XslFileList>
+
+  <OperationResults><?OPERATION_RESULTS?></OperationResults>
+
+</MBooksTop>
