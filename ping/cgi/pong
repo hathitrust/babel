@@ -1,0 +1,142 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Plack::Runner;
+
+# Dur: pong has to UPDATE THE AUTHENTICATION SESSION
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/ping/cgi');
+    }
+}
+
+{
+    package App;
+    
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+    
+    sub get_app_name {
+        my $self = shift;
+        return "ping";
+    }
+    
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+use Identifier;
+
+use MdpConfig;
+use Auth::Auth;
+use Utils;
+use Database;
+use Session;
+
+use Plack::Request;
+use Plack::Response;
+
+use Ping::Utils;
+use JSON::XS;
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+    
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('ping'),
+                               $ENV{SDRROOT} . "/ping/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/ping/lib/Config/local.conf"
+                              );
+    
+    
+    # now need to hit the database
+    my $C = new Context;
+
+    $C->set_object('MdpConfig', $config);
+    $C->set_object('App', new App);
+
+    my $cgi = new CGI;
+    $C->set_object('CGI', $cgi);
+
+    # Database connection
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    # Session
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    # get an Auth object to trigger cgi/shcgi redirection
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+    
+    $ses->set_persistent('_isa_new_login_via_pong', 1);
+    
+    my $cookie_name = $config->get('cookie_name');
+    my $target_url = $request->param('target');
+    if ( $$env{REQUEST_URI} =~ m,&, ) {
+        $target_url = (split(/\?target=/, $$env{REQUEST_URI}))[-1];
+        if ( $target_url =~ m,\%[0-9]{2}, ) {
+            $target_url = CGI::unescape($target_url);
+        }
+    }
+
+    $response = Plack::Response->new(302);
+    
+    # return session cookie
+    $response->cookies->{$cookie_name} = { 
+        'value' => $ses->get_session_id(), 
+        'path' => '/',
+        'domain' => Utils::get_cookie_domain(),
+        'httponly' => 1
+    };
+    
+    # return session information
+    my $info = Ping::Utils::identify_user( $C, $env );
+    $response->cookies->{'HTstatus'} = {
+        'value' => encode_json($info),
+        'path'  => '/',
+        'domain' => Utils::get_cookie_domain()
+    };
+
+    $response->redirect($target_url);
+    
+    # explicitly close the session to save any updates
+    $ses->close();
+    return $response->finalize;
+};
+
+Plack::Runner->new->run($app);
