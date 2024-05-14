@@ -1,0 +1,97 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+git-list-tags - List tags
+
+=head1 SYNOPSIS
+
+git-list-tags [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-l> num
+
+List this number of tags
+
+=item B<-v>
+
+Verbose listing
+
+=back
+
+=head1 DESCRIPTION
+
+B<git-list-tags> will attempt to give a detailed list the given number
+of tags in chronological tagging order for the current repository.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_h, $opt_l, $opt_v);
+my $ops = getopts('hl:v');
+
+my $help = $opt_h;
+my $list_num_tags = $opt_l;
+my $verbose = $opt_v;
+
+if ($help) {
+    print git_list_tags_usage();
+    exit 0;
+}
+
+my $app = shift;
+if (! $app) {
+    print git_list_tags_usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots('test');
+my $fail_msg = qq{Failed to stage application ($app)\n};
+my $app_dir = "$app_root/$app";
+    
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    PrintN($fail_msg);
+    exit 1;
+}
+
+my $tags = G_list_tags($list_num_tags, $verbose);
+
+if ($tags) {
+    print "\n$tags";
+}
+else {
+    print "No tags here\n";
+}
+
+exit;
+
+#
+# Subroutines
+#
+
+# ---------------------------------------------------------------------
+sub git_list_tags_usage {
+    my $s = qq{Usage: git-list-tags [options] <app>
+           where <app> is the application to list tags for 
+                 -l <num> sets number to list. default is 3
+                 -v verbose. includes SHA1 of commit that was tagged
+                 -h print help\n};
+    return $s;
+}
+
+__END__;
+

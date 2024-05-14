@@ -1,0 +1,102 @@
+#!/usr/bin/env perl
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+
+our ($opt_A, $opt_h, $opt_v, $opt_m );
+my $ops = getopts('Ahvm:');
+
+sub Usage {
+    print "git-pull-latest-submodules [options] <app> [<app>]+ | -A
+  pulls latest version of submodules from origin master for one or more or all apps under /htapps/developer.babel
+      -A pulls submodule(s) in all apps that contain a .gitmodules file
+    OPTIONS
+      -v verbose
+      -m <submodule name> pull only this submodule
+          e.g. common-lib, pt-lib, imgsrv-lib, yui2-lib
+      -h help\n";
+}
+
+if ($opt_h) {
+    print Usage();
+    exit 0;
+}
+
+$ToolLib::VERBOSE = $opt_v;
+my $SUBMODULE = $opt_m;
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+my @apps;
+
+if ($opt_A) {
+    @apps = ToolLib::get_app_list($app_root);
+}
+else {
+    @apps = @ARGV;
+}
+
+if (! scalar(@apps)) {
+    print Usage();
+    exit 0;
+}
+
+foreach my $app (@apps) {
+    my $app_dir = "$app_root/$app";
+    
+    next if (! -e "$app_dir/.gitmodules");
+
+    if (! chdir_to_app_dir($app_dir)) {
+        exit 1;
+    }
+
+# May want latest submodules regardless of which branch is checked out
+#     my $branch = `git branch`;
+#     if ($branch !~ m,\* master,s) {
+#         PrintN("\nMASTER BRANCH NOT CHECKED OUT in $app_dir ... skipping\n");
+#         next;
+#     }
+
+    my $submodule_path;
+    if ($SUBMODULE) {
+        my @submodule_paths = qx{git submodule --quiet foreach 'echo \$name'};
+        
+        if (($submodule_path) = grep(/$SUBMODULE/, @submodule_paths)) {
+            PrintY("\npulling ONLY $SUBMODULE submodule from origin into $app_dir\n");
+        }
+        else {
+            PrintN(qq{\n"$SUBMODULE" is not a submodule of $app_dir\n});
+            my $submodules = "\n\t\t" . join("\t\t", @submodule_paths);
+            PrintY("\t$app submodules are:$submodules\n");
+            next;
+        }
+    }
+    else {
+        PrintY("\n--- pulling all submodules from origin into $app_dir ---\n");
+    }
+    
+    print "\tPull ...\n";
+
+    if ($SUBMODULE) {
+        chomp $submodule_path;
+        if (! chdir_to_app_dir("$app_dir/$submodule_path")) {
+            exit 1;
+        }
+        execute_command("git pull origin master -v");
+    }
+    else {
+        execute_command("git submodule update --init");
+        execute_command("git submodule foreach git pull origin master -v");
+    }
+    
+    execute_command("git submodule status");
+}
+
+exit 0;
+
+
+

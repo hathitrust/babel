@@ -1,0 +1,94 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+git-me - Keep an app in sync with the upstream
+
+=head1 SYNOPSIS
+
+git-me <app> <branch>
+
+=head1 OPTIONS
+
+=over 8
+
+=back
+
+=head1 DESCRIPTION
+
+B<git-me> helps you keep a branch (NOT MASTER) up to date with
+origin/master. B<git-me >fetch objects, rebase to origin/master and
+update submodules.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "/htapps/test.babel/mdp-lib/Utils";
+use Vendors;
+
+use ToolLib;
+$| = 1;
+
+sub git_me_app_usage {
+    my $s = qq{Usage: git-me <app> <branch>
+           where <app> is the application to sync with the upstream
+                 <branch> is branch to rebase
+                   Note: rebase of master branch not supported\n};
+    return $s;
+}
+
+our ($opt_h);
+my $ops = getopts('h');
+
+if ($opt_h) {
+    print git_me_app_usage();
+    exit 0;
+}
+
+my $app = shift;
+if (! $app) {
+    print git_me_app_usage();
+    exit 1;
+}
+
+my $branch = shift;
+if (! $branch) {
+    print git_me_app_usage();
+    exit 1;
+}
+if ($branch eq 'master') {
+    print git_me_app_usage();
+    exit 1;
+}
+
+my ($repo_root, $app_root) = get_HTDE_roots();
+
+PrintY("Rebase $app on branch=$branch to origin/master\n");
+
+if (! validate_existing_app($repo_root, $app_root, $app)) {
+    print git_me_app_usage();
+    exit 1;
+}
+
+my $app_dir = "$app_root/$app";
+
+if (! chdir_to_app_dir($app_dir)) {
+    print git_me_app_usage();
+    exit 1;
+}
+
+$ToolLib::VERBOSE = 1;
+
+exit 1 if (! execute_command("git checkout $branch"));
+exit 1 if (! execute_command("git fetch origin master"));
+exit 1 if (! execute_command("git rebase origin/master"));
+exit 1 if (! execute_command("git submodule update --init"));
+
+execute_command("git submodule status");
+
+exit 0;
+
+__END__;
+
