@@ -1,6 +1,0 @@
-[submodule "vendor/common-lib/lib"]
-    path = vendor/common-lib/lib
-    url = ../mdp-lib.git
-[submodule "vendor/plack-lib/lib"]
-	path = vendor/plack-lib/lib
-    url = ../plack-lib.git
