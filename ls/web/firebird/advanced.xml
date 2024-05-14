@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--XXX tbw try commenting this out <MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">-->
+<MBooksTop>
+
+  <!-- LS/root.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>js_utils.xsl</Filename>
+    <!-- <Filename>loads.xsl</Filename> -->
+    <!-- <Filename>loads_helper_ls.xsl</Filename> -->
+    <!-- <Filename>coll.xsl</Filename> -->
+    <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
+    <Filename>advanced.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
+  </XslFileList>
+
+  <AdvancedSearch><?ADVANCED_SEARCH_FORM_NOP?></AdvancedSearch>
+  <AdvancedSearchConfig><?ADVANCED_SEARCH_CONFIG?></AdvancedSearchConfig>
+  <!-- Custom OPTIONAL XML for top-level file -->
+
+  <?CHUNK filename="mbooks_globals.xml"?>
+  
+  <!-- Minimal header.xml -->
+  <?CHUNK filename="header.xml"?>
+
+</MBooksTop>

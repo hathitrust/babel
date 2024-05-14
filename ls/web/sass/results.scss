@@ -1,0 +1,359 @@
+@import "../../../common/web/unicorn/sass/base";
+
+.alert.summary {
+    span { font-weight: bold ; }
+}
+
+#facetlist {
+
+    dt, dd {
+        margin-left: 0;
+        @include rem(margin-bottom, 4);
+        @include rem(line-height, 18);
+    }
+
+    dt {
+        font-weight: bold;
+        @include rem(margin-top, 16);
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    dd {
+        color: #999;
+        @include rem(margin-left, 16);
+    }
+}
+
+.row.result {
+
+    position: relative;
+    @include rem(margin-bottom, 16);
+    @include rem(padding-bottom, 8);
+    @include rem(padding-top, 8);
+
+    h4 {
+        // @include push(2);
+        margin-top: 0;
+        margin-bottom: 5px;
+        margin-bottom: 0.5rem;  
+        font-size: 16px;
+        font-weight: normal;
+        width: 99%;
+    }
+
+    h5 {
+        @include rem(margin-top, 4);
+        @include rem(margin-bottom, 4);
+        @include rem(font-size, 13);
+    }
+
+    .metadata {
+        @include rem(padding-left, 16);
+    }
+
+    .options {
+        width: 85px;
+    }
+
+    .cover {
+        width: 60px; 
+        min-height: 60px;
+        float: right;
+
+        img {
+            min-width: 60px;
+        }
+
+    }
+
+    .select {
+        width: 24px;
+        float: right;
+
+        label {
+            display: inline-block;
+        }
+    }
+
+    .in-collections {
+        font-size: 90%;
+        // @include rem(margin-top, -25);
+        position: absolute;
+        @include rem(top, 8);
+        @include rem(right, 10);
+
+        ul {
+            padding-left: 0;
+            margin-left: 0;
+            margin-top: 0;
+            list-style: none;
+
+            li {
+                @include rem(margin-bottom, 4);
+            }
+        }
+
+    }
+
+    [class*="result-metadata-"] {
+        display: block;
+        font-size: 95%;
+        color: #666;
+    }
+
+    .result-access-link {
+        @include rem(margin-top, 10);
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+            li {
+                display: inline;
+                float: left;
+                @include rem(margin-right, 20);
+            }
+        }
+    }
+
+    &.alt {
+        background-color: #f6f4f1;
+    }
+
+    [class*="span"] + [class*="pull-"] {
+      float: left;
+    }
+
+}
+
+.push-1 {
+  margin-left: 8.36653%;
+}
+
+dl.collection {
+    dd, dt {
+        margin-left: 0;
+    }
+
+    dt {
+        font-weight: bold;
+        @include rem(margin-bottom, 4);
+    }
+
+    dd {
+        @include rem(margin-bottom, 12);
+    }
+}
+
+.col-featured img {
+    border: 2px solid #eee;
+    padding: 2px;
+    max-width: 100%;
+}
+
+[class^="icomoon-"]:before, [class*=" icomoon-"]:before {
+font-family: 'icomoon';
+font-style: normal;
+speak: none;
+font-weight: normal;
+line-height: 1;
+-webkit-font-smoothing: antialiased;
+margin-right: 2px;
+    color: #666;
+    display: inline-block;
+    font-size: 110%;
+}
+
+.mainsearch {
+    label[for=q1] {
+        font-size: 110%;
+        // font-weight: bold;
+    }
+
+    .search-extra-options {
+        margin-top: 0;
+    }
+    
+    @include rem(padding-bottom, 16);
+    @include rem(margin-bottom, 16) ;
+    border-bottom: 1px dotted #a6a5a5;
+}
+
+
+.tabs {
+    @include rem(margin-bottom, 10);
+    @include rem(margin-left, 10);
+    border-bottom: 1px solid #AAA;
+    width: 96%;
+    color: #333;
+
+    a, span {
+        font-weight: bold;
+        color: #5e5e5e;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+        border-bottom: none;
+        color: #b15a0d;        
+    }
+
+    ul {
+      text-align: left;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      @include rem(line-height, 24);
+
+      &:after, &:before {
+          display: table;
+          line-height: 0;
+          content: "";
+          clear: both;
+      }
+
+      li {
+        float: left;
+        margin: 0 0px;
+        padding: 0 10px;
+        border: 1px solid #d3d3d3;
+        border-bottom: 1px solid #aaa;
+        background: #e3e3e3;
+        background: -webkit-gradient(linear,0% 0,0% 100%,from(white),to(#e3e3e3));
+        display: inline-block;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        margin-bottom: -1px;
+        font-size: 14px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &.active {
+            border: 1px solid #aaa;
+            border-bottom: 1px solid transparent;
+            background: #fff;
+
+            a {
+                color: #4f4f4f;
+            }            
+        }
+
+      }
+
+
+    }
+
+}
+
+// .tabs ul:after, .tabs ul:before {
+//   display: table;
+//   line-height: 0;
+//   content: "";
+// }
+
+div > h3:first-child {
+    margin-top: 0;
+}
+
+.toolbar {
+    label {
+        display: inline-block;
+    }
+
+    @include rem(margin-bottom, 16);
+    @include rem(padding, 8);
+
+    &.alt {
+        background-color: #D2D2D1;
+        // border: 2px solid #D2D2D1;
+    }
+}
+
+#SortWidget {
+    display: inline-block;
+
+    select {
+        width: auto;
+        margin-bottom: 0;
+        @include rem(font-size, 12);
+    }
+
+    @include rem(margin-right, 20);
+}
+
+.PageInfo {
+    display: inline-block;
+
+    select {
+        width: auto;
+        margin-bottom: 0;
+        @include rem(font-size, 12);
+    }
+
+    .resultsPerPage {
+        display: inline-block;
+    }
+
+    .pagingNav {
+        display: inline-block;
+        // line-height: 20px;
+
+        ul {
+            list-style: none;
+            // margin: 0;
+            margin-bottom: 0;
+            @include rem(margin-left, 20);
+            padding: 0;
+
+            li {
+                display: inline-block;
+                margin: 0;
+                @include rem(margin-left, 3);
+                @include rem(padding-left, 3);
+                @include rem(padding-right, 3);
+                @include rem(padding-top, 2);
+                @include rem(padding-bottom, 2);
+            }
+        }
+    }
+}
+
+
+.selectAll {
+    display: inline-block;
+}
+
+.SelectedItemActions {
+    display: inline-block;
+    @include rem(margin-left, 40);
+
+    select {
+        // width: auto;
+        margin-bottom: 0;
+    }
+
+}
+
+.controls .counter {
+    @include rem(margin-left, 5);
+    @include rem(margin-top, 2);
+    vertical-align: top;
+}
+
+// #SortWidget, #actionsRow2, #actionsRow1, .mainsearch { display: none; }
+#listisFooter { display: none; }
+
+.alert-summary {
+    background-color: transparent;
+    border-color: transparent;
+    color: $text-color;
+    padding-left: 0;
+    @include rem(margin-bottom, 10);
+}

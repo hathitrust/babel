@@ -1,0 +1,19 @@
+.gitignore
+\#*\#
+#ignore RCS files
+*,v
+/lib/Config/AB_test_config
+/lib/Config/local.conf
+/cgi/testUTF.pl
+/cgi/teststring
+/lib/LS/Operation/Search.backup.tom
+/testgrep
+/web/folder.png
+/web/folding.js
+/web/js/fixed
+/web/page.png
+/web/testFacet.html
+/web/testicons/
+/web/testnew.html
+/web/tmp
+/web/SolrDebug.html

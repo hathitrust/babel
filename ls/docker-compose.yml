@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+
+ test:
+    build: .
+    volumes:
+      - .:/htapps/babel/ls
+    environment:
+      - SDRROOT=/htapps/babel
+    command: prove
