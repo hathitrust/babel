@@ -1,0 +1,5 @@
+<!-- smallheader.xml XML include file -->
+
+<SmallHeader>
+  <GoBackLink><?GO_BACK_LINK?></GoBackLink>
+</SmallHeader>

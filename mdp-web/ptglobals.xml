@@ -1,0 +1,51 @@
+<DebugMessages><?DEBUG_MESSAGES?></DebugMessages>
+<RightsAttribute><?RIGHTS_ATTRIBUTE?></RightsAttribute>
+<SourceAttribute><?SOURCE_ATTRIBUTE?></SourceAttribute>
+<ContentProvider><?CONTENT_PROVIDER?></ContentProvider>
+<FinalAccessStatus><?FINAL_ACCESS_STATUS?></FinalAccessStatus>
+<LoggedIn><?LOGGED_IN?></LoggedIn>
+<HathiTrustAffiliate><?HATHITRUST_AFFILIATE?></HathiTrustAffiliate>
+<MichiganAffiliate><?MICHIGAN_AFFILIATE?></MichiganAffiliate>
+<LoggedInJs><?LOGGED_IN_JS?></LoggedInJs>
+<ItemHandle><?ITEM_HANDLE?></ItemHandle>
+<CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
+<CurrentUrl><?CURRENT_URL?></CurrentUrl>
+<UserAgent><?ENV_VAR variable="HTTP_USER_AGENT"?></UserAgent>
+<ReferrerHref><?ENV_VAR variable="HTTP_REFERER"?></ReferrerHref>
+<HttpHost><?ENV_VAR variable="HTTP_HOST"?></HttpHost>
+<EnvHT_DEV><?ENV_VAR variable="HT_DEV"?></EnvHT_DEV>
+<EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
+<SessionId><?SESSION_ID?></SessionId>
+<Debug><?DEBUG_SWITCH?></Debug>
+<ContactEmail><?CONTACT_EMAIL?></ContactEmail>
+<ContactText><?CONTACT_TEXT?></ContactText>
+<VersionLabel><?VERSION_LABEL?></VersionLabel>
+<VolumeTitle><?VOLUME_TITLE?></VolumeTitle>
+<VolCurrTitleFrag><?VOLUME_CURRENT_TITLE_FRAGMENT?></VolCurrTitleFrag>
+<ItemFormat><?ITEM_FORMAT?></ItemFormat>
+<MetadataFailure><?METADATA_FAILURE?></MetadataFailure>
+<SSDSession><?SSD_SESSION?></SSDSession>
+<Skin><?MY_SKIN?></Skin>
+<DebugUncompressed><?DEBUG_UNCOMPRESSED?></DebugUncompressed>
+<Pod><?POD_DATA?></Pod>
+<HasOcr><?HAS_OCR?></HasOcr>
+<AccessUse><?ACCESS_USE?></AccessUse>
+<HtId><?HT_ID?></HtId>
+<Holdings><?ACCESS_HOLDINGS?></Holdings>
+<InLibrary><?IN_LIBRARY?></InLibrary>
+<AccessType><?ACCESS_TYPE?></AccessType>
+<InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+<InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
+<SuppressAccessBanner><?SUPPRESS_ACCESS_BANNER?></SuppressAccessBanner>
+<Surveys><?PT_SURVEY?></Surveys>
+<Collections><?ITEM_IN_COLLECTIONS?></Collections>
+<?CACHE_TIMESTAMP href="/common/alicorn/css/main.201910.css" ?>
+<?CACHE_TIMESTAMP href="/common/alicorn/js/utils.201910.js" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/css/main.css" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/css/search.css" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/js/utils.js" ?>
+<?CACHE_TIMESTAMP href="/pt/alicorn/js/main.js" ?>
+
+
+
+

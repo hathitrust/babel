@@ -1,0 +1,215 @@
+body {
+  color: #000000;
+  padding: 0px;
+  margin: 0px;
+  font-size: 90%;
+  width: 100%;
+  font-family: Arial, Verdana, Helvetica, sans-serif;
+}
+
+#masthead {
+  border-bottom: 2px solid #777777;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* FIXME:SUZCHAP - don't need anymore?
+#Header
+{
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  height: auto;
+}
+
+#mdpPageHeader 
+{ 
+  position: relative;  
+  height: 81px; 
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+#mdpPageHeaderUM
+{
+  font-size: 22px;
+  font-family: Palatino, Georgia, serif;
+  position: absolute; top: 16px; left: 170px;
+  height: 22px; clear: none;
+  z-index: 1;
+}
+
+#mdpPageHeaderUM a
+{
+  color: #222d52;
+  text-decoration: none;
+}
+
+#mdpPageHeaderUM a:hover
+{
+  text-decoration: underline;
+}
+
+#mdpPageHeaderUL
+{
+  font-size: 20px;
+  font-family: Palatino, Georgia, serif;
+  font-weight: bold;
+  position: absolute; top: 39px; left: 272px;
+  height: 20px; clear: none;
+}
+
+#mdpPageHeaderUL a
+{
+  color: #34457d;
+  text-decoration: none;
+}
+
+#mdpPageHeaderUL a:hover
+{
+  text-decoration: underline;
+}
+
+*/
+
+#AboutHeader
+{
+  position: relative;
+  padding: 10px 0px 10px 0px;
+  width: 100%;
+  background-color: #e6e3d2;
+  height: auto;
+  float: left;
+  text-align: center;
+  color: #222d52;
+  font-size: 20px;
+  font-weight: bold;
+  border-bottom: 1pt solid #aebfdc;
+  margin: 0px 0px 10px 0px;
+  }
+
+#AboutHeader h1 {
+  padding:0;
+  margin:0;
+  font-size: 1.3em;
+  
+}
+
+
+.intro {
+  margin: 20px;
+}
+
+.pagecontent {
+  padding: 0;
+  margin: 0 auto;
+  width: 96%;
+}
+
+ol
+{
+  font-weight: bold;
+}
+
+.exp
+{
+  font-weight: normal;
+}
+
+.exp li
+{ padding-bottom:8px;}
+
+img
+{
+   border: none;
+}
+
+.sectHead
+{
+  font-weight: bold;
+  font-size: 120%;
+  }
+
+.question
+{
+  display: block;
+  font-style: italic;
+  font-weight: bold;
+  padding: 0;
+  margin: 20px;
+  }
+
+
+.answer
+{
+  display: block;
+  font-weight: normal;
+  padding: 0;
+  margin: 20px;
+}
+
+.return
+{
+
+ font-size: 80%;
+}
+
+
+.indexHead
+{
+  font-weight: bold;
+  font-size: 120%;
+  padding: 0;
+}
+
+
+.navbar
+{
+background-color: #000066
+}
+
+.faqfooter
+{
+   text-align: center;
+   font-size: 80%;
+   margin: 0px;
+}
+
+#branding {
+  border: none;
+  }
+
+#branding-table {
+  padding: 0;
+  width: 100%;
+}
+
+/* FOR MBooks_unavailable.html */
+.outmessage {
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+  font-size: 2em;
+}
+
+.outmessage h1 {
+  color: #ef7a06;  
+}
+
+.message_error {
+  margin: 0 auto;
+  width: 90%;
+}
+
+.message_error img {
+  float: left;
+}
+
+.message_error p {
+  float: left;
+  width: 35%;
+  font-size: 1.2em;
+  margin: 8px;  
+}
+
