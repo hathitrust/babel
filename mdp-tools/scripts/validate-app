@@ -2,11 +2,11 @@
 
 =head1 NAME
 
-sanity-app - Simple HTTP 200 check HT application at test.babel in preparation for deployment.
+validate-app - Simple HTTP 200 check HT application at test.babel in preparation for deployment.
 
 =head1 SYNOPSIS
 
-sanity-app app
+validate-app app
 
 =head1 OPTIONS
 
@@ -16,7 +16,7 @@ sanity-app app
 
 =head1 DESCRIPTION
 
-B<sanity-app> will attempt a curl on a list of URLs for the app.
+B<validate-app> will attempt a curl on a list of URLs for the app.
 
 =cut
 $| = 1;
@@ -33,8 +33,8 @@ my $LOCATION = dirname(__FILE__);
 
 use ToolLib;
 
-sub sanity_app_usage {
-    my $s = qq{Usage: sanity-app [options] [<app>]
+sub validate_app_usage {
+    my $s = qq{Usage: validate-app [options] [<app>]
            where <app> is the application.
                  -A all apps
                  -v verbose
@@ -49,10 +49,10 @@ my $ops = getopts('LAs:v');
 
 my $STAGE = $opt_s || 'test';
 
-my @staging_areas = (@ToolLib::all_valid_stages, @ToolLib::valid_developers);
+my @staging_areas = @ToolLib::all_valid_stages;
 if (! grep (/^$STAGE$/, @staging_areas)) {
     PrintN("Invalid staging area=$STAGE\n");
-    print sanity_app_usage();
+    print validate_app_usage();
     exit 1;
 }
     
@@ -81,18 +81,18 @@ if ($ALL) {
 else {
     @apps = @ARGV;
     if (! scalar(@apps)) {
-        print sanity_app_usage();
+        print validate_app_usage();
         exit 1;
     }
 }
 
-my ($repo_root, $app_root) = get_HTDE_roots();
-my $CONFIG = YAML::Any::LoadFile("$LOCATION/../lib/Config/sanity-config.yaml");
+my ($repo_root, $app_root) = get_HTDE_roots($STAGE);
+my $CONFIG = YAML::Any::LoadFile("$LOCATION/../lib/Config/validate-config.yaml");
 my $rc = 0;
 foreach my $app (@apps) {
     $rc = 0;
     
-    PrintY(qq{SANITY checking: $app\n});
+    PrintY(qq{validate-app checking: $app\n});
 
     if (! validate_existing_app($repo_root, $app_root, $app)) {
         next;
@@ -129,24 +129,6 @@ foreach my $app (@apps) {
 
 exit $rc;
 
-# ---------------------------------------------------------------------
-
-=item __get_staging_area
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __get_staging_area {
-    if (grep(/$STAGE/, @ToolLib::valid_developers)) {
-        return $STAGE . '-full';
-    }
-    else {
-        return $STAGE;
-    }
-}
-
 
 # ---------------------------------------------------------------------
 
@@ -161,8 +143,7 @@ sub _test_url {
     my $app = shift;
     my $url = shift;
 
-    my $stage = __get_staging_area();
-    $url =~ s,__URL_STAGE__,$stage.babel,g;
+    $url =~ s,__URL_STAGE__,$STAGE.babel,g;
 
     if ($LOCAL) {
         $url =~ s,__LOCAL__,debug=local,;
@@ -210,9 +191,7 @@ sub _test_cmd {
     my $app = shift;
     my $cmd = shift;
 
-    my $stage = __get_staging_area();
-
-    $cmd =~ s,__CMD_STAGE__,$stage.babel,g;
+    $cmd =~ s,__CMD_STAGE__,$STAGE.babel,g;
 
     if ($LOCAL) {
         $cmd =~ s,__LOCAL__,debug=local,;
