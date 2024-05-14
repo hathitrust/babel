@@ -1,0 +1,6 @@
+                <fieldset>
+                  <input id="type"
+                       type="radio" name="resource" class="htresource request required" value="type"><b>item type</b></input>              <input class="htsubmit" type="submit" value="Submit" />
+                  <p class="tiny">Discover the type of your ID here (unless you already know it) so you can choose from the correct resource group below.</p>
+<label for="resource" class="error" style="display:none;">Choose <b>item type</b> to determine resource type or select one of the following resources:</label>
+                </fieldset>

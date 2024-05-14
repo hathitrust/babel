@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+    <title>HathiTrust Web Client Request Form</title>
+    <meta http-equiv="Content-Language" content="en-us" />
+    <script  type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script  type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
+    <link rel="stylesheet" type="text/css" href="/htdc/htdc.css"/>
+    <script type="text/javascript">
+      $(document).ready(function(){
+
+      var $radio = $('input:radio[name="resource"]');
+      $radio.addClass("validate[required]");
+
+        $("#htdc_request").validate();
+        function hide_show_opts() {
+          if ($("#volpageimageid").is(":checked")) {
+            $("#htoptsdiv").show();
+          }
+          else {
+            $("#htoptsdiv").hide();
+          }
+
+          if (
+            $("#volpageimageid").is(":checked")
+            ||
+            $("#volpagemetaid").is(":checked")
+            ||
+            $("#volpageocrid").is(":checked")
+            ||
+            $("#volpagecoordocrid").is(":checked")
+            ||
+            $("#articleasset").is(":checked")
+            ||
+            $("#articlealternate").is(":checked")
+            ||
+            $("#articlesupplement").is(":checked")
+             ) {
+              $("#htseqdiv").show();
+          }
+          else {
+            $("#htseqdiv").hide();
+          }
+
+          if ($("#formatrawid").is(":checked")) {
+            $("#htnonrawdiv").hide();
+          }
+          else if ($("#volpageimageid").is(":checked")) {
+            $("#htnonrawdiv").show();
+           }
+        }
+
+        eventHandlerHS = function () {
+          hide_show_opts();
+        };
+
+        hide_show_opts();
+        $('input').bind("click", eventHandlerHS);
+      });
+    </script>
+    ___EXTENDED_OPTIONS_JS___
+  </head>
+  <body>
+    <div id="HTDCMasterContainer">
+      ___HEADER_CHUNK___
+      <div id="HTDCcontainer">
+        ___EXAMPLE_IDS___
+        <form class="htdc_request_form" id="htdc_request" method="post" action="htdc" target="_blank">
+          <input type="hidden" name="v" value="2"/>
+          <fieldset class="request">
+            <br/>
+            <div class="request">
+              <label class="request" for="htid">item ID <span class="req">*</span></label>
+              <input id="htid" name="id" class="request required"/>              <span class="resource_radio">
+                <input id="downloadid" type="radio" name="disposition" class="htresource request" value="download"><b class="tiny">download</b></input>
+                <input id="viewitemdid" checked="checked" type="radio" name="disposition" class="htresource request" value="view"><b class="tiny">view</b></input>
+              </span>
+
+            </div>
+            <div class="request">
+            </div>
+            <div class="request">
+              <div class="resource_radio">
+                ___OBJECT_TYPE___
+              </div>
+            </div>
+            <div class="request">
+              <label class="request" for="htresource">resource <span class="req">*</span></label>
+              <div class="resource_radio">
+                <fieldset>
+                  <legend> volume items </legend>
+                  ___EXTENDED_TYPES___
+                  <input id="volpageimageid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pageimage">volume page image</input><span class="tiny"><sup> [1]</sup></span><br/>
+                  <input id="volpageocrid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pageocr">volume page OCR</input><span class="tiny"><sup> [1]</sup></span><br/>
+                  <input id="volpagecoordocrid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pagecoordocr">volume page coordinate OCR</input><span class="tiny"><sup> [1]</sup></span><br/>
+                  <input id="volmetaid"
+                         type="radio" name="resource" class="htresource request required" value="volume/meta">volume metadata</input><br/>
+                  <input id="volpagemetaid"
+                         type="radio" name="resource" class="htresource request required" value="volume/pagemeta">volume page metadata</input><br/>
+                  <br/>
+                </fieldset>
+                <br/>
+                ___ARTICLE_TYPES___
+                <fieldset>
+                  <legend> all items </legend>
+                  <input id="structureid"
+                         type="radio" name="resource" class="htresource request required" value="structure">item METS file</input><br/>
+                  <input id="aggregateid"
+                         type="radio" name="resource" class="htresource request required" value="aggregate">entire item</input><span class="tiny"><sup> [1][2]</sup></span><br/><br/>
+                </fieldset>
+              </div>
+            </div>
+            
+            <div id="htseqdiv" class="request">
+              <label class="request" for="htseq">sequence or FILEID <span class="req">*</span></label>
+              <input id="htseq" name="seq" class="request required" />
+            </div>
+            
+            <div id="htoptsdiv" class="request">
+              <label class="request" for="htopts">format <span class="req">*</span></label>
+              <div class="resource_radio">
+                <input id="formatrawid" type="radio" name="format" class="htopts request required" value="raw">raw</input><span class="tiny"><sup> [2]</sup></span><br/>
+                <input id="formatpngid" type="radio" name="format" class="htopts request required" value="png">png</input><br/>
+                <input id="formatjpgid" type="radio" name="format" class="htopts request required" value="jpeg">jpeg</input><br/>
+                <input id="formatoptid" type="radio" name="format" class="htopts request required" value="optimalderivative">optimal derivative</input><br/><br/>
+              </div>
+              <div id="htnonrawdiv">
+                <label class="request" for="htopts">unwatermarked <span class="unreq">&#2063;</span></label>
+                <input id="watermarkid" type="checkbox" name="unwatermark" class="htopts request"></input><span class="tiny"><sup> [2]</sup></span><br/><br/>
+                <label class="request" for="htopts">resolution <span class="unreq">&#2063;</span></label>
+                <input id="htres" name="res" class="request digits"></input> <span class="tiny">(0,2,4,8: 0=highest)</span>
+                <b>OR</b>
+                <input id="htres" name="width" class="request digits"></input> <span class="tiny">(in pixels)</span>
+              </div>
+            </div>
+            
+            ___EXTENDED_OPTIONS___
+            
+            <div class="request">
+              <input class="htsubmit" type="submit" value="Submit" />
+            </div>
+            <br/>
+            <br/>
+            <hr width="60%"/>
+            <div class="request tiny">
+              <p>Notes</p>
+              <ol>
+                <li>Permission is required when this item is subject to copyright.</li>
+                <li>Permission is required when the source of this item is Google. </li>
+              </ol>
+              <p>Questions? Please email <a href="mailto:support@hathitrust.org">support@hathitrust.org</a></p>
+            </div>
+          </fieldset>
+        </form>
+        
+      </div>
+    </div>
+    ___GOOGLE_ANALYTICS___
+  </body>
+</html>

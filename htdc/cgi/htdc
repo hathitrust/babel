@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+htdc
+
+=head1 DESCRIPTION
+
+This is a perl 2-legged oauth client that uses their auth credentials
+as a proxy for the oauth keys and constructs a signed VERSION 2 Data
+API request.
+
+=head1 SYNOPSIS
+
+For example:
+
+http://babel.hathitrust.org/cgi/htdc (present the data entry form)
+
+http://babel.hathitrust.org/cgi/htdc?resource=volume/pagemeta&id=mdp.39015063764644&seq=5 (send a request to Data API)
+
+=head1 OUTPUT
+
+The form or the resource
+
+=cut
+
+use strict;
+use warnings;
+
+use CGI;
+
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    # non-US testing
+    ## $ENV{REMOTE_ADDR} = '147.96.1.135'; # non-US
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+use Utils;
+
+use HTDC_Client;
+
+my $Q = new CGI;
+Utils::clean_cgi_params($Q);
+
+my $version = 2;
+my $production_mode = 0;
+
+my @superusers = qw(roger aelkiss skorner tburtonw);
+my $development_support = 0;
+
+if ($production_mode) {
+    delete $ENV{HT_DEV};
+}
+else {
+    my $userid = Utils::Get_Remote_User();
+    $development_support = defined($ENV{HT_DEV}) || grep(/^$userid$/, @superusers);
+    if ($Q->param('over')) {
+        $development_support = 0;
+        $Q->Delete('over');
+    }
+}
+
+
+my $debug = 0;
+
+my $client = new HTDC_Client({
+                              version => $version,
+                              development_support => $development_support,
+                              debug => $debug,
+                              _Q => $Q,
+                             });
+
+$client->run();
+
+exit 0;
+
+
+__END__
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2012 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
