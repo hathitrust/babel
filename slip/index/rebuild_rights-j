@@ -1,0 +1,820 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+rebuild_rights-j
+
+=head1 USAGE
+
+% rebuild_rights-j
+
+=head1 DESCRIPTION
+
+See also rights-j
+
+Optionally, drops the slip_rights_temp table, rebuilds it and
+optionally renames it to slip_rights. Only runs from the command line
+using developer personal database password to allow DROP/RENAME TABLE.
+
+Phase 1 = 5.7 hours for 5980242 bib records (Thu Feb 14 10:09:54 2013)
+Phase 2 = 10 hours for 10.5M ids
+
+NOTE: Disable all indexing jobs in crontab.
+
+=head1 OPTIONS
+
+=over 8
+
+=item see help
+
+see help
+
+=back
+
+=over
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+use Time::HiRes;
+use XML::LibXML;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Password;
+
+use Search::Site;
+use Search::Constants;
+use Search::Result::SLIP_Raw;
+use Search::Result::vSolr;
+
+# Local
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::Solr;
+use vSolr;
+
+# Prevent replication errors: enqueue only to one mysqlserv
+if (Search::Site::get_server_site_name() ne 'macc') {
+    __output("Must be run only from site=MACC\n");
+    exit 0;
+}
+
+
+sub r_r_get_usage {
+    my $s;
+    $s .= qq{Usage: rebuild_rights-j -r <run> -P one -f <filename_key> | -P two [-n] -f <filename_key> [-T][-d{1|2|3|4|5|6}]\nPhase=one: Read vSolr, write file\nPhase=two: Read file, write slip_rights. \n\nNOTE: Avoid vSolr re-indexing time\n\n};
+    $s .= qq{     -T test compilation only. No operations\n};
+    $s .= qq{     -P perform phase=<phase> ('one' or 'two')\n};
+    $s .= qq{     -n NO RENAME slip_rights_temp, NO DROP slip_rights\n};
+    $s .= qq{     -f <filename_key> uniqifiy filename Phase=one: write filename, Phase=two: read filename\n};
+    $s .= qq{     -d options\n};
+    $s .= qq{           1: me\n};
+    $s .= qq{           2: me,lsdb\n};
+    $s .= qq{           3: me,vsolr\n};
+    $s .= qq{           4: me,vsolrlibxml\n};
+    $s .= qq{           5: me,query\n};
+    $s .= qq{           6: me,query,response\n};
+    return $s;
+}
+
+our ($opt_d, $opt_n, $opt_T, $opt_r, $opt_P, $opt_f);
+
+my $ops = getopts('d:nTr:P:f:');
+my $FORCE_EMAIL = (! defined $ENV{HT_DEV});
+
+if ($opt_d) {
+    if ($opt_d == 1) {
+        $ENV{'DEBUG'} .= 'me';
+    }
+    elsif ($opt_d == 2) {
+        $ENV{'DEBUG'} .= 'me,lsdb';
+    }
+    elsif ($opt_d == 3) {
+        $ENV{'DEBUG'} .= 'me,vsolr';
+    }
+    elsif ($opt_d == 4) {
+        $ENV{'DEBUG'} .= 'me,vsolrlibxml';
+    }
+    elsif ($opt_d == 5) {
+        $ENV{'DEBUG'} .= 'me,query';
+    }
+    elsif ($opt_d == 6) {
+        $ENV{'DEBUG'} .= 'me,query,response';
+    }
+}
+
+use constant STOPSLIP_SLEEP_WAIT => 60;
+
+my $RUN = $opt_r;
+my $REBUILD = 1;
+my $CHECK = $opt_n;
+
+if (! defined($RUN)) {
+    my $s = r_r_get_usage();
+    __output(qq{Missing run (-r) argument\n} . $s);
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
+if (defined($opt_n)) {
+    $CHECK = 1;
+}
+
+my $PHASE = $opt_P;
+unless (defined($opt_P)) {
+    __output(qq{Phase (-P) arg missing.\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+if ($PHASE !~ m,(one|two),) {
+    __output(qq{Invalid Phase="$PHASE"\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $DEBUG_TINY = 0;
+my $TINY_SLICE_NUM = 2;
+my $TINY_SLICE_SIZE = 2;
+my $SLICE_SIZE = $DEBUG_TINY ? $TINY_SLICE_SIZE : 1000;
+
+my $C = new Context;
+
+# Any run number will do to grab common.conf
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $RIGHTS_LOGFILE_KEY = 'rights_rebuild_logfile';
+
+my $DBH = r_r_connect($C);
+
+my $INIT_MSG;
+my $NOW_TIMESTAMP = Utils::Time::iso_Time('date');
+unless (defined($opt_f)) {
+    __output(qq{Missing filename key.\n});
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+my $filename_key = $opt_f;
+
+my $VSOLR_FILENAME = $ENV{SDRROOT} . qq{/logs/slip/run-rights/slip-rebuild-rights-vsolr-ids-$filename_key.txt};
+my ($LOG_FILENAME) = SLIP_Utils::Log::full_log_filepath($C, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights');
+
+eval {
+
+    #
+    # Check
+    #
+    Phase_one_check() if ($PHASE eq 'one');
+    Phase_two_check() if ($PHASE eq 'two');
+
+    #
+    # Rebuild
+    #
+    my ($process_start, $totals_hashref) = rebuild_rights($C, $DBH);
+
+    if ($PHASE eq 'two') {
+        # DO NOT DROP slip_rights if CHECK==1. slip_rights_temp is
+        # left untouched.
+        #
+        DROP_j_rights_RENAME_j_rights_temp($C, $DBH)
+          unless($CHECK);
+
+        # CREATE VIEW in ht to ht_maintenance.slip_rights
+        #
+        CREATE_VIEW_for_j_rights($C, $DBH)
+          unless($CHECK);
+
+        # Update the vSolr timestamp to the MAX(update_time) in
+        # slip_rights.
+        #
+        UPDATE_slip_vsolr_timestamp($C, $DBH)
+          unless($CHECK);
+
+        UPDATE_slip_rights_timestamp($C, $DBH)
+          unless($CHECK);
+    }
+
+    r_r_final_report($C, $DBH, $process_start, $totals_hashref);
+    # Flush remaining logs to disk
+    flush_r_r_rights_Log($C);
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    r_r_rights_Log($C, $s, 1);
+    exit $rc;
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item r_r_connect
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_r_connect {
+    my $C = shift;
+
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht_maintenance', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild_rights-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
+
+# ---------------------------------------------------------------------
+
+=item Phase_one_check
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Phase_one_check {
+
+    if (-e $VSOLR_FILENAME) {
+        __confirm("Over-write $VSOLR_FILENAME? [N] ");
+    }
+
+    $INIT_MSG =
+      qq{\nToday is $NOW_TIMESTAMP. Phase=$PHASE. vSolr query will be ['00000000' TO *]}
+        . qq{\n => Write $VSOLR_FILENAME. \n\tOK? [N] };
+
+    __confirm($INIT_MSG);
+}
+
+# ---------------------------------------------------------------------
+
+=item Phase_two_check
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Phase_two_check {
+
+    if (! -e $VSOLR_FILENAME) {
+        __output("Would read from $VSOLR_FILENAME but it does not exist.\n");
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+
+    # DROP/CREATE slip_rights_temp?
+    my $drop = "NO DROP/CREATE slip_rights_temp, use existing slip_rights_temp table";
+    unless ($CHECK) {
+        if (__confirm_continue("\nDROP IF EXISTS slip_rights_temp, CREATE slip_rights_temp LIKE slip_rights? [N] ")) {
+            if (__confirm_continue("\nREALLY? [N] ")) {
+                initialize_j_rights_temp($C, $DBH);
+                $drop = "DROP/CREATE slip_rights_temp";
+            }
+        }
+    }
+
+    my $rename;
+    if ($CHECK) {
+        $rename = "NO DROP slip_rights, NO RENAME slip_rights_temp";
+    }
+    else {
+        $rename = "Will DROP slip_rights, will RENAME slip_rights_temp to slip_rights";
+    }
+
+    $INIT_MSG =
+      qq{\nToday is $NOW_TIMESTAMP. Phase=two. Populating slip_rights_temp}
+        . qq{\n\t => Read $VSOLR_FILENAME }
+          . qq{\n\t => $drop }
+            . qq{\n\t => $rename\n\t\t OK? [N]};
+
+    __confirm($INIT_MSG);
+}
+
+# ---------------------------------------------------------------------
+
+=item r_r_rights_Log
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+my $LOG_BUFFER = '';
+my $Log_buffer_size = 0;
+use constant LOG_BUFFER_MAX => 100;
+
+sub r_r_rights_Log {
+    my ($C, $s, $flush) = @_;
+
+    chomp($s);
+    my $ss = qq{$s at: } . Utils::Time::iso_Time() . qq{\n};
+    $LOG_BUFFER .= $ss;
+    $Log_buffer_size++;
+    if ($flush || ($Log_buffer_size > LOG_BUFFER_MAX)) {
+        flush_r_r_rights_Log($C, , $RIGHTS_LOGFILE_KEY);
+    }
+}
+
+sub flush_r_r_rights_Log {
+    my ($C) = @_;
+
+    SLIP_Utils::Log::this_string($C, $LOG_BUFFER, $RIGHTS_LOGFILE_KEY, '___RUN___', 'rights', 'no_newline');
+    $LOG_BUFFER = '';
+    $Log_buffer_size = 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __hiresTime
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __hiresTime
+{
+    my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
+    my $fraction = sprintf("%.8f", $microseconds/1000000);
+    return sprintf("%.8f", $seconds + $fraction);
+}
+
+# ---------------------------------------------------------------------
+
+=item initialize_j_rights_temp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub initialize_j_rights_temp {
+    my ($C, $dbh) = @_;
+    Db::initialize_j_rights_temp($C, $dbh);
+}
+
+# ---------------------------------------------------------------------
+
+=item DROP_j_rights_RENAME_j_rights_temp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub DROP_j_rights_RENAME_j_rights_temp {
+    my ($C, $dbh) = @_;
+    Db::Drop_j_rights_Rename_j_rights_temp($C, $dbh);
+
+    my $s = "Rebuild: DROP slip_rights, ALTER slip_rights_temp RENAME TO slip_rights";
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item CREATE_VIEW_for_j_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CREATE_VIEW_for_j_rights {
+    my ($C, $dbh) = @_;
+    Db::Create_View_for_j_rights($C, $dbh);
+
+    my $s = "Rebuild: DROP slip_rights, ALTER slip_rights_temp RENAME TO slip_rights";
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item UPDATE_vsolr_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub UPDATE_slip_vsolr_timestamp {
+    my ($C, $dbh) = @_;
+
+    Db::update_vSolr_timestamp($C, $dbh);
+
+    my $s = "Updated slip_vsolr_timestamp from MAX(slip_rights.update_time)";
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item UPDATE_slip_rights_timestamp
+
+Inserts to slip_rights[_temp] all automatically set
+slip_rights[_temp].insert_time to CURRENT_TIMESTAMP.
+
+Set the pointer for the production run to
+MAX(slip_rights[_temp].insert_time ) to pretend all these IDs have
+already gone through queuing and indexing.
+
+If some in slip_rights are missing from the index, running sync-j -m
+rightsNINindexed will reveal them for manual re-indexing.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub UPDATE_slip_rights_timestamp {
+    my ($C, $dbh) = @_;
+
+    my $production_run_number =
+      $C->get_object('MdpConfig')->get('distinguished_production_run_number');
+
+    Db::update_j_rights_timestamp($C, $dbh, $production_run_number);
+
+    my $s;
+    $s .= "Updated slip_rights_timestamp.time[production_run_number] from MAX(slip_rights.insert_time)";
+    $s .= "\nYou must now check for items in rights not in index: run sync-j -m rightsNINindexed";
+
+    __output("$s\n");
+    r_r_rights_Log($C, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item process_parsed_result
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub process_parsed_result {
+    my ($C, $dbh, $result_arr_ref) = @_;
+
+    my $anomalies = 0;
+    my $arr_ref_of_processed_hashref = [];
+
+    foreach my $hash_ref (@$result_arr_ref) {
+        # hash_ref contains:
+        # 'sysid', 'id', 'namespace', 'ht_id_display_timestamp', 'node_content'
+        my $sysid = $hash_ref->{'sysid'};
+        my $timestamp_of_nid = $hash_ref->{'ht_id_display_timestamp'};
+
+        my ($rights_hashref, $anomaly) = vSolr::process_nid_from_Solr_query_result($C, $dbh, $hash_ref);
+        if (! $anomaly) {
+            # Supplement rights_current database row hashref with
+            # vSolr query data
+            $rights_hashref->{'sysid'} = $sysid;
+            $rights_hashref->{'timestamp_of_nid'} = $timestamp_of_nid;
+
+            push(@$arr_ref_of_processed_hashref, $rights_hashref);
+        }
+
+        $anomalies += 1 if ($anomaly);
+    }
+
+    return ($arr_ref_of_processed_hashref, $anomalies);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item read_vsolr_ids
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub read_vsolr_ids {
+    my ($C, $totals_hash_ref) = @_;
+
+    my $phase = 'Read vSolr';
+
+    # Count total records
+    my $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+    my $rs = new Search::Result::SLIP_Raw();
+
+    my $total_query = qq{q=ht_id_update:[00000000 TO *]&start=0&rows=0};
+    $rs = $searcher->get_Solr_raw_internal_query_result($C, $total_query, $rs);
+    my $total_records = $rs->get_num_found();
+
+    my $s0 = qq{\n[BEGIN $phase records=$total_records]: $INIT_MSG };
+
+    __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
+    r_r_rights_Log($C, $s0);
+
+    if (! open(VSOLR, ">$VSOLR_FILENAME")) {
+        $s0 = qq{Failed to open $VSOLR_FILENAME for append};
+        r_r_rights_Log($C, $s0, 1);
+        __output("$s0\n");
+        exit $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    }
+
+    my $offset = 0;
+    my $slice = 0;
+
+    while (1) {
+        my $slice_start = __hiresTime();
+
+        $searcher = SLIP_Utils::Solr::create_VuFind_Solr_Searcher_by_alias($C);
+        $rs = new Search::Result::SLIP_Raw();
+
+        my $query = qq{q=ht_id_update:[00000000 TO *]&start=$offset&rows=$SLICE_SIZE&fl=ht_id_display,id };
+        $rs = $searcher->get_Solr_raw_internal_query_result($C, $query, $rs);
+        my $result_docs_arr_ref = $rs->get_result_docs();
+
+        if (! $rs->http_status_ok()) {
+            my $dump = $rs->get_failed_HTTP_dump();
+            __output($dump);
+            r_r_rights_Log($C, $dump, 1);
+            exit $SLIP_Utils::States::RC_SOLR_ERROR;
+        }
+        # POSSIBLY NOTREACHED
+
+        if (defined($result_docs_arr_ref) && scalar(@$result_docs_arr_ref)) {
+            my $records = scalar(@$result_docs_arr_ref);
+            $totals_hash_ref->{record_ct_1} += $records;
+
+            foreach my $line (@$result_docs_arr_ref) {
+                print VSOLR qq{$line\n};
+            }
+            my $remaining = $total_records - $totals_hash_ref->{record_ct_1};
+            r_r_slice_report($C, $phase, $slice_start, $records, 0, $totals_hash_ref, $remaining);
+
+            $offset += $SLICE_SIZE;
+            $slice++;
+
+            if ($DEBUG_TINY && ($slice > $TINY_SLICE_NUM)) {
+                close(VSOLR);
+                last;
+            }
+        }
+        else {
+            close(VSOLR);
+            last;
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item write_vsolr_ids
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub write_vsolr_ids {
+    my ($C, $dbh, $totals_hash_ref) = @_;
+
+    my $phase = 'update DB';
+
+    my $s0 = qq{\n[BEGIN $phase] };
+    __output(qq{$s0} . Utils::Time::iso_Time() . qq{\n});
+    r_r_rights_Log($C, $s0);
+
+    if (! open(VSOLR, "<$VSOLR_FILENAME")) {
+        $s0 = qq{Failed to open $VSOLR_FILENAME for read};
+        r_r_rights_Log($C, $s0, 1);
+        __output("$s0\n");
+        exit $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    }
+
+    # Close proxy for total records
+    my $total_ids = Db::Select_count_from_j_rights($C, $dbh);
+
+    my $parser = XML::LibXML->new();
+    my $xpath_doc = q{/foo/doc};
+
+    my $slice = 0;
+    my $line_slice = 0;
+
+    while (1) {
+        my $slice_start = __hiresTime();
+
+        my $buf = '<foo>';
+        while (my $line = <VSOLR>) {
+            $line_slice++;
+            chomp($line);
+            $buf .= qq{$line};
+            if ($line_slice == $SLICE_SIZE) {
+                last;
+            }
+        }
+        $buf .= q{</foo>};
+
+        $totals_hash_ref->{record_ct_2} += $line_slice;
+        $line_slice = 0;
+
+        my ($doc_node_count, $result_ids_arr_ref, $complete_result_arr_ref) =
+          Result::vSolr::parse_vsolr_response($parser, \$buf, $xpath_doc);
+
+        # Get all nids from vSolr bib records.
+        my ($ref_to_arr_of_hashref, $anomalies) =
+          process_parsed_result($C, $dbh, $complete_result_arr_ref);
+
+        $totals_hash_ref->{anomalies} += $anomalies;
+
+        my $ids = scalar(@$ref_to_arr_of_hashref);
+        if ($ids > 0) {
+            $totals_hash_ref->{ids} += $ids;
+
+            foreach my $hashref (@$ref_to_arr_of_hashref) {
+                Db::Replace_j_rights_temp_id($C, $dbh, $hashref) unless ($CHECK);
+            }
+            $slice++;
+
+            if ($DEBUG_TINY && ($slice > $TINY_SLICE_NUM)) {
+                close(VSOLR);
+                last;
+            }
+            my $remaining = $total_ids - $totals_hash_ref->{ids};
+            r_r_slice_report($C, $phase, $slice_start, $ids, $anomalies, $totals_hash_ref, $remaining);
+        }
+        else {
+            close(VSOLR);
+            last;
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item rebuild_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rebuild_rights {
+    my ($C, $dbh) = @_;
+
+    my $process_start = __hiresTime();
+    my $totals_hash_ref = {'record_ct_1' => 0, 'record_ct_2' => 0, 'ids' => 0, 'anomalies' => 0};
+
+    read_vsolr_ids($C, $totals_hash_ref) if ($PHASE eq 'one');
+
+    write_vsolr_ids($C, $dbh, $totals_hash_ref) if ($PHASE eq 'two');
+
+    return ($process_start, $totals_hash_ref);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item r_r_slice_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_r_slice_report {
+    my ($C, $phase, $slice_start, $slice_units, $anomalies, $tref, $remaining) = @_;
+
+    my $slice_elapsed = __hiresTime() - $slice_start;
+    my $idsPsec = sprintf("%.2f", ($slice_units + $anomalies)/$slice_elapsed);
+
+    my $total_ids = $tref->{ids};
+    my $total_records_1 = $tref->{record_ct_1};
+    my $total_records_2 = $tref->{record_ct_2};
+    my $total_anomalies = $tref->{anomalies};
+
+    my @parts = gmtime int(($remaining) * (1 / $idsPsec));
+    my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
+
+    my $s0 = sprintf("remains=%s", $time_remaining);
+
+    my $s = qq{Checkpoint($phase): rate=$idsPsec units/sec slice_units=$slice_units anom=$anomalies total_item_ids=$total_ids total_bib_records_phase_one=$total_records_1 total_bib_records_phase_two=$total_records_2 total_anomalies=$total_anomalies $s0 } . Utils::Time::iso_Time() . qq{\n};
+
+    __output(qq{$s});
+    r_r_rights_Log($C, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item r_r_final_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub r_r_final_report {
+    my ($C, $dbh, $process_start, $tref) = @_;
+
+    my $process_elapsed = __hiresTime() - $process_start;
+    my $process_elapsed_min = sprintf("%.2f", $process_elapsed/60);
+    my $idsPsec = sprintf("%.2f", ($tref->{ids} + $tref->{anomalies})/$process_elapsed);
+
+    my $size = Db::Select_count_from_j_rights($C, $dbh);
+    my $timestamp = Db::Select_vSolr_timestamp($C, $dbh);
+
+    my $total_ids = $tref->{ids};
+    my $total_records_1 = $tref->{record_ct_1};
+    my $total_records_2 = $tref->{record_ct_2};
+    my $total_anomalies = $tref->{anomalies};
+
+    my $s =
+        qq{\nFinal report: slip_rights size=$size total_item_ids=$total_ids total_bib_records_phase_one=$total_records_1 total_bib_records_phase_two=$total_records_2 total_anomalies=$total_anomalies\n}
+          . qq{\trate=$idsPsec id/sec vsolr_timestamp=$timestamp elapsed=$process_elapsed_min min\n};
+
+    __output(qq{$s\t at } . Utils::Time::iso_Time() . qq{\n});
+    r_r_rights_Log($C, $s);
+
+    if ($FORCE_EMAIL) {
+        my $HOST = `hostname`;
+        $HOST =~ s,\..*$,,s;
+        my $subj = qq{[SLIP] rebuild_rights-j report Phase=$PHASE ($HOST)};
+        SLIP_Utils::Common::Send_email($C, 'report', $subj, $s);
+    }
+}
+
+
+1;
+
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-2013 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

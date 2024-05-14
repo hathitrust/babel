@@ -1,0 +1,400 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+sync-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+The overall process of restoring sanity in the SLIP database and LS
+Solr index is documented in The_SLIP_System.
+
+INDEXING DATA FLOW
+
+The data flow proceeds from
+
+Vufind_Solr(slip_vufind_timestamp)
+   -> slip_rights(slip_rights_timestamp)
+         -> slip_queue[run]
+               -> slip_indexed[run] or slip_errors[run]
+
+When an id is processed it is removed from slip_queue. It can re-enter
+slip_queue if it re-enters Vufind_Solr and is transferred to
+slip_rights and is then queued.
+
+If there is an error the id is put into mdp.slip_errors not into
+slip_indexed.
+
+Re-do indexing moves from ids from slip_errors back into slip_queue
+and reindexing is attempted.  It may or may not succeed.
+
+This script is strictly interactive, to be run from the command line.
+
+NOTE: Disable all indexing jobs in crontab.
+
+
+OTHER MODES OF sync-j
+
+-- sync-j -r run -m indexedNINrights: report which ids in slip_indexed are
+missing from slip_rights. If performed after slip_rebuild, reported ids can
+be inferred to also be missing from the Solr index.
+
+
+=head1 OPTIONS
+
+=over 8
+
+=back
+
+=over
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ##$ENV{DEBUG_LOCAL} = 1;
+}
+
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+use Time::HiRes;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Password;
+
+use Search::Site;
+use Search::Constants;
+use Search::Result::SLIP;
+use Search::Searcher;
+
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::Db_sync;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Log;
+
+my $INTERACTIVE = $ENV{TERM};
+
+unless ($INTERACTIVE) {
+    exit 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item syn_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub syn_get_usage {
+    my $s .= qq{Usage: sync-j -r run -m{rightsNINindexed [-n]|indexedNINrights} [-T][-d]
+            where rightsNINindexed: queue ids in slip_rights not in slip_indexed
+                                       where -n checks, NO queuing
+
+                  indexedNINrights: report ids in slip_indexed not in slip_rights
+                  -T just test compilation and exit\n};
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_m, $opt_R, $opt_n, $opt_T);
+
+my $ops = getopts('dr:m:R:nT');
+my $g_S;
+
+# Required
+my $RUN = $opt_r;
+unless ($opt_r) {
+    my $s = syn_get_usage();
+    print $s;
+    exit 1;
+}
+
+my $CHECK = 1;
+
+my $MODE = $opt_m;
+unless ($opt_m) {
+    my $s = syn_get_usage();
+    print $s;
+    exit 1;
+}
+elsif ($MODE eq 'rightsNINindexed') {
+    $CHECK = defined($opt_n);
+}
+elsif ($MODE eq 'indexedNINrights') {
+}
+else {
+    my $s = syn_get_usage();
+    print $s;
+    exit 1;
+}
+
+if ($opt_d) {
+    $ENV{DEBUG} .= ',lsdb';
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+my $DBH = s__connect($C);
+
+# No index-j (producers) enabled
+my @num_shards_list = $CONFIG->get('num_shards_list');
+foreach my $shard (@num_shards_list) {
+    my $shard_enabled = Db::Select_shard_enabled($C, $DBH, $RUN, $shard);
+    if ($shard_enabled) {
+        __output(qq{WARNING: run=$RUN shard=$shard enabled!\n});
+    }
+}
+
+my $msg;
+my $Q_MSG = ($CHECK ? 'DO NOT QUEUE' : 'QUEUE MISSING');
+if ($MODE eq 'rightsNINindexed') {
+    $msg = qq{Check ids from slip_rights missing in slip_indexed. $Q_MSG.\nslip_indexed_temp MUST be fresh via rebuild-j\n\tOK? [N] };
+}
+elsif ($MODE eq 'indexedNINrights') {
+    $msg = qq{Report ids from slip_indexed missing in slip_rights.\nslip_indexed_temp MUST be fresh via rebuild-j.\n\tOK? [N] };    
+}
+else {
+    my $s = syn_get_usage();
+    print $s;
+    exit 1;
+}
+
+__confirm($msg);
+
+my $SHARD;
+
+eval {
+    if ($MODE eq 'rightsNINindexed') {
+        Test_rightsNINindexed($C, $DBH, $RUN);
+    }
+    elsif ($MODE eq 'indexedNINrights') {
+        Report_indexedNINrights($C, $DBH, $RUN);
+        $CHECK = 0; # check is inherent
+    }
+};
+if ($@) {
+    die qq{CRITICAL ERROR: $@\n};
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+sub s__connect {
+    my $C = shift;
+    
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'sync-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+    
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
+
+# ---------------------------------------------------------------------
+
+=item Test_rightsNINindexed
+
+Find ids in slip_rights that are not in slip_indexed (for some shard) or
+slip_errors.  If not in slip_indexed add to slip_queue.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Test_rightsNINindexed {
+    my ($C, $dbh, $run) = @_;
+
+    my $slip_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+
+    my $s0;
+    $s0 = qq{Find ids from slip_rights (size=$slip_rights_size) not in slip_indexed (size=$slip_indexed_size) run=$run $Q_MSG};
+    __output(qq{\n$s0\n}); 
+    Log_sync($C, $run, $s0);
+
+    my $start = time();
+
+    my $ref_to_arr_of_hashref = 
+        SLIP_Utils::Db_sync::Select_j_rights_NIN_j_indexed($C, $dbh, $run);
+    
+    my $ct = scalar(@$ref_to_arr_of_hashref);
+    $s0 = qq{Query returned $ct ids from slip_rights LEFT JOIN slip_indexed_temp};
+    __output(qq{$s0\n}); 
+    Log_sync($C, $run, $s0);
+
+    my ($missing_ct, $item_ct, $errors_ct) = (0, 0, 0);
+
+    my $ref_to_arr_if_ids = [];
+    
+    foreach my $hash_ref (@$ref_to_arr_of_hashref) {
+        $item_ct++;
+        
+        # If this id is not in slip_errors, it's missing
+        my $id = $hash_ref->{nid};
+        my $error_id = SLIP_Utils::Db_sync::Select_error_item_id($C, $dbh, $run, $id);
+        if ($error_id) {
+            $errors_ct++;
+            $s0 = qq{  id=$id in slip_rights missing from slip_indexed run=$run FOUND in slip_errors };
+            __output(qq{$s0\n}); 
+            Log_sync($C, $run, $s0);
+        }
+        else {
+            $missing_ct++;
+            $s0 = qq{  id=$id in slip_rights missing from slip_indexed run=$run};
+            __output(qq{$s0\n}); 
+            Log_sync($C, $run, $s0);
+            push(@$ref_to_arr_if_ids , $id) unless ($CHECK);
+        }
+    }
+    Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_if_ids) unless($CHECK);
+
+    my $elapsed = sprintf("%.1f minutes", (time() - $start)/60);
+    $s0 = qq{rightsNINindexed: candidates checked=$item_ct slip_indexed_missing=$missing_ct slip_errors_seen=$errors_ct $Q_MSG elapsed=$elapsed at } . Utils::Time::iso_Time();
+    __output(qq{$s0\n});
+    Log_sync($C, $run, $s0);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Report_indexedNINrights
+
+Report ids in slip_indexed missing from slip_rights.  These are the
+"vanished" IDs.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Report_indexedNINrights {
+    my ($C, $dbh, $run) = @_;
+
+    my $slip_indexed_size = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+
+    my $s = qq{Report ids from slip_indexed (size=$slip_indexed_size) missing from slip_rights (size=$slip_rights_size) run=$run};
+    __output(qq{\n$s\n}); 
+    Log_sync($C, $run, $s);
+
+    my $start = time();
+
+    my $ref_to_arr_of_hashref = 
+        SLIP_Utils::Db_sync::Select_j_indexed_NIN_j_rights($C, $dbh, $run);
+
+    my $missing_ct = 0;
+
+    foreach my $hash_ref (@$ref_to_arr_of_hashref) {
+        my $id = $hash_ref->{id};
+        $missing_ct++;
+        $s = qq{  id=$id in slip_indexed missing from slip_rights run=$run};
+        __output(qq{$s\n}); 
+        Log_sync($C, $run, $s);
+    }
+
+    # Check slip_errors as missing in slip_rights
+
+    my $elapsed = sprintf("%.1f minutes", (time() - $start)/60);
+    $s = qq{indexedNINrights: missing=$missing_ct elapsed=$elapsed at } . Utils::Time::iso_Time();
+    __output(qq{$s\n});
+    Log_sync($C, $run, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_sync
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_sync {
+    my ($C, $run, $s) = @_;
+    SLIP_Utils::Log::this_string($C, $s, 'sync_logfile', '___RUN___', $run);
+}
+
+1;
+
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-10, 2013, 2015 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
+

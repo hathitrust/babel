@@ -1,0 +1,838 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+index-j
+
+=head1 USAGE
+
+% index-j -r run
+
+=head1 DESCRIPTION
+
+Take a slice of available items from the indexing queue, build docs
+for the ids and send to Solr for indexing.  Record error ids in
+ht_maintenance.slip_errors table.  Record indexed status in
+slip_indexed table.
+
+Each copy of this script when it runs tries to find a shard that does
+not have producers_per_shard allocated to it and is not on a host
+running producers_per_host producers.  If both conditions are met it
+locks to the shard, otherwise it quits.
+
+If an item reappears later in the queue for this shard (rights
+changed, etc.), the select on the queue will deliver it to this
+producer so the item does not get indexed in more than one shard.
+
+The run number is associated with various experiments related to Solr
+configuration and is used to compose the name of the config file. So
+the config file for run number 1 would be
+$SDRROOT/path-to-config-files/run-1.conf The config file points a solr
+instance for each available shard.
+
+Commit and optimize are manual processes or handled as part of the
+driver-j process flow.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=over
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use CGI;
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Utils::GlobalSwitch;
+
+# Lib
+use Db;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
+
+use Index_Module;
+
+use Sl_Utils;
+
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot index. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+# ---------------------------------------------------------------------
+
+=item i_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub i_get_usage {
+    my $s .= qq{Usage: index-j -r run [-I id][-d 0|1|2|3][-v][-T][-L limit]
+            where -I id indexes one id
+                  -v turns on verbose logging
+                  -s set slice size, overrides queue slice size
+                  -d sets the debug level
+                      where
+                            0=default
+                            1=add database
+                            2=add indexing + doc-create
+                            3=add vufind + HTTP response\n};
+    return $s;
+}
+
+# When total docs reaches an even multiple of the stop point the
+# indexer stops.
+
+our ($opt_d, $opt_r, $opt_I, $opt_v, $opt_T, $opt_s);
+
+my $ops = getopts('d:r:I:vTs:');
+
+my $VERBOSE_LOGGING = defined($opt_v);
+
+if (defined($opt_d)) {
+    if (! grep(/0|1|2|3|4/, ($opt_d))) {
+        my $s = i_get_usage();
+        __output($s);
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+
+    $ENV{DEBUG} .= ',me';
+    $ENV{DEBUG} .= ',lsdb'
+        if ($opt_d == 1);
+    $ENV{DEBUG} .= ',lsdb,idx,doc'
+        if ($opt_d == 2);
+    $ENV{DEBUG} .= ',lsdb,idx,doc,vufind'
+        if ($opt_d == 3);
+}
+
+# Required
+my $RUN = $opt_r;
+my $PID = $$;
+my $HOST = `hostname`; chomp($HOST); $HOST =~ s,\..*$,,;
+
+if (! $opt_r) {
+    my $s = i_get_usage();
+    __output($s);
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'index-j');
+
+my $DEFAULT_SLICE_SIZE = $opt_s || $config->get('queue_slice_size');
+
+# Index just one id
+my $SINGLE_ID = $opt_I;
+
+my $GLOBAL_ref_to_ary_of_id_hashref = [];
+my $GLOBAL_ref_to_ary_of_id_error_recovery_hashref = [];
+
+my $PROCESSING = 1;
+my $Dedicated_Shard = SINGLE_ID_handling($C, $DBH, $RUN, $SINGLE_ID) || 0;
+
+eval {
+    i_processing_loop($C);
+};
+if ($@) {
+    # Place remaining ids on the error list, disable the shard that had
+    # the error and log it.
+    handle_critical_error($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $@, $SLIP_Utils::States::RC_CRITICAL_ERROR);
+    # NOTREACHED
+}
+
+
+exit Index_Module::get_MAX_ERRORS_SEEN();
+
+END {
+    # If I am quitting and was assigned to a shard, decrement the
+    # count of producers for that shard.
+    if (! $SINGLE_ID) {
+        if ($Dedicated_Shard) {
+            my ($allocated, $num_running) = Db::decrement_allocation($C, $DBH, $RUN, $HOST, $Dedicated_Shard);
+            Log_dealloc($C, $RUN, $Dedicated_Shard, $PID, $HOST, $allocated, $num_running);
+        }
+    }
+
+    exit $?;
+}
+
+#
+# ---------------------  Main  S u b r o u t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item i_processing_loop
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub i_processing_loop {
+    my $C = shift;
+
+    my $item_ct = 0;
+    my $slices_taken = 0;
+
+    while ($PROCESSING) {
+        # Exit this producer if the stop file is touched
+        Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+        # POSSIBLY NOTREACHED
+
+        # Exit this producer if busy flag is set unless
+        # $RUN=distinguished_production_run_number (11) to help
+        # prevent CPU overload on machines running Solr.
+        handle_busy_flag_exit($C, $RUN);
+        # POSSIBLY NOTREACHED
+
+        # Exit if all all enabled shards are carrying a full or
+        # over-full allocation of producers or this host is not
+        # enabled or is full or over-full. This call is no-op after
+        # initial dedicated shard assignment unless the allowed number
+        # of producers for this shard or on this host decreases.  It
+        # is also a no-op for the SINGLE_ID case: see
+        # SINGLE_ID_handling().
+        $Dedicated_Shard = handle_allocation($C, $DBH, $RUN, $PID, $HOST, $Dedicated_Shard, $slices_taken);
+        # POSSIBLY NOTREACHED
+
+        # OK to proceed: get a slice of ids from the queue or just one
+        # id and save in the GLOBAL error recovery id array
+        my $num_ids = Read_indexing_queue($C, $Dedicated_Shard);
+
+        # Exit if the queue is empty
+        handle_queue_empty($C, $RUN, $PID, $HOST, $Dedicated_Shard, $num_ids);
+        # POSSIBLY NOTREACHED
+
+        $slices_taken++;
+
+        # Logging
+        handle_startup($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $slices_taken, $num_ids);
+
+        # Go to work
+        while (my $hashref = get_id_from_slice()) {
+            my $id = $hashref->{id};
+            $item_ct++;
+
+            Index_Module::Service_ID($C, $DBH, $RUN, $Dedicated_Shard, $PID, $HOST, $id, $item_ct);
+
+            remove_id_from_backup_list();
+
+            # Critical errors (9) cause a longjump out of
+            # i_processing_loop() and add IDs to slip_errors
+        }
+    }
+}
+
+#
+# --------------- Helper  S u b r o u t i n e s   @@-------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item SINGLE_ID_handling
+
+Behave as though we are locked to the shard required for this ID
+regardless of how many producers are currently allocated to the
+required shard.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub SINGLE_ID_handling {
+    my ($C, $dbh, $run, $single_id) = @_;
+
+    my $dedicated_shard = 0;
+
+    if (defined $single_id) {
+        my $shard = Db::Select_item_id_shard($C, $dbh, $run, $single_id);
+        if (! $shard) {
+            # Grab a random shard from the configured shards in the list and lock to it.
+            my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+            $dedicated_shard = $num_shards_list[ rand @num_shards_list ];
+        }
+        else {
+            $dedicated_shard = $shard;
+        }
+    }
+
+    return $dedicated_shard;
+}
+
+# ---------------------------------------------------------------------
+
+=item get_id_from_slice
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_id_from_slice {
+    my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_hashref;
+    return $item_hashref;
+}
+
+# ---------------------------------------------------------------------
+
+=item remove_id_from_backup_list
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub remove_id_from_backup_list {
+    my $id = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref;
+}
+
+# ---------------------------------------------------------------------
+
+=item Read_indexing_queue
+
+-I ($SINGLE_ID) NOT intended to run from a cron job
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Read_indexing_queue {
+    my $C = shift;
+    my $shard = shift;
+
+    if ($SINGLE_ID) {
+        my %item_hash = (
+                         'id' => $SINGLE_ID,
+                        );
+        $GLOBAL_ref_to_ary_of_id_hashref = [\%item_hash];
+        $PROCESSING = 0;
+    }
+    else {
+        $GLOBAL_ref_to_ary_of_id_hashref =
+            Db::Select_id_slice_from_queue($C, $DBH, $RUN, $shard, $PID, $HOST, $DEFAULT_SLICE_SIZE);
+
+        # Put contents of @$GLOBAL_ref_to_ary_of_id_hashref back into
+        # queue if critical error
+        push(@$GLOBAL_ref_to_ary_of_id_error_recovery_hashref,
+             @$GLOBAL_ref_to_ary_of_id_hashref);
+    }
+
+    return scalar(@$GLOBAL_ref_to_ary_of_id_hashref);
+}
+
+
+#
+# --------------- Handling  S u b r o u t i n e s   @@-------------------
+#
+# ---------------------------------------------------------------------
+
+=item __continue_dedicated_shard
+
+See if this dedicated producer may continue to send documents to this
+shard on this host.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __continue_dedicated_shard {
+    my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
+
+    my $state = Db::dedicated_producer_monitor($C, $dbh, $run, $host, $dedicated_shard);
+
+    if ($state eq 'Mon_continue') {
+        return 1;
+    }
+    if ($state eq 'Mon_shard_overallocated') {
+        Log_shard_overalloc($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_overallocated') {
+        Log_host_overalloc($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_shard_disabled') {
+        Log_shard_Shutdown($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    if ($state eq 'Mon_host_disabled') {
+        Log_host_Shutdown($C, $run, $dedicated_shard, $pid, $host) if ($work_done);
+        return 0;
+    }
+    die qq{Invalid dedicated shard state="$state"};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __attempt_allocation
+
+See if there are any shards that need producers that can run from this host.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __attempt_allocation {
+    my ($C, $dbh, $run, $pid, $host) = @_;
+
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    # randomize list so earlier shards are not favored.
+    # sweet. http://www.perlmonks.org/?node_id=31479
+    @num_shards_list = sort { (-1,1)[rand 2] } @num_shards_list;
+
+    my ($shard, $state) = Db::undedicated_producer_monitor($C, $dbh, $run, $pid, $host, [@num_shards_list]);
+
+    if ($state eq 'Mon_shard_and_host_allocated') {
+        Log_shard_host_alloc($C, $run, $shard, $pid, $host);
+        return $shard;
+    }
+    if ($state eq 'Mon_host_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_host_overallocated') {
+        Log_host_overalloc($C, $run, $shard, $pid, $host);
+        return 0;
+    }
+    if ($state eq 'Mon_host_disabled') {
+        return 0;
+    }
+    if ($state eq 'Mon_shards_fully_allocated') {
+        return 0;
+    }
+    if ($state eq 'Mon_resource_fully_allocated') {
+        return 0;
+    }
+    die qq{Invalid un-dedicated shard state="$state"};
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_busy_flag_exit
+
+Exit this producer if busy flag is set unless
+$RUN=distinguished_production_run_number (11) to help prevent CPU
+overload on machines running Solr.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_busy_flag_exit {
+    my ($C, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my $distinguished_run = $config->get('distinguished_production_run_number');
+
+    unless ( $run eq  $distinguished_run) {
+        if ( $config->get('disabled_if_busy_flag_set') ) {
+            my $shared_flags_dir = $config->get('shared_flags_dir');
+            my $busy_file = "$shared_flags_dir/busy";
+            if ( -e $busy_file ) {
+                __output("busy flag ($busy_file) is set. Only run=$distinguished_run is permitted to run.\n\tSee config parameter 'disabled_if_busy_flag_set' ... exit\n");
+                exit 0;
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item handle_allocation
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_allocation {
+    my ($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done) = @_;
+
+    if ($dedicated_shard) {
+        if ($SINGLE_ID) {
+            return $dedicated_shard;
+        }
+
+        if (__continue_dedicated_shard($C, $dbh, $run, $pid, $host, $dedicated_shard, $work_done)) {
+            return $dedicated_shard;
+        }
+    }
+    else {
+        my $allocated_shard = __attempt_allocation($C, $dbh, $run, $pid, $host);
+        if ($allocated_shard) {
+            return $allocated_shard;
+        }
+    }
+    # dang ....
+    __output("no work available for shard=$dedicated_shard ... exit\n");
+    exit 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_startup
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_startup {
+    my ($C, $dbh, $run, $shard, $pid, $host, $slices_taken, $num_ids) = @_;
+
+    # Log first time through slice-taking loop
+    if ($slices_taken == 1) {
+        Log_startup($C, $run, $shard, $pid, $host);
+        DEBUG('me', qq{DEBUG: startup shard=$shard host=$host pid=$pid});
+    }
+
+    Log_slice($C, $run, $shard, $pid, $host, $num_ids);
+    DEBUG('me', qq{DEBUG: process slice shard=$shard host=$host pid=$pid num=$num_ids});
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_queue_empty
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_queue_empty {
+    my ($C, $run, $pid, $host, $dedicated_shard, $num_sliced_from_queue) = @_;
+
+    if ($num_sliced_from_queue == 0) {
+        Log_queue_empty($C, $run, $pid, $host, $dedicated_shard);
+        __output("queue empty shard=$dedicated_shard ... exit\n");
+        exit 0;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item handle_critical_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_critical_error {
+    my ($C, $dbh, $run, $shard, $pid, $host, $error, $rc) = @_;
+
+    # Have we completely lost the database?
+    my $database_OK = defined($dbh);
+
+    my $handler_error;
+    my $stored_id_ct = 0;
+
+    eval {
+        if ($database_OK) {
+            Db::set_shard_build_error($C, $dbh, $run, $shard) if (! $INTERACTIVE);
+
+            # Un-handled ids are in the GLOBAL error array. Put them
+            # in the error list and disable the shard.
+            while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
+                my $id = $item_hashref->{id};
+                Db::handle_error_insertion($C, $dbh, $run, $shard, $id, $pid, $host, IX_CRITICAL_FAILURE);
+            }
+            # Turn off this shard.
+            Db::update_shard_enabled($C, $dbh, $run, $shard, 0);
+        }
+    };
+    if ($@) {
+        $database_OK = 0;
+        $handler_error = $@;
+    }
+
+    if (! $database_OK) {
+        # No database to talk to.  Save the ids in an error log file
+        # and restore them to ht_maintenance.slip_queue, later, by
+        # hand. Touch the stop file.
+        while (my $item_hashref = shift @$GLOBAL_ref_to_ary_of_id_error_recovery_hashref) {
+            my $id = $item_hashref->{id};
+            Log_critical($C, $run, $id);
+            $stored_id_ct++;
+        }
+        Utils::GlobalSwitch::disable_cron_jobs('slip');
+    }
+
+    my $subj = qq{[SLIP] CRITICAL ERROR: run=$run shard=$shard};
+    my $msg = qq{CRITICAL ERROR: run=$run shard=$shard pid=$pid host=$host\nerror="$error"\n};
+
+    $msg .= ($handler_error ? qq{exception in critical error handler=$handler_error\n} : q{});
+
+    my $date = Utils::Time::iso_Time('date');
+    $msg .= ($stored_id_ct ? qq{$stored_id_ct unprocessed restorable ids saved to file=logs/slip/run-$run/critical_ids-$date.log\n} : q{});
+
+    my $stop_file = Utils::GlobalSwitch::stop_file_name('slip');
+    $msg .= (Utils::GlobalSwitch::cron_jobs_disabled('slip') ? qq{STOPFILE ($stop_file) is set, SLIP disabled\n} : q{});
+
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $msg);
+    Index_Module::Log_error_stop($C, $run, $shard, $pid, $host, qq{$msg});
+
+    __output($msg);
+    __non_interactive_err_output($rc, $msg);
+
+    exit $rc;
+}
+
+
+
+#
+# --------------------- Logging  S u b r o u t i n e s   @@-------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item Log_critical
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_critical {
+    my ($C, $run, $id) = @_;
+
+    my $s = Utils::Time::iso_Time() . qq{ id=$id};
+    SLIP_Utils::Log::this_string($C, $s, 'critical_ids_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_slice
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_slice {
+    my ($C, $run, $shard, $pid, $host, $num_sliced_from_queue) = @_;
+
+    my $s = qq{***SLICE: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard pid=$pid h=$host slice_size=$num_sliced_from_queue};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_queue_empty
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_queue_empty {
+    my ($C, $run, $pid, $host, $dedicated_shard) = @_;
+
+    my $s = qq{***QUEUE EMPTY (for shard=$dedicated_shard, exit): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_startup
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_startup {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***START: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard pid=$pid h=$host};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_host_Shutdown
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_host_Shutdown {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***STOP (host): } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard pid=$pid h=$host};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shard_Shutdown
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shard_Shutdown {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***STOP (shard disabled): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shard_overalloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shard_overalloc {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***STOP (shard OVER-allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_host_overalloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_host_overalloc {
+    my ($C, $run, $shard, $pid, $host) = @_;
+
+    my $s = qq{***STOP (host OVER-allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_shard_host_alloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_shard_host_alloc {
+    my ($C, $run, $allocated_shard, $pid, $host) = @_;
+
+    my $s = qq{***START (shard+host allocated): } . Utils::Time::iso_Time() . qq{ r=$run pid=$pid h=$host shard=$allocated_shard};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_dealloc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_dealloc {
+    my ($C, $run, $deallocated_shard, $pid, $host, $remaining_alloc, $host_num_running) = @_;
+
+    my $s = qq{***STOP (shard+host de-allocated): }
+      . Utils::Time::iso_Time()
+        . qq{ r=$run pid=$pid h=$host shard=$deallocated_shard remaining: shard_alloc=$remaining_alloc host_alloc=$host_num_running };
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+1;
+
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-12 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

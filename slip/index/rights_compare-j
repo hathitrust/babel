@@ -1,0 +1,185 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+rights_compare-j
+
+=head1 USAGE
+
+% rights_compare-j -r run
+
+=head1 DESCRIPTION
+
+Reads slip_rights and rights_current and compares rights attribues,
+efficiently.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+use warnings;
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+# App
+use Context;
+use Utils;
+use Debug::DUtils;
+use Identifier;
+
+use Context;
+use MdpConfig;
+
+use SLIP_Utils::Common;
+use SLIP_Utils::DatabaseWrapper;
+use SLIP_Utils::Log;
+
+use IO::Handle;
+autoflush STDOUT 1;
+
+our ($opt_r);
+
+my $ops = getopts('r:');
+
+my $RUN = $opt_r;
+if (! defined $RUN) {
+    print rcm_get_usage();
+    exit 1;
+}
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'rights_compare-j');
+
+sub rcm_get_usage {
+    return 
+      qq{Usage: rights_compare-j -r <run>
+              Writes list to stdout, logs/slip/run-<run>.rights_compare-yyyy-mm-dd.log\n};
+}
+
+my $SLIP_RIGHTS_SLICE = 10000;
+my $ERRORS = 0;
+        
+my $num_tested = compare_rights();
+
+__output("IDs tested: $num_tested, errors: $ERRORS\n");
+
+
+exit 0;
+
+# ---------------------------------------------------------------------
+sub Log_rights_compare_error {
+    my ($C, $s) = @_;
+
+    my $when = Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s . " $when", 'rights_compare_logfile', '___RUN___', $RUN);
+}
+
+# ---------------------------------------------------------------------
+sub get_rights_current {
+    my $nid = shift;
+
+    my $ref_to_arr_of_hash_ref = [];
+    my ($namespace, $barcode) = Identifier::split_id($nid);
+
+    eval {
+        my $statement = qq{SELECT * FROM ht.rights_current WHERE namespace=? AND id=?};
+        my $sth = DbUtils::prep_n_execute($DBH, $statement, $namespace, $barcode);
+        $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
+    };
+    __output("\nget_rights_current FAIL for $nid: $@") if ($@);
+
+    return $ref_to_arr_of_hash_ref->[0];
+}
+
+
+# ---------------------------------------------------------------------
+sub get_slip_rights {
+    my $offset = shift;
+
+    my $ref_to_arr_of_hash_ref = [];
+    
+    eval {
+        my $statement = qq{SELECT nid, attr FROM ht.slip_rights LIMIT $offset, $SLIP_RIGHTS_SLICE};
+        my $sth = DbUtils::prep_n_execute($DBH, $statement);
+        $ref_to_arr_of_hash_ref = $sth->fetchall_arrayref({});
+    };
+    __output("\nget_slip_rights FAIL: $@") if ($@);
+
+    return $ref_to_arr_of_hash_ref;
+}
+
+# ---------------------------------------------------------------------
+
+=item compare_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub compare_rights {
+
+    my $offset = 0;
+    my $size = 0;
+    my $total = 0;
+    
+    while (1) {
+        my $loop_start = time;
+        my $ticker = '';
+        
+        my $slip_rights_ref_to_arr_of_hashref = get_slip_rights($offset);
+
+        $size = scalar @$slip_rights_ref_to_arr_of_hashref;
+        $total += $size;
+
+        last unless ($size);
+
+        my $sr_elapsed = time - $loop_start;
+        $ticker .= "$total-$sr_elapsed";
+                 
+        my $rc_start = time;
+        foreach my $sr_hashref (@$slip_rights_ref_to_arr_of_hashref) {
+            my $error = '';
+
+            my $nid = $sr_hashref->{nid};
+            my $sr_attr = $sr_hashref->{attr};
+
+            my $rc_hashref = get_rights_current($nid);
+            my $rc_attr = $rc_hashref->{attr};
+
+            if ($sr_attr ne $rc_attr) {
+                $error = "$nid ERROR: slip_rights.attr=$sr_attr rights_current.attr=$rc_attr";
+                __output(qq{\n$error\n});
+                Log_rights_compare_error($C, "$error");
+                $ERRORS++;
+            }
+        }
+        my $rc_elapsed = time - $rc_start;
+        $ticker .= "-$rc_elapsed-" . (time - $loop_start);
+        
+        __output(".$ticker.");
+        
+        $offset += $SLIP_RIGHTS_SLICE;
+    }    
+
+    return $size;
+}
+

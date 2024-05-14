@@ -1,0 +1,223 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+query-j
+
+=head1 USAGE
+
+% query-j -r run [-R shard] -q query
+
+=head1 DESCRIPTION
+
+Query a shard or all shards in a run
+
+=head1 OPTIONS
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Database;
+use Search::Result::SLIP_Raw;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+
+
+# ---------------------------------------------------------------------
+
+=item query_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub query_get_usage {
+    my $s .= qq{Usage: query-j -r run [-V|-B] [-R shard] [-N] [-d] [-T] -q query
+                  where -q query should be well-formed shell escaped
+                          if running from command line, e.g.:
+                             -qq=id:mdp.39015002*\&start=0\&rows=3
+                        -N is silent mode (no status printed)
+                        -V query serving index
+                        -B query build index (default) (may be sthe same as serving index)
+                  Warning: In -B mode: Possibly run /l/local/bin/tomcat-lss-restart on all
+                           Solr build hosts before and after querying to restore java heap\n};
+    return $s;
+}
+
+our ($opt_r, $opt_R, $opt_q, $opt_N, $opt_d, $opt_T, $opt_B, $opt_V);
+
+my $ops = getopts('r:R:q:NdTBV');
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = query_get_usage();
+    print $s;
+    exit 1;
+}
+
+my $MODE; # Optional
+if (defined($opt_V)) {
+    $MODE = 'serving';
+}
+elsif (defined($opt_B)) {
+    $MODE = 'build';
+}
+else {
+    $MODE = 'build';
+}
+
+my $SHARD = $opt_R; # optional
+
+my $QUERY = $opt_q; # Required
+if (! $QUERY) {
+    my $s = query_get_usage();
+    print $s;
+    exit 1;
+}
+
+$QUERY = Identifier::get_safe_Solr_id($QUERY);
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me,query';
+}
+
+my $INTERACTIVE = (! defined($opt_N)); # optional
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+my @SHARDS = ();
+
+if (! defined($SHARD)) {
+ my @num_shards_list = $CONFIG->get('num_shards_list');
+ @SHARDS = (@num_shards_list);
+}
+else {
+    @SHARDS = ($SHARD);
+}
+
+query_Solr($C, $QUERY);
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item query_Solr
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub query_Solr {
+    my ($C, $query) = @_;
+    
+    foreach my $shard (@SHARDS) {
+        my $searcher = ($MODE eq 'build') 
+          ? SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, $shard)
+            : SLIP_Utils::Solr::create_prod_shard_Searcher_by_alias($C, $shard);
+
+        my $rs = new Search::Result::SLIP_Raw();
+        
+        my $full_query = 
+            $INTERACTIVE 
+                ? qq{$query&indent=on} 
+                    : qq{$query&indent=off};
+        $rs = $searcher->get_Solr_raw_internal_query_result($C, $full_query, $rs);
+
+        print qq{*** Result for shard=$shard ***\n}
+            if ($INTERACTIVE); 
+        
+        if ($rs->get_num_found() == 0) {
+            print qq{\tEMPTY result\n}
+                if ($INTERACTIVE);
+        }
+        else {
+            my $result_docs_arr_ref = $rs->get_result_docs();
+
+            my $doc_num = 1;
+            foreach my $doc_data (@$result_docs_arr_ref) {
+                print qq{\t*** Doc No. $doc_num ***\n}
+                    if ($INTERACTIVE); 
+                print qq{$doc_data\n};
+                $doc_num++;
+            }
+        }
+    }
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
+

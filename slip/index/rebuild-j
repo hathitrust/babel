@@ -1,0 +1,545 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+rebuild-j -r run
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Rebuild slip_indexed based on what is actually present in the index
+removing duplicates in slip_indexed and Solr. Cannot be run until queue
+is indexed and index is optimized.
+
+Elapsed < 1 hour.
+
+NOTE: Disable all indexing jobs in crontab.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -d
+
+Debugging
+
+=back
+
+=over
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+use Password;
+
+use Context;
+use MdpConfig;
+use Database;
+use Identifier;
+use Search::Site;
+use Search::Searcher;
+use Search::Result::SLIP;
+
+
+use Db;
+use SLIP_Utils::Db_sync;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Log;
+
+my $INTERACTIVE = $ENV{TERM};
+
+if (! $INTERACTIVE) {
+    exit 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item rb_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rb_get_usage {
+    my $s = qq{Usage: rebuild-j -r run [-P solr|dedup|both][-d]|[-T]
+            build slip_indexed_temp and dedup leaving behind slip_indexed_temp
+               where -P solr: queries Solr, initializes slip_indexed_temp, INSERTs slip_indexed_temp rows
+                     -P dedup: (requires a prior -P solr) DEDUPEs slip_indexed_temp, DELETEs dup Solr docs, DELETEs slip_indexed rows, INSERTs slip_indexed_temp rows
+                     -P both: does both phases\n};
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_P, $opt_T);
+
+my $ops = getopts('dr:P:T');
+
+# Required
+my $RUN = $opt_r;
+unless ($opt_r) {
+    print rb_get_usage();
+    exit 1;
+}
+
+my $PHASE = $opt_P || '';
+unless ($PHASE eq 'solr' || $PHASE eq 'dedup' || $PHASE eq 'both') {
+    print rb_get_usage();
+    exit 1;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+my $DBH = r__connect($C);
+
+eval {
+    rebuild_indexed($C, $DBH, $RUN);
+};
+if ($@) {
+    die qq{CRITICAL ERROR: $@\n};
+}
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+sub r__connect {
+    my $C = shift;
+
+    my $db;
+    eval {
+        my $whoami = `whoami`;
+        chomp($whoami);
+        print "Enter passwd: ";
+        my $pw = Password::get_password();
+        print "\n";
+        unless ($pw) {
+            print "missing passwd\n";
+            exit 0;
+        }
+        $db = new Database($whoami, $pw, 'ht', 'mysql-sdr');
+    };
+    if ($@) {
+        SLIP_Utils::Common::Log_database_connection_error($C, 'rebuild-j', $@);
+        exit $SLIP_Utils::States::RC_DATABASE_CONNECT;
+    }
+
+    $C->set_object('Database', $db);
+    my $dbh = $C->get_object('Database')->get_DBH();
+    return $dbh;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_rebuild
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_rebuild {
+    my ($C, $run, $s) = @_;
+    SLIP_Utils::Log::this_string($C, $s, 'rebuild_logfile', '___RUN___', $run);
+}
+
+# ---------------------------------------------------------------------
+
+=item __rb_commit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rb_commit {
+    my ($C, $run, $shard, $indexer) = @_;
+
+    my $s;
+
+    $s = qq{commit shard=$shard ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    my ($index_state, $stats_ref) = $indexer->commit_updates($C);
+    $s = qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        $s = qq{commit failed shard=$shard index_state=}
+            . SLIP_Utils::Common::IXconstant2string($index_state);
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+
+        exit 1;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item __rebuild_Solr_query_phase
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rebuild_Solr_query_phase {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my $start = time;
+
+    $s = qq{Solr query phase (PHASE=$PHASE): Initialize slip_indexed_temp ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    SLIP_Utils::Db_sync::init_j_indexed_temp($C, $dbh);
+    $s = qq{Done.};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    my $total_item_ct = 0;
+    my $R_SLICE_SIZE = 100000;
+
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+
+    foreach my $shard (@shards) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+
+        $s = qq{processing shard=$shard ...};
+        __output(qq{\n$s\n});
+        Log_rebuild($C, $run, $s);
+
+        # Commit
+        __rb_commit($C, $run, $shard, $indexer);
+
+        # For each id in Solr shard, add it to slip_indexed_temp
+        my $start = 0;
+        my ($slice_num, $item_ct) = (0, 0);
+
+        while (1) {
+            my $query = qq{q=*:*&fl=id&start=$start&rows=$R_SLICE_SIZE};
+            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -B -R$shard -q'$query' -N`;
+            my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
+
+            my $rows_returned = scalar(@ids);
+            last if ($rows_returned == 0);
+
+            $start += $R_SLICE_SIZE;
+            $slice_num++;
+
+            $s = qq{[SLICE=$slice_num] (Solr returned=$rows_returned at: } . localtime(time);
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+
+            SLIP_Utils::Db_sync::insert_item_id_j_indexed_temp($C, $dbh, $shard, \@ids);
+
+            $item_ct += $rows_returned;
+            $total_item_ct += $rows_returned;
+        }
+        $s = qq{shard=$shard done: checked=$item_ct};
+        __output(qq{\n$s\n});
+        Log_rebuild($C, $run, $s);
+    }
+    my $elapsed = sprintf("elapsed=%.0f sec.", time - $start);
+    __output(qq{$elapsed\n});
+    Log_rebuild($C, $run, $s);
+
+    return $total_item_ct;
+}
+
+# ---------------------------------------------------------------------
+
+=item __rebuild_dedup_delete_phase
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rebuild_dedup_delete_phase {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+    
+    my $start = time;
+    # Delete duplicate rows in slip_indexed_temp and corresponding Solr
+    # documents duplicated in the recorded shard.
+    $s = qq{Delete Duplicates Phase (PHASE=$PHASE): slip_indexed_temp rows, duplicate Solr docs ...};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    my ($total_dupl_id_item_ct, $total_Delete_ct) = __Delete_duplicates($C, $run, $dbh);
+    my $elapsed = sprintf("elapsed=%.0f sec.", time - $start);
+
+    $s = qq{Done. \n\tduplicated slip_indexed_temp rows=$total_dupl_id_item_ct duplicated Solr docs deleted=$total_Delete_ct $elapsed};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    # Commit again after duplicate docs have been deleted
+    foreach my $sh (@shards) {
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $sh);
+        __rb_commit($C, $run, $sh, $indexer);
+    }
+
+    return $total_Delete_ct;
+}
+
+# ---------------------------------------------------------------------
+
+=item __rebuild_insert_phase
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rebuild_insert_phase {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my $elapsed = 0;
+    my $total_elapsed = 0;
+    
+    my $start = time;
+    # Clear the rows from slip_indexed for this run
+    $s = qq{Insert Phase (PHASE=$PHASE): Delete slip_indexed rows ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    Db::Delete_indexed($C, $dbh, $run);
+    $elapsed = sprintf("step elapsed=%.0f sec.", time - $start);
+    $total_elapsed += (time - $start);    
+    $s = qq{Done.\n$elapsed};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+
+    $start = time;
+    # Insert the rows from slip_indexed_temp
+    $s = qq{Insert Phase (PHASE=$PHASE): Insert slip_indexed_temp rows into slip_indexed ...};
+    __output(qq{$s});
+    Log_rebuild($C, $run, $s);
+    SLIP_Utils::Db_sync::insert_j_indexed_temp_j_indexed($C, $dbh, $run);
+    $elapsed = sprintf("step elapsed=%.0f sec.", time - $start);
+    $total_elapsed += (time - $start);
+    $s = qq{Done.\n$elapsed Insert Phase elapsed=$total_elapsed};
+    __output(qq{$s\n});
+    Log_rebuild($C, $run, $s);
+}
+
+# ---------------------------------------------------------------------
+
+=item rebuild_indexed
+
+For each shard, add its ids to slip_indexed[shard] for this run
+
+=cut
+
+# ---------------------------------------------------------------------
+sub rebuild_indexed {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my $start = time;
+    
+    $s = qq{rebuild-j: begin (PHASE=$PHASE) slip_indexed rebuild process run=$run};
+    __output(qq{\n\n ***** $s ***** \n\n});
+    Log_rebuild($C, $run, $s);
+
+    my ($total_item_ct, $total_Delete_ct) = (0, 0);
+
+    if ($PHASE eq 'solr' || $PHASE eq 'both') {
+        $total_item_ct = __rebuild_Solr_query_phase($C, $dbh, $run);
+    }
+    
+    if ($PHASE eq 'dedup' || $PHASE eq 'both') {
+        $total_Delete_ct = __rebuild_dedup_delete_phase($C, $dbh, $run);
+        __rebuild_insert_phase($C, $dbh, $run);
+    }
+    else {
+        print rb_get_usage();
+        exit 1;
+    }
+    my $total_elapsed = sprintf("total elapsed=%.0f sec.", time - $start);
+
+    $s = qq{rebuild-j: checked=$total_item_ct duplicated Solr docs deleted=$total_Delete_ct $total_elapsed};
+    __output(qq{\n$s\n});
+    Log_rebuild($C, $run, $s);
+
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __Delete_duplicates
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __Delete_duplicates {
+    my ($C, $run, $dbh) = @_;
+
+    my $s;
+    my ($total_dupl_id_item_ct, $total_Delete_ct) = (0, 0);
+
+    my @dupl_shard_accumulator = ();
+
+    # Find ids that appear in more than one shard according to slip_indexed_temp
+    my $ref_to_arr_of_hashref = SLIP_Utils::Db_sync::Select_duplicate_ids_j_indexed_temp($C, $dbh);
+    foreach my $hashref (@$ref_to_arr_of_hashref) {
+        # For each id, find the extraneous shards.
+        my $id = $hashref->{'id'};
+        my $ct = $hashref->{'count(shard)'};
+
+        $s = qq{id=$id is in $ct shards};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+
+        $total_dupl_id_item_ct++;
+
+        # gather duplicates, shift one off to preserve it
+        my @del_dupl_shards_of_id;
+        my $ref_to_arr_of_ary_ref =
+            SLIP_Utils::Db_sync::Select_shards_of_duplicate_id_j_indexed_temp($C, $dbh, $id);
+        foreach my $ary_ref (@$ref_to_arr_of_ary_ref) {
+            my $dupl_shard = $ary_ref->[0];
+            push(@del_dupl_shards_of_id, $dupl_shard);
+            $s = qq{  id=$id duplicated in shard=$dupl_shard};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+        }
+        my $preserved_shard = shift(@del_dupl_shards_of_id);
+        $s = qq{  -----> id=$id preserved in shard=$preserved_shard};
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+
+        foreach my $del_shard (@del_dupl_shards_of_id) {
+            # Delete from slip_indexed_temp
+            SLIP_Utils::Db_sync::Delete_duplicate_id_j_indexed_temp($C, $dbh, $id, $del_shard);
+
+            $s = qq{  deleted id=$id shard=$del_shard from slip_indexed_temp};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+
+            # Delete from Solr
+            __rb_Delete_document($C, $run, $id, $del_shard);
+            $total_Delete_ct++;
+            
+            $s = qq{  deleted id=$id shard=$del_shard Solr document};
+            __output(qq{$s\n});
+            Log_rebuild($C, $run, $s);
+        }
+    }
+
+    return ($total_dupl_id_item_ct, $total_Delete_ct);
+}
+
+
+
+# ---------------------------------------------------------------------
+
+=item __rb_Delete_document
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rb_Delete_document {
+    my ($C, $run, $id, $shard) = @_;
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+
+    my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+    my $query = qq{id:$safe_id};
+    my ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        my $s =
+            qq{delete doc id=$id shard=$shard failed index_state=}
+                . SLIP_Utils::Common::IXconstant2string($index_state);
+        __output(qq{$s\n});
+        Log_rebuild($C, $run, $s);
+    }
+}
+
+1;
+
+=back
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-15 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
+
