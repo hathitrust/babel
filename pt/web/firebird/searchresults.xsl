@@ -17,11 +17,13 @@
   </xsl:template>
 
   <xsl:template name="skip-to-main-link">
-    <ul id="skiplinks" class="visually-hidden-focusable">
-      <li><a href="#main">Skip to results</a></li>
-      <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
-      <li><a href="#input-search-text">Skip to search in this text</a></li>
-    </ul>
+    <div id="skiplinks" class="visually-hidden-focusable" role="complementary" aria-label="Skip links">
+      <ul>
+        <li><a href="#main">Skip to results</a></li>
+        <li><a href="/cgi/ssd?id={$gHtId}">Skip to text only view of this item</a></li>
+        <li><a href="#input-search-text">Skip to search in this text</a></li>
+      </ul>
+    </div>
   </xsl:template>
 
   <xsl:template name="build-root-container">
