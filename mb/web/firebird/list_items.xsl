@@ -600,6 +600,7 @@
   <xsl:template name="build-results-list">
     <xsl:param name="items" />
     <xsl:for-each select="$items">
+      <xsl:variable name="titleIndex" select="position()" />
       <xsl:if test="position() mod 25 = 0">
         <div class="visually-hidden-focusable rounded m-3 border border-4 d-flex gap-4 align-items-center justify-content-center">
           <ul class="list-group list-group-horizontal w-100 p-3">
@@ -625,7 +626,7 @@
         </div>
         <div class="flex-grow-1 d-flex flex-column justify-content-between">
           <div class="container-fluid p-1">
-            <h3 class="record-title">
+            <h3 class="record-title" id="maintitle-{$titleIndex}">
               <xsl:value-of select="$title" />
             </h3>
             <dl class="metadata">
@@ -645,13 +646,14 @@
             <xsl:variable name="key" select="Key" />
             <xsl:variable name="config" select="$gItemLinkConfig//h:option[@key=$key]" />
             <div class="list-group list-group-horizontal-sm align-items-center">
-              <a class="list-group-item list-group-item-action w-sm-50" href="https://catalog.hathitrust.org/Record/{record}">
+              <a class="list-group-item list-group-item-action w-sm-50"
+                aria-describedby="maintitle-{$titleIndex}" href="https://catalog.hathitrust.org/Record/{record}">
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i> 
                 <span>Catalog Record</span>
-                <span class="visually-hidden"> for <xsl:value-of select="$title" /></span>
                 <i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
-              <a class="list-group-item list-group-item-action {$config/@class} w-sm-50" href="/cgi/pt?id={ItemID}">
+              <a class="list-group-item list-group-item-action {$config/@class} w-sm-50"
+                aria-describedby="maintitle-{$titleIndex}" href="/cgi/pt?id={ItemID}">
                 <xsl:if test="fulltext=1 and normalize-space(activated_role)">
                   <xsl:attribute name="data-activated-role">
                     <xsl:value-of select="activated_role" />
@@ -674,7 +676,6 @@
                     <span>Limited (search-only)</span>
                   </xsl:otherwise>
                 </xsl:choose>
-                <span class="visually-hidden"> for <xsl:value-of select="$title" /></span>
                 <i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
               <xsl:if test="rights = '8'">
