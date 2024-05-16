@@ -194,6 +194,9 @@
   {/if}
   <div class="d-flex flex-nowrap gap-2">
     <div class="flex-grow-1 input-group">
+      {#if inPanel}
+        <label for="input-search-text" class="visually-hidden">Search in this text</label>
+      {/if}
       <input name="q1" id="input-search-text" type="text" class="form-control" bind:value={q1} bind:this={input} />
       <button type="submit" class="btn btn-outline-secondary" aria-label="Submit search" bind:this={btnSubmit}>
         <i class="fa-solid fa-magnifying-glass" />
