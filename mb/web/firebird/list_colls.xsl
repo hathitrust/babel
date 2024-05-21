@@ -414,11 +414,13 @@
   <xsl:template name="build-search-query-summary">
     <xsl:if test="$gQueryString != '*'">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>
-          <xsl:text>Collections matching: </xsl:text>
-          <xsl:value-of select="$gQueryString" />
-        </span>
-      
+        <xsl:variable name="clauseSummary">
+          <span>
+            <xsl:text>Collections matching: </xsl:text>
+            <xsl:value-of select="$gQueryString" />
+          </span>
+        </xsl:variable>
+        <xsl:value-of select="$clauseSummary" />
         <a class="btn btn-outline-dark btn-lg">
           <xsl:attribute name="href">
             <xsl:text>/cgi/mb?a=listcs;colltype=</xsl:text>
@@ -437,7 +439,9 @@
             </xsl:if>
           </xsl:attribute>
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-          <span class="visually-hidden">Remove</span>
+          <span class="visually-hidden">Remove filter
+            <xsl:value-of select="$clauseSummary" />
+          </span>
         </a>
       </li>
     </xsl:if>

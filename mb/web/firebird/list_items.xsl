@@ -157,29 +157,38 @@
 
               <xsl:for-each select="$current/multiselect/multiselectClause">
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>
-                    <xsl:value-of select="fieldName" />
-                    <xsl:text>: </xsl:text>
-                    <xsl:value-of select="facetValue" />
-                  </span>
+                  <xsl:variable name="clauseSummary">
+                    <span>
+                      <xsl:value-of select="fieldName" />
+                      <xsl:text>: </xsl:text>
+                      <xsl:value-of select="facetValue" />
+                    </span>
+                  </xsl:variable>
+                  <xsl:value-of select="$clauseSummary" />
                   <a href="/cgi/{unselectURL}" class="btn btn-outline-dark btn-lg">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    <span class="visually-hidden">Remove</span>
+                    <span class="visually-hidden">Remove filter
+                      <xsl:value-of select="$clauseSummary" />
+                    </span>
                   </a>
                 </li>
               </xsl:for-each>
 
               <xsl:for-each select="$current/facetValue">
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span>
-                    <xsl:value-of select="fieldName" />
-                    <xsl:text>: </xsl:text>
-                    <xsl:text> </xsl:text>
-                    <xsl:value-of select="@name" />
-                  </span>
+                  <xsl:variable name="clauseSummary">
+                    <span>
+                      <xsl:value-of select="fieldName" />
+                      <xsl:text>: </xsl:text>
+                      <xsl:value-of select="@name" />
+                    </span>
+                  </xsl:variable>
+                  <xsl:value-of select="$clauseSummary" />
                   <a href="/cgi/{unselectURL}" class="btn btn-outline-dark btn-lg">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    <span class="visually-hidden">Remove</span>
+                    <span class="visually-hidden">Remove filter
+                      <xsl:value-of select="$clauseSummary" />
+                    </span>
                   </a>
                 </li>
               </xsl:for-each>      
@@ -277,11 +286,13 @@
   <xsl:template name="build-search-query-summary">
     <xsl:if test="//QueryString != '*'">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>
-          <xsl:text>Full-Text + All Fields: </xsl:text>
-          <xsl:value-of select="//QueryString" />
-        </span>
-      
+        <xsl:variable name="clauseSummary">
+          <span>
+            <xsl:text>Full-Text + All Fields: </xsl:text>
+            <xsl:value-of select="//QueryString" />
+          </span>
+        </xsl:variable>
+        <xsl:value-of select="$clauseSummary" />
         <a class="btn btn-outline-dark btn-lg">
           <xsl:attribute name="href">
             <xsl:text>/cgi/mb?a=listis;c=</xsl:text>
@@ -303,7 +314,9 @@
             </xsl:if>
           </xsl:attribute>
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-          <span class="visually-hidden">Remove</span>
+          <span class="visually-hidden">Remove filter
+            <xsl:value-of select="$clauseSummary" />
+          </span>
         </a>
       </li>
     </xsl:if>
