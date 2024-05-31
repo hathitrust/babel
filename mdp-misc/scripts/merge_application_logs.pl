@@ -8,7 +8,8 @@ use IPC::Run qw(run);
 use File::Basename qw(basename);
 use Getopt::Long;
 
-my $yyyymmdd = UnixDate('now', '%Y-%m-%d');
+# By default use any NNNN-NN-NN datestamp
+my $yyyymmdd = '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]';
 my $hh = UnixDate('1 hour ago', "%H");
 my $debug;
 my $verbose;
