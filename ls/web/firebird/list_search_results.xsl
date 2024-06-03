@@ -385,7 +385,6 @@
                     <span>Limited (search-only)</span>
                   </xsl:otherwise>
                 </xsl:choose>
-                <span class="visually-hidden"> for <xsl:value-of select="$title" /></span>
                 <i aria-hidden="true" class="visited-link fa-solid fa-check-double"></i>
               </a>
               <xsl:if test="rights = '8'">
