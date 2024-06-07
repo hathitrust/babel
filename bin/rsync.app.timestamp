@@ -1,0 +1,12 @@
+#!/bin/bash
+
+DEST_PREFIX=$1
+shift
+
+DEPLOY_DEST=${DEST_PREFIX}babel
+DEPLOY_SRC=/htapps/test-merged.babel
+
+TIMESTAMP_SRC=$DEPLOY_SRC/bin/rsync.timestamp
+TIMESTAMP_DEST=$DEPLOY_DEST/bin/rsync.timestamp
+
+/usr/bin/rsync "$@" $TIMESTAMP_SRC $TIMESTAMP_DEST

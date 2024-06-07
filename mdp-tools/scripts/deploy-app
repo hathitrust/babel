@@ -51,7 +51,7 @@ NOTE: plackup monitors a configurable list of files for changes bsed
   changes, not just the cgi.  git checkout gives a new timestamp to
   files, so files in the HTDE, e.g. in beta-{1,2,3,4}, will satisfy this
   requirement.  However, rsync only updates timestamps on files that
-  change so B<deploy-app> touches $appdir/bin/rdist.timestamp
+  change so B<deploy-app> touches $appdir/bin/rsync.timestamp
   (monitored by plackup) to ensure the reload of the cgi.
 
 =head1 ENVIRONMENT VARIABLES
@@ -84,7 +84,7 @@ use File::Basename;
 use Date::Calc qw(Today_and_Now Delta_DHMS);
 
 my $LOCATION = dirname(__FILE__);
-my $TIMESTAMP_PATH = 'bin/rdist.timestamp';
+my $TIMESTAMP_PATH = 'bin/rsync.timestamp';
 
 use ToolLib;
 
@@ -480,7 +480,24 @@ sub __rsync_app_to_production {
       return 0;
     }
 
-    ### TODO deal with the app timestamps for reloading
+
+    print qq{Now starting separate TIMESTAMP rsync to $dest_prefix ...\n};
+
+    # create timestamp *after* app rsync has finished and rsync it
+    # using rsync.app.timestamp script
+    ___create_timestamp($app_dir, $tag);
+
+    my @cmd = ("/usr/bin/bash","$app_dir/bin/rsync.app.timestamp",$dest_prefix,@rsync_opts);
+    print join(' ',@cmd), "\n" if $VERBOSE;
+    
+    system(@cmd);
+
+    if (my $err = $?) {
+        PrintN("ERROR: rsync TIMESTAMP failure\n");
+        PrintN($err);
+        return 0;
+    }
+
   }
 
   my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
@@ -489,80 +506,11 @@ sub __rsync_app_to_production {
   Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
     $year2,$month2,$day2,$hour2,$min2,$sec2);
 
-  my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
+  my $e = sprintf("Rsync succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
   PrintY($e);
 
 
   return 1;
-}
-
-# ---------------------------------------------------------------------
-
-=item __rdist_app_to_production
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __rdist_app_to_production {
-    my $app_dir = shift;
-    my $site = shift;
-    my $tag = shift;
-
-    my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
-
-    # Plack timestamp logic
-    my $timestamp_rdist_script = qq{$app_dir/bin/rdist.app.timestamp};
-    if (! -e $timestamp_rdist_script) {
-        # create timestamp now and rdist it using rdist.app script
-        ___create_timestamp($app_dir, $tag);
-    }
-
-    my $s = defined($site) ? qq{ONLY TO $site} : '';
-    print qq{Now starting APP rdist to production $s ...\n};
-
-    my $opt = defined($site) ? qq{-m $site} : '';
-    if ($ENV{RDIST_NO_FORK}) {
-      $opt .= ' -F';
-    }
-    my $cmd = qq{rdist -f $app_dir/bin/rdist.app $opt};
-    print qq{$cmd\n} if $VERBOSE;
-    print qx($cmd);
-
-    if (my $err = $?) {
-        PrintN("ERROR: rdist APP failure\n");
-        PrintN($err);
-        return 0;
-    }
-
-    # non-Plack timestamp logic
-    if (-e $timestamp_rdist_script) {
-        print qq{Now starting separate TIMESTAMP rdist to production $s ...\n};
-
-        # create timestamp *after* app rdist has finished and rdist it
-        # using rdist.app.timestamp script
-        ___create_timestamp($app_dir, $tag);
-
-        print qx(rdist -f $timestamp_rdist_script $opt);
-
-        if ($?) {
-            PrintN("ERROR: rdist TIMESTAMP failure\n");
-            return 0;
-        }
-    }
-
-    my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
-
-    my ($Dd,$Dh,$Dm,$Ds) =
-      Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
-                 $year2,$month2,$day2,$hour2,$min2,$sec2);
-
-    my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
-    PrintY($e);
-
-
-    return 1;
 }
 
 
