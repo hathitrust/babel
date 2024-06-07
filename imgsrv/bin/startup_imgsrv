@@ -15,11 +15,11 @@ export SDR_VIEW
 if [ $SERVER = 'FCGI' ]
 then
        /usr/bin/plackup -I $SDRROOT/plack-lib -E production \
-              -R $SCRIPT.psgi,$SCRIPT,$SDRROOT/imgsrv/bin/rdist.timestamp -s FCGI \
+              -R $SCRIPT.psgi,$SCRIPT,$SDRROOT/bin/rsync.timestamp -s FCGI \
               --manager=FCGI::ProcManager::HT --nproc $NPROC\
               --listen $BIND $SCRIPT.psgi
 else
        /usr/bin/plackup -I $SDRROOT/plack-lib -E production \
-              -R $SCRIPT.psgi,$SCRIPT,$SDRROOT/imgsrv/bin/rdist.timestamp -s Starman \
+              -R $SCRIPT.psgi,$SCRIPT,$SDRROOT/bin/rsync.timestamp -s Starman \
               --listen $BIND $SCRIPT.psgi
 fi

@@ -4,7 +4,7 @@ DEST_PREFIX=$1
 shift
 
 DEPLOY_DEST=${DEST_PREFIX}babel
-DEPLOY_SRC=/htapps/test-merged.babel
+DEPLOY_SRC=/htapps/test.babel
 
 INCLUDE=$(cat <<EOT
   $DEPLOY_SRC/htd
@@ -31,14 +31,16 @@ EOT
 )
 
 EXCLUDE=$(cat <<EOT
+  --exclude .github
   --exclude .git
-  --exclude rdist.timestamp
+  --exclude docker-compose.yml
+  --exclude Dockerfile
+  --exclude rsync.timestamp
   --exclude node_modules
-  --exclude yui2-lib
   --exclude STOPSLIP
   --exclude imgsrv/scripts
   --exclude imgsrv-tools/src
 EOT
 )
 
-/usr/bin/rsync "$@" $EXCLUDE $INCLUDE $DEPLOY_DEST
+echo /usr/bin/rsync "$@" $EXCLUDE $INCLUDE $DEPLOY_DEST
