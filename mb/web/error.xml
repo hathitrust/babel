@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+  
+  <!-- error.xml -->
+  
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>skeleton.xsl</Filename>
+    <Filename>error.xsl</Filename>
+    <Filename>xsl2htmlutils.xsl</Filename>
+    <Filename>js_utils.xsl</Filename> 
+    <Filename>coll.xsl</Filename>
+    <Filename>skin.xsl</Filename>
+    <Filename>common.xsl</Filename>
+  </XslFileList>  
+  
+
+
+
+  
+  <!-- Custom OPTIONAL XML for top-level file -->
+  <CustomXml><?CHUNK filename="error_extra.xml" optional="1"?></CustomXml>
+  
+  <?CHUNK filename="mbooks_globals.xml"?>
+  <?CHUNK filename="header.xml"?>
+  
+  <ErrorMessage><?ERROR_MESSAGE?></ErrorMessage>
+      
+</MBooksTop>

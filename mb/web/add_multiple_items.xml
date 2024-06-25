@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>header.xsl</Filename>
+    <Filename>list_items.xsl</Filename>
+  </XslFileList>
+
+  <!-- Custom OPTIONAL XML for top-level file -->
+  <CustomXml><?CHUNK filename="add_multiple_items_extra.xml" optional="1"?></CustomXml>
+
+  <?CHUNK filename="mbooks_globals.xml"?>
+  <?CHUNK filename="header.xml"?>
+
+  <!-- Include -->
+  <?CHUNK filename="items.inc.xml" optional="0"?>
+
+  <GoogleAnalytics/>
+
+</MBooksTop>

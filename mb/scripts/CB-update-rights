@@ -1,0 +1,567 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+CB-update-rights
+
+=head1 USAGE
+
+/htapps/babel/mb/scripts/CB-update-rights [-I<id> | -A] [-e]
+
+=head1 DESCRIPTION
+
+Update ht_maintenance.mb_item.rights from ht_maintenance.rights_current.namespace,id
+
+=head1 OPTIONS
+
+=over 8
+
+=item -n
+
+Debug options
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# Flush i/o
+$| = 1;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Getopt::Std;
+use Utils::GlobalSwitch;
+
+binmode(STDOUT, ":utf8");
+
+my $INTERACTIVE = $ENV{TERM};
+
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot do CB update. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+our ($opt_e, $opt_I, $opt_A);
+
+my $ops = getopts('eI:A');
+my $ID = $opt_I ;
+my $GLOBAL_UPDATE = defined $opt_A;
+my $EMAIL = defined($opt_e) && (! $GLOBAL_UPDATE);
+
+use constant GLOBAL_UPDATE_SLICE_SIZE => 10000;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Utils;
+use Utils::Time;
+use Context;
+use Database;
+use MdpConfig;
+use Debug::DUtils;
+use Collection;
+use Identifier;
+use Mail::Mailer;
+use MetadataQueue;
+use MBooks::MetaDataGetter;
+use SLIP_Utils::Common;
+
+my $EMAIL_BUFFER = '';
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+my $C = new Context;
+my $CONFIG = new MdpConfig(
+                           Utils::get_uber_config_path('mb'),
+                           $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $CONFIG);
+# Database connection
+my $db = new Database('ht_maintenance');
+my $DBH = $db->get_DBH($C);
+$C->set_object('Database', $db);
+
+
+my $CO = new Collection($DBH, $CONFIG, 'no_owner');
+$C->set_object('Collection', $CO);
+
+my $LOGFILE = 'metadata_update_logfile';
+if ($GLOBAL_UPDATE) {
+    __confirm("\n\tQueue Ids to update metadata for ALL items? [N] ");
+
+    $LOGFILE = 'metadata_global_update_logfile';
+    my $ok = CB_global_update_metadata_queue($C, $DBH);
+    unless($ok) {
+        __P(qq{Global metadata update failed.\n});
+        exit 0;
+    }
+}
+
+my $update_START = time();
+
+CB_delete_extras($C);
+my (
+    $num_processed,
+    $num_updated,
+    $queue_error,
+    $num_metadata_missing,
+    $num_update_failed,
+    $failed_metadata_missing_ids_ref,
+    $failed_metadata_update_ids_ref
+   )
+  = CB_do_update_metadata($C, $ID);
+
+my $mm = join("\n", @$failed_metadata_missing_ids_ref) || 'none';
+my $mu = join("\n", @$failed_metadata_update_ids_ref) || 'none';
+
+__P(qq{Report: num_processed=$num_processed num_updated=$num_updated queue_error=$queue_error\n\tnum_metadata_missing=$num_metadata_missing missing_metadata_ids=$mm\n\tnum_update_failed=$num_update_failed failed_update_ids=$mu\n});
+
+email_report($update_START)
+  if ($EMAIL);
+
+exit 0;
+
+# ---------------------------------------------------------------------
+
+=item __P
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __P {
+    my $msg = shift;
+
+    if ($EMAIL) {
+        $EMAIL_BUFFER .= $msg;
+    }
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
+
+    chomp($msg);
+    Utils::Logger::__Log_string($C, $msg, $LOGFILE, '___QUERY___', 'mb');
+}
+
+# ---------------------------------------------------------------------
+
+=item __O
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __O {
+    my $msg = shift;
+
+    if ($ENV{'TERM'}) {
+        print STDOUT qq{$msg};
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item email_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub email_report {
+    my $start = shift;
+
+    my $elapsed = sprintf("elapsed=%.2f hours", (time() - $start)/60/60);
+
+    my $email_to_addr_ref = [ q{hathitrust-system-output@umich.edu} ];
+    my $g_assert_email_from_addr = q{"Collection Builder Mailer" <dlps-help@umich.edu>};
+
+    my $when = Utils::Time::iso_Time();
+    my $email_subject = qq{[CB] Metadata update ($when)($elapsed)};
+
+    my $mailer = new Mail::Mailer('sendmail');
+    $mailer->open({
+                   'To'      => $email_to_addr_ref,
+                   'From'    => $g_assert_email_from_addr,
+                   'Subject' => $email_subject,
+                  });
+
+    __P(qq{$elapsed\n});
+    print $mailer($EMAIL_BUFFER);
+    $mailer->close;
+}
+
+# ---------------------------------------------------------------------
+
+=item CB_global_update_metadata_queue 
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_global_update_metadata_queue {
+    my ($C, $dbh) = @_;
+    
+    my $CO = $C->get_object('Collection');
+
+    my $ok; 
+    my $offset = 0;
+    while (1) {
+        my $id_arr_ref = $CO->get_item_id_slice($offset, GLOBAL_UPDATE_SLICE_SIZE);
+        last unless (scalar @$id_arr_ref);
+
+        $ok = MetadataQueue::enqueue_metadata_item_id_array($C, $dbh, $id_arr_ref);
+        last unless($ok);
+
+        $offset += GLOBAL_UPDATE_SLICE_SIZE;
+        __P("GLOBAL Update: total enqueued for update: $offset\n");
+    }
+
+    return $ok;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item CB_delete_extras
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_delete_extras {
+    my($C) = @_;
+
+    my $size = 100;
+
+    my ($statement, $sth);
+
+    my $num_o_item = 0;
+    my $num_deleted_from_o_item = 0;
+
+    __P(qq{delete extras:\n});
+
+    while (1) {
+        $statement = qq{LOCK TABLES mb_item WRITE, mb_coll_item WRITE};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+
+        # One hundred at a time so we don't race/block with Collection Builder users
+        $statement =
+          qq{SELECT extern_item_id FROM mb_item WHERE extern_item_id NOT IN (SELECT DISTINCT extern_item_id FROM mb_coll_item) LIMIT $size};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+        my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+        my $num = (scalar @$ref_to_arr_of_hashref);
+        if (! $num) {
+            $statement = qq{UNLOCK TABLES};
+            $sth = DbUtils::prep_n_execute($DBH, $statement);
+            last;
+        }
+
+        foreach my $hashref (@$ref_to_arr_of_hashref) {
+            $num_o_item++;
+            my $extern_item_id = $hashref->{extern_item_id};
+
+            __P( qq{A: mb_item not in mb_coll_item: $extern_item_id\n});
+            $statement = qq{DELETE FROM mb_item WHERE extern_item_id=?};
+            $sth = DbUtils::prep_n_execute($DBH, $statement, $extern_item_id);
+
+            $num_deleted_from_o_item++;
+        }
+
+        $statement = qq{UNLOCK TABLES};
+        $sth = DbUtils::prep_n_execute($DBH, $statement);
+    }
+
+    __P(qq{num mb_item not in mb_coll_item=$num_o_item\n});
+    __P(qq{num deleted in mb_item=$num_deleted_from_o_item\n});
+}
+
+# ---------------------------------------------------------------------
+
+=item __cb_get_vufind_metadata_hashref
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __cb_get_vufind_metadata_hashref {
+    my $C = shift;
+    my $id = shift;
+
+    my $mdg = new MBooks::MetaDataGetter($C, [$id]);
+    my $metadata_aryref = $mdg->metadata_getter_get_metadata($C);
+
+    unless ($metadata_aryref && scalar @$metadata_aryref) {
+        __P( qq{\tCould not get metadata for id="$id"\n} );
+        return undef;
+    }
+
+    return $metadata_aryref->[0];
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __cb_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __cb_update_metadata {
+    my $C = shift;
+    my $id = shift;
+    my $metadata_hashref = shift;
+
+    eval {
+        $CO->create_or_update_item_metadata($metadata_hashref);
+    };
+    if ($@) {
+        __P( qq{\tCould not update id="$id": $@\n} );
+
+        return 0;
+    }
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_o_item_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_o_item_metadata {
+    my ($C, $id) = @_;
+
+    my $statement = qq{SELECT * FROM mb_item WHERE extern_item_id=?};
+    my $sth = DbUtils::prep_n_execute($DBH, $statement, $id);
+
+    my $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
+
+    return $ref_to_arr_of_hashref->[0];
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __format_metadata_diff
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __format_metadata_diff {
+    my $prior_metadata_hashref = shift;
+    my $updated_metadata_hashref = shift;
+
+    my @diffs;
+    foreach my $md (keys %$updated_metadata_hashref) {
+        next if ($md eq 'extern_item_id');
+        my $prior = $prior_metadata_hashref->{$md} || '';
+        my $updated = $updated_metadata_hashref->{$md};
+        $md =~ s,_title,,;
+
+        if ($prior ne $updated) {
+            my $s = sprintf("%-7s", $md);
+            push(@diffs, qq{$s: prior="$prior" updated="$updated"});
+        }
+    }
+
+    return (scalar(@diffs) ? join("\n\t", @diffs) : undef);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item fetch_next_item
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+my $single_fetched = 0;
+
+sub fetch_next_item {
+    my ($C, $single_id) = @_;
+
+    my ($ok, $id);
+
+    if (defined($single_id)) {
+        if ($single_fetched) {
+            ($ok, $id) = (1, undef);
+        }
+        else {
+            ($ok, $id) = (1, $single_id);
+            $single_fetched = 1;
+        }
+    }
+    else {
+        ($ok, $id) = MetadataQueue::get_next_metadata_item_id($C, $DBH);
+    }
+
+    return ($ok, $id);
+}
+
+# ---------------------------------------------------------------------
+
+=item CB_do_update_metadata
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub CB_do_update_metadata {
+    my($C, $single_id) = @_;
+
+    __P(qq{update metadata:\n});
+
+    my $queue_error = 0;
+
+    my $num_processed = 0;
+    my $num_updated = 0;
+    my $num_metadata_missing = 0;
+    my $num_update_failed = 0;
+
+    my @failed_metadata_missing_ids = ();
+    my @failed_metadata_update_ids = ();
+
+    while (1) {
+        my ($ok, $id) = fetch_next_item($C, $single_id);
+
+        if ($ok) {
+            if ($id) {
+                $num_processed++;
+
+                if (! $CO->item_exists($id)) {
+                    # Only update ids that are in collections -- remove from queue
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+                    next;
+                }
+
+                my $metadata_hashref = __cb_get_vufind_metadata_hashref($C, $id);
+                my $metadata_ok = $metadata_hashref ? 1 : 0;
+
+                if ($metadata_ok) {
+                    my $o_item_hashref =  __get_o_item_metadata($C, $id);
+                    my $delta = __format_metadata_diff($o_item_hashref, $metadata_hashref);
+
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+
+                    if ($delta) {                    
+                        my $update_ok = __cb_update_metadata($C, $id, $metadata_hashref);
+                        if ($update_ok) {
+                            # Get affected coll_ids
+                            my $coll_ids_ary_ref = $CO->get_coll_ids_for_item($id);
+                            my @buf;
+                            foreach my $coll_id (@$coll_ids_ary_ref) {
+                                my $coll_name = $CO->get_coll_name($coll_id);
+                                push(@buf, qq{($coll_id)=[$coll_name]});
+                            }
+                            my $affected = join(', ', @buf);
+
+                            my $time = Utils::Time::iso_Time('time');
+                            __P(qq{update [$time]: $id affected=$affected\n\tdelta=\n\t$delta\n});
+                            $num_updated++;
+                        }
+                        else {
+                            push(@failed_metadata_update_ids, $id);
+                            $num_update_failed++;
+                        }
+                    }
+                    else {
+                       (($num_processed % 1000) == 0) ? __O($num_processed) : __O('.');
+                    }
+                }
+                else {
+                    push(@failed_metadata_missing_ids, $id);
+                    $num_metadata_missing++;
+                    MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+                }
+            }
+            else {
+                # Queue empty
+                last;
+            }
+        }
+        else {
+            MetadataQueue::dequeue_id_from_metadata_queue($C, $DBH, $id);
+            $queue_error = 1;
+            last;
+        }
+    }
+
+    return ($num_processed, $num_updated, $queue_error, $num_metadata_missing, $num_update_failed,
+            \@failed_metadata_missing_ids, \@failed_metadata_update_ids);
+}
+
+
+
+exit 0;
+
+
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

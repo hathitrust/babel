@@ -1,0 +1,558 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+MBooks (Collection Builder) Transfer Colleciton Ownership
+
+=head1 USAGE
+
+https://babel.hathitrust.org/cgi/mb/transfer?c=..&c..&c=..  ... transfer selected collections
+https://babel.hathitrust.org/cgi/mb/transfer?c=ALL ... transfer all owned collections
+
+https://babel.hathitrust.org/cgi/mb/transfer/complete/$UUID ... complete the transfer
+
+=head1 DESCRIPTION
+
+Transfer ownership of collections. This happens in two phases:
+
+[1] request the transfer
+
+An authenticated user (submitter) requests a transfer of either ALL their
+collections, or a selection.
+
+The request prompts for confirmation, and if the submitter continues, 
+an MBooks::Utils::Transfer object is created and directions presented
+to the submitter.
+
+[2] complete the transfer
+
+A second user (receiver) uses the transfer URL to complete the transfer.
+
+If the received has not authenticated, they're prompted to log in.
+
+Once the receiver confirms the transfer, they are made owner of the
+configured collections.
+
+=cut
+
+use strict;
+use warnings;
+
+use Plack::Runner;
+
+BEGIN {
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use Time::HiRes qw(time);
+
+# ----------------------------------------------------------------------
+# enable strict, only under development
+# ----------------------------------------------------------------------
+BEGIN {
+    if ( $ENV{'DLPS_DEV'} ) {
+        require "strict.pm";
+        strict::import();
+
+        # Set the SDRINST and SDRLIB environment variables in auth
+        # system absence.
+        require Auth::Surrogate;
+        Auth::Surrogate::authorize('/mb/cgi');
+    }
+}
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+
+use MdpConfig;
+use Auth::Auth;
+use Auth::ACL;
+use Utils;
+use Database;
+use Session;
+
+use Plack::Request;
+use Plack::Response;
+
+use JSON::XS;
+
+use URI::Escape;
+
+use CGI::PSGI;
+
+use Collection;
+
+use XML::LibXSLT;
+use XML::LibXML;
+
+use Try::Tiny;
+
+use MBooks::Utils::Transfer;
+
+{
+    package App;
+
+    sub new {
+        my $class = shift;
+
+        my $self = {};
+        bless $self, $class;
+        return $self;
+    }
+
+    sub get_app_name {
+        my $self = shift;
+        return "transfer";
+    }
+}
+
+my $app = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    my $C = new Context;
+    $C->set_object('App', new App);
+
+    # configuration; do we need our own config?
+    my $config = new MdpConfig(
+                               Utils::get_uber_config_path('mb'),
+                               $ENV{SDRROOT} . "/mb/lib/Config/global.conf",
+                               $ENV{SDRROOT} . "/mb/lib/Config/local.conf"
+                              );
+
+    $C->set_object('MdpConfig', $config);
+
+    my $cgi;
+    $cgi = CGI::PSGI->new($env);
+    $C->set_object('CGI', $cgi);
+
+    my $db = new Database('ht_web');
+    $C->set_object('Database', $db);
+
+    my $dbh = $db->get_DBH;
+    $C->set_object('DBI', $dbh);
+
+    my $auth = new Auth::Auth($C);
+    $C->set_object('Auth', $auth);
+
+    # Session
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+
+    my $co = Collection->new( $dbh, $config, $auth );
+    $C->set_object('Collection', $co);
+
+    my $cs = CollectionSet->new($dbh, $config, $auth) ;
+    $C->set_object('CollectionSet', $cs);
+
+    # handle complete route
+    my $path_info = $cgi->path_info;
+    if ( $path_info =~ m,/complete, ) {
+        return handle_transfer_request_complete($C, $path_info);
+    }
+
+    unless ( $$env{REMOTE_USER} ) {
+        # punt and exit; not even worth doing
+        return _render_error($C, "error.login-required");
+    }
+
+    return handle_transfer_request_confirm($C);
+
+};
+
+Plack::Runner->new->run($app);
+exit;
+
+#---- COMPLETE TRANSFER
+
+sub handle_transfer_request_complete {
+    my ( $C, $path_info ) = @_;
+    
+    my $auth = $C->get_object('Auth');
+    my $cgi = $C->get_object('CGI');
+
+    my ( $token ) = ( $path_info =~ m,/complete/(.*), );
+    if ( defined $token ) {
+    
+        my $transfer = try {
+            MBooks::Utils::Transfer::load($C, $token);
+        } catch {
+            return _render_error($C, $_);
+        };
+
+        my $collection_data = _get_collection_data($C, $transfer->payload, 1);
+
+        unless ( $auth->is_logged_in ) {
+            return _complete_prompt_login($C, $transfer, $collection_data);
+        }
+
+        if ( $transfer->has_completed ) {
+            return _render_error($C, "error.expired-transfer");
+        }
+
+        if ( $cgi->request_method eq 'POST' ) {
+            return _complete_transfer($C, $transfer);
+        }
+
+        return _complete_confirm($C, $transfer);
+    }
+
+    return _render_error($C, "error.missing-token");
+}
+
+sub _complete_confirm {
+    my ( $C, $transfer ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+
+    my $collids = $transfer->payload;
+    my $collection_data = _get_collection_data($C, $collids, 1);
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set( 'action', $cgi->url( -absolute => 1, -path_info => 1 ) );
+    $fields->set('collection_data', $collection_data);
+
+    $fields->set('referer', _get_referer($C));
+
+    $fields->set('view', 'complete.confirm');
+
+    return _render( $C, $fields );
+}
+
+sub _complete_transfer {
+    my ( $C, $transfer ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $auth = $C->get_object('Auth');
+    my $co = $C->get_object('Collection');
+    my $dbh = $C->get_object('DBI');
+
+    my $collids = $transfer->payload;
+    my $collection_data = _get_collection_data($C, $collids, 1);
+
+    my $username = $auth->get_user_name($C);
+    my $display_name = $auth->get_user_display_name($C); # for bookkeeping
+    my $submitter_usernames = $transfer->submitter_usernames();
+
+    DbUtils::begin_work($dbh);
+    try {
+        foreach my $collid ( @$collids ) {
+            $co->transfer_collection($collid, $submitter_usernames, $username, $display_name);
+        }
+        DbUtils::commit($dbh);
+    } catch {
+        return _render_error($C, "error.database-transfer-error::$_");
+    };
+
+    $transfer->complete($C);
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set('action', $cgi->url( -absolute => 1 ));
+    $fields->set('collection_data', $collection_data);
+
+    $fields->set('referer', _get_listcs_link());
+
+    $fields->set('view', 'complete.transfer');
+    return _render( $C, $fields );
+}
+
+sub _complete_prompt_login {
+    my ( $C, $transfer, $collection_data ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $auth = $C->get_object('Auth');
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set('action', $cgi->url( -absolute => 1 ));
+    $fields->set('referer', _get_listcs_link());
+    $fields->set('collection_data', $collection_data);
+    $fields->set('login-link', $auth->get_WAYF_login_href($C, $cgi->self_url));
+
+    $fields->set('view', 'complete.prompt_login');
+    return _render($C, $fields);
+}
+
+#---- SETUP TRANSFER
+
+sub handle_transfer_request_confirm {
+    my ( $C ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $auth = $C->get_object('Auth');
+
+    if ( $cgi->path_info ) {
+        my ( $token ) = substr($cgi->path_info, 1);
+        my $transfer = try {
+            MBooks::Utils::Transfer::load($C, $token);
+        } catch {
+            return _render_error($C, $_);
+        };
+
+        unless ( $transfer->submitter eq $auth->get_user_name ) {
+            return _render_error($C, "error.who-are-you");
+        }
+
+        if ( $cgi->request_method eq 'POST' && $cgi->param('action') eq 'cancel' ) {
+            $transfer->cancel($C);
+            my $redirect_url = _get_referer($C);
+            return _redirect($C, $redirect_url);
+        }
+        
+        return _request_view($C, $transfer);
+    }
+
+    my @collids = _get_collids($C);
+    unless ( scalar @collids ) {
+        return _render_error($C, "error.missing-selection");
+    }
+
+    my $collection_data = _get_collection_data($C, \@collids);
+    unless ( scalar @{ $$collection_data{data} } ) {
+        return _render_error($C, "error.ownership", { collection_data => $collection_data});
+    };
+
+    if ( $cgi->request_method eq 'POST' && $cgi->param('action') eq 'submit' ) {
+        return _request_configure($C, $collection_data);
+    }
+
+    return _request_confirm($C, $collection_data);
+}
+
+sub _request_confirm {
+    my ( $C, $collection_data ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set('action', $cgi->url(-absolute=>1));
+
+    $fields->set('collection_data', $collection_data);
+    $fields->set('view', 'request.confirm');
+
+    $fields->set('referer', _get_referer($C));
+    
+    return _render($C, $fields);
+}
+
+sub _request_configure {
+    my ( $C, $collection_data ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my $dbh = $C->get_object('DBI');
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set( 'action', $cgi->url( -absolute => 1 ) );
+
+    my $transfer = MBooks::Utils::Transfer->new;
+    $transfer->generate($C, $collection_data);
+
+    $cgi->path_info($transfer->token);
+    $cgi->param('ok', '1');
+    return _redirect($C, $cgi->self_url);
+}
+
+sub _request_view {
+    my ( $C, $transfer ) = @_;
+
+    my $transfer_link = _generate_transfer_link($C, $transfer);
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set('transfer_link', $transfer_link);
+
+    $fields->set('referer', _get_referer($C));
+
+    my $cgi = $C->get_object('CGI');
+    $fields->set( 'new', defined $cgi->param('ok') ? $cgi->param('ok') : '0' );
+
+    $fields->set( 'view', 'request.view' );
+
+    return _render( $C, $fields );
+}
+
+#---- TEMPLATE/VIEW
+
+sub _render_error {
+    my ( $C, $error, $extra ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+
+    my $fields = Hash::MultiValue->new;
+    $fields->set('action', $cgi->url(-absolute=>1));
+    $fields->set('status', 'error');
+
+    if ( $error =~ m,::, ) {
+        my @tmp = split(/::/, $error);
+        $error = shift @tmp;
+        $extra = { message => shift @tmp };
+    }
+
+    if(ref($extra)) {
+        foreach my $key ( keys %$extra ) {
+            $fields->set($key, $$extra{$key});
+        }
+    }
+
+    $fields->set('view', $error);
+    
+    return _render($C, $fields);
+}
+
+sub _render {
+    my ( $C, $fields ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+
+    my $xmldoc = _fields2xml($fields);
+
+    my $response = Plack::Response->new(200);
+    if ( defined $cgi->param('debug') && $cgi->param('debug') eq 'xml' ) {
+        $response->content_type('application/xml');
+        $response->body( Encode::encode('UTF-8', $xmldoc->toString ));
+    } else {
+        my $xslt = XML::LibXSLT->new();
+        my $stylesheet_doc = XML::LibXML->load_xml(location => "../web/transfer/views.xsl");
+        my $stylesheet = $xslt->parse_stylesheet($stylesheet_doc);
+        my $results = $stylesheet->transform($xmldoc);
+
+        $response->content_type('text/html');
+        $response->body( qq{<!DOCTYPE html>\n} . $stylesheet->output_as_chars($results) );
+    }
+
+    return $response->finalize;
+}
+
+sub _redirect {
+    my ( $C, $url ) = @_;
+    my $response = Plack::Response->new(302);
+    $response->redirect($url);
+    return $response->finalize;
+}
+
+sub _fields2xml {
+    my ( $hash ) = @_;
+
+    my $xmldoc = XML::LibXML->createDocument;
+    my $root = $xmldoc->createElement('root');
+    $xmldoc->setDocumentElement($root);
+
+    my $debugEl = XML::LibXML::Element->new('debug');
+    $debugEl->appendText(Data::Dumper::Dumper($hash));
+    $root->appendChild($debugEl);
+
+    __process_values_hash($root, $hash);
+
+    return $xmldoc;
+}
+
+sub __process_values {
+    my ( $parentEl, $value ) = @_;
+    if ( ref($value) eq 'ARRAY' ) {
+        foreach my $v ( @$value ) {
+            __process_values($parentEl, $v);
+        }
+    } elsif ( ref($value) eq 'HASH' ) {
+        my $valueEl = XML::LibXML::Element->new('value');
+        $parentEl->appendChild($valueEl);
+        __process_values_hash( $valueEl, $value );
+    } else {
+        my $valueEl = XML::LibXML::Element->new('value');
+        $valueEl->appendText($value);
+        $parentEl->appendChild($valueEl);
+    }
+}
+
+sub __process_values_hash {
+    my ( $parentEl, $hash ) = @_;
+    foreach my $key ( sort keys %$hash ) {
+        my $fieldEl = XML::LibXML::Element->new('field');
+        $fieldEl->setAttribute('name', $key);
+        __process_values($fieldEl, $$hash{$key});
+        $parentEl->appendChild($fieldEl);
+    }
+}
+
+#---- DATA
+
+sub _get_listcs_link {
+    return qq{https://$ENV{HTTP_HOST}/cgi/mb?a=listcs;colltype=my-collections};
+}
+
+sub _get_referer {
+    my ( $C ) = @_;
+    my $cgi = $C->get_object('CGI');
+    return $cgi->param('referer') || $cgi->referer || _get_listcs_link();
+}
+
+sub _generate_transfer_link {
+    my ( $C, $transfer ) = @_;
+    my $transfer_cgi = CGI->new({});
+    $transfer_cgi->path_info("/complete/" . $transfer->token);
+    return $transfer_cgi->self_url;
+}
+
+sub _get_collids {
+    my ( $C ) = @_;
+
+    my $cgi = $C->get_object('CGI');
+    my @collids = $cgi->multi_param('c');
+    if ( scalar @collids == 1 && $collids[0] eq 'ALL' ) {
+        # get all the collids
+        @collids = ();
+        my $cs = $C->get_object('CollectionSet');
+        my $rows = $cs->list_colls('my-collections', 'MColl_ID', 'ASC', 1, 10000);
+        foreach my $row ( @$rows ) {
+            push @collids, $$row{MColl_ID};
+        }
+    }
+    return @collids;
+}
+
+sub _get_collection_data {
+    my ( $C, $collids, $ignore_owner ) = @_;
+
+    my $co = $C->get_object('Collection');
+    my $auth = $C->get_object('Auth');
+
+    my $pending_transfers = MBooks::Utils::Transfer::find_pending($C);
+    my $pending_transfers_collids = {};
+    foreach my $transfer ( @$pending_transfers ) {
+        foreach my $c ( @{ $transfer->payload } ) {
+            $$pending_transfers_collids{$c} = 1;
+        }
+    }
+
+    my $possible_owner_names = { map { $_ => 1 } $auth->get_user_names($C) };
+
+    my $retval = { collids => $collids, messages => [] };
+    $$retval{debug} = Data::Dumper::Dumper($pending_transfers);
+    
+    my $data = [];
+    foreach my $collid ( @$collids ) {
+        my $record = $co->get_coll_record($collid);
+        unless ( $ignore_owner || $$possible_owner_names{$$record{owner}} ) {
+            push @{$$retval{messages}}, qq{You cannot transfer $$record{collname}};
+            next;
+        }
+        if ( $$pending_transfers_collids{$$record{MColl_ID}} ) {
+            push @{$$retval{messages}}, qq{$$record{collname} is already configured to be transfered.};
+            next;
+        }
+        push @$data, {
+            href => qq{/cgi/mb?a=listis;c=$$record{MColl_ID}},
+            collname => $$record{collname},
+            MColl_ID => $$record{'MColl_ID'},
+        };
+    }
+    $$retval{data} = $data;
+
+    return $retval;
+}
+

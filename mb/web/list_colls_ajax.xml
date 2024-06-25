@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MBooksTop xmlns:mdp="http://www.umdl.umich.edu/mdp">
+
+  <!-- list_colls.xml -->
+
+  <!-- XSL fallback files -->
+  <XslFileList>
+    <Filename>list_colls_ajax.xsl</Filename>
+  </XslFileList>
+
+  <?CHUNK filename="mbooks_globals.xml"?>
+
+  <CollListJson><?COLL_LIST_JSON?></CollListJson>
+
+</MBooksTop>
