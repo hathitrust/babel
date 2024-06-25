@@ -1,0 +1,30 @@
+# Ignore all backup files
+*~
+
+# Ignore Emacs auto saved files
+*#*#
+
+# Ignore MacOS dot files
+.DS_Store
+._*
+
+# Ignore the Auth/Surrogate SDR file
+SDR
+/lib/Config/local.conf
+node_modules
+bin/rdist.timestamp
+
+/META.yml
+/META.json
+/MYMETA.*
+*.o
+*.pm.tdy
+*.bs
+
+# Devel::Cover
+cover_db/
+
+# Devel::NYTProf
+nytprof.out
+
+
