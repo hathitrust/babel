@@ -1,0 +1,72 @@
+archive::Internet Archive::d
+asu::Arizona State University
+aub::American University of Beirut
+bc::Boston College
+berkeley::University of California::d
+brooklynmuseum::Brooklyn Museum
+clarkart::Sterling & Francine Clark Art Institute Library
+columbia::Columbia University
+cornell::Cornell University
+duke::Duke University
+emory::Emory University
+flbog::State University System of Florida
+frick::The Frick Collection
+getty::The Getty Research Institute
+harvard::Harvard University
+haverford::Haverford College
+ht_private::Private Donor
+ht_support-microsoft::Microsoft::d::Digitization Support from
+hva::Virginia Commonwealth University
+illinois::University of Illinois at Urbana-Champaign
+iu::Indiana University
+jhu::Johns Hopkins University
+keio::Keio University
+knowledgeunlatched::Knowledge Unlatched
+loc::Library of Congress
+mcgill::McGill University
+miami::University of Miami
+milproj-dc-umich::Millenium Project
+missouri::University of Missouri-Columbia
+mndigital::Minnesota Digital Library
+msu::Michigan State University
+ncl::National Central Library of Taiwan
+ncsu::North Carolina State University
+nd::University of Nortre Dame
+northwestern::Northwestern University
+nypl::New York Public Library
+okstate::Oklahoma State University
+osu::The Ohio State University
+press-umich::University of Michigan Press::d
+princeton::Princeton University
+psu::Penn State
+purdue::Purdue University
+sc::University of South Carolina
+tamu::Texas A&M University
+technicalreports::Technical Report Archive & Image Library
+temple::Temple University
+tufts::Tufts University
+txstate::Texas State University
+ualberta::University of Alberta
+uchicago::University of Chicago
+ucla::University of California::d
+ucm::Universidad Complutense de Madrid
+uconn::University of Connecticut
+udel::University of Delaware
+uiowa::University of Iowa
+umass::University of Massachusetts Amherst
+umd::University of Maryland, College Park
+umich::University of Michigan
+umn::University of Minnesota
+unc::University of North Carolina at Chapel Hill
+universityofcalifornia::University of California
+upenn::University of Pennsylvania
+uq::The University of Queensland
+usupress::Utah State University Press
+utexas::The University of Texas
+utk::University of Tennessee, Knoxville
+uuhhs::Unitarian Universalist History and Heritage Society
+virginia::University of Virginia
+washington::University of Washington
+wfu::Wake Forest University
+wisc::University of Wisconsin
+yale::Yale University
