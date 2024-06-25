@@ -1,0 +1,909 @@
+/* MDP Pageturner CSS - pageviewer module */
+
+/* 
+   Copyright 2006, The Regents of The University of Michigan, All Rights Reserved
+   
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject
+   to the following conditions:
+   
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*   PAGE NAVIGATION   */
+
+
+#ControlContentContainer
+{
+  float: left;
+  height: auto;
+}
+
+#ControlContent {
+  position: relative;
+  height: auto;
+  margin: 0 0 0 30px;
+}
+
+.mdpControlContainer
+{
+  position: relative;
+  float: left;
+  display: block;
+  width: 12em;
+  padding: 0;
+  color: #333333;
+  z-index: 1;
+  background-color: #f6f6f6;
+  margin: 0 10px;
+}
+.mdpMetaText img 
+{
+    position:relative;
+    margin-left:3px;
+    margin-right:3px;
+    top:3px;
+}
+
+#PageNav
+{
+  clear: left;
+  float: left;
+  padding: 0;
+  margin: 0;
+  font: bold 12px Verdana, sans-serif;
+}
+
+#PageNav ul {
+  margin: 0 0 0 5px;
+  border-bottom: 1px dashed #BBB;
+  width: 155px;
+  height: auto;
+  padding: 7px 0 7px 0;
+}
+
+#PageNav li {
+  list-style: none;
+  float: left;
+}
+
+.mdpMirlyn {
+  border-bottom: 1px dashed #BBB;
+  width: 155px;
+  margin: 10px 5px 5px 5px;
+  padding-bottom: 6px;
+  font-weight: bold;
+}
+
+.mdpMirlyn ul {
+  margin:0;
+  padding:0;
+}
+
+.mdpMirlyn ul li {
+  list-style-type:none;
+  padding-bottom: 8px;
+}
+
+
+#permURL label {
+  font-size: .9em;
+  color: #333;
+}
+
+.bibLinks ul{
+  padding:0;
+  font-size: 1.1em;
+  margin:3px 0;
+}
+
+.bibLinks ul li {
+  list-style-type: none;
+  padding-bottom: 8px;
+}
+
+.catalog {
+  background: transparent url(./graphics/icon_information.png) no-repeat scroll left center;
+  padding-left: 20px;
+  font-weight:bold;
+}
+
+.worldcat {
+  background: transparent url(./graphics/icon_book.png) no-repeat scroll left center;
+  padding-left: 20px;
+}
+
+.pod {
+  background: transparent url(./graphics/icon_buybook.png) no-repeat scroll left center;
+  padding-left: 20px;
+}
+
+#permURL {
+  margin-bottom: 8px;
+}
+
+.permalink {
+  background: transparent url(./graphics/icon_link.png) no-repeat scroll left center;
+  padding-left: 20px;
+}
+
+/* Contents List specificities */
+
+#mdpContentsList
+{ 
+  margin: 0;
+  padding: 0;
+}
+
+#mdpContentsList table
+{ 
+  position: relative;
+  float: left;
+  padding: 0;
+  margin: 8px 0 0 8px;
+}
+
+
+#mdpContentsList table tbody tr td
+{ 
+  white-space: nowrap;
+}
+
+.mdpFlexible_3_1
+{ 
+}
+
+#mdpFeatureListTitle td
+{ 
+  font: bold 12px Verdana, sans-serif;
+  color: #ef7a06;
+}
+
+.mdpFeatureListItem
+{ 
+  font: normal 12px Verdana, sans-serif;
+}
+
+.mdpFeatureListItem a
+{ 
+  text-decoration: none;
+}
+
+.mdpFeatureListItem a:hover
+{ 
+  text-decoration: underline;
+}
+
+.mdpContentsPageNumber
+{
+  text-align: right; 
+  padding-right: 0;
+}
+
+/* Page next & previous  */
+
+.mdpPageLinks
+{
+  position: relative;
+  float: left;
+}
+
+.mdpPageLinks ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+.mdpPageLinks ul li
+{
+  float: left;
+  padding-right: 4px;
+}
+
+.mdpPageLinks ul li a img
+{
+  border: 0px;
+  height: 25px;
+  width: 25px;
+  background-color: #000;
+}
+
+.mdpPageLinks ul li a img:hover
+{
+  background-color: #ef7a06;
+}
+
+
+/* GO TO PAGE  */
+
+.mdpPageXofY
+{
+  position: relative;
+  float: left;
+}
+
+.mdpPageXofY input
+{
+  position: relative;
+}
+
+.mdpPageXofY ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+.mdpPageXofY ul li
+{
+  float: left;
+}
+
+.mdpPageXofY input.mdpPageNumberInputBox
+{
+  width: 2.5em;
+  height: 22px;
+  text-align: right;
+}
+
+.mdpNumberLabel
+{
+  font-size: 1.3em;
+  font-weight: bold;
+  position: relative;
+  margin-top: 3px;
+}
+
+input.mdpGotoButton
+{
+  margin-right: 3px;
+  padding: 0;
+  height: 24px;
+  width: 45px;
+  border:#d4dff3 1px solid;
+  color: #f9f8f2;
+  background: #000;
+  font-size: 1em;
+}
+
+.mdpGotoButton:hover
+{
+  background-color: #7E7E7E;
+  color: #FFF
+}
+
+
+/* RESIZE */
+
+.mdpItemResize
+{
+  position: relative;
+  float: left;
+}
+
+.mdpItemResize ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+.mdpItemResize ul li
+{
+  float: left;
+}
+  
+  
+/*  ROTATE  */
+
+.mdpItemRotate
+{
+  position: relative;
+  float: left;
+}
+
+.mdpItemRotate ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+.mdpItemRotate ul li
+{
+  float: left;
+  padding-right: 5px;
+}
+
+.mdpItemRotate ul li a img
+{
+  height: 25px;
+  width: 25px;
+  border: 0;
+  background-color: #000;
+}
+
+.mdpItemRotate ul li a img:hover
+{
+  background-color: #BBB;
+}
+
+select.mdpSelectMenu
+{
+}
+
+.rotateLabel
+{
+  font-weight: bold;
+  margin: 0;
+  font-size: 1em;
+  position: relative; top: 5px;
+}
+
+
+/* VIEW PAGE AS  */
+
+.mdpViewType
+{
+  position: relative;
+  top: 4px;
+  float: left;
+}
+
+.mdpViewType ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+
+/* VIEW PAGE AS LIST */
+
+.mdpViewTypeList, .mdpMirlyn
+{
+  position: relative;
+  float: left;
+}
+
+.mdpViewTypeList ul
+{
+  list-style-type: none;
+  position: relative;
+  float: left;
+}
+
+.mdpViewTypeList ul li
+{
+  padding: 5px 5px 0 0;
+  width: 100px;
+}
+
+.ViewAsLabel
+{
+  position: relative;
+  top: -7px;
+  font-weight: bold;
+}
+
+.mdpViewTypeList ul li a
+{
+  text-decoration: none;
+}
+
+.mdpViewTypeList ul li a:hover
+{
+  text-decoration: underline;
+}
+
+.mdpViewTypeList ul li a img
+{
+  height: 26px;
+  border: 0;
+}
+
+.nonactiveView
+{
+  position: relative;
+  top: -7px;  
+  color: #BBB
+}
+
+
+/*   ACTUAL PAGE VIEWS   */
+
+div#mdpContentContainer
+{
+    margin-left: 16.5em; /* 17em*/
+    border: 2px solid #666;
+    padding: 4px;
+    margin-right: 10px;
+    text-align: center;
+    position: relative;
+}
+
+#mdpImage
+{
+  position: relative; top: 10px;
+  border: 2px solid #e2e2e2;
+  float: left;
+}
+
+/* based on 100% image = 680 pixels to allow for Adobe reader frame
+   width */ 
+#mdpPdf
+{
+  position: relative; top: 10px;
+  width: 745px;
+  height: 600px;
+  margin: 5px 0 20px 0;
+}
+
+
+#mdpText
+{
+  position: relative; top: 10px;
+  margin: 10px 0 20px 0;
+  float: left;
+}
+
+#mdpText p
+{
+  font-weight: normal;
+  font-family: Times, serif;
+  font-size: 1.2em;
+  margin: 0;
+  padding-top: 3em;
+  padding-bottom: 2em;
+  padding-left: 4em;
+  padding-right: 2em;
+  border: 1px solid #000000;
+  color: #000000;
+  background-color: #FFFFFF;
+  text-align: left;
+  width: 32em;
+  height: auto;
+}
+
+div.Specialtext {
+  padding-bottom: 30px;
+  padding-left: 20px;
+  margin-top: 0!important;
+}
+
+p.centertext {
+  text-align:center;
+  font-size:1.3em;
+  line-height:normal;
+}
+
+.leftText {
+  font-size:1.3em;
+  line-height:normal;
+}
+
+.leftText ul {
+  padding: 0;
+  margin-top: 0.3em;
+  margin-bottom: 0.2em;
+}
+
+.mdpSearchSummary p.centertext {
+  font-size:1.1em;
+}
+
+
+#mdpTextEmpty
+{
+  font-size: 1.2em;
+  margin-top: 1em;
+  margin-left: 5px;
+  padding-top: 5em;
+  border: 1px solid #000000;
+  color: #000000;
+  text-align: center;
+  background-color: #FFFFFF;
+  width: 32em;
+  height: 38em;
+}
+
+#mdpTextMissingPage 
+{
+  font-size: 1.2em;
+  margin-top: 1em;
+  margin-left: 5px;
+  padding-top: 5em;
+  border: 1px solid #000000;
+  color: #000000;
+  text-align: center;
+  background-color: #FFFFFF;
+  width: 32em;
+  height: 38em;
+}
+
+.mdpTMPhead
+{
+  font-weight: bold;
+  font-family: monospace, sans-serif;
+  font-size: 2em;
+}
+
+.mdpTMPtext
+{
+  font-weight: normal;
+  font-family: Times, serif;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/*             Restricted access pages           */
+
+
+#mdpTextDeny {
+  *zoom: 1;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1em;
+  text-align: left;
+  font-weight: normal;
+  font-size: 1.3em;  
+  border: 1px solid #999;
+  line-height:normal;
+}
+
+#mdpTextDeny:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#mdpTextDeny * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+#mdpTextDeny header, #mdpTextDeny footer {
+  clear: both;
+}
+
+#mdpTextDeny .no_access_text {
+  clear: both;
+}
+
+#mdpTextDeny .special_text {
+  background: #eee;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+#mdpTextDeny .no_access_search {
+  width: 66.10169%;
+  float: left;
+  margin-right: 1.69492%;
+  display: inline;
+  border-right: 2px solid #cccccc;
+}
+
+#mdpTextDeny .no_access_options {
+  width: 32.20339%;
+  float: right;
+  margin-right: 0;
+  #margin-left: -1em;
+  display: inline;
+}
+
+#mdpTextDeny form {
+  display: block;
+  margin-bottom: 1em;
+}
+
+#mdpTextDeny label#in_use {
+  display: block;
+  margin-bottom: -0.6em;
+}
+
+#mdpTextDeny label#in_copyright {
+  font-weight: bold;
+  display: block;
+}
+
+#mdpTextDeny .no_access_search_help_eg {
+  float: right;
+  padding: 4px;
+  margin: 0 8px 0 30px;
+}
+
+#mdpTextDeny .searchForm {
+  padding-left: 0;
+}
+
+#mdpTextDeny p {
+  padding-bottom: 0.3em;
+}
+
+#mdpTextDeny ul.bullets li {
+  font-size: 100%;
+  font-style: italic;
+  margin: 0;
+}
+
+#mdpTextDeny ul {
+  margin-top: 0!important;
+}
+
+
+/*          Bottom Navigation            */
+
+.mdpControlContainerBottom
+{
+  position: relative;
+  float: left;
+  display: inline;
+  width: 4200px;
+  margin: 0 0 10px -30px;
+  padding: 0;
+  background-color: #d5d5d5;
+}
+
+#BottomNav
+{
+  position: relative; left: 170px;
+  float: left;
+  margin: 0;
+  padding: 0;
+  font: bold 12px Verdana, sans-serif;
+  height: 30px;
+}
+
+#BottomNav ul
+{
+  padding-right: 30px;
+  padding-left: 0;
+  margin: 0;
+}
+
+#BottomNav li
+{
+  list-style: none;
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* Page next & previous  */
+
+.mdpPageLinksBottom
+{
+  position: relative;
+  float: left;
+}
+
+.mdpPageLinksBottom ul
+{
+  list-style-type: none;
+  position: relative; top: 2px;
+  float: left;
+  padding: 0;
+}
+
+
+
+.mdpPageLinksBottom ul li
+{
+  padding-right: 4px;
+}
+
+.mdpPageLinksBottom ul li a img
+{
+  border: 0px;
+  height: 25px;
+  width: 25px;
+  background-color: #000;
+}
+
+.mdpPageLinksBottom ul li a img:hover
+{
+  background-color: #ef7a06;
+}
+
+/* GO TO PAGE  */
+
+.mdpPageXofYBottom
+{
+  position: relative;  top:3px;
+  float: left;
+}
+
+.mdpPageXofYBottom input
+{
+  position: relative;
+}
+
+.mdpPageXofYBottom ul
+{
+  list-style-type: none;
+  position: relative;  
+  float: left;
+  padding: 0;
+}
+
+
+.mdpPageXofYBottom input.mdpPageNumberInputBox
+{
+  width: 3em;
+  text-align: right;
+}
+
+
+
+/* RESIZE */
+
+.mdpItemResizeBottom
+{
+  position: relative;
+  float: left;
+}
+
+.mdpItemResizeBottom ul
+{
+  list-style-type: none;
+  position: relative; top: 3px;  
+  float: left;
+  padding: 0;
+}
+
+.mdpItemResizeBottom ul li
+{
+  float: left;
+}
+
+
+
+/*  ROTATE  */
+
+.mdpItemRotateBottom
+{
+  position: relative;
+  float: left;
+}
+
+.mdpItemRotateBottom ul
+{
+  list-style-type: none;
+  position: relative; top: 3px;  
+  float: left;
+	padding: 0;
+}
+
+.mdpItemRotateBottom ul li
+{
+  float: left;
+  padding-right: 6px;
+}
+
+.mdpItemRotateBottom ul li a img
+{
+  height: 25px;
+  width: 25px;
+  border: 0;
+  background-color: #000;
+  margin-right: 3px;
+}
+
+.mdpItemRotateBottom ul li a img:hover
+{
+  background-color: #7e7e7e;
+}
+
+
+/* Styles for add item to collection module */
+
+#PTbacknav {
+  margin: 5pt 0pt 5px 0px;
+  width: 145px;
+  font-size: .9em;
+}
+
+#PTcollection, #PTcollectionUnavail {
+  border: 1px solid #e2e2e2;
+  padding: 3px 5px 0 5px;
+  overflow: hidden;
+	_width: 12em;
+}
+
+
+
+#PTcollection ul {
+  list-style: none;
+  padding: 10px 0 0 0;
+  margin: 0;
+}
+
+#PTcollection ul li
+{
+  padding: 0 0 8px 0;
+  line-height: 12px;
+  font-size: .9em;
+}
+
+.PTcollectionlabel
+{
+  font-weight: normal;
+  margin: 0;
+  font-size: 1em;
+  position: relative; 
+  }
+
+.ptSelectBox {
+  border-top: 1px dashed #BBB;
+  /*border-bottom: 1px dashed #BBB;*/
+  padding: 6px 1px;
+}
+
+.PTerror 
+{
+  background:#FEEEEE url(./graphics/icon_x.gif) no-repeat scroll 15px 50%;
+  border:1px solid #FF4040;
+  color:#000000;
+  margin:10px 0pt 0px 10px;
+  padding:5px 5px 5px 50px;
+  width:50em;
+  }
+
+.PTloginLinkText
+{ 
+  font-weight: bold;
+}
+
+/*Same as yui default style for panels but without borders */
+.yui-skin-sam .yui-panel .bd 
+{
+  border-color:#808080;
+  border-style:solid;
+  border-width:0pt 0px;
+  margin:0pt -1px;
+  }
+
+select.mdpColSelectMenu 
+{
+    width: 14em;
+}
+
+.solr_highlight_1 {
+  background: #ffff00;
+}
+.solr_highlight_2 {
+  background: #00ff00;
+}
+.solr_highlight_3 {
+  background: #ff9900;
+}
+.solr_highlight_4 {
+  background: #00ffcc;
+}
+.solr_highlight_5 {
+  background: #00cccc;
+}
+.solr_highlight_6 {
+  background: #0099cc;
+}

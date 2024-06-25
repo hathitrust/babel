@@ -1,0 +1,230 @@
+/* MDP Pageturner CSS - pageviewer module - feedback */
+
+/* 
+   Copyright 2006, The Regents of The University of Michigan, All Rights Reserved
+   
+   Permission is hereby granted, free of charge, to any person obtaining
+   a copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject
+   to the following conditions:
+   
+   The above copyright notice and this permission notice shall be
+   included in all copies or substantial portions of the Software.
+   
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+   */
+
+
+#mdpFeedbackForm
+{ 
+  text-align: left;
+  background-color: #e6e6e6;
+  /*margin-left: 80px;*/
+  /*width: 42em;*/
+  padding-left: 1.5em;
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+  border-top: solid 2px #cccccc;
+  border-left: solid 1px #cccccc;
+  border-right: solid 1px #cccccc;
+  border-bottom: solid 1px #cccccc;
+  display: none;
+}
+
+#mdpFeedbackForm .row {
+  margin-bottom: 1.5em;
+}
+
+#mdpFbTitle
+{ 
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 0.5em;
+}
+
+#mdpFBFlink
+{ 
+  font-weight: bold;
+  color: #0000ff;
+  cursor: pointer;
+}
+
+#mdpFBFlink img
+{
+  border: 0px;
+  margin-right: 5px;
+}
+
+
+#mdpFBFlink:hover
+{ 
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#mdpFBFlink:active
+{ 
+  color: #ff0000;
+}
+
+#FeedbackLabel
+{
+  font-size: 1.5em;
+  padding-top: 50px;
+}
+
+#SurveyLink
+{ 
+  display: none;
+  clear: left;
+  margin-left: 80px;
+  margin-bottom: 0.5em;
+  margin-top: 1.5em;
+  font-weight: bold;
+  color: #34457d;
+}
+
+#SurveyLink img
+{
+  margin-right: 3px;
+}
+
+#SurveyLink a
+{
+  font-weight: bold;
+  color: blue;
+  text-decoration: none;
+}
+
+#mdpFBFlinkDiv
+{ 
+  clear: left;
+  margin-left: 80px;
+  margin-bottom: 0.5em;
+  margin-top: 1.0em;
+}
+
+.mdpFbSubtitle
+{
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+.mdpFbSubSubtitle
+{
+  font-weight: normal;
+  padding-left: 1.3em;
+  padding-right: 0.5em;
+}
+
+.mdpFbSubSubtitle span
+{
+  margin-left: 0.5em;
+}
+
+.mdpFbSubSubtitle span input
+{
+  width: 25em;
+}
+
+#mdpFeedbackForm textarea
+{
+  /*margin-left: 1.3em;*/
+  /*width: 30em;*/
+  width: 98%;
+  height: 3em;
+}
+
+#mdpFeedbackForm label
+{
+  cursor: pointer;
+}
+
+#mdpEmail
+{ 
+  margin-top: 0.3em;
+}
+
+label#mdpEmailLabel
+{
+  font-style: italic;
+}
+
+#mdpCommentsLabel, #mdpEmailLabel {
+  display: block;
+}
+
+input#email
+{ 
+}
+
+#mdpFBinputbutton
+{ 
+  margin-top: 1em;
+}
+
+#emptyFBError {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.mdpFBbuttons {
+  float: right;
+  text-align: right;
+}
+
+.mdpFBbuttons input {
+  margin-right: 2em;
+}
+
+/* Feedback received page */
+
+#mdpFBRContainer
+{ 
+  text-align: left;
+  background-color: #dcf6db;
+  margin-left: 80px;
+  width: 42em;
+  padding-left: 1.5em;
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+  border-top: solid 2px #bad4bc;
+  border-left: solid 1px #bad4bc;
+  border-right: solid 1px #bad4bc;
+  border-bottom: solid 1px #bad4bc;
+}
+
+.mdpFBRtext_1
+{
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+.mdpFBRtext_1_2
+{ 
+  margin-bottom: 1em;
+}
+
+#mdpFBtools:before,
+#mdpFBtools:after {
+    content:"";
+    display:table;
+}
+
+#mdpFBtools:after {
+    clear:both;
+}
+
+/* For IE 6/7 (trigger hasLayout) */
+.mdpFBtools {
+    zoom:1;
+}

@@ -1,0 +1,19 @@
+
+<!-- mbooks_globals.xml -->
+
+<MBooksGlobals>
+  <CurrentCgi><?CGI_GLOBALS?></CurrentCgi>
+  <LoggedIn><?LOGGED_IN?></LoggedIn>
+  <LoggedInJs><?LOGGED_IN_JS?></LoggedInJs>
+  <SessionId><?SESSION_ID?></SessionId>
+  <Debug><?DEBUG_SWITCH?></Debug>
+  <DebugMessages><?DEBUG_MESSAGES?></DebugMessages>
+  <LangMap><?CHUNK filename="langmap.xml"?></LangMap>
+  <EnvHT_DEV><?ENV_VAR variable="HT_DEV"?></EnvHT_DEV>
+  <EnvSDRINST><?ENV_VAR variable="SDRINST"?></EnvSDRINST>
+  <EnvUSER_AGENT><?ENV_VAR variable="HTTP_USER_AGENT"?></EnvUSER_AGENT>
+  <InLibrary><?IN_LIBRARY?></InLibrary>
+  <InstitutionName><?INSTITUTION_NAME?></InstitutionName>
+  <InstitutionCode><?INSTITUTION_CODE?></InstitutionCode>
+</MBooksGlobals>
+<ApplicationAssets slot="common"><?COMMON_ASSETS?></ApplicationAssets>
