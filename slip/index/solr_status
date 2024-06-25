@@ -1,0 +1,176 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "uri"
+require "time"
+require "json"
+require "net/http"
+
+module Solr
+  class Status
+    class Error < StandardError
+    end
+
+    attr_reader :url
+
+    SECONDS_PER_DAY = 60 * 60 * 24
+    # Your code goes here...
+
+    def initialize(port_or_url, timeout: 2)
+      @url = construct_base_url(port_or_url)
+      @timeout = timeout
+    end
+
+    def construct_base_url(str)
+      uri_str = begin
+                  "http://localhost:#{Integer(str)}"
+                rescue ArgumentError
+                  str
+                end
+      uri = URI(uri_str)
+      uri.class.build(host: uri.host, port: uri.port).to_s
+    end
+
+    # def connection(adapter: :httpx)
+    #   @connection ||= Faraday.new(@url, request: {timeout: @timeout}) do |builder|
+    #     builder.use Faraday::Response::RaiseError
+    #     builder.request :url_encoded
+    #     builder.response :json
+    #     builder.adapter :httpx
+    #   end
+    # end
+
+    # def get(url, args = {})
+    #   connection.get(url, default_args.merge(args)).body
+    # end
+    #
+    def argstring(args = {})
+      default_args.merge(args).to_a.map { |k, v| "#{k}=#{URI.encode_www_form_component(v)}" }.join("&")
+    end
+
+    def get_resp(path, args = {})
+      uri = URI(@url)
+      resp = Net::HTTP.start(uri.host, uri.port, open_timeout: 2, read_timeout: 2) do |http|
+        http.get(URI(@url).merge("#{path}?#{argstring(args)}"))
+      end
+    end
+
+    def get(path, args = {})
+      JSON.parse(get_resp(path, args).body)
+    end
+
+    # def ping?
+    #   connection.get.status == 302
+    # rescue Faraday::ResourceNotFound
+    #   false
+    # end
+
+    def default_args
+      {wt: "json"}
+    end
+
+    def core_data
+      get("solr/admin/cores")["status"].select { |k, v| v.has_key?("index") }
+    end
+
+    def time_since_last_index_change_for_core(core_name)
+      ((DateTime.now - DateTime.parse(core_data[core_name]["index"]["lastModified"])) * SECONDS_PER_DAY).to_i
+    end
+
+    def time_since_last_index_change
+      core_data.keys.map { |c| time_since_last_index_change_for_core(c) }.min
+    end
+
+    def working?(seconds: 60)
+      time_since_last_index_change < seconds
+    end
+
+    def self.seconds_to_text(secs)
+      minute = 60
+      hour = minute * 60
+      day = hour * 24
+
+      case secs
+      when 0..120
+        "#{minage} seconds"
+      when 121..hour
+        "about #{"%.0f" % [secs.to_f / minute]} minutes"
+      when hour..day
+        "about #{"%.1f" % [secs.to_f / hour]} hours"
+      else
+        "about #{"%.1f" % [secs.to_f / day]} days"
+      end
+    end
+
+    def seconds_to_text(secs)
+      self.class.seconds_to_text(secs)
+    end
+
+    def human_age(core_name)
+      seconds_to_text(last_activity(core_name))
+    end
+
+  end
+end
+
+if __FILE__ == $0
+
+  def usage
+    name = $0.split("/").last
+    $stderr.puts <<~USAGE
+      #{name} -- find out when a solr was last busy
+        
+      #{name} <url_or_port_number> <optional_seconds>
+
+      where
+         - <url_or_port_number> is
+           * "indexers" to mean all the HT indexing cores on beeftea-1/2
+           * "catalog" to mean the indexing catalog on beeftea-2
+           * a full url to the solr
+           * or just a port number for localhost
+         - <optional_seconds> is the number of seconds without a change to the index for it to be 
+           considered "RESTING" as opposed to "BUSY"
+
+      Possible output:
+         WORKING (about <time> since last index change)
+         RESTING (about <time> since last index change)
+         ERROR (<error message>)
+
+    USAGE
+  end
+
+  if ARGV.empty?
+    usage
+    exit 1
+  end
+
+  begin
+    target = ARGV.shift
+    minage = case target
+             when "indexers"
+               %w[1 7].map{|m| "http://solr-sdr-build-#{m}:8091"}
+                                      .map{|u| Solr::Status.new(u)}
+                                      .map{|s| s.time_since_last_index_change}
+                                      .min
+             when "catalog"
+               Solr::Status.new("http://solr-sdr-catalog:9033").time_since_last_index_change
+             else
+               Solr::Status.new(target).time_since_last_index_change
+             end
+    max_seconds = if ARGV.empty?
+                    20
+                  else
+                    Integer(ARGV.shift)
+                  end
+    tm = Solr::Status.seconds_to_text(minage)
+    if minage < max_seconds
+      puts "BUSY (#{tm} since last index change)"
+    else
+      puts "RESTING (#{tm} since last index change)"
+    end
+  rescue Net::OpenTimeout
+    puts "ERROR (timeout trying to open '#{target}')"
+  rescue => e
+    puts "ERROR (#{e})"
+  end
+end
