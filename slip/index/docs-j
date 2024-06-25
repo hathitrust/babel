@@ -1,0 +1,278 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+docs-j
+
+=head1 USAGE
+
+% docs-j -r run -F filename-of-ids
+
+=head1 DESCRIPTION
+
+Read a list of IDs from `filename' and build the corresponding Solr
+docs.  It only needs run to read the database config.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+use open qw/:std :utf8/;
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use Getopt::Std;
+use Time::HiRes qw( time );
+
+# App
+use Context;
+use ObjFactory;
+use Search::Constants;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Load;
+
+# Lib
+use Document::Generator;
+use Document::Reporter;
+
+our ($opt_r, $opt_F, $opt_d, $opt_I);
+
+my $ops = getopts('r:F:d:I:');
+
+# Required: run
+my $RUN;
+if (defined($opt_r)) {
+    $RUN = $opt_r;
+}
+else {
+    my $s = d_get_usage();
+    print $s;
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+# Required: filename
+my $ID_FILENAME;
+my $ID;
+
+if (defined($opt_F)) {
+    $ID_FILENAME = $opt_F;
+}
+else {
+    $ID = $opt_I;
+    if (! $ID) {
+        my $s = d_get_usage();
+        print $s;
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+}
+
+
+if (defined($opt_d)) {
+    unless ( grep(/0|1|2|3/, ($opt_d)) ) {
+        my $s = d_get_usage();
+        __output($s);
+        exit $SLIP_Utils::States::RC_BAD_ARGS;
+    }
+    my $switches;
+    if ($opt_d == 3) {
+        $switches = 'all,vufind,lsdb,idx,doc,me';
+    }
+    elsif ($opt_d == 2) {
+        $switches = 'vufind,lsdb,idx,doc,me';
+    }
+    elsif ($opt_d == 1) {
+        $switches = 'lsdb,idx,doc,me';
+    }
+    else {
+        $switches = 'me';
+    }
+    $ENV{'DEBUG'} .= qq{,$switches};
+}
+$ENV{'DEBUG'} .= ',doconly';
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $db = new Database('ht_maintenance');
+$C->set_object('Database', $db);
+
+# Flush i/o
+$| = 1;
+
+my $id_arr_ref;
+if ($ID_FILENAME) {
+    $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $ID_FILENAME);
+    print scalar(@$id_arr_ref) . qq{ ids loaded from $ID_FILENAME\n};
+}
+else {
+    $id_arr_ref = [$ID];
+}
+
+foreach my $id (@$id_arr_ref) {
+
+    my $start = time;
+    my $generator;
+    eval {
+        $generator = Document::Generator->new($C, $id);
+        $generator->G_generate($C);
+        $generator->G_release;
+    };
+    if ($@) {
+        if (ref $generator eq 'Document::Generator') {
+            $generator->G_events($@);
+        }
+        else {
+            print "Generator[fail]: $@\n";
+            exit 1;
+        }
+    }
+
+    my $events = $generator->G_events;
+    if ($events) {
+        print "Generator[fail]: $events\n";
+        exit 1;
+    }
+
+    report( sprintf("Generator: elapsed=%f sec.", time-$start),  1, 'doc' );
+    print d_report_doc($C, $RUN, $id, $generator->G_stats) . "\n";
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item d_report_doc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub d_report_doc {
+    my ($C, $run, $id, $stats_ref) = @_;
+
+    # DOC d_t = sec, d_kb = Kb, d_kbs = Kb/sec
+    my $d_t   = $stats_ref->{create}{elapsed};
+    my $d_k   = $stats_ref->{create}{doc_size}/1024;
+    my $d_kbs = ($d_t > 0) ? $d_k/$d_t : 0;
+
+    my $buf = sprintf(qq{ d_k=%.1f d_t=%.2f d_kbs=%.2f}, $d_k, $d_t, $d_kbs);
+
+    my $s = qq{DOC: } . Utils::Time::iso_Time() . qq{ r=$run id=$id} . $buf;
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+    return $s;
+}
+
+# ---------------------------------------------------------------------
+
+=item d__load_ids_from_file
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub d__load_ids_from_file {
+    my $filename = shift;
+
+    my @arr;
+    my $ok;
+    eval {
+        $ok = open(IDS, $filename);
+    };
+    if ($@) {
+        print qq{i/o ERROR:($@) reading file="$filename" ... exit\n};
+        exit 1;
+    }
+
+    if (! $ok) {
+        print qq{could not open file="$filename" ... exit\n};
+        exit 1;
+    }
+
+    while (my $id = <IDS>) {
+        chomp($id);
+        push(@arr, $id)
+            if($id);
+    }
+    close (IDS);
+
+    return \@arr;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item d_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub d_get_usage {
+    my $s = qq{Usage: doc-j -r run(any)-d{0,1,2} -F filename-of-ids | -I<id>\n\t\tWrites results to, e.g., "SDRROOT/logs/tmp/mdp.39015015394847-30428.solr.xml"\n    -d sets the debug level
+                      where 0=default
+                            1=add database,indexing,doc-create
+                            2=add vufind response\n\n};
+    return $s;
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

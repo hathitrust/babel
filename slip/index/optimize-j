@@ -1,0 +1,599 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+optimize-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Optimize a given shard or all shards. With -S1 (default, optional) a
+multi-stage optimize that is a function of the number of segments
+broken down by powers of 2. Staging not supported when optimizing all
+shards.
+
+Timeout is forced to ∞, i.e. -t is ignored. With optional, -O n param
+optimize down to that number of segments either staged or not. If not
+staged, timeout may be specified.
+
+As long as optimize-j runs from cron on the machine (shotz-)* running
+Solr it does not need to honor STOPSLIP once it is executing because
+the machine would not be taken out of service while Solr is
+optimizing. It will exit before it sends an optimize command to Solr
+however, if STOPSLIP is set, which is OK because it is re-tried from
+cron every minute and runs if enabled.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Semaphore;
+
+# Local
+use Db;
+use Scheduler;
+use SLIP_Utils::Common;
+use SLIP_Utils::Solr;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot optimize. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+# Flush i/o
+$| = 1;
+
+sub opt_get_usage {
+    my $s .= qq{Usage: optimize-j -r run [-R shard [-S0 | -S1]] -On [-d][-n][-T]
+       where -S0 is non-staged (default), -S1 is staged
+             -On optimizes to n segments. If -S1, then in powers of 2 down to n={1,2,4,...} segments
+             -n runs without calling optimize\n};
+    return $s;
+}
+
+our ($opt_r, $opt_R, $opt_S, $opt_d, $opt_O, $opt_n, $opt_T);
+
+my $ops = getopts('r:R:dS:O:nT');
+
+use constant LARGE_TIMEOUT => 172800; # 48 hours
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+my $NOOP = $opt_n; # optional
+my $RUN = $opt_r; # Required
+unless ($RUN) {
+    my $s = qq{run (-r) parameter missing\n} . opt_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
+
+my $LIMIT_SEGS = $opt_O; # Required
+unless (defined($LIMIT_SEGS)) {
+    my $s = qq{limit_segs (-O) param missing\n} . opt_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,idx,doc,me';
+}
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{optimize-j run=$RUN});
+
+my $SHARD = $opt_R || 0; # Optional
+my $STAGED = $opt_S || 0; # Optional
+if ($STAGED) {
+    unless ($SHARD) {
+        my $s = qq{shard (-R) parameter missing: required for staging support\n} . opt_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+        exit $rc;
+    }
+}
+
+my @SHARDS = (defined($SHARD) && ($SHARD > 0)) ? ($SHARD) : $C->get_object('MdpConfig')->get('num_shards_list');
+my $SINGLE_SHARD = (scalar(@SHARDS) == 1);
+
+if ($INTERACTIVE) {
+    my $s;
+    unless ($SINGLE_SHARD) {
+        $s = qq{OK to optimize ALL shards run=$RUN limit segments=$LIMIT_SEGS shards=(} . join(' ', @SHARDS) . q{)? [N] };
+        __confirm($s);
+    }
+}
+
+# Do not try to optimize this shard or repeat all_shards optimization
+# while I am running already
+my $lock_str = "run-" . $RUN . "-shard-" . $SHARD;
+my $Lock_File = Sl_Utils::slip_semaphore_file("optimize-" . $lock_str);
+my $Semaphore = new Semaphore($Lock_File);
+unless ($Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
+    exit 0;
+}
+
+END {
+    $Semaphore->unlock()
+      if ($Semaphore);
+}
+
+foreach my $__shard (@SHARDS) {
+    my $HOST = SLIP_Utils::Common::Solr_host_from_shard($C, $__shard);
+    my $optimize_enabled =
+      (
+       $NOOP
+       ||
+       $INTERACTIVE
+       ||
+       Db::Select_optimize_enabled($C, $DBH, $RUN, $__shard)
+      );
+
+    # Adjust $LIMIT_SEGS for full optimize?
+    if ($optimize_enabled) {
+        # Optimize to determine size of second shard to test for
+        # full optimize.
+        my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS\n";
+        __output($s);
+        error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
+                       c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
+
+        # If running against just one shard
+        if ($SINGLE_SHARD) {
+            if ( do_FULL_optimize($C, $DBH, $RUN, $__shard, $HOST, $LIMIT_SEGS) ) {
+                $LIMIT_SEGS = 1;
+                my $s = "optimize-j: OPTIMIZE shard=$__shard staged=$STAGED limit_to_segments=$LIMIT_SEGS (FULL)\n";
+                __output($s);
+                error_check_rc($C, $DBH, $RUN, $__shard, $HOST,
+                               c_optimize($C, $RUN, $DBH, $__shard, $STAGED, $LIMIT_SEGS));
+            }
+        }
+        my $state = set_optimize_status($C, $DBH, $RUN, $__shard);
+        optimize_report($C, $RUN, $__shard, $HOST, $state, 0);
+    }
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+
+# ---------------------------------------------------------------------
+
+=item do_FULL_optimize
+
+We want to spread full optimization over many days unless all second
+segments have become very large because of a large indexing run. Apply
+the criterion for "very large" so all shards will be optimized. The
+assumption is that if a given shard meets the test, all shards will
+probably meet the test.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub do_FULL_optimize {
+    my ($C, $dbh, $run, $shard, $host, $limit_segs) = @_;
+
+    unless(Scheduler::full_optimize_supported($C)) {
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
+    # If limit is already == 1 the first optimization already did the
+    # work.  Nothing to do here.
+    if ($limit_segs == 1) {
+        return 0;
+    }
+    # POSSIBLY NOTREACHED
+
+    my $do = 0;
+
+    eval {
+        # Is the second segment large enough for this shard to be
+        # selected for optimization to one segment?
+        my ($try, $snd_segment_size) = Scheduler::optimize_try_full_optimize($C, $run, $shard);
+        if ($try) {
+            my $max = Scheduler::get_max_full_optimizing_shards($C, $dbh, $run, $snd_segment_size);
+            if (Db::optimize_select_shard($C, $dbh, $run, $shard, $max)) {
+                # Leave shard selected so only max shards do full
+                # optimization. driver-j will reset.
+                $do = 1;
+            }
+        }
+
+        my $now = Utils::Time::iso_Time();
+        my $sizes = Scheduler::get_segsizes($C, $run, $shard);
+        my $msg = qq{sizes=$sizes do full optimize=} . ($do ? 'SELECTED[shard=$shard]' : 'NO') . qq{ at $now};
+        Log_optimize($C, $run, $shard, $msg);
+    };
+    if ($@) {
+        Log_optimize_error($C, $run, $shard, "Problem determining full optimize: $@");
+        error_check_rc($C, $dbh, $run, $shard, $host, $SLIP_Utils::States::RC_BAD_SCHED);
+    }
+
+    return $do;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item optimize_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub optimize_report {
+    my ($C, $run, $shard, $host, $state, $rc) = @_;
+
+    # Report
+    my $segment_sizes = Scheduler::get_segsizes($C, $run);
+    my $self_size = Scheduler::get_segsizes($C, $run, $shard);
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc)
+      . qq{ run=$run shard=$shard host=$host}
+        . qq{ [stop][self] State=$state}
+          . qq{ self_size=$self_size summed_sizes=$segment_sizes};
+    __output(qq{$s\n});
+    __non_interactive_err_output($rc, $s);
+
+    if ($rc > 0) {
+        Log_optimize_error($C, $run, $shard, $s);
+    }
+    else {
+        Log_optimize($C, $run, $shard, $s);
+    }
+}
+
+
+  # ---------------------------------------------------------------------
+
+=item error_check_rc
+
+Description
+
+=cut
+
+  # ---------------------------------------------------------------------
+sub error_check_rc {
+    my ($C, $dbh, $run, $shard, $host, $rc) = @_;
+
+    if ($rc > 0) {
+        my $state = $SLIP_Utils::States::Sht_Optimize_Error;
+
+        # Set terminal state
+        Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
+        # Self-stop.
+        Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
+
+        optimize_report($C, $run, $shard, $host, $state, $rc);
+
+        exit $rc;
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item set_optimize_status
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub set_optimize_status {
+    my ($C, $dbh, $run, $shard) = @_;
+
+    # Set shard state to 'done'
+    my $state = $SLIP_Utils::States::Sht_Optimized;
+
+    # Record the time this successful optimize
+    Db::set_shard_optimize_done($C, $dbh, $run, $shard);
+
+    # Set terminal state
+    Db::set_shard_optimize_state($C, $dbh, $run, $shard, $state);
+
+    # Self-stop.  driver-j also disables optimize-j as extra measure.
+    Db::set_optimize_enabled($C, $dbh, $run, $shard, 0);
+
+    return $state;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item get_segment_list
+
+Examples of staged list:
+
+17 gives 16, 8, 4, 2, 1
+
+1 gives an empty array which we coerce to (1)
+
+2 gives 1
+
+4 or 5 gives 2, 1
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_segment_list {
+    my $C = shift;
+    my ($shard, $staged, $limit_segs) = @_;
+
+    my $rc = 0;
+
+    my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_' . $shard);
+    my $num_segments = `ls $index_dir/*.fdt 2> /dev/null | wc -l 2> /dev/null`;
+    chomp($num_segments);
+    my $orig_num_segments = $num_segments;
+
+    my @segments_arr;
+
+    # If dir does not exist, etc.
+    if ($orig_num_segments < 1) {
+        $rc = $SLIP_Utils::States::RC_NO_INDEX_DIR;
+    }
+    else {
+        if ($staged) {
+            while ($num_segments-1 > 0) {
+                push(@segments_arr, $num_segments = 2**int(log($num_segments-1)/log(2)));
+            }
+            @segments_arr = (1) if (scalar(@segments_arr) == 0);
+        }
+        else {
+            @segments_arr = ($limit_segs);
+        }
+    }
+
+    return ($rc, $orig_num_segments, \@segments_arr);
+}
+
+# ---------------------------------------------------------------------
+
+=item __commit_pre_optimize
+
+Flush in-memory segments.  Trying to make sure Solr 4.x optimizes all
+segments.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __commit_pre_optimize {
+    my ($C, $shard, $indexer, $stats_ref) = @_;
+
+    my $rc = 0;
+
+    my $success_str = '';
+    my $index_state;
+    if ($NOOP) {
+        ($index_state, $stats_ref->{commit}{elapsed}) = (IX_INDEXED, 0);
+    }
+    else {
+        ($index_state, $stats_ref) = $indexer->commit_updates($C);
+    }
+    my $elapsed = $$stats_ref{commit}{elapsed};
+
+    my $e = sprintf(qq{%.3f}, $elapsed);
+    unless (Search::Constants::indexing_failed($index_state)) {
+        $success_str = SLIP_Utils::Common::IXconstant2string(IX_INDEXED);
+    }
+    else {
+        $success_str = SLIP_Utils::Common::IXconstant2string($index_state);
+        $rc = $SLIP_Utils::States::RC_SOLR_ERROR;
+    }
+
+    my $s = qq{[pre-COMMIT]: run=$RUN index_state=$success_str elapsed=$e};
+    Log_optimize($C, $RUN, $shard, $s);
+    __output("$s\n");
+    __non_interactive_err_output($rc, $s);
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_optimize
+
+Staged optimize: get number of segments, round down to nearest power of
+2. That becomes the maxSegments.  Then decrease maxSegments by powers of 2
+down to one segment.
+
+If an index is already 1 segment, this will optimize to one segment which
+is a degenerate case that is just a commit.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_optimize {
+    my ($C, $run, $dbh, $shard, $staged, $limit_segs) = @_;
+
+    my $s = '';
+    my $timeout = LARGE_TIMEOUT;
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, $timeout);
+
+    my ($rc, $num_orig_segments, $segments_ref) =
+        get_segment_list($C, $shard, $staged, $limit_segs);
+
+    if ($rc == 0) {
+        my $total_elapsed;
+        my $success_str;
+        my ($index_state, $stats_ref) = (IX_INDEXED, {});
+
+        my $rc = __commit_pre_optimize($C, $shard, $indexer, $stats_ref);
+
+        if ($rc == 0) {
+            foreach my $this_stage_segments (@$segments_ref) {
+                # Only optimize down to $limit_segs segments unless
+                # there is only one segment to start with. In that
+                # case, do the optimize (which will degenerate to a
+                # simple commit).
+                if ($this_stage_segments < $limit_segs) {
+                    last
+                      unless ($num_orig_segments == 1);
+                }
+
+                # Optimize
+                if ($NOOP) {
+                    ($index_state, $stats_ref->{optimize}{elapsed}) = (IX_INDEXED, 0);
+                }
+                else {
+                    ($index_state, $stats_ref) = $indexer->optimize($C, $this_stage_segments);
+                }
+                my $segs = " limit_to_segments=$limit_segs";
+                $s = qq{OPTIMIZE: [start] run=$RUN shard=$shard staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
+                __output("$s\n");
+                Log_optimize($C, $run, $shard, $s);
+
+                my $elapsed = $stats_ref->{optimize}{elapsed};
+                $total_elapsed += $elapsed;
+
+                unless (Search::Constants::indexing_failed($index_state)) {
+                    $success_str = SLIP_Utils::Common::IXconstant2string(IX_INDEXED);
+                }
+                else {
+                    $success_str = SLIP_Utils::Common::IXconstant2string($index_state);
+                    $rc = $SLIP_Utils::States::RC_SOLR_ERROR;
+                }
+
+                my $e = sprintf(qq{elapsed=%.3f total=%.3f}, $elapsed, $total_elapsed);
+                $s = qq{OPTIMIZE: [done] run=$RUN shard=$shard index_state=$success_str $e staged=$staged orig_segments=$num_orig_segments this_stage_segments=$this_stage_segments $segs};
+                Log_optimize($C, $run, $shard, $s);
+                __output("$s\n");
+                __non_interactive_err_output($rc, $s);
+
+                last if ($rc > 0);
+            }
+        }
+    }
+
+    return $rc;
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_optimize
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_optimize {
+    my ($C, $run, $shard, $s) = @_;
+
+    my $s0 = qq{***OPTIMIZE: } . Utils::Time::iso_Time() . qq{ shard=$shard $s};
+    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_optimize_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_optimize_error {
+    my ($C, $run, $shard, $error) = @_;
+
+    my $s = qq{***OPTIMIZE [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run shard=$shard $error};
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2009-10 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+

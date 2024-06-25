@@ -1,0 +1,613 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+enqueuer-j
+
+=head1 USAGE
+
+% enqueuer-j -r run
+
+=head1 DESCRIPTION
+
+enqueuer-j reads the timestamp [set from MAX(slip_rights.insert_time)]
+recorded in slip_rights_timestamp when it last did work. If there are
+ids in slip_rights newer than that time, it inserts those ids into the
+queue to be processed by the given run.  Producers (index-j) read and
+dequeue from the queue.
+
+The enqueuer-j runs independently of the other scripts, i.e. if index-j
+is disabled, enqueuer-j still runs, unless it itself is disabled.
+
+See also the POD in the rights-j script.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+
+use strict;
+use warnings;
+umask 0000;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Utils::GlobalSwitch;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Semaphore;
+use SharedQueue;
+use Search::Site;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::Log;
+use SLIP_Utils::Load;
+use SLIP_Utils::DatabaseWrapper;
+use Db;
+
+use Sl_Utils;
+
+my $INTERACTIVE = $ENV{TERM};
+if ($INTERACTIVE) {
+    if (Utils::GlobalSwitch::cron_jobs_disabled('slip')) {
+        __output("Cannot enqueue. STOPSLIP in place!!\n");
+        exit 0;
+    }
+}
+else {
+    Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip');
+}
+
+
+# ---------------------------------------------------------------------
+
+=item qu_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_get_usage {
+    my $s;
+    $s .= qq{Usage: enqueuer-j -r run [-I itemid | -S | -H | -F <filename>], common: [-n][-d] };
+    $s .= qq{\n\twhere};
+    $s .= qq{\n\t\t-n Do not queue. Only report what would be queued};
+    $s .= qq{\n\t\t-F enqueue from <filename>};
+    $s .= qq{\n\t\t-S Only operate on shared queue};
+    $s .= qq{\n\t\t-H Only operate on holdings queue};
+    $s .= qq{\n};
+
+    return $s;
+}
+
+our ($opt_d, $opt_r, $opt_F, $opt_n, $opt_S, $opt_H, $opt_I);
+
+my $ops = getopts('dr:F:nSHI:');
+
+# Required
+my $RUN = $opt_r;
+unless ($opt_r) {
+    my $s = qu_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $CHECK = defined($opt_n);
+
+# Enqueue ids from a file or individual id
+my $ID;
+my $ID_FILENAME;
+my $SHARED_ONLY;
+my $HOLDINGS_ONLY;
+
+if (defined($opt_I)) {
+    $ID = $opt_I;
+}
+elsif (defined($opt_F)) {
+    $ID_FILENAME = $opt_F;
+}
+elsif (defined($opt_S)) {
+    $SHARED_ONLY = 1;
+}
+elsif (defined($opt_H)) {
+    $HOLDINGS_ONLY = 1;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= ',lsdb,idx,doc,me';
+}
+
+# Prevent replication errors: enqueue only to one mysqlserv
+if (Search::Site::get_server_site_name() ne 'macc') {
+    unless ($CHECK) {
+        __output("Only runs from MACC unless check mode (-n)\n");
+        exit 0;
+    }
+}
+
+# Do not try to enqueue ids while I am running already
+my $Lock_File = Sl_Utils::slip_semaphore_file("enqueuer-$RUN");
+my $Semaphore = new Semaphore($Lock_File);
+unless ($Semaphore) {
+    __output("Could not get semaphore file: $Lock_File\n");
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'enqueuer-j');
+
+eval {
+    if (qu_enqueuer_enabled($C, $DBH, $RUN) || $INTERACTIVE) {
+        if (defined($ID)) {
+            enqueue_ID($C, $DBH, $RUN);
+        }
+        elsif (defined($ID_FILENAME)) {
+            enqueue_from_FILE($C, $DBH, $RUN);
+        }
+        else {
+            enqueue_from_j_rights($C, $DBH, $RUN) unless ($SHARED_ONLY || $HOLDINGS_ONLY);
+            enqueue_from_shared_queue($C, $DBH, $RUN) unless ($HOLDINGS_ONLY);
+            enqueue_from_holdings_delta($C, $DBH, $RUN) unless ($SHARED_ONLY);
+        }
+    }
+    else {
+        my $s = qq{enqueuer-j not enabled\n};
+        __output($s);
+    }
+};
+if ($@) {
+    my $rc = $SLIP_Utils::States::RC_CRITICAL_ERROR;
+    my $s = qq{CRITICAL ERROR: $@\n};
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item enqueue_ID
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_ID {
+    my ($C, $dbh, $run) = @_;
+
+    my $ref_to_arr_of_ids = [ $ID ];
+
+    my $s;
+    if ($CHECK) {
+        $s = qq{Check mode: zero (0) items inserted into main queue};
+        qu_Log_misc($C, $run, $s);
+        __output("$s\n");
+    }
+    else {
+        __confirm("OK to insert $ID into main queue? [N] ");
+        Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
+        $s = qq{$ID inserted into main queue};
+        qu_Log_misc($C, $run, $s);
+        __output("$s\n");
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_FILE
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_FILE {
+    my ($C, $dbh, $run) = @_;
+
+    my $ref_to_arr_of_ids = SLIP_Utils::Load::load_ids_from_file($C, $ID_FILENAME);
+    my $num_loaded = scalar(@$ref_to_arr_of_ids);
+
+    my $s;
+    if ($num_loaded > 0) {
+        $s = qq{loaded $num_loaded items from file=$ID_FILENAME};
+        qu_Log_misc($C, $run, $s);
+        __output("$s\n");
+
+        if ($CHECK) {
+            $s = qq{Check mode: zero (0) items inserted into main queue};
+            qu_Log_misc($C, $run, $s);
+            __output("$s\n");
+        }
+        else {
+            __confirm("OK to insert these into main queue? [N] ");
+            Db::handle_queue_insert($C, $dbh, $run, $ref_to_arr_of_ids);
+            $s = qq{inserted $num_loaded items from file=$ID_FILENAME into main queue};
+            qu_Log_misc($C, $run, $s);
+            __output("$s\n");
+        }
+    }
+    else {
+        $s = qq{no items to add to queue\n};
+        __output("$s\n");
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_holdings_delta
+
+Enqueue holdings between last_loaded_version and the max_version at
+this point in time.  We load only this slice because, while loading,
+holdings_deltas could have a max_version + 1 inserted. We want to read
+only the IDs between last_loaded_version and the max_version we saw at
+a point in time so last_loaded_version agrees with the IDs we actually
+read.
+
+Further, we want to load only items where max_version's date is older
+that holdings_dates.last_catalog_index_date so that when we query the
+catalog (VuFind Solr) we get the correct holdings for those items.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_holdings_delta {
+    my ($C, $dbh, $run) = @_;
+
+    my $s;
+    my $config = $C->get_object('MdpConfig');
+
+    # The policy is to use run-11 to catch up on holdings updates
+    # rather than trying to do it within the re-indexing run-10.
+    my $production_run = $config->get('distinguished_production_run_number');
+    if ($run ne $production_run) {
+        $s = qq{Skipping possible load of PHDB updated IDs because run=$run is not the production run (run=$production_run)\n};
+        __output($s);
+        qu_Log_misc($C, $run, $s);
+        return;
+    }
+    # POSSIBLY NOTREACHED
+
+    # Get the MAX version (V) from holdings_deltas.version with an
+    # update_date < latest holdings_dates.last_catalog_index_date that has
+    # not already been loaded into the indexing queue, i.e. where V is
+    # < slip_holdings_version.last_loaded_version.
+
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+    my $latest_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $latest_ready_version);
+    my $slice_size = $config->get('holdings_deltas_slice_size');
+
+    my $loading_disabled = Db::holdings_loading_disabled($C, $dbh);
+    my $disabled = $loading_disabled ? 'YES' : 'no';
+
+    if ($holdings_deltas_size > 0) {
+        $s = qq{total size=$holdings_deltas_size in ht_repository.holdings_deltas to add to queue between versions $last_loaded_version and $latest_ready_version loading_disabled=$disabled};
+        __output(qq{$s\n});
+        qu_Log_misc($C, $run, $s);
+        if ($loading_disabled) {
+            $s = qq{Will skip load of PHDB updated holdings: loading is disabled\n};
+            __output($s);
+            qu_Log_misc($C, $run, $s);
+            return;
+        }
+        # POSSIBLY NOTREACHED
+        __confirm("OK to proceed? [N] ") unless ($CHECK);
+    }
+    else {
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas to add to queue for run=$run last_version_enqueued=$last_loaded_version next_catalog_ready_version=none loading_disabled=$loading_disabled};
+        __output(qq{$s\n});
+        qu_Log_misc($C, $run, $s);
+        return;
+    }
+
+    return if ($CHECK);
+
+    my $start = time;
+    my $offset = 0;
+    my $num_items = 0;
+    my $remaining = $holdings_deltas_size;
+    while (1) {
+        my $id_arr_ref = Db::read_holdings_deltas_item_ids($C, $dbh, $last_loaded_version, $latest_ready_version, $slice_size, $offset);
+        last unless (scalar(@$id_arr_ref));
+
+        my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
+
+        $num_items += $num_inserted;
+        $remaining -= $num_inserted;
+        $offset += $slice_size;
+
+        my $total_elapsed = (time - $start);
+        my $total_ids_per_sec = $num_items / $total_elapsed;
+        my @parts = gmtime int(($holdings_deltas_size - $num_items) * (1 / $total_ids_per_sec));
+        my $time_remaining = sprintf("%dh %dm %ds", @parts[2,1,0]);
+
+        my $s0 = sprintf("enqueuer holdings operation totals: added=%d elapsed=%.2f rate=%.2f ids/sec remain=%s offset=%d\n",
+                         $num_items, $total_elapsed, $total_ids_per_sec, $time_remaining, $offset);
+        __output($s0);
+    }
+
+    my $elapsed = (time - $start) || 1;
+    my $ids_per_sec = $num_items / $elapsed;
+
+    if ($num_items > 0) {
+        Db::set_holdings_version($C, $dbh, $run, $latest_ready_version);
+        my $loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+        $s = sprintf("inserted %d items in %.1f sec at %.1f ids/sec from ht_repository.holdings_deltas (last_loaded_version=%d latest_ready_version=%d)",
+                     $num_items, $elapsed, $ids_per_sec, $loaded_version, $latest_ready_version);
+    }
+    else {
+        $s = qq{Zero (0) items in ht_repository.holdings_deltas added to queue (last_loaded_version=$last_loaded_version latest_ready_version=$latest_ready_version)};
+    }
+
+    __output(qq{$s\n});
+    qu_Log_misc($C, $run, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_shared_queue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_shared_queue {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+
+    my $retain = 0;
+    my $production_run = $config->get('run_allowed_to_access_shared_queue');
+    if ($run ne $production_run) {
+        __output(qq{load shared queue IDs but retain them in shared queue because run=$run is not the production run ($production_run)\n});
+        $retain = 1;
+    }
+
+    my $daily_max = $config->get('shared_queue_daily_max_items');
+    my $slice_size = min($config->get('shared_queue_slice_size'), $daily_max);
+
+    my $shared_queue_size = SharedQueue::count_shared_queue_ids($C, $dbh);
+
+    if ($CHECK) {
+        my $s = ($shared_queue_size > 0)
+          ? qq{would load total=$shared_queue_size from shared queue where daily max=$daily_max items }
+            : qq{Zero (0) items in shared queue to add to queue};
+
+        __output(qq{$s\n});
+        return;
+    }
+
+    my $offset = 0;
+    my $num_items = 0;
+    while (1) {
+        my ($ok, $id_arr_ref);
+        if ($retain) {
+            ($ok, $id_arr_ref) = SharedQueue::read_queued_item_ids($C, $dbh, $slice_size, $offset);
+        }
+        else {
+            ($ok, $id_arr_ref) = SharedQueue::dequeue_item_ids($C, $dbh, $slice_size);
+        }
+
+        unless ($ok) {
+            my $s = qq{failed to dequeue or read items from shared queue after inserting $num_items};
+            __output(qq{$s\n});
+            qu_Log_misc($C, $run, $s);
+            last;
+        }
+
+        last unless (scalar(@$id_arr_ref));
+
+        my $num_inserted = Db::handle_queue_insert($C, $dbh, $run, $id_arr_ref);
+        $num_items += $num_inserted;
+        $offset += $slice_size;
+
+        last if ($num_items >= $daily_max);
+    }
+
+    my $s = ($num_items > 0)
+      ? qq{loaded $num_items items from shared queue where daily max=$daily_max}
+        : qq{Zero (0) items in shared queue to add to queue};
+
+    __output(qq{$s\n});
+    qu_Log_misc($C, $run, $s);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item enqueue_from_j_rights
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub enqueue_from_j_rights {
+    my ($C, $dbh, $run) = @_;
+
+    my $before_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    my $would_be_queued = Db::count_insert_latest_into_queue($C, $dbh, $run);
+    my $relation = ($before_timestamp eq $Db::MYSQL_ZERO_TIMESTAMP) ? '>=' : '>';
+    my $out_msg = qq{count=$would_be_queued would be queued for run=$run with slip_rights_timestamp.time $relation $before_timestamp\n};
+
+    if ($CHECK) {
+        __output($out_msg);
+    }
+    else {
+        # Insert items into the queue and mark their status as "available"
+
+        __output($out_msg);
+        if ($would_be_queued > 0) {
+            __confirm("OK to proceed? [N] ");
+        }
+
+        # Get all items from the slip_rights table with insert_time newer
+        # than the timestamp set when enqueuer-j last recorded
+        # MAX(slip_rights.insert_time) and insert them into slip_queue advancing the
+        # timestamp slip_rights_timestamp to MAX(slip_rights.insert_time)
+        my $s0 = qq{Beginning insert into Primary queue. Please wait, this can take a while ...\n};
+        __output($s0);
+        my $num_inserted = Db::insert_latest_into_queue($C, $dbh, $run);
+        my $after_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+
+        if ($num_inserted > 0) {
+            my $s = qq{Primary add $num_inserted items to queue and advanced slip_rights_timestamp.time to $after_timestamp};
+            __output(qq{$s\n});
+            DEBUG('me', qq{DEBUG: $s});
+            qu_Log_work($C, $run, $num_inserted, $before_timestamp, $after_timestamp);
+        }
+        else {
+            my $s = qq{no Primary items to add to queue};
+            __output(qq{$s\n});
+            DEBUG('me', qq{DEBUG: $s});
+            qu_Log_work($C, $run, 0, $before_timestamp, $after_timestamp);
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item qu_enqueuer_enabled
+
+Is enqueuer enabled?
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_enqueuer_enabled {
+    my ($C, $dbh, $run) = @_;
+
+    my $enquerer_enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
+
+    return $enquerer_enabled;
+}
+
+# ---------------------------------------------------------------------
+
+=item qu_Log_work
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_Log_work {
+    my ($C, $run, $num_inserted, $t_before, $t_after) = @_;
+
+    my $f = '';
+    if (defined($ID_FILENAME)) {
+        $f = qq{from file=$ID_FILENAME};
+    }
+
+    my $s = qq{enqueuer-j: added $num_inserted $f items to queue before_timestamp=$t_before after_timestamp=$t_after at: } . Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s, 'indexer_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s, 'enqueuer_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item qu_Log_misc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub qu_Log_misc {
+    my ($C, $run, $s) = @_;
+
+    return if ($CHECK);
+
+    my $s0 = qq{enqueuer-j: $s at: } . Utils::Time::iso_Time();
+    SLIP_Utils::Log::this_string($C, $s0, 'indexer_logfile', '___RUN___', $run);
+    SLIP_Utils::Log::this_string($C, $s0, 'enqueuer_logfile', '___RUN___', $run);
+}
+
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-2013 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

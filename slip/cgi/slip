@@ -1,0 +1,675 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+Indexing status program (slip formerly st).  Warning: this code is a
+bit of a hack-fest.
+
+=head1 USAGE
+
+http://host.org/cgi/m/mdp/slip
+http://host.org/cgi/m/mdp/slip?r=1
+http://host.org/cgi/m/mdp/slip?r=4,5,7,8
+http://host.org/cgi/m/mdp/slip?r=beta
+http://host.org/cgi/m/mdp/slip?r=all
+
+=head1 DESCRIPTION
+
+Peport config, hosts and queueing info
+
+=head1 VERSION
+
+=head1 OPTIONS
+
+=over 8
+
+=item URL params
+
+Debug options
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+# Perl
+use CGI qw/:standard/;
+use Getopt::Std;
+use Time::Local;
+use Date::Calc;
+use Scheduler;
+
+# App
+use Utils;
+use Utils::Time;
+use Context;
+use MdpConfig;
+use Database;
+use Search::Constants;
+use Utils::GlobalSwitch;
+
+
+# Local
+use Db;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::States;
+use SLIP_Utils::Common;
+
+
+# ============================ Main ===================================
+
+my $building = "indexing";
+my $running = "<span class='alert'>serving</span>";
+
+my $N = "\n";
+my $DEFAULT_RUN = '11';
+
+my $cgi = new CGI;
+Utils::clean_cgi_params($cgi);
+
+my $param = $cgi->param('r');
+if (! defined($param)) {
+    $param = $DEFAULT_RUN;
+}
+
+my @runs = split(',', $param);
+
+my $date = `date`;
+my $runs = join(',', @runs);
+
+print header(-charset => 'utf-8');
+print start_html(-title=>"SLIP status run=$runs",
+                 -style=>{-src=>"/slip/st.css"},
+                 -head=>[
+                         meta({-http_equiv=>"refresh", -content=>"300"}),
+                        ],
+                );
+print div({-class=>"brandingLogo"},
+          a({-href=>"http://www.hathitrust.org"},
+            img({-src=>"/slip/common-web/graphics/HathiTrust.gif", -style=>"border:0"}),
+            span("Digital Library - SLIP status - $date")));
+
+# config for DB
+my $config = new MdpConfig(Utils::get_uber_config_path('mb'));
+my $db = new Database('ht_web');
+my $dbh = $db->get_DBH();
+
+print report_globals($dbh);
+
+eval {
+    foreach my $run (@runs) {
+        if (grep(/^$run$/, @runs)) {
+            print report_run($run);
+        }
+    }
+};
+if ($@) {
+    print p("ERROR: $@");
+}
+
+print end_html();
+
+
+exit 0;
+
+# ------------------- S u b r o u t i n e s ---------------------------
+
+# ---------------------------------------------------------------------
+
+=item get_run_context
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub get_run_context {
+    my $run = shift;
+    
+    my $C = new Context;
+    my $config = SLIP_Utils::Common::gen_run_config('slip', $run);
+    $C->set_object('MdpConfig', $config);
+    
+    return $C;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item report_run
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_run {
+    my $run = shift;
+    
+    my $C = get_run_context($run);
+    my $db = new Database('ht_web');
+    my $dbh = $db->get_DBH();
+    
+    my $driver_driven = $C->get_object('MdpConfig')->get('driver_driven');
+    my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run);
+    my $dr_s = '';
+    if ($driver_driven) {
+        my $_Stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
+        my $stage_class = 
+          (($_Stage eq $SLIP_Utils::States::St_Driver_ERROR)
+           ||
+           ($_Stage eq $SLIP_Utils::States::St_Undefined))
+            ? 'error' : 'neutral';
+        my $stage = qq{<span class="$stage_class">$_Stage</span>};
+        my $_Enabled = SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run);
+        my $enabled = $_Enabled 
+          ? qq{<span class='enabled'>Enabled</span>}
+            : qq{<span class='not-enabled'>Disabled</span>};
+        $dr_s = qq{ - Driver: $enabled stage=$stage};
+    }
+    
+    my $def = ($run eq $DEFAULT_RUN) ? '(default)' : '';
+    my $content =
+      div({-class=>"run-div"},
+          $N,
+          h2("Run $run $def$dr_s"),
+          $N,
+          report_shards($C, $run, $dbh),
+          report_producer_hosts($C, $run, $dbh),
+          report_queue($C, $run, $dbh),
+         );
+    
+    return $content;
+}
+
+# ---------------------------------------------------------------------
+
+=item time_is_today
+
+Description: take a build or optimization time. if the time is today
+it is current otherwise it is old.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub time_is_today {
+    my ($iso_datetime) = shift;
+
+    if ($iso_datetime eq '0000-00-00 00:00:00') {
+        $iso_datetime = '0000-01-01 00:00:00';
+    }
+    
+    my $todays_iso_date = `date '+%F'`;
+    chomp($todays_iso_date);
+    
+    my $iso_date = `date '+%F' --date='$iso_datetime'`;
+    chomp($iso_date);
+    
+    return  ($todays_iso_date eq $iso_date);
+}
+
+# ---------------------------------------------------------------------
+
+=item time_is_after
+
+Description: take a build done time and another time and see the other
+time is after the build done time
+
+=cut
+
+# ---------------------------------------------------------------------
+sub time_is_after {
+    my ($build_done_iso_datetime, $time_iso_datetime) = @_;
+    
+    if ($build_done_iso_datetime eq '0000-00-00 00:00:00') {
+        $build_done_iso_datetime = '1970-01-01 00:00:00';
+    }
+
+    my ($y, $m, $d, $hr, $min, $s);
+    ($y, $m, $d, $hr, $min, $s) = ($build_done_iso_datetime =~ m,^(.*?)-(.*?)-(.*?) (.*?):(.*?):(.*?)$,);
+    
+    my $build_done = Date::Calc::Date_to_Time($y, $m, $d, $hr, $min, $s);
+    
+    ($y, $m, $d, $hr, $min, $s) = ($time_iso_datetime =~ m,^(.*?)-(.*?)-(.*?) (.*?):(.*?):(.*?)$,);
+    my $time = Date::Calc::Date_to_Time($y, $m, $d, $hr, $min, $s);
+    
+    return  ($time > $build_done);
+}
+
+# ---------------------------------------------------------------------
+
+=item report_shards
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_shards {
+    my ($C, $run, $dbh) = @_;
+    
+    my $content;
+    my $caption = "Shards" . $N;
+    
+    my $config = $C->get_object('MdpConfig');
+    my @num_shards_list = $config->get('num_shards_list');
+    my $driver_driven = $config->get('driver_driven');
+    
+    my @rows;
+    
+    my @enabled_head = ();
+    my @states_head = ();
+    if ($driver_driven) {
+        @enabled_head = ("ind", "opt", "ckd");
+        @states_head = ("indexed", "optimized", "checked", "released");
+    }
+    my %sh_tot;
+    
+    foreach my $shard (@num_shards_list) {
+        my $engine_url = $config->get('engine_for_shard_' . $shard);
+        # Solr 4 specific
+        $engine_url =~ s,/core-1,/#/~cores/core-1,;
+        my $engine = $engine_url;
+        
+        my ($host) = ($engine =~ m,^(.*?):.*,); 
+        my $directory = $config->get('dir_for_shard_' . $shard);
+        my ($num_docs) = Db::Select_indexed_count($C, $dbh, $run, $shard);        
+        
+        my $shard_enabled = Db::Select_shard_enabled($C, $dbh, $run, $shard);
+        my $shard_class = $shard_enabled ? 'enabled' : 'not-enabled';
+
+        my $e = $shard_enabled ? 'enb' : 'dis';
+        my $enabled = td({-class=>"$shard_class"}, ["$e"]);
+        
+        my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $shard);
+        my $opt_class = $opt_enabled ? 'enabled' : 'not-enabled';
+        if ($driver_driven) {
+            my $opt_en = td({-class=>"$opt_class"}, ["$opt_enabled"]);
+            $enabled .= $opt_en;
+        }
+
+        my $ck_enabled = Db::Select_check_enabled($C, $dbh, $run, $shard);
+        my $ck_class = $ck_enabled ? 'enabled' : 'not-enabled';
+        
+        if ($driver_driven) {
+            my $ck_en = td({-class=>"$ck_class"}, ["$ck_enabled"]);
+            $enabled .= $ck_en;
+        }
+        
+        my $states = '';
+        if ($driver_driven) {
+            # Neutral unless error or building and the queue is empty (then, good)
+            my $buildDoneTime = Db::Select_shard_build_done($C, $dbh, $run, $shard); 
+            my $bs_s = td({-class=>'neutral'}, ["$buildDoneTime"]);
+            my $build_state = Db::Select_shard_build_state($C, $dbh, $run, $shard);
+            if ($build_state == $SLIP_Utils::States::Sht_Build_Error) {
+                $bs_s = td({-class=>'error'}, ["$buildDoneTime"]);
+            }
+            else {
+                if (time_is_today($buildDoneTime)) {
+                    $bs_s = td({-class=>'good'}, ["$buildDoneTime"]);
+                }
+                else {
+                    $bs_s = td({-class=>'pending'}, ["$buildDoneTime"]);
+                }
+            }
+            my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $dbh, $run, $shard); 
+            my $optimize_state = Db::Select_shard_optimize_state($C, $dbh, $run, $shard);
+            my $os_s = td({-class=>'neutral'}, ["$optimizeDoneTime"]);
+            if ($optimize_state == $SLIP_Utils::States::Sht_Optimize_Error) {
+                $os_s = td({-class=>'error'}, ["$optimizeDoneTime"]);
+            }
+            else {
+                if (time_is_today($optimizeDoneTime) && time_is_after($buildDoneTime, $optimizeDoneTime)) {
+                    $os_s = td({-class=>'good'}, ["$optimizeDoneTime"]);
+                }
+                else {
+                    $os_s = td({-class=>'pending'}, ["$optimizeDoneTime"]);
+                }
+            }
+            my $checkDoneTime = Db::Select_shard_check_done($C, $dbh, $run, $shard); 
+            my $check_state = Db::Select_shard_check_state($C, $dbh, $run, $shard);
+            my $os_c = td({-class=>'neutral'}, ["$checkDoneTime"]);
+            if ($check_state == $SLIP_Utils::States::Sht_Check_Error) {
+                $os_c = td({-class=>'error'}, ["$checkDoneTime"]);
+            }
+            else {
+                if (time_is_today($checkDoneTime) && time_is_after($buildDoneTime, $checkDoneTime)) {
+                    $os_c = td({-class=>'good'}, ["$checkDoneTime"]);
+                }
+                else {
+                    $os_c = td({-class=>'pending'}, ["$checkDoneTime"]);
+                }
+            }
+            my $rs_s;
+            my $release_state = Db::Select_shard_release_state($C, $dbh, $run, $shard);
+            if ($release_state == $SLIP_Utils::States::Srl_Rel_Error) {
+                $rs_s = td({-class=>'error'}, ["err"]);
+            }
+            elsif ($release_state == $SLIP_Utils::States::Srl_Rel_Ok) {
+                $rs_s = td({-class=>'good'}, ["ok"]);
+            }
+            elsif ($release_state == $SLIP_Utils::States::Srl_Rel_Pending) {
+                $rs_s = td({-class=>'pending'}, ["old"]);
+            }
+            elsif ($release_state == $SLIP_Utils::States::Srl_Rel_Wrong_Host) {
+                $rs_s = td({-class=>'neutral'}, ["unk"]);
+            }
+            
+            $states = $bs_s . $os_s . $os_c . $rs_s;
+        }
+        
+        my ($total_errs, $index, $ocr, $meta, $critical, $server) =
+          Db::Select_error_data($C, $dbh, $run, $shard);
+        
+        my $crit =  $critical ? td({-class=>'error'}, ["$critical"]) : td(["0"]);
+        my $machines = a({-href=>$engine_url}, "$engine");
+        
+        my $size_GB;
+        if ($shard) {
+            my $segsizes = Scheduler::get_segsizes($C, $run, $shard);
+            my @sizes = split(/[ \n]+/, $segsizes);
+            $size_GB = $sizes[0] + $sizes[1]; 
+        }
+        else {
+            $size_GB = 0.0;
+        }
+        
+        push(@rows,
+             td(["$shard"])
+             . $enabled
+             . $states
+             . td([$machines, "$directory", "$num_docs", "$size_GB"])
+             . td(["$total_errs", "$index", "$ocr", "$meta", "$server"])
+             . $crit
+             . $N);
+        
+        $sh_tot{'num_docs'} += $num_docs;
+        $sh_tot{'total_errs'} += $total_errs;
+        $sh_tot{'index'} += $index;
+        $sh_tot{'ocr'} += $ocr;
+        $sh_tot{'meta'} += $meta;
+        $sh_tot{'server'} += $server;
+        $sh_tot{'critical'} += $critical;
+        $sh_tot{'size'} += $size_GB;
+    }
+    
+    my $totals;
+    my $blank_fields = ($driver_driven ? ["","","","","","","","","",""] : ["","","",""]);
+    if (scalar(@num_shards_list) > 1) {
+        $totals = td({-class=>"hidden-cell-1"}, $blank_fields) . td([$sh_tot{'num_docs'}, $sh_tot{'size'}, $sh_tot{'total_errs'}, $sh_tot{'index'}, $sh_tot{'ocr'}, $sh_tot{'meta'}, $sh_tot{'server'}, $sh_tot{'critical'}]);
+    }   
+    
+    my $TR;
+    if ($driver_driven){
+        $TR = Tr({-align=>"center"},
+                 [
+                  th({-class=>"hidden-cell-1", -colspan=>1}, "") . 
+                  th({-colspan=>3}, "enabled") . 
+                  th({-colspan=>4}, "completion times") . 
+                  th({-class=>"hidden-cell-1", -colspan=>4}, "") . 
+                  th({-colspan=>6, -width=>"15%"},  "errors") . $N,
+                  th({-width=>"2%"}, ["shard", @enabled_head, @states_head]) . th(["solr dashboard", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
+                  @rows,
+                  $totals
+                 ])
+    }
+    else {
+        $TR = Tr({-align=>"center"},
+                 [
+                  th({-class=>"hidden-cell-1", -colspan=>6}, "") . 
+                  th({-colspan=>8, -width=>"15%"},  "errors") . $N,
+                  th({-width=>"2%"}, ["shard"]) . th("enabled") . th(["solr instance", "index directory", "num", "size", "total", "index", "ocr", "meta", "serv", "crit"]) . $N,
+                  @rows,
+                  $totals
+                 ])
+    }
+    
+    $content .=
+      table({-border=>"1", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
+            caption($caption),
+            $TR . $N
+           );
+    
+    return $content . $N;
+}
+
+# ---------------------------------------------------------------------
+
+=item report_queue
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_queue
+{
+    my ($C, $run, $dbh) = @_;
+    
+    my $content;
+    my $caption = "Indexing Input Queue" . $N;
+    
+    my $config = $C->get_object('MdpConfig');
+    
+    my $size = Db::Select_queue_size($C, $dbh, $run);
+    my $enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
+    my $class = $enabled ? 'enabled' : 'not-enabled';
+    my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
+    my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    
+    my $row =
+      td({-class=>$class}, ["$enabled"])
+        . td(["$size", "$v_timestamp", "$r_timestamp"])
+          . $N;
+    
+    $content .=
+      table({-border=>"1px", -width=>"100%", -cellpadding=>"5px", -cellspacing=>0},
+            caption($caption),
+            Tr({-align=>"center"},
+               [
+                th({-width=>"2%"}, ["enabled", "size"])
+                . th({-width=>"10%"}, ["vSolr timestamp", "slip_rights timestamp"]) . $N,
+                $row
+               ]
+              ) . $N
+           );
+    
+    return $content . $N;
+}
+
+# ---------------------------------------------------------------------
+
+=item report_solr_hosts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_solr_hosts {
+    my ($C, $run) = @_;
+    
+    my $content;
+    my $caption = "Solr Index Hosts" . $N;
+    
+    my $config = $C->get_object('MdpConfig');
+    my @solr_hosts = SLIP_Utils::Common::get_solr_host_list($C);
+    
+    my @rows;
+    
+    foreach my $host (@solr_hosts) {
+        my $enabled = Db::Select_host_enabled($C, $dbh, $run, $host);
+        my $class = $enabled ? 'enabled' : 'not-enabled';
+        
+        push(@rows, td(["$host"]) . td({-class=>$class}, ["$enabled"]) . $N);
+    }
+    
+    $content .=
+      table({-border=>"1px", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
+            caption($caption),
+            Tr({-align=>"center"},
+               [
+                th(["name","enabled"]) . $N,
+                @rows
+               ]
+              ) . $N
+           );
+    
+    return $content . $N;
+}
+
+# ---------------------------------------------------------------------
+
+=item report_producer_hosts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_producer_hosts {
+    my ($C, $run, $dbh) = @_;
+    
+    my $content;
+    my $caption = "Document Producer Hosts" . $N;
+    
+    my $config = $C->get_object('MdpConfig');
+    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
+    
+    my @rows;
+    
+    foreach my $hashref (@$ref_to_ary_of_hashref) {
+        my $name = $$hashref{'host'};
+        my $producers = $$hashref{'num_producers'};
+        my $enabled = $$hashref{'enabled'};
+        my $class = $enabled ? 'enabled' : 'not-enabled';
+        
+        push(@rows, td(["$name"]) . td({-class=>$class}, ["$enabled"]) . td(["$producers"]) . $N);
+    }
+    
+    $content .=
+      table({-border=>"1px", -width=>"20%", -cellpadding=>"5px", -cellspacing=>0},
+            caption($caption),
+            Tr({-align=>"center"},
+               [
+                th(["name","enabled","producers"]) . $N,
+                @rows
+               ]
+              ) . $N
+           );
+    
+    return $content . $N;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item report_hosts
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_hosts {
+    my ($C, $run) = @_;
+    
+    my $content =
+      table({-border=>"0px", -width=>"50%", -cellpadding=>"5px", -cellspacing=>0},
+            Tr({-align=>"left"},
+               [
+                td({-class=>'parentTD'}, [report_producer_hosts($C, $run)]) 
+                . td({-class=>'parentTD'}, [report_solr_hosts($C, $run)]) . $N,
+               ]
+              ) . $N
+           );
+    
+    return $content . $N;
+}
+
+# ---------------------------------------------------------------------
+
+=item report_globals
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_globals {
+    my $dbh = shift;
+    
+    my $content;
+    my $caption = "Globals" . $N;
+    
+    my $r_enabled = Db::Select_rights_enabled(undef, $dbh) ? 'enabled' : 'disabled';
+    my $c_enabled = Utils::GlobalSwitch::cron_jobs_disabled('slip') ? 'STOP file' : 'no STOP file';
+    my $r_class = ($r_enabled eq 'enabled') ? 'enabled' : 'alert';
+    my $c_class = ($c_enabled eq 'no STOP file') ? 'enabled' : 'alert';
+    
+    my $rights_ct = Db::Select_count_from_j_rights(undef, $dbh);
+    
+    my $row = td({-class=>$c_class}, ["$c_enabled"]) . td({-class=>$r_class}, ["$r_enabled ($rights_ct)"]) . $N;
+    
+    $content .=
+      h2($caption) .
+        table({-border=>"1px", -width=>"30%", -cellpadding=>"5px", -cellspacing=>0},
+              Tr({-align=>"center"},
+                 [
+                  th(["Indexer-Producers", "Rights table builder"]) . $N,
+                  $row
+                 ]
+                ) . $N
+             );
+    
+    $content = div({-class=>"run-div"}, $content);
+    
+    return $content . $N;
+}
+
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-9 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut

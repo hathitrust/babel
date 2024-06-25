@@ -1,0 +1,353 @@
+****************************************************************
+                        SLIP Maintenance
+****************************************************************
+
+Resetting a failed indexing run
+===============================
+
+Use the following sequence of commands:
+
+$ ssh earlgrey-1
+$ cd /htapps/babel/slip/index
+$ ./control-j -r11 -kresetdriver
+$ ./control-j -r11 -krestore  # errors back to indexing queue
+$ ./control-j -r11 -kstart -D # enable driver to run
+
+Then you can edit the SLIP crontab and advance the scheduled run of
+$DRIVER to a few minutes into the future so cron will run it again. As
+soon as driver gets scheduled, re-edit the start time back to, for
+example, 09:20 as in:
+
+20 9 * * *  eval $DRIVER
+
+
+****************************************************************
+                        SLIP Data Flows
+****************************************************************
+
+Resetting the queue timestamp
+=============================
+After the build on a given day, e.g. the 11th, items in j_rights with
+timestamps <= the 10th have been indexed and the queue pointer is set
+to the 10th. This means that the next time enqueuer-j runs, e.g. on
+the 12th, items newer that the 10th, i.e. the 11th,  will be queued up.
+
+So to go back and reindex, like after replacing the index with a
+snapshot from the past, suppose the snapshot is of the build on the
+3rd. After that build, all items through the 2nd were indexed.  So to
+pick up items newer than the 2nd, the timestamp should be set to the
+2nd.
+
+
+SHADOW RIGHTS TABLE (ht_maintenance.slip_rights) CONSTRUCTION 
+[script: rights-j]
+==================================================================
+
+Data Schema
+-----------
+
+mysql> describe ht_maintenance.slip_rights;
++-------------+-------------+------+-----+-------------------+-------+
+| Field       | Type        | Null | Key | Default           | Extra |
++-------------+-------------+------+-----+-------------------+-------+
+| nid         | varchar(32) | NO   | PRI |                   |       |
+| attr        | tinyint(4)  | NO   | MUL | 0                 |       |
+| reason      | tinyint(4)  | NO   |     | 0                 |       |
+| source      | tinyint(4)  | NO   |     | 0                 |       |
+| user        | varchar(32) | NO   |     |                   |       |
+| time        | timestamp   | NO   |     | CURRENT_TIMESTAMP |       |
+| sysid       | varchar(32) | NO   |     |                   |       |
+| update_time | int(11)     | NO   | MUL | 0                 |       |
++-------------+-------------+------+-----+-------------------+-------+
+
+The VuFind Solr index document has two fields to support ht_maintenance.slip_rights
+updates of HathiTrust IDs (nid's: n]amespace + id).
+
+Solr field: ht_id_display [stored, not indexed]:
+
+a repeating field that contains the nid(s) of volumes associated with
+the bib record together with the date each item was last updated and
+an optional enumcron if the work is multi-volume. For example:
+
+<arr name="ht_id_display">
+  <str>mdp.39015066198014|20090701|v.1</str>
+  <str>mdp.39015066198311|00000000|v.2</str>
+  <str>mdp.39015066198170|00000000|v.3</str>
+</arr>
+
+Solr field: ht_id_update [not stored, indexed]:
+
+the date when the bib record was last updated due to a change/addition
+to the list in the ht_id_display field. One or more dates on the items
+in the ht_id_didplay field will be the same as this field's value. In
+the above example, ht_id_update would be 20090701
+
+Querying
+--------
+rights-j does a VuFind Solr query based on timestamp=D, where D is 2
+days earlier than the last run of rights-j.  The lag is to avoid
+overlooking records than could have been added to the VuFind Solr
+index after rights-j ran that day:
+
+q=ht_id_update:[D TO *],fl=ht_id_display
+
+These are bib records for added or updated (rights changed) volumes
+but not for volumes where just the record-level metadata has changed.
+These volumes correspond to ht_id_display items with dates equal or
+newer that D. Just these volumes re-indexed to reflect their addition,
+rights changes or reloaded status.
+
+Processing
+----------
+rights-j gets timestamp=D from the j_vsolr_timestamp table which
+records the newest update_time seen when rights-j last ran.
+
+rights-j parses the item ids from the bib records that are >= to the
+ht_it_update time and queries ht_repository.rights_current table for
+the complete set of rights data for that id and REPLACES INTO
+ht_maintenance.slip_rights with an update_time = the update time of
+the item from ht_id_diaplay.
+
+
+QUEUE (ht_maintenance.slip_queue) IDS FOR PROCESSING [script: enqueuer-j]
+===========================================================
+
+mysql> describe ht_maintenance.slip_queue;
++-------------+-------------+------+-----+---------+-------+
+| Field       | Type        | Null | Key | Default | Extra |
++-------------+-------------+------+-----+---------+-------+
+| run         | smallint(3) | NO   | MUL | 0       |       |
+| id          | varchar(32) | NO   | MUL |         |       |
+| pid         | int(11)     | NO   | MUL | 0       |       |
+| host        | varchar(32) | NO   | MUL |         |       |
+| proc_status | smallint(1) | NO   | MUL | 0       |       |
++-------------+-------------+------+-----+---------+-------+
+
+enqueuer-j script inserts records from ht_maintenance.slip_rights into
+ht_maintenance.slip_queue where the update_time is newer than the
+newest update_time seen on any record in ht_maintenance.slip_rights
+the last time it ran. Processing means to copy from
+ht_maintenance.slip_rights into ht_maintenance.slip_queue to be later
+consumed by the index-j script.
+
+The -R option builds ht_maintenance.slip_rights_temp, drops
+ht_maintenance.slip_rights, renames renames
+ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights.
+
+INDEXING (ht_maintenance.slip_indexed, ht_maintenance.slip_errors,
+ht_maintenance.slip_timeouts) [script: index-j]
+========================================================================
+
+mysql> describe ht_maintenance.slip_indexed;
++------------+-------------+------+-----+---------------------+-------+
+| Field      | Type        | Null | Key | Default             | Extra |
++------------+-------------+------+-----+---------------------+-------+
+| run        | smallint(3) | NO   | PRI | 0                   |       |
+| shard      | smallint(2) | NO   | PRI | 0                   |       |
+| id         | varchar(32) | NO   | PRI |                     |       |
+| time       | timestamp   | NO   |     | 0000-00-00 00:00:00 |       |
+| indexed_ct | smallint(3) | NO   |     | 0                   |       |
++------------+-------------+------+-----+---------------------+-------+
+
+One or more instances of index-j take id slices from
+ht_maintenance.slip_queue, build a solr document, send the document to
+a selected shard and record the facts for that id in
+ht_maintenance.slip_indexed.
+
+Indexing Errors
+---------------
+If there's an error (server gone, solr parse error, ocr error,
+metadata error) the id is recorded in ht_maintenance.slip_errors for manual
+resolution and re-queuing.
+
+mysql> describe ht_maintenance.slip_errors;
++------------+-------------+------+-----+---------------------+-------+
+| Field      | Type        | Null | Key | Default             | Extra |
++------------+-------------+------+-----+---------------------+-------+
+| run        | smallint(3) | NO   | PRI | 0                   |       |
+| shard      | smallint(2) | NO   |     | 0                   |       |
+| id         | varchar(32) | NO   | PRI |                     |       |
+| pid        | int(11)     | NO   |     | 0                   |       |
+| host       | varchar(32) | NO   |     |                     |       |
+| error_time | timestamp   | NO   |     | 0000-00-00 00:00:00 |       |
+| reason     | tinyint(1)  | YES  |     | NULL                |       |
++------------+-------------+------+-----+---------------------+-------+
+
+Indexing Timeouts
+-----------------
+
+mysql> describe ht_maintenance.slip_timeouts;
++--------------+-------------+------+-----+---------------------+-------+
+| Field        | Type        | Null | Key | Default             | Extra |
++--------------+-------------+------+-----+---------------------+-------+
+| run          | smallint(3) | NO   |     | 0                   |       |
+| id           | varchar(32) | NO   |     |                     |       |
+| shard        | smallint(2) | NO   |     | 0                   |       |
+| pid          | int(11)     | NO   |     | 0                   |       |
+| host         | varchar(32) | NO   |     |                     |       |
+| timeout_time | timestamp   | NO   |     | 0000-00-00 00:00:00 |       |
++--------------+-------------+------+-----+---------------------+-------+
+
+
+If there's an HTTP timeout, the document is assumed to be successfully
+processed and is recorded in ht_maintenance.slip_indexed but also in
+ht_maintenance.slip_timeouts in case it was not successfully
+processed.  Timeouts are retried at the end of the indexing run using
+the shard number from ht_maintenance.slip_indexed.
+
+
+SYNCHRONIZING
+=============
+
+The model is
+
+The data flow proceeds from
+
+Vufind_Solr(slip_vufind_timestamp) {rebuild_rights-j}
+   -> slip_rights(slip_rights_timestamp)
+         -> slip_queue[run]
+               -> slip_indexed[run] or slip_errors[run] {rebuild-j}
+                     -> Solr
+
+Assertion: If (1) - (3) are run in order everything should be synched.
+
+(1) Make ht_maintenance.slip_rights match VuFind Solr.  Query VuFind
+for ht_id_update:[0000000 TO *], build
+ht_maintenance.slip_rights_temp, drop ht_maintenance.slip_rights,
+rename ht_maintenance.slip_rights_temp to ht_maintenance.slip_rights:
+    
+       % rebuild_rights-j -r run -P one -f <filename_key> 
+then
+       % rebuild_rights-j -r run -P two -f <filename_key>
+
+       NOTE: Phase=one: Read vSolr, write file
+       NOTE: Phase=two: Read file, write slip_rights
+
+       NOTE: coordinate Phase one with the VuFind re-indexing job
+       NOTE: Phase one: 6.5 hours 5.9M records 
+             Phase two: 5.5 hours 10.6M IDs
+                       ----
+                       12.0 hours 
+
+
+(2) Make j_indexed match the Solr shards.  Query Solr one shard at a
+time, add ids to ht_maintenance.slip_indexed_temp.  De-dup
+j_indexed_temp.  If an id is duped in ht_maintenance.slip_indexed_temp
+it must be a duplicate in the Solr index because j_indexed_temp was
+built from the Solr index: delete all but one of the duplicates from
+the Solr index. Delete from ht_maintenance.slip_indexed for the given
+run. Insert de-duped j_indexed_temp rows into j_indexed.
+
+       % rebuild-j -r run
+
+       NOTE: < 1 hour for 10.5M docs
+       NOTE: Run this in parallel with rebuild_rights-j
+
+(3) Queue ids in ht_maintenance.slip_rights missing from
+ht_maintenance.slip_indexed. Ids that get queued up in this step must
+be missing from Solr since ht_maintenance.slip_indexed equals the ids
+in Solr. ***This cannot be done while indexing is in progress.***
+
+       % sync-j -rN -m rightsNINindexed 
+       NOTE: minutes for 10M docs
+
+
+Exception
+---------
+The above does not guarantee that there are not ids in LSS Solr that
+are not in HT Vufind Solr. These might be "vanished" barcodes.
+
+Those can be checked for by:
+
+     % sync-j -rN -m indexedNINrights
+
+
+CRMS RIGHTS UPDATE PROCESS
+==========================
+
+1. CRMS sends list of IDs with changed rights to Aaron
+
+2. Aaron applies rights change to rights_current.attr,
+timestamp=CURRENT_TIMESTAMP (T)
+
+3. Tim queries for changes to rights_current newer than last time he
+queried.
+
+4. Tim inserts change into Mirlyn record using either T or current time. 
+    - In either case the update_time (U) >= (T)
+    - some days later U appears in vufind solr
+
+5. daily rights-j script queries vufind for update_times newer than
+last rights-j query time minus LAG (3 months)
+
+6. if vufind update_time of ID > update_time of ID in slip_rights
+table, the new update_time is recorded in slip_rights.
+
+7. daily enqueuer-j script queries slip_rights for IDs with
+update_times > MAX(update_time) seen in slip_rights when enqueuer-j
+ran last.
+
+REBUILDING PRODUCTION INDEX
+===========================
+
+I deleted all the /l/solrs/prod-new/*/data/index directories and 
+restarted the "-reindex" tomcats on shotz-1,2.  They all came up.
+
+The run-10.conf (Schema_5 + build-new hosts, prod-new directories) is 
+deployed to production as is the latest SLIP.
+
+Run 11 will continue to run during the run 10 re-indexing.
+
+
+Run 10 has been initialized [ control-j -r10 -k init ].  I believe the 
+crontabs on earlgrey-{1-4} and shotz-{1,2} are correct for run 10.  
+They're documented.  The run 10 cronjobs only index; no optimization or 
+checking.
+
+
+Run 10's queue is loaded with 9585936 items [ enqueuer-j -r10 ]. That 
+took about 6 minutes.  Probably would have been worse on a weekday.
+
+So once the solrconfig.xml and schema.xml changes are in place we should 
+be able to start the run [ control-j -r10 -k start ]. Or stop it [ 
+control-j -r10 -k stop ].
+
+If the run errors-out, the failed IDs will be in the error list.  Just 
+restore them [ control-j -r10 -k restore ] and start the run again.
+
+There's a new script (renumber-j) which we can run to turn the completed 
+run 10 into run 11 so the re-indexed data will be seen in production by 
+SLIP.
+
+It works like this:
+
+Run 10 completes. 
+Do one final load of the queue to do some catch up from today's load point. 
+Re-start run 10. 
+On completion, optimize each shard non-staged (-S0), 1 or 2 segments 
+(-O1 or -O2) [ optimize-j -r10 -R <shard>  -S0 -O 1|2]. Not sure whether 
+we should do 1 or 2 segment optimization. 
+After optimization optionally do check-j, though it might simply be a 
+waste of time.  At least validate that we can query each shard. 
+Stop run 10.
+
+Stop run-11 driver, enqueuer after its daily run has completed. 
+    [ control-j -r11 -k stop ][ control-j -r11 -k stop -D ][ control-j 
+-r11 -k stop -V ]
+
+(Probably be good to comment out all run 11 sections in the earlgrey and 
+shotz crontabs too).
+
+Now renumber: 
+   Remove run 11 rows from the database as they'll be replaced by 10's 
+values. 
+     [ control-j -k delete -r11 ]
+
+   Renumber [ renumber-j -r10 -t11 ].  All database rows in all tables 
+from run 10 will be updated to 11. run 10 essentially disappears from 
+the database; 11 now holds all it's values.  Un-comment crontabs.  Run 
+11 crontabs now are in play and the driver/enqueuer/optimizers for run 
+11 will run. The run 11 crontab runs driver-j -X which skips the check 
+index phase. Al further indexing must now use run 11.
+
+The run 11 deletes and run 10 updates may take a while.

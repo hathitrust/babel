@@ -1,0 +1,899 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+report-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+What it says
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+use open qw/:std :utf8/;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+use Time::Local;
+use Scalar::Util qw(looks_like_number);
+
+# App
+use Utils;
+use Debug::DUtils;
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Utils::GlobalSwitch;
+use SharedQueue;
+
+# Local
+use Db;
+use Scheduler;
+use SLIP_Utils::Db_driver;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Solr;
+use SLIP_Utils::DatabaseWrapper;
+
+my $INTERACTIVE = $ENV{TERM};
+Utils::GlobalSwitch::Exit_If_cron_jobs_disabled('slip')
+  unless ($INTERACTIVE);
+
+# Flush i/o
+$| = 1;
+
+my $MESSAGE_BUFFER = '';
+my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
+
+my ($ON, $OFF) = $INTERACTIVE ? ("\033[1;31m", "\033[0m") : ('*', '');
+
+sub __Print {
+    my $msg = shift;
+
+    if ($INTERACTIVE) {
+        print qq{$msg};
+    }
+    else {
+        $MESSAGE_BUFFER .= $msg;
+    }
+}
+
+sub rep_get_usage {
+    my $s = qq{Usage: report-j  -r run [-S scqf][-C][-f][-E oimcsgA][-d]
+           where -C queries build index for num committed
+                 -S section
+                      s=statistics c=config q=queues f=flags
+                 -X skip
+                      G = segment file sizes in Gbytes in the flags section
+                 -f send an email of the report
+                 -E reports error ids
+                      o=ocr i=indexing m=metadata c=critical s=server g=generator A=all\n};
+    return $s;
+}
+
+our ($opt_r, $opt_f, $opt_E, $opt_d, $opt_C, $opt_S, $opt_X);
+
+my $ops = getopts('fr:E:dX:CS:');
+
+my $RUN = $opt_r; # Required
+
+my $SEND_EMAIL = $opt_f; # optionsl
+my $COMMITTED = defined($opt_C);
+my $SECTION = $opt_S || 'A'; # optional, report all sections by default
+my $ERRORS = $opt_E; # optional
+my $EXCLUDE_FILESIZES = (defined $opt_X) && ($opt_X =~ /G/);
+
+unless ($RUN) {
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    my $s = rep_get_usage();
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+if (defined($opt_d)) {
+    $ENV{DEBUG} .= ',lsdb,idx,doc,me';
+}
+
+my $C = Context->new();
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'report-j');
+
+my $DRIVER = $config->get('driver_driven');
+
+# -----------------------
+
+# Improve performance
+my $Q_size = Db::Select_queue_size($C, $DBH, $RUN);
+
+if ($ERRORS) {
+    unless (grep(/$ERRORS/, ( qw/o i m c s n g A/ ))) {
+        my $s = rep_get_usage();
+        my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+
+        __output($s);
+        __non_interactive_err_output($rc, $s);
+
+        exit $rc;
+    }
+
+    if ($ERRORS eq 'A') {
+        report_errors($C, $DBH, $RUN);
+    }
+    else {
+        c_report_errors($C, $DBH, $RUN, $ERRORS);
+    }
+}
+else {
+    c_report($C, $DBH, $RUN);
+}
+
+
+unless ($INTERACTIVE) {
+    if ($MESSAGE_BUFFER) {
+        print($MESSAGE_BUFFER);
+    }
+}
+
+if ($SEND_EMAIL) {
+    my $subj = qq{[SLIP] Status report ($HOST) -r$RUN};
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $MESSAGE_BUFFER);
+}
+
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item Name
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+use constant INCLUDE_ZERO_SHARD => 1;
+
+sub __get_shard_list {
+    my ($C, $include_zero_shard) = @_;
+
+    my @num_shards_list = $C->get_object('MdpConfig')->get('num_shards_list');
+    my @list = $include_zero_shard ? (0, @num_shards_list) : @num_shards_list;
+
+    return @list;
+}
+
+# ---------------------------------------------------------------------
+
+=item __commit
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __commit {
+    my ($C, $run, $shard) = @_;
+
+    return 0 unless ($shard);
+
+    my $fail = 0;
+    use constant COMMIT_TIMEOUT => 10000;
+
+    __Print(qq{commit shard=$shard\n});
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard, COMMIT_TIMEOUT);
+    my ($index_state, $stats_ref) = $indexer->commit_updates($C);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        my $s =
+            qq{commit failed shard=$shard index_state=}
+                . SLIP_Utils::Common::IXconstant2string($index_state);
+        die $s;
+    }
+}
+
+# ---------------------------------------------------------------------
+
+=item _actual_docs_in_shard
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _actual_docs_in_shard {
+    my ($C, $run, $shard) = @_;
+
+    return 0 unless ($COMMITTED);
+    return 0 unless ($shard);
+
+    __commit($C, $run, $shard);
+
+    my $uri = $C->get_object('MdpConfig')->get('engine_for_shard_' . $shard);
+    my $url = $uri . '/select/?q=*:*&start=0&rows=0';
+    my $res = `curl '$url' 2>&1 /dev/null`;
+    my ($num_docs_actual) = ($res =~ m,numFound="(.*?)",);
+
+    return $num_docs_actual;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _load_stats_hash
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _load_stats_hash {
+    my ($C, $dbh, $run) = @_;
+
+    # Adjustment to account for undercounting elapsed sec.
+    use constant ADJUST_TOTAL_TIME_FACTOR => 1.14677;
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
+
+    my %stats;
+    foreach my $__shard (@num_shards_list) {
+        # numbers from producers that have contributed to this shard
+        my $rate = Db::Select_rate_stats($C, $dbh, $run, $__shard);
+        my $s_idx_size;
+        if ($__shard and !$EXCLUDE_FILESIZES) {
+            my $segsizes = Scheduler::get_segsizes($C, $run, $__shard);
+            my @sizes = split(/[ \n]+/, $segsizes);
+            $sizes[0] = 0.0 unless (looks_like_number($sizes[0]));
+            $sizes[1] = 0.0 unless (looks_like_number($sizes[1]));
+            $s_idx_size = $sizes[0] + $sizes[1];
+        }
+        else {
+            $s_idx_size = 0.0;
+        }
+
+        my ($s_reindexed_ct, $s_deleted_ct, $s_num_errs, $s_num_docs, $s_doc_size, $s_doc_time, $s_idx_time, $s_tot_time) =
+            Db::Select_shard_stats($C, $dbh, $run, $__shard);
+
+        $stats{$__shard}{num_docs_processed} = $s_num_docs;
+        $stats{$__shard}{num_docs_committed} = _actual_docs_in_shard($C, $run, $__shard);
+        $stats{$__shard}{num_docs_indexed} = Db::Select_indexed_count($C, $dbh, $run, $__shard);
+        $stats{$__shard}{num_docs_timedout} = Db::Select_timeouts_count($C, $dbh, $run, $__shard);
+        $stats{$__shard}{num_errs} = $s_num_errs;
+        $stats{$__shard}{doc_size} = $s_doc_size;
+        $stats{$__shard}{doc_time} = $s_doc_time;
+        $stats{$__shard}{idx_time} = $s_idx_time;
+
+        $stats{$__shard}{reindexed_ct} = $s_reindexed_ct;
+        $stats{$__shard}{deleted_ct}   = $s_deleted_ct;
+
+        $stats{$__shard}{tot_time} = $s_tot_time * ADJUST_TOTAL_TIME_FACTOR;
+        $stats{$__shard}{idx_size} = $s_idx_size;
+        $stats{$__shard}{rate} = $rate;
+    }
+
+    return \%stats;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _report_totals
+
+Description:
+
+  totals:
+          Docs: num=465423 left=0 pcnt=100% size=412.148g
+          Index: size=302g
+          Time: elapsed=80h finish=3h
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _report_totals {
+    my ($C, $dbh, $run, $srf) = @_;
+
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
+
+    my $reindexed_ct = 0;
+    my $deleted_ct = 0;
+
+    my $num_timeouts = 0;
+    my $num_processed = 0;
+    my $num_indexed = 0;
+    my $num_errs = 0;
+    my $doc_size = 0;
+    my $idx_size = 0;
+    my $elapsed_sec = 0;
+    my $committed_docs = 0;
+    my $docs_phour = 0;
+    foreach my $__shard (@num_shards_list) {
+        $reindexed_ct   += $srf->{$__shard}{reindexed_ct};
+        $deleted_ct     += $srf->{$__shard}{deleted_ct};
+        $num_errs       += $srf->{$__shard}{num_errs};
+        $num_timeouts   += $srf->{$__shard}{num_docs_timedout};
+        $num_indexed    += $srf->{$__shard}{num_docs_indexed};
+        $num_processed  += $srf->{$__shard}{num_docs_processed};
+        $doc_size       += $srf->{$__shard}{doc_size};
+        $idx_size       += $srf->{$__shard}{idx_size};
+        $elapsed_sec    += $srf->{$__shard}{tot_time};
+        $committed_docs += $srf->{$__shard}{num_docs_committed};
+        $docs_phour     += sprintf("%.0f", $srf->{$__shard}{rate});
+    }
+
+    my $doc_size_g  = sprintf("%.1f", $doc_size/1024/1024/1024);
+    my $idx_size_g  = sprintf("%.1f", $idx_size);
+
+    my $total_load = $num_processed + $Q_size;
+
+    my $docs_remaining = $total_load - $num_processed;
+
+    my $pcnt_done = $total_load
+        ? sprintf("%.8f", 100.0 - ($docs_remaining/$total_load)*100)
+            : 0;
+    my $pcnt = sprintf("%.2f", $pcnt_done);
+    my $num_producers = __num_enabled_producers($C, $dbh, $run);
+
+    my $real_elapsed_h = ($num_producers)
+        ? sprintf("%.2f", $elapsed_sec/60/60/$num_producers)
+            : 0.0;
+    my $remains_h = ($docs_phour > 0)
+        ? sprintf("%.1f", $docs_remaining/$docs_phour)
+            : 0;
+
+    my $actual = '';
+    if ($COMMITTED) {
+        my $delta = $num_indexed - $committed_docs;
+        my ($on, $off) = ($delta == 0) ? ('','') : ($ON, $OFF);
+
+        $actual = qq{ ${on}comitted=$committed_docs delta=$delta$off};
+    }
+    __Print qq{\tOverall:\n};
+    __Print qq{\t\tDocs: processed=$num_processed indexed=${num_indexed}$actual timeouts=$num_timeouts reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs left=$docs_remaining pcnt=${pcnt}% size=${doc_size_g}g docs/h=$docs_phour\n};
+    __Print qq{\t\tIndex: size=${idx_size_g}g\n};
+    my $e_H = __convert_hours($real_elapsed_h);
+    my $r_H = __convert_hours($remains_h);
+    __Print qq{\t\tTime: elapsed=$e_H remains=$r_H\n};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __convert_hours
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __convert_hours {
+   my $hours_in = shift;
+
+   my $days = $hours_in/24.0;
+   my $hours = ($days - int($days))*24.0;
+   my $minutes = ($hours - int($hours))*60;
+
+   my $s;
+   if (int($days) > 0) {
+       $s .= int($days) . 'd';
+   }
+   if (int($hours) > 0) {
+       $s .= ((int($days) > 0) ? '.' : '')
+           . int($hours) . 'h';
+   }
+   if (int($minutes) > 0) {
+       $s .= ((int($days) > 0 || int($hours) > 0) ? '.' : '')
+           . int($minutes) . 'm';
+   }
+
+   return $s ? $s : 0;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item _report_shard
+
+Description:
+
+  shards:
+          1: Docs: num=46542 sec/doc=1.82 k/sec=510.0 docs/h=6958
+             Index: size=12g k/sec=270.877
+             Ratio: i/doc=1.3
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _report_shard {
+    my ($shard, $srf) = @_;
+
+    __Print( sprintf("\t%3d: ", $shard) );
+
+    my $reindexed_ct = $srf->{$shard}{reindexed_ct};
+    my $deleted_ct = $srf->{$shard}{deleted_ct};
+
+    my $num_errs = $srf->{$shard}{num_errs};
+    my $num_docs_timedout = $srf->{$shard}{num_docs_timedout};
+    my $num_docs_indexed = $srf->{$shard}{num_docs_indexed};
+    my $num_docs_committed = $srf->{$shard}{num_docs_committed};
+    my $num_docs_processed = $srf->{$shard}{num_docs_processed};
+    my $doc_Time = $srf->{$shard}{doc_time};
+    my $idx_Time = $srf->{$shard}{idx_time};
+    my $doc_size = $srf->{$shard}{doc_size};
+    my $idx_size = $srf->{$shard}{idx_size};
+
+    my $doc_psec = ($doc_Time > 0) ? sprintf("%.2f", $num_docs_processed/$doc_Time) : 0;
+    my $doc_kpsec = ($doc_Time > 0) ? sprintf("%.1f", $doc_size/1024/$doc_Time) : 0;
+    my $idx_size_g = sprintf("%.1f", $idx_size);
+    my $idx_kpsec = ($idx_Time > 0) ? sprintf("%.1f", $doc_size/1024/$idx_Time) : 0;
+    my $ratio =  ($doc_kpsec > 0) ? sprintf("%.2f", $idx_kpsec/$doc_kpsec) : 'undef';
+    my $doc_ph = sprintf("%.0f", $srf->{$shard}{rate});
+
+    my $committed = '';
+    if ($COMMITTED) {
+        my ($on, $off) = ('','');
+        # Do not email funny highlighting chars
+        unless ($SEND_EMAIL) {
+            ($on, $off) = ($num_docs_indexed == $num_docs_committed) ? ('','') : ($ON, $OFF);
+        }
+        my $delta = $num_docs_indexed - $num_docs_committed;
+        $committed = qq{ committed=$on$num_docs_committed delta=$delta$off};
+    }
+
+    __Print qq{  Docs: processed=$num_docs_processed indexed=${num_docs_indexed}$committed timeouts=$num_docs_timedout reindexed=$reindexed_ct deleted=$deleted_ct errs=$num_errs doc/sec=$doc_psec k/sec=$doc_kpsec doc/h=$doc_ph\n};
+    __Print qq{\t\tIndex: size=${idx_size_g}g k/sec=$idx_kpsec\n};
+    __Print qq{\t\tRatio: i/doc=$ratio\n};
+}
+
+
+# ---------------------------------------------------------------------
+
+=item report_statistics
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_statistics {
+    my $C = shift;
+    my $dbh = shift;
+    my $run = shift;
+
+    __Print qq{\n * (s)tatistics: \n};
+
+    my $stats_ref = _load_stats_hash($C, $dbh, $run);
+
+    _report_totals($C, $dbh, $run, $stats_ref);
+
+    __Print qq{\tshards\n};
+
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
+    foreach my $__shard (@num_shards_list) {
+        _report_shard($__shard, $stats_ref);
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item report_queue_state
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_queue_state {
+    my ($C, $dbh, $run) = @_;
+
+    my $shared_q_size = SharedQueue::count_shared_queue_ids($C, $dbh);
+
+    my $last_loaded_version = Db::get_last_loaded_holdings_version($C, $dbh, $run);
+    my $last_processed_version = Db::get_last_processed_holdings_version($C, $dbh, $run);
+    my $last_catalog_ready_version = Db::get_holdings_max_catalog_ready_version($C, $dbh, $last_loaded_version);
+    my $newest_version = Db::get_holdings_max_version($C, $dbh);
+    my $holdings_deltas_size = Db::get_holdings_slice_size($C, $dbh, $last_loaded_version, $newest_version);
+
+    my $ready = ($last_catalog_ready_version > 0 ? $last_catalog_ready_version : 'none');
+
+    __Print qq{\n * (q)ueue state:\n};
+    __Print qq{\t  Primary: size=$Q_size\n};
+    __Print qq{\t   Shared: size=$shared_q_size\n};
+    __Print qq{\t Holdings: size=$holdings_deltas_size last_version_enqueued=$last_loaded_version last_version_indexed=$last_processed_version newest_version=$newest_version next_catalog_ready_version=$ready\n};
+}
+
+# ---------------------------------------------------------------------
+
+=item report_flags_state
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_flags_state {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+
+    my $shared_flags_dir = $config->get('shared_flags_dir');
+    my $busy_file = "$shared_flags_dir/busy";
+    my $stop_file = "/htapps/babel/slip/etc/STOPSLIP";
+
+    my $busy = (-e $busy_file) ? 'YES' : 'no';
+    my $stop = (-e $stop_file) ? 'YES' : 'no';
+
+    unless ($DRIVER) {
+        $busy = "Not driver driven, driver busy=$busy";
+    }
+
+    my $ck = 'no';
+    my $check_index_supported = $config->get('check_index_supported');
+    if ($check_index_supported) {
+        my $check_index_day = $config->get('check_index_day_of_week');
+        $ck = "YES on $check_index_day";
+    }
+    my $ck_str = "\n\tcheck index support=$ck\n\t\t";
+
+
+    my $supported = Scheduler::full_optimize_supported($C);
+    my $trigger_size = Scheduler::get_full_optimize_trigger_size($C) if ($supported);
+    my $all_trigger_size = Scheduler::get_all_full_optimize_trigger_size($C) if ($supported);
+
+    my $opo = "full_optimize supported=$supported " . ($supported ? "trigger_size = $trigger_size GB, all_trigger_size = $all_trigger_size GB" : "");
+    $opo .= $ck_str;
+
+    my @num_shards_list = __get_shard_list($C);
+    my @sizes = ('-', '-'); # presume we don't want them
+
+    unless ($EXCLUDE_FILESIZES) {
+        @sizes = split( / /, Scheduler::get_segsizes( $C, $run ) );
+    }
+    my $segsizes = sprintf( "tot% 16s % 16s\n\t\t", $sizes[0], $sizes[1] );
+
+    my $extra = sprintf("%2s % 16s % 16s  %-20s %-20s%s  %-20s %s\n\t\t", '', 'seg_1', 'seg_2', 'built', 'optimized', '[s]', 'checked', 'segments');
+    foreach my $shard (@num_shards_list) {
+        my $buildDoneTime = Db::Select_shard_build_done($C, $dbh, $run, $shard);
+        my $optimizeDoneTime = Db::Select_shard_optimize_done($C, $dbh, $run, $shard);
+        my $checkDoneTime = Db::Select_shard_check_done($C, $dbh, $run, $shard);
+        my $selected = Db::optimize_shard_is_selected($C, $dbh, $run, $shard);
+
+        my @this_shards_seg_sizes = ('-', '-');
+
+        unless ($EXCLUDE_FILESIZES) {
+            @this_shards_seg_sizes = split(/ /, Scheduler::get_segsizes($C, $run, $shard)),
+
+        }
+
+        $extra .= sprintf(
+                          "%2s % 16s % 16s  %-20s %-20s[%s]  %-20s %s\n\t\t",
+                          $shard,
+                          $this_shards_seg_sizes[0],
+                          $this_shards_seg_sizes[1],
+                          $buildDoneTime,
+                          $optimizeDoneTime,
+                          $selected,
+                          $checkDoneTime,
+                          Scheduler::get_segsizes_count($C, $run, $shard),
+                         );
+    }
+    $opo .= $extra . $segsizes;
+
+    __Print qq{\n * (f)lags state: \n\tbusy=$busy [file=$busy_file] \n\tstopped=$stop [file=$stop_file]\n\t$opo\n};
+}
+
+  # ---------------------------------------------------------------------
+
+=item report_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_errors {
+    my ($C, $dbh, $run) = @_;
+
+    my $config = $C->get_object('MdpConfig');
+    my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
+
+    __Print qq{\n * errors:\n};
+
+    my $error_ct = 0;
+    foreach my $__shard (@num_shards_list) {
+        my ($num_errors, $num_I, $num_O, $num_M, $num_C, $num_S, $num_N, $num_G) =
+            Db::Select_error_data($C, $dbh, $run, $__shard);
+        if ($num_errors) {
+            __Print qq{\tshard=$__shard: num_errors=$num_errors index=$num_I ocr=$num_O metadata=$num_M critical=$num_C server=$num_S indexer_avail=$num_N generator=$num_G\n};
+            $error_ct += $num_errors;
+        }
+        else {
+            __Print qq{\tshard=$__shard: no errors\n};
+        }
+    }
+    __Print qq{\n\tTotal errors=$error_ct\n};
+}
+
+# ---------------------------------------------------------------------
+
+=item __num_enabled_producers
+
+Number of producers over all hosts running producers for this run.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __num_enabled_producers {
+    my ($C, $dbh, $run) = @_;
+
+    my $num_producers = 0;
+    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
+    foreach my $hashref (@$ref_to_ary_of_hashref) {
+        my $host = $hashref->{host};
+        if (Db::Select_host_enabled($C, $dbh, $run, $host)) {
+            $num_producers += $$hashref{num_producers};
+        }
+    }
+    return $num_producers;
+}
+
+# ---------------------------------------------------------------------
+
+=item report_configuration
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub report_configuration {
+    my ($C, $dbh, $run) = @_;
+
+    my @num_shards_list = __get_shard_list($C);
+
+    my $total_alloc = 0;
+    foreach my $__shard (@num_shards_list) {
+        $total_alloc += Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
+    }
+
+    my $total_num_running_over_hosts = 0;
+    my $ref_to_ary_of_hashref = Db::Select_hosts_config($C, $dbh, $run);
+    foreach my $hashref (@$ref_to_ary_of_hashref) {
+        my $host = $hashref->{host};
+        $total_num_running_over_hosts += Db::Select_host_num_running($C, $dbh, $run, $host);
+    }
+
+    __Print qq{\n * (c)urrent config: producer counts:[ shards=$total_alloc hosts=$total_num_running_over_hosts ]\n};
+
+    __Print qq{\tshards:\n};
+
+    foreach my $__shard (@num_shards_list) {
+        my $engine_uri = $C->get_object('MdpConfig')->get('engine_for_shard_' . $__shard);
+        my $s_enabled = Db::Select_shard_enabled($C, $dbh, $run, $__shard);
+        my $opt_enabled = Db::Select_optimize_enabled($C, $dbh, $run, $__shard);
+        my $ck_enabled = Db::Select_check_enabled($C, $dbh, $run, $__shard);
+        my $num_s_producers = Db::Select_shard_num_producers($C, $dbh, $run, $__shard);
+        my $num_s_allocated = Db::Select_shard_num_allocated($C, $dbh, $run, $__shard);
+
+        __Print qq{\t\t$__shard: producers[conf=$num_s_producers alloc=$num_s_allocated] building=$s_enabled optimizing=$opt_enabled checking=$ck_enabled engine=$engine_uri\n};
+    }
+
+    __Print qq{\tingest hosts:\n};
+
+    foreach my $hashref (@$ref_to_ary_of_hashref) {
+        my $host = $hashref->{host};
+        my $num_producers = $hashref->{num_producers} || 0;
+        my $h_enabled = $hashref->{enabled} || 0;
+        my $num_running = Db::Select_host_num_running($C, $dbh, $run, $host);
+
+        my $num_running_str = qq{producers_running=$num_running};
+        my $host_line =
+            sprintf("\t\t%-11s enabled=%s %-19s num_producers_configured=%s",
+                    "$host:", $h_enabled, $num_running_str, $num_producers);
+        __Print qq{$host_line\n};
+    }
+
+    # Enqueuer config
+    my $enquerer_enabled = Db::Select_enqueuer_enabled($C, $dbh, $run);
+
+    __Print qq{\tqueue:\n\t\tenabled=$enquerer_enabled\n};
+
+    # slip_rights config
+    my $rights_enabled = Db::Select_rights_enabled($C, $dbh);
+
+    my $v_timestamp = Db::Select_vSolr_timestamp($C, $dbh);
+    my $r_timestamp = Db::Select_j_rights_timestamp($C, $dbh, $run);
+    my $slip_rights_size = Db::Select_count_from_j_rights($C, $dbh);
+    my $slip_rights_size_minus_deletes = Db::Select_count_from_j_rights($C, $dbh, 'WHERE attr != 8');
+    my $total_docs_indexed = Db::Select_indexed_tot_count($C, $dbh, $run);
+    my $slip_rights_size_delta_indexed = $slip_rights_size_minus_deletes - $total_docs_indexed;
+    my $delete_delta = $slip_rights_size - $slip_rights_size_minus_deletes;
+
+    __Print qq{\trights:\n\t\tenabled=$rights_enabled\n};
+    __Print qq{\t\t\trights-j:   slip_vsolr_timestamp from MAX(slip_rights.update_time)=$v_timestamp\n};
+    __Print qq{\t\t\tenqueuer-j: slip_rights_timestamp[$run] from MAX(slip_rights.insert_time)=$r_timestamp\n};
+    __Print qq{\t\t\tslip_rights size=$slip_rights_size deleted_size=$slip_rights_size_minus_deletes deleted_delta=$delete_delta slip_rights_delta_slip_indexed=$slip_rights_size_delta_indexed\n};
+
+    # Driver
+    # Enqueuer config
+    if ($DRIVER) {
+        my $driver_enabled =
+            SLIP_Utils::Db_driver::Select_driver_enabled($C, $dbh, $run);
+        my $driver_stage = SLIP_Utils::Db_driver::Select_driver_stage($C, $dbh, $run);
+        __Print qq{\tdriver:\n\t\tenabled=$driver_enabled stage=$driver_stage\n};
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item c_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_report {
+    my $C = shift;
+    my $dbh = shift;
+    my $run = shift;
+
+    # report all sections by default
+    $SECTION = 'scqf' if ($SECTION eq 'A');
+
+    my $date = `date`;
+    chomp $date;
+    __Print qq{\n ------- Report ($HOST): run=$run @ $date ------\n};
+
+    report_statistics($C, $dbh, $run)    if (index($SECTION, 's') >= 0);
+
+    report_configuration($C, $dbh, $run) if (index($SECTION, 'c') >= 0);
+
+    report_queue_state($C, $dbh, $run)   if (index($SECTION, 'q') >= 0);
+
+    report_flags_state($C, $dbh, $run)   if (index($SECTION, 'f') >= 0);
+
+    __Print qq{\n};
+}
+
+# ---------------------------------------------------------------------
+
+=item c_report_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub c_report_errors {
+    my ($C, $dbh, $run, $errors) = @_;
+
+    my $reason;
+    if ($errors eq 'o') {
+        $reason = IX_DATA_FAILURE;
+    }
+    elsif ($errors eq 'i') {
+        $reason = IX_INDEX_FAILURE;
+    }
+    elsif ($errors eq 'm') {
+        $reason = IX_METADATA_FAILURE;
+    }
+    elsif ($errors eq 'c') {
+        $reason = IX_CRITICAL_FAILURE;
+    }
+    elsif ($errors eq 's') {
+        $reason = IX_SERVER_GONE;
+    }
+    elsif ($errors eq 'n') {
+        $reason = IX_NO_INDEXER_AVAIL;
+    }
+    elsif ($errors eq 'g') {
+        $reason = IX_GENERATOR_ERROR;
+    }
+    else {
+        __Print rep_get_usage();
+        exit 0;
+    }
+
+    my $id_arr_hashref;
+    if (defined($reason)) {
+        my $error_ct = 0;
+        my $type = SLIP_Utils::Common::IXconstant2string($reason);
+
+        __Print qq{\n  ------- $type  ID  List: run=$run ------\n};
+
+        my @num_shards_list = __get_shard_list($C, INCLUDE_ZERO_SHARD);
+        foreach my $__shard (@num_shards_list) {
+            $id_arr_hashref = Db::Select_error_ids($C, $dbh, $run, $__shard, $reason);
+
+            __Print qq{\tshard=$__shard\n};
+            my $s0 = sprintf("%-19s %-10s %-6s %-10s %s", 'id', 'sysid', 'pid', 'host', 'error_time');
+            __Print qq{\t\t$s0\n};
+            if (defined($id_arr_hashref) && scalar(@$id_arr_hashref > 0)) {
+                foreach my $hashref (@$id_arr_hashref) {
+                    my $id = $hashref->{id};
+                    my $sysid = Db::Select_j_rights_id_sysid($C, $dbh, $id);
+                    my $s1 = sprintf("%18s %10s %6s %10s %s", $hashref->{id}, $sysid, $hashref->{pid}, $hashref->{host}, $hashref->{error_time} );
+                    __Print qq{\t\t$s1\n};
+                    $error_ct++;
+                }
+            }
+            else {
+                __Print qq{\t\tno errors\n};
+            }
+        }
+        __Print qq{\n\tTotal errors=$error_ct\n};
+    }
+}
+
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2008-15 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+

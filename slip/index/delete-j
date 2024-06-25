@@ -1,0 +1,359 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+delete-j
+
+=head1 USAGE
+
+% delete-j -r run -I<docid> | -F <filename> [-d] [-T]
+
+=head1 DESCRIPTION
+
+Delete a document from the build index
+
+=head1 OPTIONS
+
+=cut
+
+use strict;
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Debug::DUtils;
+use Search::Constants;
+
+use Context;
+use MdpConfig;
+use Identifier;
+use SharedQueue;
+
+# Local
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Solr;
+use SLIP_Utils::Load;
+use SLIP_Utils::DatabaseWrapper;
+
+# ---------------------------------------------------------------------
+
+=item delete_get_usage
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_get_usage {
+    my $s .= qq{Usage: delete-j -r run -I<docid> [-S known_shard] | -F <filename> [-d] [-T]\n};
+    return $s;
+}
+
+our ($opt_r, $opt_I, $opt_T, $opt_F, $opt_d, $opt_S);
+
+my $ops = getopts('r:I:TF:dS:');
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = delete_get_usage();
+    print $s;
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
+my $KNOWN_SHARD; # Optional
+
+# One is required
+my $FILENAME = $opt_F;
+my $DOCID = $opt_I;
+if ($DOCID && $FILENAME) {
+    print qq{ERROR: only one of -I or -F is allowed\n};
+    print delete_get_usage();
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+elsif (! $DOCID && ! $FILENAME) {
+    print qq{ERROR: one of -I or -F is required\n};
+    print delete_get_usage();
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+elsif ($DOCID) {
+    $KNOWN_SHARD = $opt_S;
+}
+
+# Must be interactive to warn of mismatch between slip_rights.attr and
+# rights_current.attr
+if (! $ENV{TERM}) {
+    exit $SLIP_Utils::States::RC_BAD_ARGS;
+}
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} = 'idx,lsdb,me';
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+# Flush i/o
+$| = 1;
+
+my $C = new Context;
+
+my $CONFIG = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $CONFIG);
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, 'delete-j');
+
+my $DEFER_COMMIT = 0;
+my $id_arr_ref;
+if ($DOCID) {
+    $id_arr_ref = [$DOCID];
+}
+elsif ($FILENAME) {
+    $id_arr_ref = SLIP_Utils::Load::load_ids_from_file($C, $FILENAME);
+    $DEFER_COMMIT = 1;
+}
+
+foreach my $id (@$id_arr_ref) {
+    delete_Solr_doc($C, $RUN, $id, $KNOWN_SHARD);
+}
+
+if ($DEFER_COMMIT) {
+    commit_all_shards($C, $RUN);
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item delete_Solr_doc
+
+known_shard supports index repair when an ID has been indexed to more
+than one shard and we want to force deletion from a specific shard.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub delete_Solr_doc {
+    my ($C, $run, $id, $known_shard) = @_;
+
+    # Is this is a delete not induced by an automatic update to
+    # metadata and to rights_current that changed
+    # rights_current.attr to 8?  WARN if rights_current.attr
+    # is not 8.
+    my $slip_rights_attr = Db::Select_j_rights_id_attr($C, $DBH, $id);
+
+    my ($namespace, $barcode) = Identifier::split_id($id);
+    my $row_hashref = Db::Select_latest_rights_row($C, $DBH, $namespace, $barcode);
+    my $rights_current_attr = $row_hashref->{attr};
+
+    if ($slip_rights_attr ne $rights_current_attr) {
+        __output(qq{WARN: slip_rights.attr=$slip_rights_attr does not match rights_current.attr=$rights_current_attr. });
+    }
+
+    # Find the shard containing the doc and send the delete
+    my $shard =
+      $known_shard
+        ? $known_shard
+          : Db::Select_item_id_shard($C, $DBH, $run, $id);
+    
+    my $no_solr_check = 0;
+    if ($no_solr_check) {
+        unless ($shard) {
+            __output(qq{SKIP.\n});
+            return;
+        }
+    }
+
+    unless ($shard) {
+        __output(qq{Shard for id=$id not found in slip_indexed. Checking Solr too.\n});
+        my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+
+        foreach my $_shard (@shards) {
+            my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+            my $query = qq{q=id:$safe_id&fl=id};
+            my $result = `$ENV{SDRROOT}/slip/index/query-j -r$run -B -R$_shard -q'$query' -N`;
+            my @ids = ($result =~ m,<str name="id">(.*?)</str>,g);
+            my $rows_returned = scalar(@ids);
+
+            if ($rows_returned > 0) {
+                $shard = $_shard;
+                __output(qq{Shard=$shard for id=$id found in Solr.\n});
+                last;
+            }
+        }
+    }
+
+    unless ($shard) {
+        __output(qq{Shard for id=$id not found in Solr either.\n});
+        return;
+    }
+
+    my $ok = __del_Delete_document($C, $run, $id, $shard);
+    if ($ok) {
+        Db::Delete_item_id_indexed($C, $DBH, $run, $id, $shard);
+        __output(qq{Deleted id=$id, shard=$shard run=$run from slip_indexed\n});
+        Db::Delete_id_from_j_queue($C, $DBH, $run, $id);
+        __output(qq{Deleted nid=$id run=$run from slip_queue\n});
+
+        # If known_shard is set, this is a repair.  Leave the id in
+        # the shared queue so it gets proper large collection
+        # processing
+        if (! $known_shard) {
+            my $production_run = $C->get_object('MdpConfig')->get('run_allowed_to_access_shared_queue');
+            if ($run eq $production_run) {
+                SharedQueue::Delete_id_from_j_shared_queue($C, $DBH, $id);
+                __output(qq{Deleted nid=$id from slip_shared_queue\n});
+            }
+        }
+    }
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __del_Delete_document
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __del_Delete_document {
+    my ($C, $run, $id, $shard) = @_;
+
+    my ($index_state, $dummy);
+
+    my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+    my $engine =  $indexer->get_solr_engine_uri;
+
+    __output(qq{Solr delete id=$id shard=$shard engine=$engine ... });
+
+    my $delete_field = $C->get_object('MdpConfig')->get('default_Solr_delete_field');
+    my $safe_id = Identifier::get_safe_Solr_id($id); # ark: identifiers
+    my $query = qq{$delete_field:$safe_id};
+
+    ($index_state, $dummy) = $indexer->delete_by_query($C, $query);
+
+    if (Search::Constants::indexing_failed($index_state)) {
+        my $s =
+          qq{delete doc id=$id shard=$shard failed index_state=}
+            . SLIP_Utils::Common::IXconstant2string($index_state);
+        __output(qq{$s\n});
+        return 0;
+    }
+    elsif (! $DEFER_COMMIT) {
+        __output(qq{Solr commit shard=$shard ...});
+        ($index_state, $dummy) = $indexer->commit_updates($C);
+        if (Search::Constants::indexing_failed($index_state)) {
+            my $s =
+              qq{commit shard=$shard failed index_state=}
+                . SLIP_Utils::Common::IXconstant2string($index_state);
+            __output(qq{$s\n});
+            return 0;
+        }
+    }
+
+    __output(qq{Done.\n});
+
+    Log_delete($C, $run, qq{Solr/Mysql deleted id=$id, shard=$shard engine=$engine});
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item commit_all_shards
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub commit_all_shards {
+    my ($C, $run) = @_;
+
+    my ($index_state, $dummy);
+    my @shards = $C->get_object('MdpConfig')->get('num_shards_list');
+
+    foreach my $shard (@shards) {
+        __output(qq{Solr commit shard=$shard ...});
+        my $indexer = SLIP_Utils::Solr::create_shard_Indexer_by_alias($C, $shard);
+        ($index_state, $dummy) = $indexer->commit_updates($C);
+        if (Search::Constants::indexing_failed($index_state)) {
+            my $s =
+              qq{commit shard=$shard failed index_state=}
+                . SLIP_Utils::Common::IXconstant2string($index_state);
+            __output(qq{$s\n});
+            return 0;
+        }
+        __output(qq{Done.\n});
+
+        Log_delete($C, $run, qq{Solr commit shard=$shard});
+    }
+
+    return 1;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_delete
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_delete{
+    my ($C, $run, $s) = @_;
+    SLIP_Utils::Log::this_string($C, $s, 'delete_logfile', '___RUN___', $run);
+}
+
+1;
+
+#
+# =head1 AUTHOR
+#
+# Phillip Farber, University of Michigan, pfarber@umich.edu
+#
+# =head1 COPYRIGHT
+#
+# Copyright 2010 ©, The Regents of The University of Michigan, All Rights Reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject
+# to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# =cut
+#
+#
+
+

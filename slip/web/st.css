@@ -1,0 +1,78 @@
+
+
+.hidden-cell-1 {
+                 background: #F0F7F9 none repeat scroll 0 0;
+                 }
+.run-div {
+           padding: 0.1em;
+           margin-top: 11px;
+           background: #F0F7F9 none repeat scroll 0 0;
+           border-top: 3px solid #6B90DA;
+           margin-bottom : 2em; 
+           }
+
+.enabled { 
+           background: #00FF00 none repeat scroll 0 0;
+           }
+
+.not-enabled { 
+               background: #FFFA00 none repeat scroll 0 0;
+               }
+.pending { 
+               background: #FFFA00 none repeat scroll 0 0;
+               }
+.alert { 
+         background: #FF8080 none repeat scroll 0 0;
+         }
+
+.neutral { 
+         background: #9999FF none repeat scroll 0 0;
+         }
+
+.good { 
+         background: #00FF00 none repeat scroll 0 0;
+         }
+
+.error { 
+         background: #FF0000 none repeat scroll 0 0;
+         }
+
+.brandingLogo {
+                height: 48px;
+                }
+
+.brandingLogo span {
+                     position: relative;
+                     top: -15px;
+                     bottom: -1em;
+                     left: 10px;
+                     color: #6a6b6e;
+                     font-size: 1.7em;
+                     }
+
+.brandingLogo a {
+                  text-decoration: none;
+                  }
+
+.parentTD { 
+            background: #F0F7F9; 
+            }
+
+body { 
+       padding: 1em;
+       font-size: small;
+       }
+
+table { 
+        background: #FFFFFF;
+        }
+
+caption { 
+          font-weight: bold;
+          margin-top: 1em;
+          margin-bottom: 0.5em;
+          }
+
+th { 
+     background: #D5DDF3 none repeat scroll 0 0;
+     }

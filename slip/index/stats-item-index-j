@@ -1,0 +1,423 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+stats-item-index-j
+
+=head1 USAGE
+
+see usage
+
+=head1 DESCRIPTION
+
+Info about the item index
+
+Production:
+
+The ptsearch solr/tomcat instance runs on slurm-1 at the MACC and duff-1 at ICTC.
+
+Solr connection information for apps running on the web servers is: http://solr-sdr-ptsearch:8080/ptsearch
+
+Solr home at each site is /htsolr/ptsearch.
+
+User must have sudo rights to start/stop the tomcat instance on slurm-1/duff-1 (/etc/init.d/tomcat-ptsearch).
+
+Logs are in /l/local/apache-tomcat-ptsearch/logs.
+
+=head1 OPTIONS
+
+=over 8
+
+=item -
+
+see help
+
+=back
+
+=cut
+
+use strict;
+BEGIN {
+    #$ENV{DEBUG_LOCAL} = 1;
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+
+# Perl
+use Getopt::Std;
+
+# App
+use Utils;
+use Utils::Time;
+use Debug::DUtils;
+
+use Context;
+use MdpConfig;
+use Search::Constants;
+use Semaphore;
+
+# Local
+use Db;
+use SLIP_Utils::Common;
+use SLIP_Utils::States;
+use SLIP_Utils::Log;
+use Search::Result::SLIP_Raw;
+use Search::Site;
+use SLIP_Utils::Solr;
+use SLIP_Utils::DatabaseWrapper;
+
+use Sl_Utils;
+# Flush i/o
+$| = 1;
+
+sub mis_get_usage {
+    my $s .= qq{Usage: stats-item-index-j -r run [-d][-n][-f]
+       where -n runs without doing stats
+             -f forces email in interactive mode\n};
+    return $s;
+}
+
+our ($opt_r, $opt_d, $opt_n, $opt_f, $opt_T);
+
+my $ops = getopts('r:dnfT');
+
+my $HOST = `hostname`; $HOST =~ s,\..*$,,s;
+
+my $REPORT_BUFFER = '';
+my $BASE_DIR = $ENV{'SDRROOT'} . '/slip/index/';
+my $BASE_SCRIPT_DIR = $ENV{'SDRROOT'} . '/slip/scripts/';
+my $INTERACTIVE = $ENV{'TERM'};
+
+my $FORCE_EMAIL = defined($opt_f);
+my $NOOP = defined($opt_n); # optional
+
+my $RUN = $opt_r; # Required
+if (! $RUN) {
+    my $s = qq{run (-r) parameter missing } . mis_get_usage();
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __output($s);
+    __non_interactive_err_output($rc, $s);
+
+    exit $rc;
+}
+
+my $TEST_ONLY = defined($opt_T);
+exit 0 if ($TEST_ONLY);
+
+if (defined($opt_d)) {
+    $ENV{'DEBUG'} .= 'lsdb,me';
+}
+
+my $C = new Context;
+
+my $config = SLIP_Utils::Common::gen_SLIP_config($RUN);
+$C->set_object('MdpConfig', $config);
+
+# constrain to proper site
+my $hosting_site = $config->get('hosting_site');
+my $site = Search::Site::get_server_site_name();
+if ($site ne $hosting_site) {
+    my $s = qq{stats-item-index-j run=$RUN wrong site: $site is not $hosting_site};
+    Log_stats_error($C, $RUN, $s);
+    __output("$s\n");
+    my $rc = $SLIP_Utils::States::RC_BAD_ARGS;
+    __non_interactive_err_output($rc, $s);
+    exit $rc;
+}
+
+my $DBH = SLIP_Utils::DatabaseWrapper::GetDatabaseConnection($C, qq{stats-item-index-j run=$RUN host=$HOST});
+
+# Do not try to manage while I am running already
+my $Lock_File = Sl_Utils::slip_semaphore_file("stats-item-index-$RUN");
+my $Semaphore = new Semaphore($Lock_File);
+if (! $Semaphore) {
+    my $s = "Could not get semaphore file: $Lock_File at host=$HOST";
+    __output("$s\n");
+    Log_stats_error($C, $RUN, $s);
+    exit 0;
+}
+END {
+    $Semaphore->unlock()
+        if ($Semaphore);
+}
+
+my $SEARCHER = SLIP_Utils::Solr::create_shard_Searcher_by_alias($C, 1);
+my $engine_uri = $SEARCHER->get_engine_uri();
+
+if ($INTERACTIVE) {
+    my $index_dir = $C->get_object('MdpConfig')->get('dir_for_shard_1');
+    if (! -e $index_dir) {
+        if (! $NOOP) {
+            my $s = qq{$HOST cannot see $index_dir.\nExit.\n};
+            __output($s);
+            exit 0;
+        }
+    }
+}
+
+eval {
+    my $s = "stats-item-index-j ($HOST $engine_uri): ITEM REPORT" . ($NOOP ? " ---> NOOP" : "") ;
+    __output("$s\n");
+    Log_stats($C, $RUN, $s);
+
+    handle_mis_rc($C, $DBH, $RUN, $HOST,
+                  mis_gather_statistics($C, $DBH, $RUN));
+};
+if ($@) {
+    Log_stats_error($C, $RUN, "Critical error: $@");
+    handle_mis_rc($C, $DBH, $RUN, $HOST, $SLIP_Utils::States::RC_CRITICAL_ERROR);
+    # NOTREACHED
+}
+
+exit 0;
+
+#
+# --------------------- S u b r o t i n e s   -------------------------
+#
+
+# ---------------------------------------------------------------------
+
+=item handle_mis_rc
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub handle_mis_rc {
+    my ($C, $dbh, $run, $host, $rc) = @_;
+
+    # Log
+    my $s = SLIP_Utils::Common::stage_rc_to_string($rc) . qq{ run=$run host=$host};
+    __output(qq{$s\n});
+    __non_interactive_err_output($rc, $s);
+
+    if ($rc > 0) {
+        Log_stats_error($C, $run, $s);
+    }
+    else {
+        Log_stats($C, $run, $s);
+    }
+
+    # Report stats
+    mis_email_report($C, $run);
+
+    exit $rc if ($rc > 0);
+}
+
+# ---------------------------------------------------------------------
+
+=item mis_email_report
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub mis_email_report {
+    my ($C, $run) = @_;
+
+    return unless($FORCE_EMAIL || (! $INTERACTIVE));
+
+    my $subj = qq{[SLIP] stats-item-index-j ($HOST) -r$run};
+    SLIP_Utils::Common::Send_email($C, 'report', $subj, $REPORT_BUFFER);
+}
+
+# ---------------------------------------------------------------------
+
+=item mis_num_docs_in_index
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub mis_num_docs_in_index {
+    my $C = shift;
+
+    my $rs = new Search::Result::SLIP_Raw();
+    my $query = q{q=*:*&start=0&rows=0};
+
+    $rs = $SEARCHER->get_Solr_raw_internal_query_result($C, $query, $rs);
+
+    my $num_docs = $rs->get_num_found();
+
+    return $num_docs;
+}
+
+# ---------------------------------------------------------------------
+
+=item mis_report_errors
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub mis_report_errors {
+    my ($C, $dbh, $run) = @_;
+
+    my $buf = " *errors\n";
+    my $shard = 1;
+    my $error_ct = 0;
+
+    my ($num_errors, $num_I, $num_O, $num_M, $num_C, $num_S, $num_N) =
+      Db::Select_error_data($C, $dbh, $run, 1);
+    if ($num_errors) {
+        $buf .= qq{\tshard=$shard: num_errors=$num_errors index=$num_I ocr=$num_O metadata=$num_M critical=$num_C server=$num_S indexer_avail=$num_N\n};
+        $error_ct += $num_errors;
+    }
+    else {
+        $buf .= qq{\tshard=$shard: no errors\n};
+    }
+
+    $buf .= qq{\tTotal errors=$error_ct\n};
+
+    return $buf;
+}
+
+# ---------------------------------------------------------------------
+
+=item mis_gather_statistics
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub mis_gather_statistics {
+    my ($C, $dbh, $run) = @_;
+
+    # Get error report
+    my $errors = mis_report_errors($C, $dbh, $run);
+    __output("$errors");
+    Log_stats($C, $run, $errors);
+
+    my ($cmd, $sysrc, $s, $rep);
+
+    if (0) {
+        # Get segment sizes
+        $cmd = $BASE_SCRIPT_DIR . qq{segsizes -r$run};
+        my $sizes = `$cmd 2>&1`;
+        $sysrc = $? >> 8;
+
+        $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+        $s .= "\n$sizes";
+        __output("$s");
+        Log_stats($C, $run, $s);
+    }
+
+    # Get num docs in index
+    my $num = mis_num_docs_in_index($C);
+    $s = qq{Number of docs(pages)=$num vols=} . sprintf("%.0f", $num/300) . qq{ estimated at 300 pages/vol\n};
+    __output("$s");
+    Log_stats($C, $run, $s);
+
+    # Get report-j statistics
+    $cmd = $BASE_DIR . qq{report-j -r$run -Ss};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
+
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= "$rep";
+    __output("$s");
+    Log_stats($C, $run, $s);
+
+    # Reset statistics
+    $cmd = $BASE_DIR . qq{control-j -r$run -kresetstats};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
+
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= ($sysrc > 0) ? "$rep" : '';
+    __output("$s\n");
+    Log_stats($C, $run, $s);
+
+    # Reset daily errors after report
+    $cmd = $BASE_DIR . qq{control-j -r$run -kreseterrors};
+    $rep = `$cmd 2>&1`;
+    $sysrc = $? >> 8;
+
+    $s = qq{stats-item-index-j cmd="$cmd" sysrc=$sysrc};
+    $s .= ($sysrc > 0) ? "$rep" : '';
+    __output("$s\n");
+    Log_stats($C, $run, $s);
+
+    return 0;
+}
+
+# ---------------------------------------------------------------------
+
+=item Log_stats
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_stats {
+    my ($C, $run, $s) = @_;
+
+    my $s0 = qq{***ITEM REPORT: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $s};
+    $REPORT_BUFFER .= $s0 . "\n";
+    SLIP_Utils::Log::this_string($C, $s0, 'stats_logfile', '___RUN___', $run);
+}
+
+
+# ---------------------------------------------------------------------
+
+=item Log_stats_error
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub Log_stats_error {
+    my ($C, $run, $error) = @_;
+
+    my $s = qq{***ITEM REPORT [ERROR]: } . Utils::Time::iso_Time() . qq{ r=$run, $HOST, $error};
+    $REPORT_BUFFER .= $s . "\n";
+
+    SLIP_Utils::Log::this_string($C, $s, 'stats_logfile', '___RUN___', $run);
+}
+
+1;
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2011 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+
+
