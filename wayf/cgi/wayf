@@ -1,0 +1,153 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+WAYF
+
+=head1 USAGE
+
+http://babel.hathitrust.org/cgi/m/mdp/wayf?target=http%3A%2F%2Fbabel.hathitrust.org%2Fcgi%2Fm%2Fmdp%2Fmb
+
+=head1 DESCRIPTION
+
+HathiTrust WAYF (WhereAreYouFrom) Shibboleth authentication API. This
+cgi implements a HathiTrust local WAYF.  It displays a page containing
+a list of links to HathiTrust member institution's IdPs where users
+can go to authenticate.  At some point, the UM link will be to the UM
+Shibboleth IdP but is just COSIGN for now.
+
+=head1 OPTIONS
+
+=over 8
+
+=item debug=opt1,opt2,...,optN
+
+Debug options
+
+=back
+
+=cut
+
+use strict;
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1; # Always required if on a branch that needs common/web/unicorn!!
+}
+
+# ----------------------------------------------------------------------
+# Set up paths for local libraries -- must come first
+# ----------------------------------------------------------------------
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+# Perl
+use CGI;
+
+# Magic
+use Attribute::Handlers;
+
+use Utils;
+use Debug::DUtils;
+
+use App;
+use MdpConfig;
+use Action::Bind;
+use Context;
+use Database;
+use Session;
+use Auth::Auth;
+
+use WAYF::Controller;
+
+$::VERSION = 0.1000;
+
+
+# ============================ Main ===================================
+
+#
+# Establish and populate the Context.  Order dependent.
+#
+my $C = new Context;
+
+# CGI
+my $cgi = new CGI;
+Utils::clean_cgi_params($cgi);
+$C->set_object('CGI', $cgi);
+
+## the wayf application somehow avoids the 
+## usual debug handling
+## $ENV{DEBUG} = 'xml' if ( $cgi->param('debug') );
+
+#
+# Create the application
+#
+my $app = new App($C, 'wayf');
+$C->set_object('App', $app);
+
+# configuration
+# MBooks App configuration -- order matters
+my $config = new MdpConfig(
+                           Utils::get_uber_config_path('wayf'),
+                           $ENV{SDRROOT} . "/wayf/lib/Config/global.conf",
+                           $ENV{SDRROOT} . "/wayf/lib/Config/local.conf"
+                          );
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $db = new Database('ht_web');
+$C->set_object('Database', $db);
+
+# No Session for WAYF.  Redirects from Auth::Auth when session
+# indicates user was logged in sometime during the session but is not
+# now logged in cause Cosign URL errors.
+# ---------------------------------------------------------------------
+# my $ses = Session::start_session($C);
+# $C->set_object('Session', $ses);
+
+# Auth
+my $auth = new Auth::Auth($C);
+$C->set_object('Auth', $auth);
+
+#
+# Create the application Controller (main logic) class
+#
+my $ctl = new WAYF::Controller($C);
+
+#
+# Run the application on the framework classes
+#
+$app->run_application($C, $ctl);
+
+exit 0;
+
+
+
+
+=head1 AUTHOR
+
+Phillip Farber, University of Michigan, pfarber@umich.edu
+
+=head1 COPYRIGHT
+
+Copyright 2010 ©, The Regents of The University of Michigan, All Rights Reserved
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
+to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
