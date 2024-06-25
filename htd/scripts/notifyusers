@@ -1,0 +1,107 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+
+
+# --------- Send a message to registered user's email address ---------
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use Mail::Mailer;
+
+use Utils;
+use API::DbIF;
+use API::HTD::AuthDb;
+
+
+my @messages = 
+  (
+   {
+    subject => 'HathiTrust Data API Update',
+    body => "Greetings___USER___,\n\nYou are receiving this message as a registered user of the HathiTrust Data API.\n\nWe're writing to let you know that version 2 of the API is now available.  Access to version 1 will be discontinued on November 1, 2013.\n\nYou may want to refer to the version 2 documentation at http://www.hathitrust.org/data_api for details about changes to the URL syntax and new resources available from the API.\n\nPlease reply to this email or send email to support\@hathitrust.org with with your questions or comments.\n\n\nRegards,\n\tHathiTrust.org",
+   },
+  );
+
+my $DEBUG = 0;
+
+my $DBH = API::DbIF::databaseConnect('ht_web');
+my $ref_to_arr_of_hashref = API::HTD::AuthDb::get_all_authentication_data($DBH);
+
+my %users = ();
+
+# Remove rows without email addresses. They are htdc users who we do
+# not need to notify.
+
+# Proper case name
+for (my $i=0; $i < scalar(@$ref_to_arr_of_hashref); $i++) {
+    my $hashref = $ref_to_arr_of_hashref->[$i];
+    
+    my $email = $hashref->{email};
+    Utils::trim_spaces(\$email);
+    my $name = lc($hashref->{name});
+    Utils::trim_spaces(\$name);
+    $name =~ s/(\w+)/\u$1/g;
+
+    # De-dup email
+    if ($email) {
+        $users{$email} = $name;
+    }
+}
+
+
+foreach my $email (keys %users) {
+    printf("%-25s %s\n", $users{$email}, $email);
+}
+
+if (__confirm_email('List', 'looks')) {
+    if ($DEBUG) {
+        if (__confirm_email('Test', 'roger@umich.edu')) { 
+            email_notification('roger@umich.edu', 'support@hathitrust.org', $messages[0]);
+        }
+    }
+    else {
+        foreach my $email (keys %users) {
+            if (__confirm_email($users{$email}, $email)) { 
+                email_notification($email, 'support@hathitrust.org', $messages[0]);
+            }
+        }
+    }
+}
+
+
+exit 0;
+
+
+# ---------------------------------------------------------------------
+sub __confirm_email {
+    my ($user, $addr) = @_;    
+    
+    print "$user $addr OK? [n]";
+    my $pass_1 = <STDIN>;
+    return 0 if ($pass_1 !~ m,y,i);
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+sub email_notification {
+    my ($to_addr, $from_addr, $msgRef) = @_;
+
+    my $user  = $users{$to_addr};
+
+    my $subject = $msgRef->{subject};
+    my $body =  $msgRef->{body};
+    
+    $body =~ s,___USER___, $user,;
+    
+    my $mailer = new Mail::Mailer('sendmail', ('-t', '-f hathitrust-system@umich.edu'));
+    $mailer->open({
+                   'To'       => $to_addr,
+                   'From'     => $from_addr,
+                   'Subject'  => $subject,
+                  });
+    print $mailer($body);
+    $mailer->close;
+    print "Sent\n";    
+}

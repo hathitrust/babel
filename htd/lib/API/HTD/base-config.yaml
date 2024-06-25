@@ -1,0 +1,134 @@
+---
+
+unzip_prog: /l/local/bin/unzip
+
+access_use_intro: Please view access and use restrictions at
+
+development_data:
+# article
+  mdp.99999999999999:
+    sdrdataroot: /.space/SAMPLE_SDRDATAROOT/sdr1
+  mdp.99999999999998:
+    sdrdataroot: /.space/SAMPLE_SDRDATAROOT/sdr1
+
+mets_article_meta_xsl: /htd/lib/API/HTD/App/mets-article-meta.xsl
+mets_pagemeta_xsl:     /htd/lib/API/HTD/App/mets-pagemeta.xsl
+mets_meta_xsl:         /htd/lib/API/HTD/App/mets-meta.xsl
+
+force_array_format:
+  - link
+  - htd:pgmap
+  - htd:seqmap
+  - htd:access
+
+# ---------------------------------------------------------------------
+# HTTP status messages
+# ---------------------------------------------------------------------
+httpstatus:
+  200: 200 OK
+  303: 303 SEE OTHER
+  400: 400 BAD REQUEST
+  401: 401 UNAUTHORIZED
+  403: 403 FORBIDDEN
+  404: 404 NOT FOUND
+  405: 405 METHOD NOT ALLOWED
+  500: 500 INTERNAL SERVER ERROR
+  503: 503 SERVICE UNAVAILABLE
+
+
+# ---------------------------------------------------------------------
+# Variants of extension and format mapped to cannonical_key
+# ---------------------------------------------------------------------
+extension_format_map:
+  default: default
+  jpg:     jpeg
+  jpeg:    jpeg
+  jpe:     jpeg
+  jp2:     jp2
+  txt:     text
+  text:    text
+  json:    json
+  tif:     tiff
+  tiff:    tiff
+  zip:     zip
+  html:    html
+  xml:     xml
+  png:     png
+
+# ---------------------------------------------------------------------
+# Mapping from mdp.rights_current.attr field values to names @OPB
+# ---------------------------------------------------------------------
+rights_name_map:
+  1: pd
+  2: ic
+  3: op
+  4: orph
+  5: und
+  6: umall
+  7: ic-world
+  8: nobody
+  9: pdus
+  10: cc-by-3.0
+  11: cc-by-nd-3.0
+  12: cc-by-nc-nd-3.0
+  13: cc-by-nc-3.0
+  14: cc-by-nc-sa-3.0
+  15: cc-by-sa-3.0
+  16: orphcand
+  17: cc-zero
+  18: und-world
+  19: icus
+  20: cc-by-4.0
+  21: cc-by-nd-4.0
+  22: cc-by-nc-nd-4.0
+  23: cc-by-nc-4.0
+  24: cc-by-nc-sa-4.0
+  25: cc-by-sa-4.0
+  26: pd-pvt
+  27: supp
+
+# ---------------------------------------------------------------------
+# List of rights_current.attr names that equate to no access
+# ---------------------------------------------------------------------
+no_access_rights_names:
+  - nobody
+  - pd-pvt
+  - supp
+
+# ---------------------------------------------------------------------
+# List of rights_current.attr names that equate to open access modulo
+# geo-location
+# ---------------------------------------------------------------------
+open_access_rights_names:
+  - pd
+  - pdus
+  - ic-world
+  - cc-by-3.0
+  - cc-by-nd-3.0
+  - cc-by-nc-nd-3.0
+  - cc-by-nc-3.0
+  - cc-by-nc-sa-3.0
+  - cc-by-sa-3.0
+  - cc-by-4.0
+  - cc-by-nd-4.0
+  - cc-by-nc-nd-4.0
+  - cc-by-nc-4.0
+  - cc-by-nc-sa-4.0
+  - cc-by-sa-4.0
+  - cc-zero
+  - und-world
+  - ic-us
+
+
+_HTD_SCHEMAS_URI_:               http://schemas.hathitrust.org/htd/2009
+_HTD_PT_ALTERNATE_URI_:          http://babel.hathitrust.org/cgi/pt?id=__ID__
+_HTD_HDL_ALTERNATE_URI_:         http://hdl.handle.net/2027/__ID__
+_HTD_ATOM_NAMESPACE_URI_:        http://www.w3.org/2005/Atom
+
+# ---------------------------------------------------------------------
+# Token patterns to support dynamic replacement
+# ^__XXX__$   replacement by simple substitution
+# ^_HTD_[A-Z_]+_$ replacement by substitution by pointer to static data
+# ^:::XXX$    replacement by a handler binding
+# ---------------------------------------------------------------------
+
