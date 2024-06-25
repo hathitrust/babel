@@ -1,0 +1,184 @@
+import Shepherd from 'shepherd.js';
+import { createNanoEvents } from 'nanoevents';
+
+export var Helpinator = class {
+  constructor(options={}) {
+    this.input = options.input;
+    this.reader = options.reader;
+    this.steps = [];
+    this.emitter = createNanoEvents();
+    this.bindEvents();
+  }
+
+  on() {
+    return this.emitter.on.apply(this.emitter, arguments)
+  }
+
+  bindEvents() {
+
+    this.maybeAutoStart();
+
+    this.watchMediaQuery();
+
+    let action = document.querySelector(this.input.trigger);
+    this.action = action;
+    action.addEventListener('click', (event) => {
+      if ( event.shiftKey ) {
+        this.configureTour(true);
+        return;
+      }
+      this.tour.start();
+    });
+    action.disabled = true;
+
+    this.configureTour();
+
+  }
+
+  configureTour(doAlert) {
+    const self = this;
+
+    this.tour = new Shepherd.Tour({
+      defaultStepOptions: {
+        classes: 'shadow-md bg-purple-dark',
+        scrollTo: false,
+        popperOptions: {
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [ 0, 25 ]
+              }
+            }
+          ]
+        },
+      },
+      useModalOverlay: true
+    });
+
+    // event tracking
+    this.tour.on('start', (event) => {
+      document.documentElement.dataset.inWalkthrough = true;
+      localStorage.setItem('walkthroughStarted', 'true');
+      HT.analytics.trackEvent({
+        category: 'PT.walkthrough',
+        action: 'start',
+        label: 'start'
+      })
+    })
+
+    this.tour.on('inactive', (event) => {
+      document.documentElement.dataset.inWalkthrough = false;
+    })
+
+    this.tour.on('cancel', (event) => {
+      HT.analytics.trackEvent({
+        category: 'PT.walkthrough',
+        action: `${this.tour.currentStep.id}:exit`,
+        label: `${this.tour.currentStep.id}:exit`
+      })
+    })
+
+    // fetch data on startup
+    const sourceUrl = '/cgi/pt/walkthrough-config/2021';
+    fetch(sourceUrl)
+      .then(response => response.json())
+      .then(data => {
+        data.forEach((step, idx, array) => {
+          if ( step['attachTo'] && step['attachTo'].element.indexOf('#panel-') > -1 ) {
+            // this is a panel
+            step['when'] = {
+              show: function() {
+                const el = document.querySelector(step['attachTo'].element);
+                if ( el.nodeName == 'DETAILS' ) {
+                  setTimeout(() => {
+                    el.open = true;
+                  }, 100);
+                }
+              }
+            }
+          }
+
+          if ( step['attachTo'] && step['attachTo'].element.indexOf('data-action') > -1 ) {
+            step['attachTo'].element = `button[${step.attachTo.element}]`;
+            step['showOn'] = function() {
+              const seq = self.reader.view.currentSeq;
+              const el = document.querySelector(`.page[data-seq="${seq}"] ${step.attachTo.element}`);
+              if ( el ) {
+                return true;
+              }
+              return false;
+            }
+          }
+
+          if ( idx < array.length - 1 ) {
+            step['buttons'] = [
+              {
+                text: 'Exit',
+                secondary: true,
+                action: self.tour.cancel
+              },
+              {
+                text: 'Next',
+                action: this.tour.next
+              }
+            ]
+          } else {
+            step['buttons'] = [
+              {
+                text: 'Done',
+                action: this.tour.complete
+              }
+            ]
+          }
+          this.tour.addStep(step);
+        })
+        
+        // now the tour is ready
+        this.action.disabled = false;
+        this._initialized = true;
+        if ( doAlert ) {
+          window.alert("Tour updated");
+        }
+      })
+  }
+
+  maybeAutoStart() {
+    const self = this;
+    if ( document.referrer && document.referrer.indexOf('/cgi/pt') >= 0 && document.referrer.indexOf('skin=2019') >= 0 ) {
+      // probably coming from the 2019ed
+      if ( localStorage.getItem('walkthroughStarted') != 'true' ) {
+        if ( ! window.matchMedia('( max-width: 700px )').matches ) {
+          self.reader.on('ready', () => {
+            let interval;
+            let interval_idx = 0;
+            interval = setInterval(function() {
+              if ( self._initialized ) {
+                self.tour.start();
+                clearInterval(interval);
+              }
+              interval_idx += 1;
+              if ( interval_idx >= 50 ) {
+                // just punt
+                clearInterval(interval);
+              }
+            }, 100);
+          })
+        }
+      }
+    }
+  }
+
+  watchMediaQuery() {
+    const mql = window.matchMedia('( max-width: 700px )');
+    if ( mql.addEventListener ) {
+      mql.addEventListener('change', (event) => {
+        if ( event.matches ) {
+          if ( this.tour && this.tour.isActive() ) {
+            this.tour.cancel();
+          }
+        }
+      })
+    }
+  }
+};

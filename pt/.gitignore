@@ -1,0 +1,21 @@
+# Ignore all backup files
+*~
+# Ignore Emacs auto saved files
+*#*#
+# Ignore the Auth/Surrogate SDR file
+SDR
+/lib/Config/local.conf
+node_modules
+dist
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+.npm
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*

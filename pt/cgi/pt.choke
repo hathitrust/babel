@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+BEGIN {
+#    $ENV{DEBUG_LOCAL} = 1;
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use BadActors;
+use Vendors __FILE__;
+
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'pt');
+
+use Attribute::Handlers;
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+use Plack::Builder;
+use Plack::Builder::Conditionals::Choke;
+
+use Plack::Handler::CGI;
+
+use CGI::Emulate::PSGI;
+use CGI::Compile;
+
+my $script_filename = __FILE__;
+$script_filename =~ s,\.choke,,;
+my $sub = CGI::Compile->compile($script_filename);
+my $app = CGI::Emulate::PSGI->handler($sub);
+
+$app = builder {
+
+    enable "PopulateENV", app_name => 'pt';
+
+    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
+        "HTErrorDocument", 500 => "/mdp-web/production_500.html";
+
+    enable_if { (Debug::DUtils::under_server()) }
+        "HTErrorDocument", 404 => "/mdp-web/production_404.html";
+
+    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
+
+    enable 'Choke::Cache::Filesystem';
+
+    enable
+        match_if param('a'),
+            'Choke::Null'
+            ;
+
+    enable
+        match_if any( param('view', 'plaintext'), param('view', 'text') ),
+            'Choke::Requests',
+                %{ $$settings{choke}{plaintext} }
+            ;
+
+
+    # probably do some generous throttling
+    enable
+        match_if unchoked(),
+            'Choke::Requests',
+                %{ $$settings{choke}{default} }
+            ;
+
+    enable "SSO";
+
+    $app;
+};
+
+Plack::Handler::CGI->new->run($app);

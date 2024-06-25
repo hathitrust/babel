@@ -1,0 +1,91 @@
+#
+# Comments and newlines are ignored
+#
+# Section information must start with string Section followed by a
+# colon and the section name.  These will be translated into comments in
+# the XSL.  Sections currently only implemented for javascript includes.
+#
+
+# Paths below to HathiTrust *shared* css and js, i.e. web files in
+# /mdp-web MUST be coded //common-web/...  They are transformed by
+# View::_render_template().
+
+# If debug=local is set, //common-web/... is transformed to
+# /mdp-web/... otherwise to /appname/common-web/...  This means that
+# css and js will come from either the shared web repo mdp-web.git or
+# from its submodule under /appname/vendors/common-web, whichever is
+# more convienent for the developer.
+
+# If, in local.conf, debug_uncompressed_css=1 and/or
+# debug_uncompressed_js=1, then the paths that will load that begin
+# with //common-web/ are affected according to the debug=local
+# switch. If a switch in local.conf is NOT set, then the concatenated
+# file will load from /appname/web.
+
+# The concatenator script make-concat always draws the shared files to
+# concatenate from /appname/web/common-web.  This means that changes
+# to shared web files in /mdp-web must be committed, pushed and pulled
+# into the common-web submodule to be seen in the concatenated-min
+# files.  So that usually the last phase of development.
+
+# NOTE: paths WITHIN shared web files like graphics/foo.gif MUST be
+# relative and MUST be coded withthe dot-slash syntax
+# './graphics/foo.gif so the concatenator can change the path to
+# common-web/graphics. This means that when a shared web file is
+# loaded from /mdp-web it will find its paths relative to itself but
+# when it is concatenated into concatenated-min under /appname/web it
+# will find its paths in common-web, i.e. relative to its new location
+# under /appname/web.
+
+Section:LOCAL_JS
+#Test:$gSkin='default'
+# These should be listed with the unminimized name.
+# The script will run yuicompress on them
+/pt/web/vendor/screenfull.js
+//common-web/jquery/jQuery-URL-Parser/purl.js
+/pt/web/js/base.js
+/pt/web/js/feedback.js
+/pt/web/js/downloader.js
+/pt/web/js/version_popup.js
+/pt/web/js/embedHtml_popup.js
+/pt/web/js/collection_tools.js
+/pt/web/js/access_banner_02.js
+/pt/web/js/google_analytics_experiment.js
+/pt/web/js/header_search.js
+//common-web/js/social_links.js
+
+Section:PAGETURNER_VOLUME_JS
+#Test://ItemType='volume' and $gSkin='default'
+Test://ItemType='volume'
+/pt/web/vendor/nanoscroller/jquery.nanoscroller.js
+/pt/web/vendor/jquery.fracs.js
+/pt/web/vendor/jquery.viewport.js
+/pt/web/vendor/jquery.sticky-kit.js
+/pt/web/vendor/jquery.fullscreen.js
+/pt/web/vendor/jquery.animate.clip.js
+# /pt/web/vendor/BookBlock/js/jquerypp.custom.js
+/pt/web/vendor/jquery.event.move.js
+/pt/web/vendor/jquery.event.swipe.js
+/pt/web/vendor/BookBlock/js/jquery.bookblock.js
+/pt/web/vendor/slider/js/bootstrap-slider.js
+/pt/web/vendor/vein.js
+/pt/web/js/sidebar.js
+/pt/web/js/reader.js
+/pt/web/js/manager.js
+/pt/web/js/imgsrv.js
+/pt/web/js/view/image.js
+/pt/web/js/view/scroll.js
+/pt/web/js/view/thumb.js
+/pt/web/js/view/flip.js
+/pt/web/js/view/plaintext.js
+
+Section:PAGETURNER_VOLUME_EPUB_JS
+Test://ItemType='volume/epub'
+/pt/web/vendor/nanoscroller/jquery.nanoscroller.js
+/pt/web/vendor/jquery.sticky-kit.js
+/pt/web/js/sidebar.js
+/pt/web/js/epub_reader.js
+
+# Section:PAGETURNER_SEARCH_JS
+# Test:$gUsingSearch='true'
+

@@ -1,0 +1,308 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename qw(dirname);
+use IO::File;
+autoflush STDOUT 1;
+
+use Plack::Runner;
+
+BEGIN {
+    # $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+}
+
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors __FILE__;
+
+use Time::HiRes qw(time);
+
+# Permit created directories at 777 and created files at 666.
+umask 0000;
+
+# MDP specfic
+use Debug::DUtils;
+use MdpGlobals;
+
+use MdpConfig;
+use Auth::Auth;
+use Utils;
+use Database;
+use Session;
+
+use Institutions;
+
+use Plack::Builder;
+use Plack::Request;
+use Plack::Response;
+
+use CGI::PSGI;
+
+use JSON::XS;
+
+use URI::Escape;
+use YAML ();
+
+use Utils::Settings;
+my $settings = Utils::Settings::load('pt', 'reports');
+
+#---- MPD App
+{
+    package App;
+    
+    sub new {
+        my $class = shift;
+        my ( $env ) = @_;
+
+        my $self = {};
+        bless $self, $class;
+
+        $self->setup($env);
+
+        return $self;
+    }
+    
+    sub get_app_name {
+        my $self = shift;
+        return "reports";
+    }
+
+    sub setup {
+        my $self = shift;
+        my ( $env ) = @_;
+
+        $$self{env} = $env;
+
+        ## CHECK FOR AUTH
+        my $C = new Context;
+        $$self{C} = $C;
+
+        $C->set_object('App', $self);
+
+        # we already have the config
+        my $config = $$env{'psgix.config'};
+
+        $C->set_object('MdpConfig', $config);
+
+        # Database connection -- order matters
+        my $db = new Database('ht_web');
+        $C->set_object('Database', $db);
+
+        my $cgi = CGI::PSGI->new($env);
+        $C->set_object('CGI', $cgi);
+
+        my $ses = Session::start_session($C, 0);
+        $C->set_object('Session', $ses);
+
+        # Auth
+        my $auth = new Auth::Auth($C);
+        $C->set_object('Auth', $auth);
+    }
+
+    sub auth {
+        my $self = shift;
+        return $$self{C}->get_object('Auth');
+    }
+
+    sub cgi {
+        my $self = shift;
+        return $$self{C}->get_object('CGI');
+    }
+
+    sub get_dbh {
+        my $self = shift;
+        return $$self{C}->get_object('Database')->get_DBH();
+    }
+
+    sub is_logged_in {
+        my $self = shift;
+        return $self->auth->is_logged_in($$self{C});
+    }
+
+    sub is_authorized {
+        my $self = shift;
+        my $remote_user = $self->auth->get_user_name($$self{C});
+        return grep(/^$remote_user$/, @{ $$settings{users}} ) ? 1 : 0;
+    }
+
+    sub redirect_to_url {
+        my $self = shift;
+        my $redirect_to_url = $self->cgi->url(-query=>1, -path=>1);
+        return $self->auth->get_WAYF_login_href($$self{C}, $redirect_to_url);
+    }
+
+    sub report_name {
+        my $self = shift;
+        return substr($$self{env}{PATH_INFO}, 1);
+    }
+    
+}
+
+#-- QUERIES
+our $queries = YAML::Load(do { local $/; <DATA> });
+
+#--- MAIN VIEW HANDLER
+my $main = sub {
+    my $env = shift;
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    my $helper = new App($env);
+
+    if ( ! $helper->is_logged_in() ) {
+        my $redirect_to_url = $helper->redirect_to_url(); 
+
+        $response = Plack::Response->new(302);
+        $response->redirect($redirect_to_url);
+
+        return $response->finalize;
+    }
+
+    my $html_filename; my $html;
+    my $report_name = $helper->report_name();
+
+    my $status = 200;
+
+    unless ( $helper->is_authorized() ) {
+        # should not be here
+        $status = 401;
+        $html_filename = qq{$ENV{SDRROOT}/pt/web/reports/401.html};
+
+    } else {
+        $html_filename = qq{$ENV{SDRROOT}/pt/web/reports$$env{PATH_INFO}.html};
+    }
+
+    open my $fh, '<', $html_filename or die "Can't open file $!";
+    $html = do { local $/; <$fh> };
+    $html =~ s,{REPORT},$report_name,;
+
+    $response = Plack::Response->new($status);
+    $response->content_type('text/html; charset=utf-8');
+    $response->body($html);
+
+    return $response->finalize;    
+};
+
+#--- API HANDLER
+my $api = sub {
+    my $env = shift;
+
+    my $request = Plack::Request->new($env);
+    my $response;
+
+    my $helper = new App($env);
+    unless ( $helper->is_logged_in() && $helper->is_authorized() ) {
+        $response = Plack::Response->new(401);
+        $response->content_type('application/javascript; charset=utf-8');
+        $response->body(encode_json([]));
+        return $response->finalize;    
+    }
+
+    # Database connection
+    my $report_name = $helper->report_name();
+    my $dbh = $helper->get_dbh();
+
+    my $query = $$queries{$report_name};
+    my $params = $request->parameters;
+    my $paginated = $$params{paginated};
+
+    my @datetime_params = (); my @datetime_expr = ();
+    if ( $$params{datetime_start} && $$params{datetime_start} ne '0000-00-00 00:00:00' ) {
+        push @datetime_expr, qq{datetime >= ?};
+        push @datetime_params, $$params{datetime_start};
+    }
+    if ( $$params{datetime_end} && $$params{datetime_end} ne '9999-99-99 23:59:59' ) {
+        push @datetime_expr, qq{datetime <= ?};
+        push @datetime_params, $$params{datetime_end};
+    }
+    # if ( scalar @datetime_expr ) {
+    #     my $expr = join(' AND ', @datetime_expr);
+    #     $query =~ s,-- DATETIME_FILTER --,AND $expr,;
+    # }
+    my $expr;
+    if ( scalar @datetime_expr ) {
+        $expr = join(' AND ', @datetime_expr);
+        $query =~ s,-- DATETIME_FILTER --,AND $expr,;
+    }
+
+    my $total;
+    if ( $paginated ) {
+        my $base_query = $query;
+        $query = qq{SELECT * FROM ( $query ) t};
+
+        if ( $$params{search} ) {
+            my @subquery_params = ();
+            my @subquery_expr = ();
+            foreach my $key (qw/htid email inst_code inst_name content_provider_code digitization_agent_code title imprint author rights_date_used/) {
+                push @subquery_expr, qq{$key LIKE ?};
+                push @subquery_params, qq{%$$params{search}%};
+            }
+            $query .= qq{ WHERE (} . join(' OR ', @subquery_expr) . qq{)};
+            push @datetime_params, @subquery_params;
+        }
+        ( $total ) = $dbh->selectrow_array(qq{SELECT COUNT(*) FROM ( $query ) tt}, undef, @datetime_params);
+        my $sortkey = $$params{sort} || 'datetime';
+        my $order = 'ASC';
+        if ( $sortkey eq 'datetime' ) { $order = 'DESC'; }
+        $query .= qq{ ORDER BY $sortkey $order LIMIT } . $$params{limit} . " OFFSET " . $$params{offset};
+    }
+    if ( $$params{debug} ) {
+        $response = Plack::Response->new(200);
+        $response->content_type('text/plain; charset=utf-8');
+        $response->body(qq{$query\n\n} . join("\n", @datetime_params));
+        return $response->finalize;
+    }
+
+    my $rows = $dbh->selectall_arrayref($query, {Slice => {}}, @datetime_params);
+    if ( $paginated ) {
+        $rows = {
+            total => $total,
+            rows => $rows
+        };
+    }
+
+    $response = Plack::Response->new(200);
+    $response->content_type('application/javascript; charset=utf-8');
+    $response->body(encode_json($rows));
+
+    return $response->finalize;    
+};
+
+#--- PLACK
+my $app = builder {
+    enable "PopulateENV", app_name => 'imgsrv';
+    mount "/" => $main;
+    mount "/api" => $api;
+};
+
+Plack::Runner->new->run($app);
+exit;
+
+# -------
+
+__DATA__
+---
+ssdproxy: |
+  SELECT
+      -- r.yyyy,
+      -- r.yyyymm,
+      r.datetime,
+      r.htid,
+      h.bib_num AS ht_bib_key,
+      h.rights_code,
+      r.email,
+      r.inst_code,
+      i.name AS inst_name,
+      h.content_provider_code,
+      h.digitization_agent_code,
+      h.title,
+      h.imprint,
+      h.author,
+      h.`rights_date_used`
+  FROM ht_web.reports_downloads_ssdproxy r, ht.ht_institutions i, ht.hf h
+  WHERE r.htid = h.htid
+  -- DATETIME_FILTER --
+  AND   r.inst_code = i.inst_id
+  ORDER BY `datetime` DESC
