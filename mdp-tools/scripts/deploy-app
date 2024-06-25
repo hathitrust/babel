@@ -1,0 +1,627 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+deploy-app - Deploy a HathiTrust application to production
+
+=head1 SYNOPSIS
+
+deploy-app [options] [<app>]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-h>
+
+Print a brief help message and exit.
+
+=item B<-v>
+
+Verbose
+
+=item B<-A>
+
+Verbose
+
+=back
+
+=head1 DESCRIPTION
+
+Deployment is a two-part process.
+
+1) B<stage-app> synchronizes the test.babel/app local repository's
+master branch with the state of the central repository. Testing proceeds
+on the code in this state.
+
+2) When testing is finished, B<deploy-app> will attempt to checkout
+the 'deployment' branch of the git repository for 'app', merge in the
+above state of the 'master' branch, update all submodules, tag the
+HEAD and rdist to production the resulting contents of test.babel/app
+using rdist.app for the given app.
+
+If the B<-v> option is supplied, the output will be verbose.
+
+NOTE: plackup monitors a configurable list of files for changes bsed
+  on timestamp.  We want plackup to reload app whenever any app file
+  changes, not just the cgi.  git checkout gives a new timestamp to
+  files, so files in the HTDE, e.g. in beta-{1,2,3,4}, will satisfy this
+  requirement.  However, rdist only updates timestamps on files that
+  change so B<deploy-app> touches $appdir/bin/rdist.timestamp
+  (monitored by plackup) to ensure the reload of the cgi.
+
+=cut
+
+use strict;
+use Getopt::Std;
+
+use lib "${\($ENV{TOOLS_ROOT} || '/htapps/test.babel')}/mdp-lib/Utils";
+use Vendors;
+use File::Basename;
+use Date::Calc qw(Today_and_Now Delta_DHMS);
+
+my $LOCATION = dirname(__FILE__);
+my $TIMESTAMP_PATH = 'bin/rdist.timestamp';
+
+use ToolLib;
+
+sub deploy_app_usage {
+    my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
+      where <app> is the application to tag and deploy or re-deploy from an existing tag
+         -m ictc|macc deploy just to ictc or macc (rdist -m {macc|ictc}.umdl.umich.edu)
+         -v verbose
+         -A all apps (please don't)
+         -S <service>, babel (default), www, catalog
+         -T maj(or|min(or|ter(tiary
+              automatically build tag by incrementing the indicated version number component
+         -h print help\n};
+    return $s;
+}
+
+our ($opt_h, $opt_v, $opt_T, $opt_A, $opt_m, $opt_d, $opt_S);
+my $ops = getopts('hvT:Am:dS:');
+
+my $FORCE_DIFF = defined($opt_d);
+
+my $VERBOSE = $ToolLib::VERBOSE = $opt_v;
+
+my $help = $opt_h;
+if ($help) {
+    print deploy_app_usage();
+    exit 0;
+}
+
+my @all_valid_services = @ToolLib::all_valid_services;
+my $SERVICE = $opt_S;
+if ($SERVICE) {
+    if (! grep(/^$SERVICE$/, @all_valid_services)) {
+        PrintN("$SERVICE is not a valid beta staging area\n");
+        print stage_app_usage();
+        exit 1;
+    }
+    $ToolLib::SERVICE = $SERVICE;
+    PrintY("deploying to $SERVICE\n");
+}
+
+my $ALL = $opt_A;
+my @apps;
+if ($ALL) {
+    @apps = `cat $LOCATION/../lib/Config/app-list.txt`;
+    chomp(@apps);
+}
+else {
+    @apps = @ARGV;
+}
+
+if (! scalar(@apps)) {
+    if (defined($opt_T) || defined($opt_m) || defined($opt_v)) {
+        PrintN(qq{ERROR: missing app arg\n});
+        print deploy_app_usage();
+        exit 1;
+    }
+    print deploy_app_usage();
+    exit 0;
+}
+
+my $VERSION_INCREMENT = __handle_VERSION_INCREMENT($opt_T);
+my $SITE = __handle_SITE($opt_m);
+
+my ($repo_root, $app_root) = get_HTDE_roots('test');
+my $default_repo_root = $repo_root;
+
+my $rc = 0;
+foreach my $app (@apps) {
+    my $fail_msg = qq{Failed to deploy application ($app)\n};
+    my $app_dir = "$app_root/$app";
+
+
+    PrintY(qq{\nDeploying application ($app) from $app_dir\n});
+
+    if (! validate_existing_app($repo_root, $app_root, $app)) {
+        PrintN($fail_msg);
+        next;
+        $rc |= 1;
+    }
+
+    if (! __validate_local_deployment($repo_root, $app_dir, $app)) {
+        PrintN($fail_msg);
+        next;
+        $rc |= 1;
+    }
+
+    my ($tag, $tag_is_new, $vrc);
+    do {
+        ($tag, $tag_is_new) = __get_tag($app);
+        $vrc = __validate_tag($tag, $tag_is_new);
+    } until ($vrc eq 'valid');
+
+    if ($tag_is_new) {
+        if (! (
+               G_checkout_branch($app_dir, 'deployment')
+               &&
+               G_tag_app($app_dir, $tag)
+               &&
+               G_push_origin_tags($app_dir)
+               &&
+               G_push_origin_deployment($app_dir)
+              )
+           ) {
+            PrintN($fail_msg);
+            next;
+            $rc |= 1;
+        }
+    }
+    else {
+        if (! (
+               G_checkout_tag($app_dir, $tag)
+               &&
+               G_update_submodules($app_dir)
+              )
+           ) {
+            PrintN($fail_msg);
+            next;
+            $rc |= 1;
+        }
+    }
+
+    if (! __rdist_app_to_production($app_dir, $SITE, $tag)) {
+        PrintN($fail_msg);
+        next;
+        $rc |= 1;
+    }
+
+    PrintY("Successful deployment of application ($app @ $tag) from $app_dir\n");
+}
+
+exit $rc;
+
+#
+# Subroutines
+#
+
+# ---------------------------------------------------------------------
+
+=item __handle_SITE
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_SITE {
+    my $opt = shift;
+
+    my @sites = ('macc', 'ictc');
+    my $site = $opt;
+
+    if (defined($site)) {
+        if (! grep(/^$site$/, @sites)) {
+            PrintN(qq{ERROR: -m arg must be one of: } . join(', ', @sites) . "\n");
+            print deploy_app_usage();
+            exit 1;
+        }
+
+        my $domain = '.umdl.umich.edu';
+        my $prefix = 'nas-';
+
+        $site .= $domain;
+        $site = $prefix . $site;
+    }
+
+    return $site;
+}
+
+# ---------------------------------------------------------------------
+
+=item __handle_VERSION_INCREMENT
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __handle_VERSION_INCREMENT {
+    my $opt = shift;
+
+    my @ver_incrs = ('maj', 'min', 'ter',);
+
+    if (defined($opt)) {
+        if (! grep(/^$opt$/, @ver_incrs)) {
+            PrintN(qq{ERROR: -T arg must be one of: } . join(', ', @ver_incrs) . "\n");
+            print deploy_app_usage();
+            exit 1;
+        }
+    }
+
+    return $opt;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __validate_local_deployment
+
+Make sure or at least warn that the origin master is different than
+the local origin/deployment. This indicates that there are changes in the
+central repo that appeared since the last run of stage-app.  This may
+be ok.  Prompt to allow the deployment to proceed or abort.
+
+Note that because the merge of master into deployment is --no-ff the
+SHAs are different but the states are the same.
+
+Fetch origin so we have all the objects locally to diff.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_local_deployment {
+    my ($repo_root, $app_dir, $app) = @_;
+
+    print qq{Validating local deployment branch vs. remote master ... \n};
+
+    return 0
+      if (! chdir_to_app_dir($app_dir));
+
+    my $cmd;
+
+    if (! G_fetch_origin($app_dir)) {
+        return 0;
+    }
+
+    my $remote_master_SHA1;
+    $cmd = "git ls-remote $repo_root/$app.git refs/heads/master";
+    if (! execute_command_w_output($cmd, \$remote_master_SHA1)) {
+        return 0;
+    }
+    ($remote_master_SHA1) = split(/\s+/, $remote_master_SHA1);
+
+    my $local_deployment_SHA1;
+    $cmd = "git ls-remote . refs/heads/deployment";
+    if (! execute_command_w_output($cmd, \$local_deployment_SHA1)) {
+        return 0;
+    }
+    ($local_deployment_SHA1) = split(/\s+/, $local_deployment_SHA1);
+
+    my $diff;
+    $cmd = "git diff $remote_master_SHA1..$local_deployment_SHA1";
+    if (! execute_command_w_output($cmd, \$diff)) {
+        return 0;
+    }
+
+    if ($diff) {
+        if (query_yn("\nWARN: Staged deployment branch state differs from state of remote master\nWARN: Changes have been pushed to origin that have not been staged.\n\tAbort?", 'y')) {
+            return 0;
+        }
+    }
+    PrintY("Validation succeeds\n");
+
+    return 1;
+}
+
+# ---------------------------------------------------------------------
+
+=item __build_tag
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __build_tag {
+    my $app = shift;
+    my $auto_version = shift;
+
+    my $version = __get_version_string($app, $auto_version);
+    my $tag = $app . '_v' . $version;
+
+    return $tag;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_auto_increment_version
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_auto_increment_version {
+    my $increment = shift;
+    my $last_tag = G_last_tag();
+
+    unless ($last_tag){
+        $last_tag = "0.0.0";
+    }
+
+    my @version_arr = ($last_tag =~ m,(\d+)\.(\d+)\.(\d+),);
+
+    if ($increment eq 'maj') {
+        $version_arr[0] += 1;
+        $version_arr[1] = 0;
+        $version_arr[2] = 0;
+    }
+    elsif ($increment eq 'min') {
+        $version_arr[1] += 1;
+        $version_arr[2] = 0;
+    }
+    elsif ($increment eq 'ter') {
+        $version_arr[2] += 1;
+    }
+    else {
+        die "bad increment arg: $increment\n";
+    }
+
+    return "$version_arr[0] $version_arr[1] $version_arr[2]";
+}
+
+# ---------------------------------------------------------------------
+
+=item __get_tag
+
+Prompt user for new tag version numbers or for an existing tag
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_tag {
+    my $app = shift;
+
+    my $new = 0;
+    my $tag;
+
+    if ($VERSION_INCREMENT){
+        my $auto_version = __get_auto_increment_version($VERSION_INCREMENT);
+        $tag = __build_tag($app, $auto_version);
+        PrintM("AUTO ");
+        print qq{tagging using: $tag\n};
+        $new = 1;
+    }
+    elsif (query_yn("Deploy using new tag?", 'y')) {
+        print qq{Ok. Last tag was: } . G_last_tag() . qq{\n};
+
+        $tag = __build_tag($app);
+        $new = 1;
+    }
+    else {
+        print qq{Ok. Last 3 tags were:\n} . G_list_tags() . qq{\n};
+
+        $tag = __build_tag($app);
+    }
+
+    return ($tag, $new);
+}
+
+# ---------------------------------------------------------------------
+
+=item ___create_timestamp
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub ___create_timestamp {
+    my $app_dir = shift;
+    my $tag = shift;
+
+    my $ts = qq{$app_dir/$TIMESTAMP_PATH};
+    print qx(echo $tag > $ts);
+    print qq{  -> update $ts @ $tag\n};
+}
+
+# ---------------------------------------------------------------------
+
+=item __rdist_app_to_production
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __rdist_app_to_production {
+    my $app_dir = shift;
+    my $site = shift;
+    my $tag = shift;
+
+    my ($year1,$month1,$day1,$hour1,$min1,$sec1) = Today_and_Now();
+
+    # Plack timestamp logic
+    my $timestamp_rdist_script = qq{$app_dir/bin/rdist.app.timestamp};
+    if (! -e $timestamp_rdist_script) {
+        # create timestamp now and rdist it using rdist.app script
+        ___create_timestamp($app_dir, $tag);
+    }
+
+    my $s = defined($site) ? qq{ONLY TO $site} : '';
+    print qq{Now starting APP rdist to production $s ...\n};
+
+    my $opt = defined($site) ? qq{-m $site} : '';
+    if ($ENV{RDIST_NO_FORK}) {
+      $opt .= ' -F';
+    }
+    my $cmd = qq{rdist -f $app_dir/bin/rdist.app $opt};
+    print qq{$cmd\n} if $VERBOSE;
+    print qx($cmd);
+
+    if (my $err = $?) {
+        PrintN("ERROR: rdist APP failure\n");
+        PrintN($err);
+        return 0;
+    }
+
+    # non-Plack timestamp logic
+    if (-e $timestamp_rdist_script) {
+        print qq{Now starting separate TIMESTAMP rdist to production $s ...\n};
+
+        # create timestamp *after* app rdist has finished and rdist it
+        # using rdist.app.timestamp script
+        ___create_timestamp($app_dir, $tag);
+
+        print qx(rdist -f $timestamp_rdist_script $opt);
+
+        if ($?) {
+            PrintN("ERROR: rdist TIMESTAMP failure\n");
+            return 0;
+        }
+    }
+
+    my ($year2,$month2,$day2,$hour2,$min2,$sec2) = Today_and_Now();
+
+    my ($Dd,$Dh,$Dm,$Ds) =
+      Delta_DHMS($year1,$month1,$day1,$hour1,$min1,$sec1,
+                 $year2,$month2,$day2,$hour2,$min2,$sec2);
+
+    my $e = sprintf("Rdist succeeds. Elapsed=%02d:%02d ", $Dm, $Ds);
+    PrintY($e);
+
+
+    return 1;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __validate_tag
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __validate_tag {
+    my ($tag, $new) = @_;
+
+    my $rc = 'valid';
+
+    my $cmd;
+    print qq{Trying to validate tag="$tag" ... };
+
+    if (! defined($tag)) {
+        PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
+        $rc = 'notvalid';
+    }
+
+    if ($new) {
+        # Acceptable format?
+        $cmd = "git check-ref-format refs/tags/$tag";
+        if (! execute_command($cmd)) {
+            PrintN(qq{ERROR: format is not valid for tag="$tag"\n});
+            $rc = 'notvalid';
+        }
+        if (! __tag_is_greater($tag)) {
+            PrintN(qq{ERROR: new tag="$tag" is less than or equal last tag in chronological order\n});
+            print qq{Last tag was: }. G_last_tag() . qq{\n};
+            $rc = 'notvalid';
+        }
+    }
+    else {
+        # Exists?
+        $cmd = "git show $tag";
+        if (! execute_command($cmd)) {
+            PrintN(qq{ERROR: tag="$tag" does not exist\n});
+            $rc = 'notvalid';
+        }
+    }
+
+    if ($rc eq 'valid') {
+        PrintY("OK\n");
+    }
+    elsif (query_yn("\nRetry?", 'y')) {
+            $rc = 'retry';
+    }
+
+    return $rc;
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __tag_is_greater
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __tag_is_greater {
+    my $tag = shift;
+
+    my ($major, $minor, $tert) = ($tag =~ m,(\d+)\.(\d+)\.(\d+),);
+    my $output;
+    my $cmd = "git for-each-ref --count=1 --sort='-taggerdate' --format='%(refname)' 'refs/tags'";
+    if (! execute_command_w_output($cmd, \$output)) {
+        PrintN(qq{ERROR: could not get last tag in chronological order\n});
+        exit 1;
+    }
+    my ($last_major, $last_minor, $last_tert) = ($output =~ m,(\d+)\.(\d+)\.(\d+),);
+
+    if    ($major < $last_major) {return 0;}
+    elsif ($major > $last_major) {return 1;}
+    elsif ($minor < $last_minor) {return 0;}
+    elsif ($minor > $last_minor) {return 1;}
+    elsif ($tert  < $last_tert)  {return 0;}
+    elsif ($tert  > $last_tert)  {return 1;}
+    else                         {return 0;}
+}
+
+
+# ---------------------------------------------------------------------
+
+=item __get_version_string
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub __get_version_string {
+    my $app = shift;
+    my $auto_version = shift;
+
+    my $version_string;
+    my $ver;
+
+  GET_VERSION:
+    if ($auto_version) {
+        $ver = $auto_version;
+    }
+    else {
+        $ver = query("\nEnter major.minor.tertiary release numbers for $app (N N N) ");
+    }
+
+    if ($ver =~ m,(\d+)\s+(\d+)\s+(\d+),) {
+        $version_string = qq{$1.$2.$3};
+    }
+    else {
+        PrintN("ERROR: enter 3 numbers\n");
+        goto GET_VERSION;
+    }
+
+    return $version_string;
+}
+
+
+__END__;
+
