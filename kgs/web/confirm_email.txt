@@ -1,0 +1,19 @@
+
+We have received a request to send ___REQUESTOR_TO_ADDRESS___ this confirmation email for HathiTrust Data API keys.   If you did not initiate this request please disregard this this email with our apologies. Otherwise, follow the link below to view your HathiTrust Data API keys.
+
+___CONFIRM_LINK___
+
+Note:
+
+* This is a one-time link. It will not work if you click on it a second time.
+ 
+* This is time-sensitive link.  It expires in 24 hours from ___URL_EXPIRE_DATE___. 
+
+* ___REQUESTOR_TO_ADDRESS___ is allowed to have up to ___MAX_ATTEMPTED_REGISTRATIONS___ unconfirmed requests and up to ___MAX_ACTIVE_REGISTRATIONS___ confirmed requests. You have ___ACTUAL_REGRISTRATIONS___ unconfirmed ___UREQ___ and ___ACTUAL_CONFIRMATIONS___ confirmed ___CREQ___. 
+
+* Please contact us at support@hathitrust.org or simply reply to this email with questions or for assistance.
+        
+
+Regards,
+  
+HathiTrust.org
