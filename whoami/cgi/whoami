@@ -1,0 +1,278 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use feature qw(say);
+
+BEGIN {
+    ## $ENV{DEBUG_LOCAL} = 1;
+}
+use lib "$ENV{SDRROOT}/mdp-lib/Utils";
+use Vendors;
+
+use CGI;
+
+use Context;
+use Debug::DUtils;
+use Auth::ACL;
+use Database;
+use MdpConfig;
+use Session;
+use Auth::Auth;
+use Utils::Date;
+
+use Auth::Logging;
+
+use Text::Wrap;
+
+my $C = new Context;
+
+# CGI
+my $cgi = new CGI;
+Utils::clean_cgi_params($cgi);
+$C->set_object('CGI', $cgi);
+
+my $config = new MdpConfig(Utils::get_uber_config_path('whoami'),
+  '/htapps/babel/etc/ht_jira.conf');
+$C->set_object('MdpConfig', $config);
+
+# Database connection
+my $db = new Database('ht_web');
+$C->set_object('Database', $db);
+
+Debug::DUtils::setup_debug_environment();
+
+# Auth
+my $auth = new Auth::Auth($C);
+$C->set_object('Auth', $auth);
+
+my $jira_ua = new LWP::UserAgent;
+
+# --- App ---
+#
+print $cgi->header(-charset => 'UTF-8');
+print qq{<body style="margin:3em;width:50%">};
+
+print qq{
+    <div>
+      <!-- header -->
+      <div>
+        <div>
+          <div>
+            <div>
+              <a id="htlogo" href="https://www.hathitrust.org">
+                <!-- Original is 1200x312 -->
+                <img src="/common/hathitrust-digital-library-logo-horizontal-orange-gray-rgb.png"
+                     alt="HathiTrust Digital Library" width="320" height="83" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> };
+
+if (defined $ENV{REMOTE_USER} && $ENV{REMOTE_USER}) {
+
+    my $auth_type = lc $ENV{AUTH_TYPE};
+
+    my $ticket = $cgi->path_info();
+    my $tuples = [];
+    if ( $ticket ) {
+      $ticket = substr($ticket, 1);
+      push @$tuples, [ 'ticket', $ticket ];
+    }
+
+    my $properties = get_properties();
+    my $cookie_values = get_cookie_values();
+
+    my $jira_err;
+    if ( $ticket ) {
+      my $comment = jira_comment_text($properties, $cookie_values);
+      $jira_err = add_jira_comment($ticket, $comment);
+      if ($jira_err) {
+        print <<HTML;
+<div style="padding: 1rem; background: orange; color: #000">
+<p>Unable to update your support ticket <strong>$ticket</strong> due to the following error:</p>
+<p><code>$jira_err</code></p>
+<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p>
+</div>
+HTML
+      } else {
+        print <<HTML;
+<div style="padding: 1rem; background: orange; color: #000">
+<p>This information has been forwarded to your support ticket (<strong>$ticket</strong>).</p>
+</div>
+HTML
+      }
+    }
+    say qq{<p>Here are your credentials as we see them from your login.</p>};
+    say qq{<h2>Credentials</h2>};
+    say qq{<ul>};
+
+    foreach my $tuple ( @$properties ) {
+        my ( $key, $value ) = @$tuple;
+
+        if (ref($value) ) {
+            say qq{<li>$key = <ul>};
+            foreach ( @$value ) {
+                say qq{<li>$_</li>};
+            }
+            say qq{</ul></li>};
+        } elsif ( $value ) {
+            say qq{<li>$key = $value</li>};
+        }
+    }
+
+    say qq{</ul>};
+
+    say qq{<h2>HTTP_COOKIE</h2>};
+    foreach ( @$cookie_values ) {
+        say q{<pre>} . wrap("", "", $_) . q{</pre>};
+    }
+
+    if (!$ticket) {
+        print q{<p>If you were asked to forward this information to HathiTrust, please attach a screen shot or copy and paste this text to a reply to the support ticket email we sent in response to your request for assistance.</p> };
+
+        print qq{<p>Thank you.</p>};
+    }
+
+    Auth::Logging::log_access($C, 'whoami', $tuples);
+
+}
+else {
+    print q{<p>Greetings,</p><p>You have been directed here to log in.</p><p> You will be sent to the HathiTrust login page from the login link below where you will proceed to your institutional login page and be redirected back to a HathiTrust page where you will be able to view your login credentials.</p>};
+
+    my $ticket = $cgi->path_info;
+
+    print q{<p>You then have the option to submit those credentials to HathiTrust for purposes such as:
+<ul>        
+<li>Recovering access to personal collections if you change institutional affiliation</li>
+<li>Supporting our staff in setting up your access to materials</li>
+</ul></p>};
+
+    print qq{<p>Please <a href="https://$ENV{HTTP_HOST}/cgi/wayf?target=https%3A%2F%2F$ENV{HTTP_HOST}%2Fcgi%2Fwhoami$ticket" id="login-button" class="button log-in"><b>LOG IN</b></a> to HathiTrust start the process.</p>};
+
+    print q{<p>Questions?  Contact us at <a href="mailto:support@hathitrust.org">support@hathitrust.org</a> };
+}
+print qq{</body>};
+
+
+exit 0;
+
+sub get_geoip {
+    use Geo::IP;
+
+    my $IP = shift;
+
+    my $geoIp = Geo::IP->new();
+    my $countryCode = $geoIp->country_code_by_addr($IP);
+    my $countryName = $geoIp->country_name_by_addr($IP);
+    return "$countryCode / $countryName";
+}
+
+
+sub get_properties {
+    my $retval = [];
+
+    my $remote_user = $ENV{REMOTE_USER};
+    my $remote_addr = $ENV{REMOTE_ADDR};
+    my $country = get_geoip($remote_addr);
+    my $client_host = `host $remote_addr`;
+    chomp($client_host);
+
+    my $shibboleth_remote_user;
+
+    my $auth_type = $ENV{AUTH_TYPE};
+    if ( $auth_type eq 'shibboleth' && ! Utils::is_cosign_active() && $ENV{Shib_Identity_Provider} eq $Utils::UMICH_ENTITY_ID ) {
+        $shibboleth_remote_user = $remote_user;
+        $remote_user = Utils::Get_Legacy_Remote_User();
+    }
+
+    push @$retval, [ 'REMOTE_USER', $remote_user ];
+    push @$retval, [ 'SHIBBOLETH_REMOTE_USER', $shibboleth_remote_user ] if ( $shibboleth_remote_user );
+    push @$retval, [ 'REMOTE_ADDR', $remote_addr ];
+    push @$retval, [ 'REMOTE_HOST', $client_host ];
+    push @$retval, [ 'REMOTE_COUNTRY', $country ];
+
+    foreach my $key ( qw/HTTP_X_FORWARDED_FOR REMOTE_REALM AUTH_TYPE HTTP_USER_AGENT HTTP_HOST SDRINST SDRLIB/ ) {
+        push @$retval, [ $key, $ENV{$key} ] if ( $ENV{$key} );
+    }
+
+    my $affiliation = $ENV{affiliation} || '';
+    push @$retval, [ 'eduPersonScopedAffiliation', [ sort split(/;/, $affiliation) ] ];
+    push @$retval, [ 'eduPersonPrincipalName', $ENV{eppn} ] if ( $ENV{eppn} );
+    push @$retval, [ 'displayName', $ENV{displayName} ] if ( $ENV{displayName} );
+    push @$retval, [ 'entitlement', $ENV{entitlement} ] if ( $ENV{entitlement} );
+    push @$retval, [ 'entityID', $ENV{Shib_Identity_Provider} ];
+    push @$retval, [ 'authenticationMethod', $ENV{Shib_Authentication_Method} ];
+    push @$retval, [ 'authnContextClass', $ENV{Shib_AuthnContext_Class} ];
+
+    return $retval;
+}
+
+sub get_cookie_values {
+    my $cookie_value = $ENV{HTTP_COOKIE};
+    my @values = split(/;\s+/, $cookie_value);
+    return \@values;
+}
+
+# Returns error string or undef for success.
+sub add_jira_comment {
+  my $key = shift;
+  my $comment = shift;
+
+  $comment =~ s/"/\\"/g;
+  $comment =~ s/\n/\\n/gm;
+  my $data = qq({ "body": "$comment", "properties":[{"key":"sd.public.comment","value":{"internal":true}}] });
+
+  my $req = jira_request(POST => "/rest/api/2/issue/$key/comment");
+  $req->content_type('application/json');
+  $req->content($data);
+
+  my $res = $jira_ua->request($req);
+  if (!$res->is_success()) {
+     warn("While adding comment: got a " . $res->code() . " with content \n" . $res->content);
+     return sprintf("Error " . $res->code());
+  }
+  return;
+}
+
+sub jira_request {
+  my $method = shift;
+  my $path = shift;
+
+  my $username = $config->get('jira_user');
+  my $password = $config->get('jira_password');
+  my $prefix = $config->get('jira_prefix');
+  my $req = HTTP::Request->new($method => $prefix . $path);
+  $req->authorization_basic($username, $password);
+
+  return $req;
+}
+
+sub jira_comment_text {
+  my $properties = shift;
+  my $cookie_values = shift;
+
+  my $buffer = [];
+  push @$buffer, qq{*Submitted: } . Utils::Time::iso_Time('date') . qq{*\n};
+  push @$buffer, qq{h2. Credentials\n};
+
+  foreach my $tuple ( @$properties ) {
+    my ( $key, $value ) = @$tuple;
+    if ( ref($value) ) {
+      push @$buffer, qq{* $key = };
+      foreach ( @$value ) {
+        push @$buffer, qq{** $_};
+      }
+    } elsif ( $value ) {
+      push @$buffer, qq{* $key = $value};
+    }
+  }
+  push @$buffer, qq{\n\nh2. HTTP_COOKIE\n};
+  foreach my $value ( @$cookie_values ) {
+    push @$buffer, qq/* {{/ . $value . qq/}}/;
+  }
+  push @$buffer, "\n";
+  return join("\n", @$buffer);
+}
