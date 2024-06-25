@@ -1,0 +1,420 @@
+#!/usr/bin/env perl
+
+#
+# Copyright 2004
+# Richard Tobin, LTG, School of Informatics, University of Edinburgh
+#
+# May be freely distributed provided this copyright notice is not removed
+#
+# Phillip Farber, DLPS, University of Michigan, pfarber@umich.edu Fri
+# Feb 17 16:25:49 2006 Modifications to create a command-line tool
+#
+
+use warnings;
+
+my $UnicodeData = '/usr/lib/perl5/5.8.8/unicore/UnicodeData.txt';
+
+
+$| = 1;
+binmode( STDOUT, ":utf8" );
+
+use strict;
+use Encode;
+
+use CGI;
+
+my $cgi = new CGI;
+
+my @parameters = $cgi->keywords();
+
+my $option = $parameters[0];
+
+if ( $option && ( $option eq "-h" ) )
+{
+    Usage();
+    Help();
+    exit 0;
+}
+
+if ( scalar( @parameters ) == 0 )
+{
+    Usage();
+    exit 0;
+}
+
+
+if ( scalar( @parameters < 2 ) )
+{
+    print qq{----->ERROR: Supply both a command option and an input\n\n};
+
+    Usage();
+    exit 1;
+}
+
+if ( ( $option !~ m,^-, ) )
+{
+    print qq{----->ERROR: Invalid command option: $option\n\n};
+
+   Usage();
+    exit 1;
+}
+
+if ( $option !~ m,-[cdxBS], )
+{
+    print qq{----->ERROR: Invalid command option: $option\n\n};
+
+    Usage();
+    exit 1;
+}
+
+
+# Set mode of operation
+my $mode;
+
+if ( $option eq "-c" )
+{    $mode = 'char';   }
+elsif ( $option eq "-d" )
+{    $mode = 'decimal';   }
+elsif ( $option eq "-x" )
+{    $mode = 'hex';   }
+elsif ( $option eq "-B" )
+{    $mode = 'bytes';   }
+elsif ( $option eq "-S" )
+{    $mode = 'surrogates';   }
+
+
+# Grab the balance of the command line
+shift @parameters;
+my $in = join( ' ', @parameters );
+
+Encode::_utf8_on( $in );
+
+
+my $bad = 0;
+my $code = 0;
+
+
+my %inputMsg =
+    (
+     "char"       => "a single UTF-8 encoded Unicode character",
+     "decimal"    => "the decimal UTF-8 code point of a Unicode\n\tcharacter",
+     "hex"        => "the hexadecimal code point of a\n\tUnicode character",
+     "surrogates" => "two hex numbers forming the lower and\n\tupper values of a Unicode surrogate pair",
+     "bytes"      => "a sequence of hex numbers representing the\n\tUTF-8 encoding for a character",
+    );
+
+print qq{\tInput will be interpreted as } . $inputMsg{$mode} . qq{\n};
+
+
+my @bytes;
+my @surrogates;
+
+if ( $mode eq "char" )
+{
+    if ( $in =~ /^ *&#([0-9]+);? *$/)
+    {
+        $code = $1 + 0;
+    }
+    elsif ( $in =~ / *&#[xX]([0-9a-fA-F]+);? */ )
+    {
+        $code = hex( $1 );
+    }
+    else
+    {
+        $code = ord( $in );
+    }
+}
+elsif ( $mode eq "hex" )
+{
+    $code = hex( $in );
+}
+elsif ( $mode eq "decimal" )
+{
+    $code = $in + 0;
+}
+elsif ( $mode eq "bytes" )
+{
+    @bytes = map( hex, split( ' ', $in ) );
+    Bytes();
+}
+elsif ( $mode eq "surrogates" )
+{
+    @surrogates = map( hex, split( ' ', $in ) );
+    Surrogates();
+}
+else
+{
+}
+
+
+if ( $code < 0 || $code >= 0x80000000 )
+{
+     printf( "Bad code point %X, must be between 0 and 7FFFFFFF\n", $code );
+     $bad = 1;
+}
+elsif ( $code >= 0x110000 )
+{
+    printf( "----->WARNING: not a UTF-16 character\n", $code );
+}
+elsif ( $code >= 0xd800 && $code < 0xe000 )
+{
+    printf( "----->WARNING: code point is a surrogate\n", $code );
+}
+
+
+my $h = sprintf( "%04X", $code );
+my $unicodeChar;
+
+if ( -e $UnicodeData )
+{
+    my $u = `egrep "^$h;" "$UnicodeData"`;
+    ( $unicodeChar ) = ( $u =~ m,.*?;(.*?);.*, );
+}
+
+
+my $c = chr( $code );
+print "Character:\t\t" . $c . "\n";
+if ( $unicodeChar )
+{
+    print "Character name:\t\t" . $unicodeChar . "\n"
+}
+else
+{
+    print "Character name:\t\t" . "could not determine character name\n"
+}
+printf( "Hex code point:\t\t%s\n", $h );
+printf( "Decimal code point:\t%d\n", $code );
+
+if ( ! $bad )
+{
+    my $i = 0;
+
+    if ( $code < 0x80 )
+    {
+	$bytes[$i++] = $code;
+    }
+    elsif ( $code < 0x800 )
+    {
+	$bytes[$i++] = 0xc0 + ($code >> 6);
+	$bytes[$i++] = 0x80 + ($code & 0x3f);
+    }
+    elsif ( $code < 0x10000 )
+    {
+	$bytes[$i++] = 0xe0 + ($code >> 12);
+	$bytes[$i++] = 0x80 + (($code >> 6) & 0x3f);
+	$bytes[$i++] = 0x80 + ($code & 0x3f);
+    }
+    elsif ( $code < 0x200000 )
+    {
+	$bytes[$i++] = 0xf0 + ($code >> 18);
+	$bytes[$i++] = 0x80 + (($code >> 12) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 6) & 0x3f);
+	$bytes[$i++] = 0x80 + ($code & 0x3f);
+
+    }
+    elsif ( $code < 0x4000000 )
+    {
+        $bytes[$i++] = 0xf8 + ($code >> 24);
+	$bytes[$i++] = 0x80 + (($code >> 18) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 12) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 6) & 0x3f);
+	$bytes[$i++] = 0x80 + ($code & 0x3f);
+
+    }
+    else
+    {
+        $bytes[$i++] = 0xfc + ($code >> 30);
+	$bytes[$i++] = 0x80 + (($code >> 24) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 18) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 12) & 0x3f);
+	$bytes[$i++] = 0x80 + (($code >> 6) & 0x3f);
+	$bytes[$i++] = 0x80 + ($code & 0x3f);
+
+    }
+    printf( "Hex UTF-8 bytes:\t");
+    for( my $j=0; $j < $i; $j++ )
+    {
+	printf( "%02X ", $bytes[$j] );
+    }
+    printf( "\n" );
+
+    # as Latin-1
+    printf( "UTF-8 bytes in Latin-1:\t" );
+    for( my $j=0; $j < $i; $j++ )
+    {
+	my $c = $bytes[$j];
+
+	if ( ( $c > 0x20 && $c < 0x7f ) || $c > 0xa0 )
+	{
+            my $cc = chr( $c );
+            print "$cc ";
+	}
+	else
+	{
+	    printf( "<%02X> ", $c);
+	}
+    }
+    printf( "\n" );
+
+    # Surrogates
+    if( $code >= 0x10000 && $code < 0x110000 )
+    {
+        printf("Hex UTF-16 Surrogates:\t");
+        printf("%X %X",
+	       (($code - 0x10000) >> 10) + 0xd800,
+	       (($code - 0x10000) & 1023) + 0xdc00);
+        printf(" \n ");
+    }
+}
+
+exit 0;
+
+
+sub Usage
+{
+    print qq{  Usage: utf8tool -h | -cdxBS input\n\n};
+    print qq{  These options determine how 'input' is interpreted:\n\n};
+    print qq{\t-c\tas a character, e.g. &#195 or &#xC3 or Ã\n};
+    print qq{\t-d\tas a decimal Unicode code point, e.g. 195\n};
+    print qq{\t-x\tas a hex Unicode code point, e.g. 00C3\n};
+    print qq{\t-B\tas hex UTF-8 bytes, e.g. C3 83 \n};
+    print qq{\t-S\tas UTF-16 hex surrogates\n};
+    print qq{\t-h\thelp\n};
+}
+
+
+sub Help
+{
+    print qq{\n  * Some terminals may not be able to display all Unicode\n};
+    print qq{    characters; they may display blanks, boxes, or question\n};
+    print qq{    marks for some characters. Installing more fonts may help.\n};
+    print qq{  * Cutting and pasting does not work reliably in all terminals.\n};
+    print qq{  * When cutting and pasting hex numbers from dump output on\n};
+    print qq{    little-endian machines (e.g. x86), beware of byte order problems.\n};
+    print qq{  * Hex numbers should not be prefixed with "0x", "U+", or anything else.\n};
+    print qq{  * Hex UTF-8 byte input should have the bytes separated by spaces.\n};
+    print qq{  * "UTF-8 bytes as Latin-1 characters" is what you typically see\n};
+    print qq{    when you display a UTF-8 file with a terminal or editor that\n};
+    print qq{    only knows about 8-bit characters.\n};
+}
+
+
+
+sub Surrogates 
+{
+    my $surrogates = $#surrogates + 1;
+
+    if ( $surrogates != 2 )
+    {
+        printf( "----->ERROR: Bad surrogate pair, must be two hex numbers" );
+        return;
+    }
+
+    if ( $surrogates[0] < 0xd800 || $surrogates[0] > 0xdbff )
+    {
+	printf( "----->ERROR: Bad high surrogate, must be between D800 and DBFF" );
+	return;
+    }
+
+    if ( $surrogates[1] < 0xdc00 || $surrogates[1] > 0xdfff )
+    {
+	printf( "----->ERROR: Bad low surrogate, must be between DC00 and DFFF" );
+	return;
+    }
+
+    $code =
+        ( ( $surrogates[0] - 0xd800 ) << 10 ) + ( $surrogates[1] - 0xdc00 ) + 0x10000;
+}
+
+sub Bytes 
+{
+    my $bytes = $#bytes + 1;
+
+    if ( $bytes < 1 || $bytes > 6 )
+    {
+        printf( "----->ERROR: Bad byte sequence, must be 1-6 bytes" );
+        return;
+    }
+
+    for ( my $i=0; $i < $bytes; $i++ )
+    {
+	if ( $bytes[$i] < 0 || $bytes[$i] > 0xff )
+	{
+	    printf ( "----->ERROR: Bad byte value %X", $bytes[$i] );
+	    return;
+	}
+    }
+
+    my $b = $bytes[0];
+    my ( $more, $mincode );
+    
+
+    if ( $b < 0x80 )
+    {
+	$more = 0;
+	$code = $b;
+	$mincode = 0;
+    }
+    elsif ( $b <= 0xc0 || $b >= 0xfe )
+    {
+	printf( "----->ERROR: Bad byte 1 value %X", $b );
+	return;
+    }
+    elsif ( $b < 0xe0 )
+    {
+	$more = 1;
+	$mincode = 0x80;
+	$code = ( $b & 0x1f );
+    }
+    elsif ( $b < 0xf0 )
+    {
+	$more = 2;
+	$mincode = 0x800;
+	$code = ( $b & 0x0f );
+    }
+    elsif ( $b < 0xf8 )
+    {
+	$more = 3;
+	$mincode = 0x10000;
+	$code = ( $b & 0x07 );
+    }
+    elsif ( $b < 0xfc )
+    {
+	$more = 4;
+	$mincode = 0x200000;
+	$code = ( $b & 0x03 );
+    }
+    else
+    {
+	$more = 5;
+	$mincode = 0x4000000;
+	$code = ( $b & 0x01 );
+    }
+
+    if ( $bytes != $more + 1 )
+    {
+	printf( "----->ERROR: Wrong-length byte sequence %d should be %d",
+	       $bytes, $more+1 );
+	return;
+    }
+
+    for ( my $i=0; $i < $more; $i++ )
+    {
+	$b = $bytes[$i+1];
+	if ( ( $b & 0xc0 ) != 0x80 )
+	{
+	    printf( "----->ERROR: Bad byte %d value %X", $i+2, $b );
+	    $code = 0;
+	    return;
+	}
+	$code = ( $code << 6 ) + ( $b & 0x3f );
+    }
+
+    if ( $code < $mincode )
+    {
+	printf( "----->WARNING: non-shortest sequence\n" );
+    }
+}
+
+
+
