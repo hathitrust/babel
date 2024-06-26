@@ -107,7 +107,7 @@
       }
 
       if ( ! Array.prototype.at ) {
-        addScript({ href: 'https://polyfill.io/v3/polyfill.min.js?features=Array.prototype.at' });
+        addScript({ href: 'https://polyfill-fastly.io/v3/polyfill.min.js?features=Array.prototype.at' });
       }
     
       let firebird_config = localStorage.getItem('firebird-reader') || '';
