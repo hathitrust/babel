@@ -219,10 +219,6 @@ sub G_sync_local_master {
     return 0
       if (! execute_command($cmd));
 
-    $cmd = "git clean -xdf";
-    return 0
-      if (! execute_command($cmd));
-
     return 0
       if (! G_update_submodules($app_dir));
 
@@ -295,10 +291,6 @@ sub G_sync_local_deployment {
         return 0
           if (! execute_command($cmd));
     }
-
-    $cmd = "git clean -xdf";
-    return 0
-      if (! execute_command($cmd));
 
     return 0
       if (! G_update_submodules($app_dir));
