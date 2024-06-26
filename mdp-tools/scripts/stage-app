@@ -272,8 +272,7 @@ sub stage_origin_master_branch {
         handle_staging_post_install_hook($app);
 
         PrintY("Begin validation checks ...\n");
-        print `$LOCATION/validate-app -s$STAGE $app`;
-        $rc |= $?;
+        $rc |= system("$LOCATION/validate-app -s$STAGE $app");
 
         PrintY(qq{Staging succeeds\n}) unless ($rc);
 
