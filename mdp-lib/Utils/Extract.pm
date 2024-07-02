@@ -23,12 +23,13 @@ use strict;
 
 use Utils;
 use Utils::Logger;
+use Utils::MonitorRun;
 use Identifier;
 use Debug::DUtils;
+use Metrics;
 use Utils::Logger;
 
 # Perl
-use IPC::Run;
 use Time::HiRes qw();
 use File::Basename qw(basename dirname);
 
@@ -195,6 +196,7 @@ sub extract_file_to_temp_cache {
     my $filename = shift;
     my $suffix = shift;
     my $input_cache_dir = shift;
+    my $metrics = shift;
 
     my $stripped_pairtree_id = Identifier::get_pairtree_id_wo_namespace($id);
     my $zip_file = $file_sys_location . qq{/$stripped_pairtree_id.zip};
@@ -203,7 +205,9 @@ sub extract_file_to_temp_cache {
     my @unzip;
     push @unzip, $UNZIP_PROG, "-j", "-qq", "-d", $input_cache_dir, $zip_file, "$stripped_pairtree_id/$filename";
 
-    __run($id, \@unzip, "$input_cache_dir/$filename");
+    __run(id => $id,
+      unzip => \@unzip,
+      test_filename => "$input_cache_dir/$filename");
 
     return
       (-e qq{$input_cache_dir/$filename})
@@ -238,7 +242,7 @@ sub extract_filelist_to_temp_cache {
     # -j: just filenames, not full paths, -qq: very quiet
     push @unzip, $UNZIP_PROG, "-j", "-qq", "-d", $input_cache_dir, $zip_file, @filenames;
 
-    __run($id, \@unzip);
+    __run(id => $id, unzip => \@unzip);
 
     return $input_cache_dir;
 }
@@ -302,15 +306,16 @@ sub extract_dir_to_temp_cache {
         push @unzip, "-x", @$exclude_patterns_arr_ref;
     }
 
-    __run($id, \@unzip);
+    __run(id => $id, unzip => \@unzip);
 
     return $input_cache_dir;
 }
 
 sub __run {
-    my $id = shift;
-    my $unzip = shift;
-    my $test_filename = shift;
+    my %params = @_;
+    my $id = $params{id};
+    my $unzip = $params{unzip};
+    my $test_filename = $params{test_filename};
 
     my $error_file = Utils::get_tmp_logdir() . '/extract-error';
 
@@ -320,7 +325,7 @@ sub __run {
 
     my $stderr;
     my $time0 = Time::HiRes::time();
-    IPC::Run::run \@yes, '|',  $unzip, ">", "/dev/null", "2>>", \$stderr;
+    my $run_stats = Utils::MonitorRun::run_with_stats( \@yes, '|',  $unzip, ">", "/dev/null", "2>>", \$stderr);
     my $system_retval = $? >> 8;
 
     my $cmd = join(' ', @$unzip);
@@ -341,7 +346,17 @@ sub __run {
     __extract_report($system_retval, $error_file, $cmd);
 
     my $delta = Time::HiRes::time() - $time0;
+    # TODO: Add io stats to __Log_benchmark output?
     Utils::Logger::__Log_benchmark(undef, [["id", $id],["delta",$delta],["label","__run"],["cmd",$cmd]], 'extract');
+    if ($test_filename) {
+      my $metrics = Metrics->new;
+      $metrics->observe("utils_extract_run_seconds", $delta);
+      # TODO add extracted size when extracting more than one file?
+      $metrics->add("utils_extract_extracted_size_bytes",(-s $test_filename));
+      while (my ($k, $v) = each %$run_stats) {
+        $metrics->add("utils_extract_io_stats_$k",$v);
+      }
+    }
 }
 
 1;
