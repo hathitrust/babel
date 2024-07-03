@@ -79,6 +79,16 @@ RUN cd /htapps/babel
 
 WORKDIR /htapps/babel
 
+FROM babel-base as perl-dev
+
+# Dev container, should work with perl language server support in vscode
+# Requirements for Perl::LanguageServer
+RUN apt-get install -y libanyevent-perl libclass-refresh-perl libcompiler-lexer-perl \
+    libdata-dump-perl libio-aio-perl libjson-perl libmoose-perl libpadwalker-perl \
+    libscalar-list-utils-perl libcoro-perl
+
+RUN cpanm --notest Perl::LanguageServer
+
 FROM babel-base AS imgsrv-fcgi
 
 WORKDIR /htapps/babel/imgsrv
