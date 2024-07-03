@@ -17,9 +17,11 @@ use Plack::Util;
 use Process::Image;
 
 use Plack::App::Command;
+use SRV::Volume::HTML;
 
 my @config = (
     "id=s",
+    "seq=i",
     "file=s",
 );
 

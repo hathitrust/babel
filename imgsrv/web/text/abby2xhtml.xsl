@@ -74,7 +74,7 @@
     <xsl:template match="span[@class='ocrx_word']" priority="99" mode="copy">
         <xsl:if test="normalize-space(.)">
             <xsl:copy>
-                <xsl:call-template name="build-coords" />
+                <xsl:call-template name="process-title" />
                 <xsl:apply-templates select="@*|text()" mode="copy" />
             </xsl:copy>
             <xsl:text> </xsl:text>
@@ -104,7 +104,7 @@
 
     <xsl:template match="div[@class='ocr_page']" mode="copy" priority="99">
         <xsl:copy>
-            <xsl:call-template name="build-coords" />
+            <xsl:call-template name="process-title" />
             <xsl:if test="normalize-space($dir)">
                 <xsl:attribute name="dir"><xsl:value-of select="$dir" /></xsl:attribute>
             </xsl:if>
@@ -124,22 +124,23 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template name="build-coords">
-        <xsl:variable name="coords" select="str:split(substring-before(@title, ';'))" />
-        <xsl:variable name="xmin" select="$coords[2]" />
-        <xsl:variable name="ymin" select="$coords[3]" />
-        <xsl:variable name="xmax" select="$coords[4]" />
-        <xsl:variable name="ymax" select="$coords[5]" />
-        <xsl:attribute name="data-coords">
-            <xsl:value-of select="$xmin" />
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="$ymin" />
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="$xmax" />
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="$ymax" />
-        </xsl:attribute>
-
+    <!-- title has various data attributes from the OCR engine - we expose some of them in the output HTML -->
+    <xsl:template name="process-title">
+        <xsl:variable name="titleparts" select="str:split(@title,';')"/>
+        <xsl:for-each select="$titleparts">
+            <xsl:choose>
+                <xsl:when test="starts-with(.,'ocrp_lang ')">
+                    <xsl:attribute name="lang">
+                        <xsl:value-of select="substring-after(.,'ocrp_lang ')"/>
+                    </xsl:attribute>
+                </xsl:when>
+                <xsl:when test="starts-with(.,'bbox ')">
+                    <xsl:attribute name="data-coords">
+                        <xsl:value-of select="substring-after(.,'bbox ')"/>
+                    </xsl:attribute>
+                </xsl:when>
+            </xsl:choose>
+        </xsl:for-each>
     </xsl:template>
 
 <!--     <xsl:template match="*" mode="copy">
