@@ -48,6 +48,7 @@
     property="dc:title"
     rel="dc:type"
     href="http://purl.org/dc/dcmitype/Text"
+    lang={manifest.metadata.languageCode}
     content={title}>{title}</span
   >
 </h1>

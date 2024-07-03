@@ -12,13 +12,13 @@
     {#if metadata.author}
       <div>
         <dt>Creator</dt>
-        <dd>{metadata.author}</dd>
+        <dd lang={metadata.languageCode}>{metadata.author}</dd>
       </div>
     {/if}
     {#if metadata.publisher}
       <div>
         <dt>Publisher</dt>
-        <dd>{metadata.publisher}</dd>
+        <dd lang={metadata.languageCode}>{metadata.publisher}</dd>
       </div>
     {/if}
     {#if metadata.description}
@@ -30,19 +30,19 @@
   <!-- RDFa wrappers -->
   <p class="visually-hidden">
     {#if metadata.format == 'BK' && metadata.author}
-      <span property="cc:attributionName" rel="cc:attributionURL" href="https://hdl.handle.net/2027/{manifest.id}"
+      <span property="cc:attributionName" rel="cc:attributionURL" href="https://hdl.handle.net/2027/{manifest.id}" lang={metadata.languageCode}
         >{metadata.author}</span
       >
     {:else if metadata.format == 'SE' && metadata.publisher}
-      <span property="cc:attributionName" rel="cc:attributionURL" href="https://hdl.handle.net/2027/{manifest.id}"
+      <span property="cc:attributionName" rel="cc:attributionURL" href="https://hdl.handle.net/2027/{manifest.id}" lang={metadata.languageCode}
         >{metadata.publisher}</span
       >
     {/if}
     {#if metadata.author}
-      <span property="dc:creator" content={metadata.author} />
+      <span property="dc:creator" content={metadata.author} lang={metadata.languageCode} />
     {/if}
     {#if metadata.publisher}
-      <span property="dc:publisher" content={metadata.publisher} />
+      <span property="dc:publisher" content={metadata.publisher} lang={metadata.languageCode} />
     {/if}
     {#if metadata.description}
       <span property="dc:description" content={metadata.description} />
@@ -58,9 +58,9 @@
   <meta itemprop="accessibilityAPI" content="ARIA" />
   <meta itemprop="accessibilityControl" content="fullKeyboardControl" />
   <meta itemprop="accessibilityControl" content="fullMouseControl" />
-  <span itemprop="name">{title}</span>
+  <span itemprop="name" lang={metadata.languageCode}>{title}</span>
   {#if manifest.metadata.author}
-    <span itemprop="author">{manifest.metadata.author}</span>
+    <span itemprop="author" lang={metadata.languageCode}>{manifest.metadata.author}</span>
   {/if}
   <span itemprop="url">https://hdl.handle.net/2027/{manifest.id}</span>
 </div>

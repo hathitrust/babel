@@ -26,6 +26,7 @@ use Utils;
 use Utils::Time;
 use Utils::Date;
 use Identifier;
+use ISO639;
 use Survey;
 
 use base qw(PIFiller);
@@ -935,6 +936,7 @@ sub handle_SETUP_MANIFEST_PARAMS
         publicationDate => $mmo->get_publication_date(),
         catalogRecordNo => $mmo->get_catalog_record_no(),
         description => $mmo->get_description(),
+        languageCode => ISO639::rfc5646($mdpItem->GetLanguageCode()),
         enumChron => $mdpItem->GetVolumeData(),
     };
     push @$xml, qq{HT.params.metadata = } . $json->encode($metadata);
