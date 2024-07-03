@@ -14,11 +14,15 @@ use Utils;
 use SRV::Image;
 use SRV::Cover;
 use SRV::Article::HTML;
+use SRV::Metrics;
 use SRV::Volume::Metadata;
 use SRV::Volume::HTML;
 
 use Utils::Settings;
 our $settings = Utils::Settings::load('imgsrv', 'imgsrv');
+
+# Create a metrics object to register Prometheus metrics before anything else happens.
+my $metrics = SRV::Metrics->new;
 
 my $app = sub {
     my $env = shift;
@@ -156,8 +160,7 @@ builder {
         # mount "/file" => ...;
     };
     mount "/metrics" => sub {
-      my $env = shift;
-      return $env->{'psgix.metrics'}->render;
+      return $metrics->render;
     };
 
 };

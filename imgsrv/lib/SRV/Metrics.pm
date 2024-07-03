@@ -7,12 +7,12 @@ use Metrics;
 use Plack::Request;
 use Time::HiRes qw(time);
 
+
+
 sub new {
   my $class = shift;
   my $self = $class->SUPER::new(@_);
 
-  warn("Setting up metrics (in pid $$)");
-  $self->{prom} = Metrics->new;
   $self->setup_metrics;
 
   return $self;
@@ -20,8 +20,9 @@ sub new {
 
 sub setup_metrics {
   my $self = shift;
-  my $prom = $self->{prom};
 
+  warn("Setting up metrics (in pid $$)");
+  my $prom = Metrics->new;
   $prom->declare(
     "imgsrv_request_seconds",
     type => "histogram",
@@ -69,37 +70,17 @@ sub setup_metrics {
 sub call {
   my ($self, $env) = @_;
 
-  # expose for other parts of the app to set their own metrics
-  $env->{'psgix.metrics'} = $self;
-
   my $start = time();
 
   my $res = $self->app->($env);
 
-  # track metrics from result
-  # track failures?
-
   $self->response_cb($res, sub { $self->finalize($env, $start, $_[0]) });
-
-}
-
-# These wrappers are likely unnecessary given that the mdp-lib Metrics object is a singleton. 
-sub observe {
-  my $self = shift;
-  $self->{prom}->observe(@_);
-}
-
-sub add {
-  my $self = shift;
-  $self->{prom}->add(@_);
 }
 
 sub render {
   my $self = shift;
 
-  # TODO: can we get metrics via getrusage() for all children?
-
-  return [ 200, [ 'Content-Type' => 'text/plain' ], [ $self->{prom}->format ] ];
+  return [ 200, [ 'Content-Type' => 'text/plain' ], [ Metrics->new->format ] ];
 }
 
 sub finalize {
@@ -114,18 +95,7 @@ sub finalize {
 
   $labels->{path_info} = $req->path_info unless $response_code == '404';
 
-  $self->observe("imgsrv_request_seconds", time() - $start, $labels);
+  Metrics->new->observe("imgsrv_request_seconds", time() - $start, $labels);
 }
-
-# counter: cache hits
-# counter: cache misses
-# counter: bytes read from disk; label: location (cache vs. uncached)
-
-# histogram: seconds per request
-# labels: endpoint
-# labels: stage
-
-# process collector
-# prefix: imgsrv
 
 1;
