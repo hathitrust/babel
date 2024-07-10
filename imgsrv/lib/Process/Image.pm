@@ -18,7 +18,6 @@ use JSON::XS;
 use POSIX qw(ceil floor);
 
 use Plack::Util::Accessor qw(
-    metrics
     mdpItem
     region
     size
