@@ -53,6 +53,7 @@ RUN cpanm --notest \
   URI::Escape \
   CGI::PSGI \
   IP::Geolocation::MMDB \
+  Prometheus::Tiny::Shared \
   UUID \
   UUID::Tiny \
   YAML::Any

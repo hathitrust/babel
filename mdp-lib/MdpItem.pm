@@ -34,6 +34,7 @@ use Context;
 use Auth::Auth;
 use Identifier;
 use MarcMetadata;
+use Metrics;
 use MetsReadingOrder;
 use DataTypes;
 
@@ -291,6 +292,8 @@ sub GetMdpItem {
     }
 
     my $delta = Time::HiRes::time() - $time0;
+
+    Metrics->new->observe("mdpitem_get_mdpitem_seconds", $delta, { cache => $cache_status });
     Utils::Logger::__Log_benchmark($C, 
         [["id", $id],["delta",$delta],["label","GetMdpItem"],["cache",$cache_status]], 'mdpitem');
 
