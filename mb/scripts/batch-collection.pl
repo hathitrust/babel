@@ -60,9 +60,10 @@ BEGIN {
 # Always get libraries from current location instead of $ENV{SDROOT}
 # for normal users who may have libraries in $ENV{SDRROOT} that are
 # not up to date.  Developers can override this via DEBUG_LOCAL
-use lib $LOCATION . "/../../mb/vendor/common-lib/lib";
-use lib $LOCATION . "/../../mb/vendor/common-lib/lib/Utils";
-use Vendors;
+use lib $LOCATION . "/../../mdp-lib";
+use lib $LOCATION . "/../../mdp-lib/Utils";
+use lib $LOCATION . "/../../slip-lib";
+use lib $LOCATION . "/../../mb/lib";
 
 
 use Getopt::Std;
@@ -77,6 +78,7 @@ use Collection;
 use Access::Rights;
 use Debug::DUtils;
 use SharedQueue;
+use Search::Searcher;
 use MBooks::MetaDataGetter;
 
 my @superusers =
