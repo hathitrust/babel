@@ -3,6 +3,7 @@
   import screenfull from 'screenfull';
 
   import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   import ViewMenu from './ViewMenu.svelte';
 
@@ -35,6 +36,7 @@
 
   emitter.on('zoom.enable', enableZoomOptions);
 
+  let controlsText = 'Hide Controls';
   const toggleInterface = function (event, mode) {
     if (mode) {
       $interfaceMode = mode;
@@ -44,6 +46,11 @@
     }
     document.body.dataset.interface = $interfaceMode;
     emitter.emit('toggle.interface', $interfaceMode);
+    if ($interfaceMode == 'minimal') {
+      controlsText = 'Show Controls';
+    } else {
+      controlsText = 'Hide Controls';
+    }
   };
 
   const toggleFullscreen = function (event) {
@@ -106,21 +113,23 @@
 </script>
 
 <div class="view--toolbar rounded">
-  <button
-    type="button"
-    class="btn btn-outline-dark"
-    class:active={$interfaceMode == 'minimal'}
-    aria-label={$interfaceMode == 'minimal' ? 'Show Controls' : 'Hide Controls'}
-    use:tooltip
-    on:click={toggleInterface}
-  >
-    <i
-      class:fa-solid={$interfaceMode == 'default'}
-      class:fa-eye={$interfaceMode == 'default'}
-      class:fa-regular={$interfaceMode == 'minimal'}
-      class:fa-eye-slash={$interfaceMode == 'minimal'}
-    />
-  </button>
+  <span>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      class:active={$interfaceMode == 'minimal'}
+      aria-label={controlsText}
+      use:tooltippy={{ content: controlsText }}
+      on:click={toggleInterface}
+    >
+      <i
+        class:fa-solid={$interfaceMode == 'default'}
+        class:fa-eye={$interfaceMode == 'default'}
+        class:fa-regular={$interfaceMode == 'minimal'}
+        class:fa-eye-slash={$interfaceMode == 'minimal'}
+      />
+    </button>
+  </span>
 
   <!-- <button type="button" class="btn btn-outline-dark d-none d-sm-block">
     <i class="fa-regular fa-circle-question"></i>
@@ -157,7 +166,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom In"
         disabled={!enableZoomIn}
-        use:tooltip
+        use:tooltippy
         on:click={() => zoom(1)}
       >
         <i class="fa-solid fa-plus" />
@@ -167,7 +176,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom Out"
         disabled={!enableZoomOut}
-        use:tooltip
+        use:tooltippy
         on:click={() => zoom(-1)}
       >
         <i class="fa-solid fa-minus" />

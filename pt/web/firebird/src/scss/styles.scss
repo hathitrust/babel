@@ -249,3 +249,14 @@ button:hover i.border-dark {
   --bs-tooltip-bg: var(--color-primary-700);
   --bs-tooltip-opacity: 1;
 }
+
+.tippy-box[data-theme~='pt'] {
+  background-color: var(--color-primary-700);
+  & > .tippy-svg-arrow {
+    fill: var(--color-primary-700);
+  }
+}
+
+.tippy-box[data-theme~='pt'][data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: var(--color-primary-700);
+}
