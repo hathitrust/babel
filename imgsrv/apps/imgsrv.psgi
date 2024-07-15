@@ -14,11 +14,15 @@ use Utils;
 use SRV::Image;
 use SRV::Cover;
 use SRV::Article::HTML;
+use SRV::Metrics;
 use SRV::Volume::Metadata;
 use SRV::Volume::HTML;
 
 use Utils::Settings;
 our $settings = Utils::Settings::load('imgsrv', 'imgsrv');
+
+# Create a metrics object to register Prometheus metrics before anything else happens.
+my $metrics = SRV::Metrics->new;
 
 my $app = sub {
     my $env = shift;
@@ -102,7 +106,11 @@ builder {
                      ;
     }
 
-    enable "+SRV::Prolog", app_name => 'imgsrv';
+    # The "+" indicates this is a complete class name, and we shouldn't prefix
+    # it with 'Plack::Middleware::"
+    enable_if { ! $ENV{HEALTHCHECK} } "+SRV::Metrics";
+    enable match_if path('!',qr,/metrics,), "+SRV::Prolog", app_name => 'imgsrv';
+    #enable "+SRV::Prolog", app_name => 'imgsrv';
     enable "Recursive";
 
     mount "/" => $app;
@@ -150,6 +158,9 @@ builder {
         mount "/cover" => $covers_app;
         mount "/html" => SRV::Article::HTML->new;
         # mount "/file" => ...;
-    }
+    };
+    mount "/metrics" => sub {
+      return $metrics->render;
+    };
 
 };
