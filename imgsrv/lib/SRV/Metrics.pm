@@ -21,7 +21,6 @@ sub new {
 sub setup_metrics {
   my $self = shift;
 
-  warn("Setting up metrics (in pid $$)");
   my $prom = Metrics->new;
   $prom->declare(
     "imgsrv_request_seconds",
