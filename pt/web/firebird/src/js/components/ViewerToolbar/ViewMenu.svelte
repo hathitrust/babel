@@ -52,6 +52,7 @@
         type="button"
         class="dropdown-item"
         class:active={$format == 'plaintext'}
+        aria-pressed={$format == 'plaintext'}
         data-role="format"
         data-value="plaintext"
         disabled={!manifest.hasOcr}
@@ -66,6 +67,7 @@
         type="button"
         class="dropdown-item"
         class:active={$format == 'image'}
+        aria-pressed={$format == 'image'}
         data-role="format"
         data-value="image"
         on:click={switchFormat}
@@ -85,6 +87,7 @@
         type="button"
         class="dropdown-item"
         class:active={$view == '1up'}
+        aria-pressed={$view == '1up'}
         data-role="view"
         data-value="1up"
         on:click={switchView}
@@ -98,6 +101,7 @@
         type="button"
         class="dropdown-item"
         class:active={$view == '2up'}
+        aria-pressed={$view == '2up'}
         data-role="view"
         data-value="2up"
         disabled={manifest.totalSeq == 1}
@@ -113,6 +117,7 @@
         type="button"
         class="dropdown-item"
         class:active={$view == 'thumb'}
+        aria-pressed={$view == 'thumb'}
         data-role="view"
         data-value="thumb"
         on:click={switchView}
