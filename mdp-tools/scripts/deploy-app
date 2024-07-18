@@ -481,21 +481,24 @@ sub __rsync_app_to_production {
     }
 
 
-    print qq{Now starting separate TIMESTAMP rsync to $dest_prefix ...\n};
 
-    # create timestamp *after* app rsync has finished and rsync it
-    # using rsync.app.timestamp script
-    ___create_timestamp($app_dir, $tag);
+    if (-e "$app_dir/bin/rsync.app.timestamp") {
+      print qq{Now starting separate TIMESTAMP rsync to $dest_prefix ...\n};
 
-    my @cmd = ("/usr/bin/bash","$app_dir/bin/rsync.app.timestamp",$dest_prefix,@rsync_opts);
-    print join(' ',@cmd), "\n" if $VERBOSE;
-    
-    system(@cmd);
+      # create timestamp *after* app rsync has finished and rsync it
+      # using rsync.app.timestamp script
+      ___create_timestamp($app_dir, $tag);
 
-    if (my $err = $?) {
-        PrintN("ERROR: rsync TIMESTAMP failure\n");
-        PrintN($err);
-        return 0;
+      my @cmd = ("/usr/bin/bash","$app_dir/bin/rsync.app.timestamp",$dest_prefix,@rsync_opts);
+      print join(' ',@cmd), "\n" if $VERBOSE;
+      
+      system(@cmd);
+
+      if (my $err = $?) {
+          PrintN("ERROR: rsync TIMESTAMP failure\n");
+          PrintN($err);
+          return 0;
+      }
     }
 
   }
