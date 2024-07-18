@@ -27,6 +27,7 @@ use Data::Page;
 use base qw(PIFiller);
 use Utils;
 use Identifier;
+use ISO639;
 use LS::FacetConfig;
 #use Encode;
 use URI::Escape;
@@ -1898,6 +1899,19 @@ sub _ls_wrap_result_data {
         {
             Utils::map_chars_to_cers(\$author);
             $s .= wrap_string_in_tag($author, 'Author');
+        }
+
+        my ($language_ary_ref) = $doc_data->{'language008_full'};
+        my $language;
+        # FIXME HERE
+        if (defined ($language_ary_ref) and scalar(@$language_ary_ref))
+        {
+            $language = ISO639::rfc5646($language_ary_ref->[0]);
+        }
+        if (defined($language))
+        {
+            Utils::map_chars_to_cers(\$language);
+            $s .= wrap_string_in_tag($language, 'Language');
         }
 
         #DATES

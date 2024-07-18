@@ -322,12 +322,15 @@
             <xsl:value-of select="VolEnumCron" />
           </xsl:if>
         </xsl:variable>
+        <xsl:variable name="language">
+          <xsl:value-of select="Language" disable-output-escaping="yes" />
+        </xsl:variable>
         <div class="cover d-none d-md-block" data-hdl="{ItemID}">
           <img loading="lazy" class="bookCover border p-1 flex-grow-0 flex-shrink-0" aria-hidden="true" alt="" src="/cgi/imgsrv/cover?id={ItemID};width=250" />
         </div>
         <div class="flex-grow-1 d-flex flex-column justify-content-between">
           <div class="container-fluid p-1">
-            <h3 class="record-title" id="maintitle-{$titleIndex}">
+            <h3 class="record-title" id="maintitle-{$titleIndex}" lang="{$language}">
               <xsl:value-of select="$title" />
             </h3>
             <dl class="metadata">
@@ -338,7 +341,7 @@
               <xsl:if test="normalize-space(Author)">
                 <div class="grid">
                   <dt class="g-col-lg-4 g-col-12">Author</dt>
-                  <dd class="g-col-lg-8 g-col-12"><xsl:value-of select="Author" /></dd>
+                  <dd class="g-col-lg-8 g-col-12" lang="{$language}"><xsl:value-of select="Author" /></dd>
                 </div>
               </xsl:if>
             </dl>
