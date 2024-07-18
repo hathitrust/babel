@@ -2,4 +2,4 @@ babel
 crms
 firebird-common
 wordpress-hathitrust
-wp-ht-filelist
+ht-wp-filelist

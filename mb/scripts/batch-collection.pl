@@ -60,9 +60,10 @@ BEGIN {
 # Always get libraries from current location instead of $ENV{SDROOT}
 # for normal users who may have libraries in $ENV{SDRROOT} that are
 # not up to date.  Developers can override this via DEBUG_LOCAL
-use lib $LOCATION . "/../../mb/vendor/common-lib/lib";
-use lib $LOCATION . "/../../mb/vendor/common-lib/lib/Utils";
-use Vendors;
+use lib $LOCATION . "/../../mdp-lib";
+use lib $LOCATION . "/../../mdp-lib/Utils";
+use lib $LOCATION . "/../../slip-lib";
+use lib $LOCATION . "/../../mb/lib";
 
 
 use Getopt::Std;
@@ -77,6 +78,7 @@ use Collection;
 use Access::Rights;
 use Debug::DUtils;
 use SharedQueue;
+use Search::Searcher;
 use MBooks::MetaDataGetter;
 
 my @superusers =
@@ -315,17 +317,11 @@ my $C = new Context;
 my $cgi = new CGI;
 $C->set_object('CGI', $cgi);
 
-my $debug = $cgi->param('debug') || 0;
-my $debugging = ( ($ENV{DEBUG_LOCAL} ? $ENV{DEBUG_LOCAL} : 0) || ($debug =~ m,local,));
-my $uber_conf = ($debugging
-                 ? $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
-                 : $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf");
-
 my $config = new MdpConfig(
-                           $uber_conf,
-                           $LOCATION . "/../../mb/lib/Config/global.conf",
-                           $LOCATION . "/../../mb/lib/Config/local.conf"
-                          );
+  $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf",
+  $LOCATION . "/../../mb/lib/Config/global.conf",
+  $LOCATION . "/../../mb/lib/Config/local.conf"
+);
 $C->set_object('MdpConfig', $config);
 
 my $db = new Database('ht_maintenance');
