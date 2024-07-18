@@ -25,8 +25,8 @@ sub get_map {
             chomp $line;
             last if ( $line =~ m,^__END__$, );
             next unless ( $line );
-            my ( $bib, $term, $alpha2, $english, $french ) = split(/\|/, $line);
-            # $$mapping{$english} = [ $bib, $term, $alpha2, $english ];
+            my ( $bib, $term, $alpha2, $english) = split(/\|/, $line);
+            $$mapping{$english} = [ $bib, $term, $alpha2, $english ];
             $$mapping{$bib} = [ $bib, $term, $alpha2, $english ];
         }
     }
@@ -152,7 +152,7 @@ dra|||Dravidian (Other)
 dsb|||Lower Sorbian
 dua|||Duala
 dum|||Dutch, Middle (ca. 1050-1350)
-dut|ndl|nl|Dutch
+dut|nld|nl|Dutch
 dyu|||Dyula
 dzo||dz|Dzongkha
 efi|||Efik
