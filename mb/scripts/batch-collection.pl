@@ -317,17 +317,11 @@ my $C = new Context;
 my $cgi = new CGI;
 $C->set_object('CGI', $cgi);
 
-my $debug = $cgi->param('debug') || 0;
-my $debugging = ( ($ENV{DEBUG_LOCAL} ? $ENV{DEBUG_LOCAL} : 0) || ($debug =~ m,local,));
-my $uber_conf = ($debugging
-                 ? $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf"
-                 : $LOCATION . "/../../mb/vendor/common-lib/lib/Config/uber.conf");
-
 my $config = new MdpConfig(
-                           $uber_conf,
-                           $LOCATION . "/../../mb/lib/Config/global.conf",
-                           $LOCATION . "/../../mb/lib/Config/local.conf"
-                          );
+  $ENV{SDRROOT} . "/mdp-lib/Config/uber.conf",
+  $LOCATION . "/../../mb/lib/Config/global.conf",
+  $LOCATION . "/../../mb/lib/Config/local.conf"
+);
 $C->set_object('MdpConfig', $config);
 
 my $db = new Database('ht_maintenance');
