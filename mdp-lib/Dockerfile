@@ -155,7 +155,6 @@ RUN cpan \
   File::Pairtree \
   CGI::Application::Plugin::Routes \
   Algorithm::LUHN \
-  OAuth::Lite \
   EBook::EPUB \
   Sub::Uplevel \
   Test::Exception \
