@@ -1,8 +1,0 @@
-    <script type="text/javascript">
-      $(document).ready(function(){
-        function hide_show_ext_opts() {
-          $("#htextopts").show();
-        }
-        hide_show_ext_opts();
-      });
-    </script>
