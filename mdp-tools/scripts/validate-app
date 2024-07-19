@@ -49,22 +49,11 @@ my $ops = getopts('LAs:v');
 
 my $STAGE = $opt_s || 'test';
 
-my @staging_areas = @ToolLib::all_valid_stages;
-if (! grep (/^$STAGE$/, @staging_areas)) {
-    PrintN("Invalid staging area=$STAGE\n");
-    print validate_app_usage();
-    exit 1;
-}
-    
-
 # If stage==test set correct environment for running scripts at the command line 
 if ($STAGE eq 'test') {
     $ENV{SDRROOT} = '/htapps/test.babel';
     delete $ENV{HT_DEV};
 }
-
-
-
 
 my $VERBOSE = $opt_v;
 my $LOCAL = $opt_L;
