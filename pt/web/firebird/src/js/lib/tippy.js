@@ -25,10 +25,11 @@ const hideOnEsc = {
 export function tooltippy(element) {
   const tooltippy = tippy(element, {
     content: (reference) => reference.getAttribute('aria-label'),
-    // appendTo: document.body,
+    appendTo: document.body,
     interactive: true,
     plugins: [hideOnEsc],
     // hideOnClick: true,
+    placement: 'top',
     theme: 'pt',
     maxWidth: 'none',
   });

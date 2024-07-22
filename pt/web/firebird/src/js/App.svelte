@@ -8,7 +8,7 @@
   import { Manifest } from './lib/manifest';
   import { updateHistory } from './lib/history';
   import Emittery from 'emittery';
-  import { tooltip } from './lib/tooltip';
+  import { tooltippy } from './lib/tippy';
   import { constrain } from './lib/layout.js';
 
   // components
@@ -180,9 +180,15 @@
 
   let lastPosition;
   let asideExpanded = true;
+  let sidebarButtonText = 'Close sidebar';
   function togglePane() {
     asideExpanded = !asideExpanded;
     document.body.style.setProperty('--aside-collapsed-width', asideExpanded ? null : '16px');
+    if (asideExpanded) {
+      sidebarButtonText = 'Close sidebar';
+    } else {
+      sidebarButtonText = 'Open sidebar';
+    }
   }
 
   let optionsToggled = false;
@@ -455,7 +461,7 @@
   <button
     type="button"
     class="btn x-btn-lg btn-outline-dark shadow rounded-circle"
-    use:tooltip
+    use:tooltippy={{ content: sidebarButtonText }}
     aria-label={asideExpanded ? 'Close sidebar' : 'Open sidebar'}
     on:click={togglePane}
   >

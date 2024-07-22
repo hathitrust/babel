@@ -5,8 +5,6 @@
   import { afterUpdate } from 'svelte';
   import { get } from 'svelte/store';
 
-  import { tooltip } from '../../lib/tooltip';
-
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
   const HT = getContext('HT');

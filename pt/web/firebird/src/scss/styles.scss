@@ -9,7 +9,8 @@
   }
 }
 
-a.btn.btn-link:focus {
+a.btn.btn-link:focus,
+.btn.btn-link:focus {
   outline: 4px solid rgb(51, 51, 51, 0.4);
   border-radius: 4px;
 }
@@ -259,4 +260,7 @@ button:hover i.border-dark {
 
 .tippy-box[data-theme~='pt'][data-placement^='top'] > .tippy-arrow::before {
   border-top-color: var(--color-primary-700);
+}
+.tippy-box[data-theme~='pt'][data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: var(--color-primary-700);
 }

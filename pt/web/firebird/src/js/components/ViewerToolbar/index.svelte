@@ -2,7 +2,6 @@
   import { onMount, getContext } from 'svelte';
   import screenfull from 'screenfull';
 
-  import { tooltip } from '../../lib/tooltip';
   import { tooltippy } from '../../lib/tippy';
 
   import ViewMenu from './ViewMenu.svelte';
@@ -191,7 +190,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -201,7 +200,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -211,7 +210,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -221,7 +220,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
@@ -234,7 +233,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -244,7 +243,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -254,7 +253,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -264,7 +263,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
@@ -278,7 +277,7 @@
       type="button"
       class="btn btn-outline-dark"
       aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
-      use:tooltip
+      use:tooltippy
       on:click={toggleFullscreen}
     >
       <i class="fa-solid fa-maximize" />

@@ -1,6 +1,6 @@
 <script>
   import { getContext } from 'svelte';
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   const emitter = getContext('emitter');
 
@@ -56,7 +56,8 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
+        use:tooltippy
+        data-tippy-placement="left"
         on:click|stopPropagation={togglePageSelection}
         aria-label={selected ? `Page scan #${seq} is selected` : `Select page scan #${seq}`}
         aria-pressed={selected}
@@ -69,7 +70,8 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
+        use:tooltippy
+        data-tippy-placement="left"
         on:click|stopPropagation={openLightbox}
         data-bs-placement={side == 'verso' ? 'right' : 'left'}
         aria-label="Open foldout for page scan #{seq}"
@@ -84,7 +86,8 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
+        use:tooltippy
+        data-tippy-placement="left"
         aria-label="Rotate page"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
@@ -97,7 +100,8 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltip
+          use:tooltippy
+          data-tippy-placement="left"
           aria-label="Zoom in #{seq}"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
@@ -109,7 +113,8 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltip
+          use:tooltippy
+          data-tippy-placement="left"
           aria-label="Zoom out #{seq}"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
