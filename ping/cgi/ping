@@ -87,8 +87,7 @@ my $app = sub {
     my $response;
 
     sub _body {
-        my ( $callback, $logged_in, $info, $msg, $idp_list, $expired ) = @_;
-
+        my ( $logged_in, $info, $msg, $idp_list, $expired ) = @_;
 
         my $print_disabled = $$info{u} ? 'true' : 'false';
         my $emergency_access = $$info{x} ? 'true' : 'false';
@@ -186,11 +185,11 @@ HT.login_link = function() {
 
     return link;
 }
+if ( typeof(HT.postPingCallback) == 'function' ) {
+  HT.postPingCallback(HT.login_status);
+}
 JAVASCRIPT
 
-        if ( $callback ) {
-            $retval .= "\n" . qq{$callback(HT.login_status);} . "\n";
-        }
     }
 
     my $C = new Context;
@@ -198,7 +197,10 @@ JAVASCRIPT
 
     my $original_request = $request->referer || '';
 
-    my $callback = $request->param('callback') || qq{ping_handler};
+    my $callback = $request->param('callback');
+    if ($callback && $callback ne 'HT.postPingCallback') {
+      warn "non-HT.postPingCallback callback requested: '$callback'\n";
+    }
 
     # configuration; do we need our own config?
     my $config = new MdpConfig(
@@ -290,7 +292,7 @@ JAVASCRIPT
             $$info{hotjarSettings} = $hotjar_settings;
         }
 
-        $response->body(_body($callback, 'true', $info, "LOGGED IN", undef, 0));
+        $response->body(_body('true', $info, "LOGGED IN", undef, 0));
         return $response->finalize;
     }
 
@@ -342,9 +344,9 @@ JAVASCRIPT
         $$info{hotjarSettings} = $hotjar_settings;
     }
 
-    # $response->body(_body($callback, 'true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
-    # $response->body(_body($callback, 'false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
-    $response->body(_body($callback, 'false', $info, "NOT LOGGED IN", $idp_list, $logged_out));
+    # $response->body(_body('true',  $displayName, $institution_name, $institution_code, $mapped_institution_name, $mapped_institution_code, $affiliation, $providerName, $$info{authType}, $$info{u}, "LOGGED IN",     undef,     0));
+    # $response->body(_body('false', "",           "",                "",                "",                       "",                       "",           "",            'null',           0,         0, "NOT LOGGED IN", $idp_list, $logged_out));
+    $response->body(_body('false', $info, "NOT LOGGED IN", $idp_list, $logged_out));
     return $response->finalize;
 
 };
