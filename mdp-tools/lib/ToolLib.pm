@@ -43,9 +43,7 @@ use Config::Tiny;
 $ToolLib::VERBOSE = 0;
 $ToolLib::SERVICE = 'babel';
 
-@ToolLib::valid_beta_stages = qw(beta-1 preview dev-1 dev-2 dev-3);
-@ToolLib::all_valid_stages = (@ToolLib::valid_beta_stages, 'test');
-@ToolLib::all_valid_services = qw(babel www catalog); # aspirational
+@ToolLib::all_valid_services = qw(babel www catalog);
 
 # ====================================================================
 #
@@ -972,11 +970,6 @@ sub validate_existing_app {
         return 0;
     }
 
-    if ( -d $repo_root && ! -e "$repo_root/$app.git") {
-        PrintN(qq{\nERROR: '$app' is not a valid app: no central repo:\n\t$repo_root/$app.git does not exist\n});
-        PrintN(qq{\nPerhaps you need to run clone-repo -s test $app.git\n});
-        return 0;
-    }
     if (! -e "$app_dir") {
         PrintN(qq{\nERROR: '$app' is not a valid app: $app_dir does not exist\n});
         return 0;
