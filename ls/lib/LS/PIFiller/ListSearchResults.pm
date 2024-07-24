@@ -365,7 +365,7 @@ sub  handle_LIMIT_TO_FULL_TEXT_PI
     $num_total=commify($num_total);
 
 
-    my $s;
+    my $s = '';
 
     $s .= wrap_string_in_tag($limit_type, 'LimitType');
     $s .= wrap_string_in_tag($all_href, 'AllHref');
