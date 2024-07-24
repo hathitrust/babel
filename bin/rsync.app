@@ -7,11 +7,8 @@ DEPLOY_DEST=${DEST_PREFIX}babel
 DEPLOY_SRC=/htapps/test.babel
 
 INCLUDE=$(cat <<EOT
-  $DEPLOY_SRC/htd
-  $DEPLOY_SRC/htdc
   $DEPLOY_SRC/imgsrv
   $DEPLOY_SRC/imgsrv-tools
-  $DEPLOY_SRC/kgs
   $DEPLOY_SRC/logout
   $DEPLOY_SRC/ls
   $DEPLOY_SRC/mb
