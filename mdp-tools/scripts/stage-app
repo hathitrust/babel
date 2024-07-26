@@ -105,7 +105,9 @@ if ($SERVICE) {
 
 my $STAGE = $opt_s;
 if ($BRANCH) {
-    my ($repo_root, $app_root) = get_HTDE_roots();
+  my ($repo_root, $app_root) = get_HTDE_roots();
+} else {
+  $STAGE = $opt_s || 'test';
 }
 
 my $rc = 0;
