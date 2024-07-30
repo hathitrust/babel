@@ -69,45 +69,46 @@ sub G_handle_diff {
       if (! chdir_to_app_dir($app_dir));
 
     my $last_tag = G_last_tag();
-    my $diff_file = "/tmp/git-$last_tag-$$.diff";
-    PrintY("Begin diff generation: diff between HEAD and tag ($last_tag), diff file: $diff_file ... ");
+    #my $diff_file = "/tmp/git-$last_tag-$$.diff";
+    PrintY("Begin diff generation: diff between HEAD and tag ($last_tag) ... \n");
 
-    my $diff;
-    return 0
-      if (! execute_command_w_output(qq{git diff --ignore-all-space --submodule=log $last_tag}, \$diff));
+    #my $diff;
+    #return 0
+    system("git diff --color=always --ignore-all-space --submodule=log $last_tag");
 
-    # Clean up submodule log entries. we only want the SHA1s
-    my @submodule_lines = ($diff =~ m,^(Submodule.*?:),gm);
-    $diff =~ s,^Submodule.*,,gms;
-    foreach my $sml (@submodule_lines) {
-        next
-          if ($sml =~ m,yui2-lib,);
+    # # Clean up submodule log entries. we only want the SHA1s
+#     my @submodule_lines = ($diff =~ m,^(Submodule.*?:),gm);
+#     $diff =~ s,^Submodule.*,,gms;
+#     foreach my $sml (@submodule_lines) {
+#         next
+#           if ($sml =~ m,yui2-lib,);
+# 
+#         my ($path_arg, $sha1_arg) = ($sml =~ m,Submodule (.*?) ([0-9a-f]+\.\.[0-9-a-f]+),);
+#         # print "$path_arg $sha1_arg\n";
+# 
+#         return 0
+#           if (! chdir_to_app_dir("$app_dir/$path_arg"));
+# 
+#         my $sub_diff;
+#         return 0
+#           if (! execute_command_w_output(qq{git diff --ignore-all-space $sha1_arg}, \$sub_diff));
+# 
+#         $diff .= "\n#\n# ***** SUBMODULE $path_arg DIFF *****\n#\n\n" . $sub_diff;
+#     }
 
-        my ($path_arg, $sha1_arg) = ($sml =~ m,Submodule (.*?) ([0-9a-f]+\.\.[0-9-a-f]+),);
-        # print "$path_arg $sha1_arg\n";
-
-        return 0
-          if (! chdir_to_app_dir("$app_dir/$path_arg"));
-
-        my $sub_diff;
-        return 0
-          if (! execute_command_w_output(qq{git diff --ignore-all-space $sha1_arg}, \$sub_diff));
-
-        $diff .= "\n#\n# ***** SUBMODULE $path_arg DIFF *****\n#\n\n" . $sub_diff;
-    }
-
-    if (! $diff) {
-        $diff = "No difference between tag=$last_tag and app=$app staged at $app_dir";
-    }
+    #if (! $diff) {
+    #    $diff = "No difference between tag=$last_tag and app=$app staged at $app_dir";
+    #}
     
-    write_data(\$diff, $diff_file);
-    
-    my $sysrc = system( "$ENV{EDITOR} $diff_file" );
+    #write_data(\$diff, $diff_file);
+
+    #my $editor = $ENV{EDITOR} || "cat";
+    #my $sysrc = system( "$editor $diff_file" );
     # system( "more", $diff_file );
-
-    ($sysrc == 0) ? PrintY("OK\n") : PrintN("ERROR: could not invoke $ENV{EDITOR}\n");
-
-    return ($sysrc == 0);
+    
+    #($sysrc == 0) ? PrintY("OK\n") : PrintN("ERROR: could not invoke '$editor'\n");
+    #my $sysrc = 0;
+    #return ($sysrc == 0);
 }
 
 
