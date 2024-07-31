@@ -78,7 +78,7 @@
         </button>
       </li>
     </ul>
-    <li><hr class="dropdown-divider" /></li>
+    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
     <li>
       <span class="dropdown-header">
         <span id="view-mode">View Mode</span>
@@ -115,7 +115,7 @@
         </button>
       </li>
     </ul>
-    <li><hr class="dropdown-divider" /></li>
+    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
     <li>
       <button
         type="button"
