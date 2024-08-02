@@ -180,6 +180,7 @@ sub get_download_progress_base
 
 sub get_logfile
 {
+    return if $ENV{HEALTHCHECK};
     my $C = new Context;
     my $config = $C->get_object('MdpConfig');
     my $logfile = Utils::get_tmp_logdir() . "/" . $config->get('imgsrv_logfile');
@@ -194,6 +195,7 @@ sub get_logfile
 
 sub log_message
 {
+    return if $ENV{HEALTHCHECK};
     my $logfile = get_logfile();
     open(LOG, ">>", $logfile);
     print LOG @_, "\n";
@@ -202,6 +204,7 @@ sub log_message
 
 sub log_string
 {
+    return if $ENV{HEALTHCHECK};
     my ( $logfile, $tuples ) = @_;
     my $C = new Context;
     my $mdpItem = $C->get_object('MdpItem');
@@ -220,6 +223,7 @@ sub log_string
 
 sub log_string_xxx
 {
+    return if $ENV{HEALTHCHECK};
     my ( $logfile, $s ) = @_;
     my $C = new Context;
     my $mdpItem = $C->get_object('MdpItem');
