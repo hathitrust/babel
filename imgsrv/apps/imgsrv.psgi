@@ -100,7 +100,9 @@ builder {
                      ;
 
         enable
-            match_if unchoked(),
+            #match_if unchoked(),
+            # Fall through on default choke if unchoked and path is not metrics
+            match_if all(unchoked(), path('!', qr,^/metrics,)),
                      'Choke::Requests',
                         %{ $$settings{choke}{'default'} },
                      ;
