@@ -52,8 +52,18 @@ sub __get_logdir_root
     return $ENV{'SDRROOT'}; 
 }
 
+=item __logging_enabled
 
+Make sure logging is not turned off.
+Wraps $logging_enabled (which can be set from outside) as well
+as ENV{HEALTHCHECK} to prevent imgsrv from spamming the logs.
+
+=cut
 # ---------------------------------------------------------------------
+sub __logging_enabled {
+    return ($logging_enabled && !$ENV{HEALTHCHECK});
+}
+
 
 =item __Log_string
 
@@ -73,7 +83,7 @@ sub __Log_string {
     my $optional_logfile_pattern = shift;
     my $optional_logfile_key = shift;
 
-    return unless ( $logging_enabled );
+    return unless __logging_enabled;
 
     my $config = ref($C) eq 'Context' ? $C->get_object('MdpConfig') : $C;
 
@@ -130,7 +140,7 @@ sub __Log_struct {
     my $optional_logfile_pattern = shift;
     my $optional_logfile_key = shift;
 
-    return unless ( $logging_enabled );
+    return unless __logging_enabled;
 
     # get the singleton
     unless ( ref $C ) { $C = new Context; }
@@ -174,8 +184,7 @@ Description
 # ---------------------------------------------------------------------
 sub __Log_simple {
     my $s = shift;
-    return unless ( $logging_enabled );
-
+    return '' unless __logging_enabled;
 
     my $date = Utils::Time::iso_Time('date');
     my $time = Utils::Time::iso_Time('time');
