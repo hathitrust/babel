@@ -13,6 +13,9 @@
       emitter.emit('view.switch', { view: value });
       // $view = value;
     }
+    
+    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
+    console.log('focus on view button?')
   }
 
   function switchFormat(event) {
@@ -22,11 +25,14 @@
       // $format = value;
       emitter.emit('view.switch.format', { format: value });
     }
+    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
+    console.log('focus on view button?')
   }
 </script>
 
 <div class="btn-group dropup">
   <button
+    id="view-button"
     type="button"
     class="btn btn-outline-dark dropdown-toggle text-uppercase"
     data-bs-toggle="dropdown"
