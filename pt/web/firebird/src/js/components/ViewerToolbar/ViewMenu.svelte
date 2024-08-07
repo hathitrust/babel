@@ -15,7 +15,6 @@
     }
     
     if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
-    console.log('focus on view button?')
   }
 
   function switchFormat(event) {
@@ -26,7 +25,6 @@
       emitter.emit('view.switch.format', { format: value });
     }
     if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
-    console.log('focus on view button?')
   }
 </script>
 
