@@ -639,6 +639,7 @@
         aria-hidden="true"
         title="Tunnel Download Tracker"
         name="download-module-xxx"
+        tabindex="-1"
       />
     {:else}
       <p>This item cannot be downloaded.</p>
