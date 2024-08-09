@@ -21,3 +21,9 @@ logs/
 cache/
 geoip/
 etc/
+
+#macOS 
+.DS_Store
+
+#node module cache
+.npm

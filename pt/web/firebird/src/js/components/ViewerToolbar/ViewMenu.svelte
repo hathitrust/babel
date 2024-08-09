@@ -13,6 +13,8 @@
       emitter.emit('view.switch', { view: value });
       // $view = value;
     }
+    
+    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
   }
 
   function switchFormat(event) {
@@ -22,11 +24,13 @@
       // $format = value;
       emitter.emit('view.switch.format', { format: value });
     }
+    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
   }
 </script>
 
 <div class="btn-group dropup">
   <button
+    id="view-button"
     type="button"
     class="btn btn-outline-dark dropdown-toggle text-uppercase"
     data-bs-toggle="dropdown"
@@ -44,75 +48,84 @@
   <ul class="dropdown-menu">
     <li>
       <span class="dropdown-header">
-        <span>Page Format</span>
+        <span id="page-format">Page Format</span>
       </span>
     </li>
-    <li>
-      <button
-        type="button"
-        class="dropdown-item"
-        class:active={$format == 'plaintext'}
-        data-role="format"
-        data-value="plaintext"
-        disabled={!manifest.hasOcr}
-        on:click={switchFormat}
-      >
-        <i class="fa-regular fa-file-lines" aria-hidden="true" />
-        <span>Plain Text</span>
-      </button>
-    </li>
-    <li>
-      <button
-        type="button"
-        class="dropdown-item"
-        class:active={$format == 'image'}
-        data-role="format"
-        data-value="image"
-        on:click={switchFormat}
-      >
-        <i class="fa-regular fa-file-image" aria-hidden="true" />
-        <span>Image</span>
-      </button>
-    </li>
-    <li><hr class="dropdown-divider" /></li>
+    <ul class="menu-list-section" role="group" aria-labelledby="page-format">
+      <li>
+        <button
+          type="button"
+          class="dropdown-item"
+          class:active={$format == 'plaintext'}
+          aria-pressed={$format == 'plaintext'}
+          data-role="format"
+          data-value="plaintext"
+          disabled={!manifest.hasOcr}
+          on:click={switchFormat}
+        >
+          <i class="fa-regular fa-file-lines" aria-hidden="true" />
+          <span>Plain Text</span>
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          class="dropdown-item"
+          class:active={$format == 'image'}
+          aria-pressed={$format == 'image'}
+          data-role="format"
+          data-value="image"
+          on:click={switchFormat}
+        >
+          <i class="fa-regular fa-file-image" aria-hidden="true" />
+          <span>Image</span>
+        </button>
+      </li>
+    </ul>
+    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
     <li>
       <span class="dropdown-header">
-        <span>View Mode</span>
+        <span id="view-mode">View Mode</span>
       </span>
     </li>
-    <li>
-      <button
-        type="button"
-        class="dropdown-item"
-        class:active={$view == '1up'}
-        data-role="view"
-        data-value="1up"
-        on:click={switchView}
-      >
-        <i class="fa-solid fa-up-down" aria-hidden="true" />
-        <span>Scroll</span>
-      </button>
-    </li>
-    <li>
-      <button
-        type="button"
-        class="dropdown-item"
-        class:active={$view == '2up'}
-        data-role="view"
-        data-value="2up"
-        disabled={manifest.totalSeq == 1}
-        on:click={switchView}
-      >
-        <i class="fa-solid fa-book-open" aria-hidden="true" />
-        <span>Flip</span>
-      </button>
-    </li>
-    <li><hr class="dropdown-divider" /></li>
+    <ul class="menu-list-section" role="group" aria-labelledby="view-mode">
+      <li>
+        <button
+          type="button"
+          class="dropdown-item"
+          class:active={$view == '1up'}
+          aria-pressed={$view == '1up'}
+          data-role="view"
+          data-value="1up"
+          on:click={switchView}
+        >
+          <i class="fa-solid fa-up-down" aria-hidden="true" />
+          <span>Scroll</span>
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          class="dropdown-item"
+          class:active={$view == '2up'}
+          aria-pressed={$view == '2up'}
+          data-role="view"
+          data-value="2up"
+          disabled={manifest.totalSeq == 1}
+          on:click={switchView}
+        >
+          <i class="fa-solid fa-book-open" aria-hidden="true" />
+          <span>Flip</span>
+        </button>
+      </li>
+    </ul>
+    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
     <li>
       <button
         type="button"
         class="dropdown-item"
         class:active={$view == 'thumb'}
+        aria-pressed={$view == 'thumb'}
         data-role="view"
         data-value="thumb"
         on:click={switchView}
@@ -135,5 +148,9 @@
       width: 1.125rem;
       text-align: center;
     }
+  }
+  ul.menu-list-section {
+    list-style: none;
+    padding-left: 0;
   }
 </style>

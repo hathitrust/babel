@@ -253,6 +253,7 @@
     if ($currentFormat != options.format) {
       $currentFormat = options.format;
       updateHistory({ format: options.format });
+      HT.live.announce(`Viewing item in ${options.format} format.`);
       if ($preferencesConsent === 'true') {
         HT.prefs.set({ pt: { format: options.format } });
       }
