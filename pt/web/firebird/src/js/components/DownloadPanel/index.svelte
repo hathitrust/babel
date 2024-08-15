@@ -1,7 +1,7 @@
 <script>
   import { onMount, getContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel';
   import Modal from '~firebird-common/src/js/components/Modal';
@@ -568,7 +568,7 @@
                 class="btn btn-outline-dark align-self-start"
                 type="button"
                 aria-label="Clear selection"
-                use:tooltip
+                use:tooltippy
                 on:click={() => manifest.clearSelection()}
               >
                 <i class="fa-regular fa-circle-xmark" aria-hidden="true" />

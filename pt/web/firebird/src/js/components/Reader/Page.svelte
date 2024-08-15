@@ -5,8 +5,6 @@
   import { afterUpdate } from 'svelte';
   import { get } from 'svelte/store';
 
-  import { tooltip } from '../../lib/tooltip';
-
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
   const HT = getContext('HT');
@@ -55,6 +53,7 @@
   let scan;
   let image;
   let rotatedImage;
+  let rotateButtonContent = '90';
   let imageSrc;
   let matches;
   let page_coords;
@@ -421,16 +420,28 @@
     }
   };
 
+  
+  const togglePageSelection = function (event) {
+    manifest.select(seq, event)
+  }
+
   const rotateScan = async function () {
     orient = (orient + 90) % 360;
     if (orient == 0) {
+      rotateButtonContent = '90'
       return;
+    } else if (orient == 90) {
+      rotateButtonContent = '180'
+    } else if (orient == 180) {
+      rotateButtonContent = '270'
+    } else if (orient = 270) {
+      rotateButtonContent = '0'
     }
 
     if (!rotatedImage) {
       await tick();
     }
-    // console.log("-- page.rotateScan", seq, rotatedImage);
+    console.log("-- page.rotateScan", seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
     drawRotatedImage();
   };
 
@@ -466,6 +477,7 @@
       pageZoom = zoom;
     }
     pageZoom += delta;
+    console.log('zoom: ', delta, pageZoom, zoom)
     loadImage(true);
   };
 
@@ -642,6 +654,7 @@
     {view}
     {format}
     {pageZoom}
+    {rotateButtonContent}
     {rotateScan}
     {updateZoom}
     {openLightbox}
@@ -651,7 +664,7 @@
     allowFullDownload={manifest.allowFullDownload}
     selected={$selected.has(seq)}
     isOpen={manifest.initialDetailsOpenState}
-    togglePageSelection={(event) => manifest.select(seq, event)}
+    {togglePageSelection}
   />
 
   {#if debugChoke}
