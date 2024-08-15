@@ -221,53 +221,6 @@ sub log_string
     Auth::Logging::log_access($C, 'imgsrv', $tuples, {postfix => $logfile});
 }
 
-sub log_string_xxx
-{
-    return if $ENV{HEALTHCHECK};
-    my ( $logfile, $s ) = @_;
-    my $C = new Context;
-    my $mdpItem = $C->get_object('MdpItem');
-    my $auth = $C->get_object('Auth');
-    my $ar = $C->get_object('Access::Rights');
-
-    my $id                    = $mdpItem->GetId();
-    my $ic                    = $ar->in_copyright($C, $id) || 0;
-    my $access_type           = $ar->get_access_type($C, 'as_string');
-    my $remote_addr           = $ENV{REMOTE_ADDR} || 'notset';
-    my $remote_user_processed = Utils::Get_Remote_User() || 'notset';
-    my $remote_user_from_env  = $ENV{REMOTE_USER} || 'notset';
-    my $proxied_addr          = Access::Rights::proxied_address() || 'notset';
-    my $auth_type             = lc ($ENV{AUTH_TYPE} || 'notset');
-    my $http_host             = $ENV{HTTP_HOST} || 'notset';
-    my $inst_code             = $auth->get_institution_code($C) || 'notset';
-    my $rights_attribute      = $ar->get_rights_attribute($C, $id) || 'notset';
-    my $source_attribute      = $ar->get_source_attribute($C, $id) || 'notset';
-
-    # we want the collection and digitization sources, but these are not available directly...
-    my ( $digitization_source, $collection_source ) = get_sources($mdpItem);
-
-    my ($usertype, $role) = (
-                             Auth::ACL::a_GetUserAttributes('usertype') || 'notset',
-                             Auth::ACL::a_GetUserAttributes('role') || 'notset',
-                            );
-    my $datetime = Utils::Time::iso_Time();
-    $s .= qq{|id=$id|datetime=$datetime|attr=$attr|ic=$ic|access_type=$access_type|digitization=$digitization_source|collection=$collection_source|remote_addr=$remote_addr|proxied_addr=$proxied_addr|remote_user_env=$remote_user_from_env|remote_user_processed=$remote_user_processed|auth_type=$auth_type|usertype=$usertype|role=$role|sdrinst=$sdrinst|sdrlib=$sdrlib|http_host=$http_host|inst_code=$inst_code};
-
-    if ($auth_type eq 'shibboleth') {
-        my $affiliation = $ENV{affiliation} || 'notset';
-        my $eppn = $ENV{eppn} || 'notset';
-        my $display_name = $ENV{displayName} || 'notset';
-        my $entityID = $ENV{Shib_Identity_Provider} || 'notset';
-        my $persistent_id = $ENV{persistent_id} || 'notset';
-
-        $s .= qq{|eduPersonScopedAffiliation=$affiliation|eduPersonPrincipalName=$eppn|displayName=$display_name|persistent_id=$persistent_id|Shib_Identity_Provider=$entityID};
-    }
-
-    # see lament in Auth::Logging
-    my $pattern = qr(slip/run-___RUN___|___QUERY___);
-    Utils::Logger::__Log_string($C, $s, qq{imgsrv_${logfile}_logfile}, $pattern, 'imgsrv');
-}
-
 sub __get_cachedir_root
 {
     return $ENV{'SDRROOT'};
