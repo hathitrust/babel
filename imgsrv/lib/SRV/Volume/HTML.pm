@@ -63,8 +63,6 @@ sub run {
 
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
-    # logfile is not used in this class
-    # my $logfile = SRV::Utils::get_logfile();
 
     my $file = $self->_get_fileid();
     if ( $file =~ m,^\d+$, ) {
