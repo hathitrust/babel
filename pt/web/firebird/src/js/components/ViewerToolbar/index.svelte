@@ -52,12 +52,14 @@
     }
   };
 
+  let fullscreenButtonContent;
   const toggleFullscreen = function (event) {
     toggleInterface(event, screenfull.isFullscreen ? 'default' : 'minimal');
     screenfull.toggle(document.querySelector('#root')).then(() => {
       // console.log("-- toggleFullScreen", screenfull.isFullscreen);
       $isFullscreen = screenfull.isFullscreen;
       emitter.emit('log.action', { action: 'toggle.fullscreen', value: $isFullscreen });
+      $isFullscreen ? fullscreenButtonContent = 'Exit Full Screen' : fullscreenButtonContent = 'Enter Full Screen'
     });
   };
 
@@ -103,6 +105,7 @@
 
   onMount(() => {
     isFullscreenEnabled = screenfull.isEnabled;
+    isFullscreenEnabled ? fullscreenButtonContent = 'Enter Full Screen' : fullscreenButtonContent = 'Exit Full Screen'
     window.screenfull = screenfull;
     return () => {
       // emitter.off('location.updated', updateSeq);
@@ -276,8 +279,8 @@
     <button
       type="button"
       class="btn btn-outline-dark"
-      aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
-      use:tooltippy
+      aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+      use:tooltippy={{content: `${fullscreenButtonContent}`, appendTo: 'parent'}}
       on:click={toggleFullscreen}
     >
       <i class="fa-solid fa-maximize" />

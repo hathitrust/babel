@@ -42,7 +42,6 @@ export function tooltippy(element, params = {}) {
     maxWidth: 'none',
     ...params
   });
-  console.log('tippy', tooltippy);
   return {
     update(newParams) {
       tooltippy.setProps({content, ...newParams});

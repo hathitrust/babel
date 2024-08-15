@@ -264,3 +264,6 @@ button:hover i.border-dark {
 .tippy-box[data-theme~='pt'][data-placement^='left'] > .tippy-arrow::before {
   border-left-color: var(--color-primary-700);
 }
+.tippy-box[data-theme~='pt'][data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: var(--color-primary-700);
+}

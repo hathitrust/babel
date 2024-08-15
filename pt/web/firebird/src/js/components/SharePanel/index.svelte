@@ -1,6 +1,6 @@
 <script>
   import { onMount, getContext } from 'svelte';
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel';
   import Modal from '~firebird-common/src/js/components/Modal';
@@ -101,7 +101,7 @@
           class="btn btn-outline-dark"
           aria-label="Copy permanent link"
           data-bs-placement="right"
-          use:tooltip
+          use:tooltippy={{placement: 'right'}}
           bind:this={btnShareHandle}
           on:click={() => copySelection(btnShareHandle, shareHandle)}
         >
@@ -126,7 +126,7 @@
           class="btn btn-outline-dark"
           aria-label="Copy link to this page scan"
           data-bs-placement="right"
-          use:tooltip
+          use:tooltippy={{placement: 'right'}}
           bind:this={btnShareHandleLink}
           on:click={() => copySelection(btnShareHandleLink, shareHandleLink)}
         >
@@ -160,7 +160,7 @@
           class="btn btn-outline-dark"
           aria-label="Copy iframe code"
           data-bs-container=".share-modal-body"
-          use:tooltip
+          use:tooltippy={{ appendTo: 'parent' }}
           bind:this={btnCodeBlock}
           on:click={() => copySelection(codeBlock)}
         >

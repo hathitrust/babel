@@ -104,9 +104,9 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy={{content: `Rotate scan, ${rotateButtonContent}°`}}
+        use:tooltippy={{content: `Rotate scan #${seq}, ${rotateButtonContent}°`}}
         data-tippy-placement="left"
-        aria-label="Rotate page, {rotateButtonContent}°"
+        aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
         on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right" /></button
@@ -118,9 +118,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltippy={{content: `Zoom in #${seq}, ${(pageZoom + 0.5)*100}%`}}
+          use:tooltippy={{content: `Zoom in scan #${seq}, ${(pageZoom + 0.5)*100}%`}}
           data-tippy-placement="left"
-          aria-label="Zoom in #{seq}, {(pageZoom + 0.5)*100}%"
+          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(0.5)}
@@ -131,9 +131,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltippy={{content: `Zoom out #${seq}, ${(pageZoom - 0.5)*100}%`}}
+          use:tooltippy={{content: `Zoom out scan #${seq}, ${(pageZoom - 0.5)*100}%`}}
           data-tippy-placement="left"
-          aria-label="Zoom out #{seq}, {(pageZoom - 0.5)*100}%"
+          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(-0.5)}
