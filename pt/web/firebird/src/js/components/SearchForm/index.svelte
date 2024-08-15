@@ -1,7 +1,7 @@
 <script>
   import { onMount, beforeUpdate, tick, getContext } from 'svelte';
   import { get } from 'svelte/store';
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
   import { preferencesConsent } from '~firebird-common/src/js/lib/store';
 
   const manifest = getContext('manifest');
@@ -19,6 +19,7 @@
   let sort = 'seq';
   let showHighlights = true;
   document.documentElement.dataset.showHighlights = showHighlights;
+  let highlightButtonContent = 'Hide';
 
   let searchUrl = new URL(location.href);
   let searchParams = searchUrl.searchParams;
@@ -47,6 +48,7 @@
   function toggleHighlights() {
     showHighlights = !showHighlights;
     document.documentElement.dataset.showHighlights = showHighlights;
+    showHighlights ? highlightButtonContent = 'Hide' : highlightButtonContent = 'Show'
   }
 
   function configureNavigationLinks() {
@@ -210,7 +212,7 @@
           aria-label="Clear search"
           data-bs-placement="right"
           disabled={payload == null}
-          use:tooltip
+          use:tooltippy
           on:click={clearSearchForm}
         >
           <i class="fa-regular fa-circle-xmark" />
@@ -245,7 +247,7 @@
         type="button"
         class="btn btn-outline-secondary"
         class:active={sort == 'score'}
-        use:tooltip
+        use:tooltippy
         aria-label="Sort by relevance"
         on:click={(event) => {
           sort = 'score';
@@ -259,7 +261,7 @@
         type="button"
         class="btn btn-outline-secondary"
         class:active={sort == 'seq'}
-        use:tooltip
+        use:tooltippy
         aria-label="Sort by page scan"
         on:click={(event) => {
           sort = 'seq';
@@ -276,7 +278,7 @@
         class="btn btn-outline-secondary"
         class:active={showHighlights}
         on:click={toggleHighlights}
-        use:tooltip
+        use:tooltippy={{content: `${highlightButtonContent} highlights`}}
         aria-label={showHighlights ? 'Hide Highlights' : 'Show Highlights'}
       >
         <i class="fa-solid fa-sun" aria-hidden="true" />

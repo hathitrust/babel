@@ -2,7 +2,7 @@
   import { onMount, getContext } from 'svelte';
   import screenfull from 'screenfull';
 
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   import ViewMenu from './ViewMenu.svelte';
 
@@ -35,6 +35,7 @@
 
   emitter.on('zoom.enable', enableZoomOptions);
 
+  let controlsText = 'Hide Controls';
   const toggleInterface = function (event, mode) {
     if (mode) {
       $interfaceMode = mode;
@@ -44,14 +45,21 @@
     }
     document.body.dataset.interface = $interfaceMode;
     emitter.emit('toggle.interface', $interfaceMode);
+    if ($interfaceMode == 'minimal') {
+      controlsText = 'Show Controls';
+    } else {
+      controlsText = 'Hide Controls';
+    }
   };
 
+  let fullscreenButtonContent;
   const toggleFullscreen = function (event) {
     toggleInterface(event, screenfull.isFullscreen ? 'default' : 'minimal');
     screenfull.toggle(document.querySelector('#root')).then(() => {
       // console.log("-- toggleFullScreen", screenfull.isFullscreen);
       $isFullscreen = screenfull.isFullscreen;
       emitter.emit('log.action', { action: 'toggle.fullscreen', value: $isFullscreen });
+      $isFullscreen ? fullscreenButtonContent = 'Exit Full Screen' : fullscreenButtonContent = 'Enter Full Screen'
     });
   };
 
@@ -97,6 +105,7 @@
 
   onMount(() => {
     isFullscreenEnabled = screenfull.isEnabled;
+    isFullscreenEnabled ? fullscreenButtonContent = 'Enter Full Screen' : fullscreenButtonContent = 'Exit Full Screen'
     window.screenfull = screenfull;
     return () => {
       // emitter.off('location.updated', updateSeq);
@@ -106,21 +115,23 @@
 </script>
 
 <div class="view--toolbar rounded">
-  <button
-    type="button"
-    class="btn btn-outline-dark"
-    class:active={$interfaceMode == 'minimal'}
-    aria-label={$interfaceMode == 'minimal' ? 'Show Controls' : 'Hide Controls'}
-    use:tooltip
-    on:click={toggleInterface}
-  >
-    <i
-      class:fa-solid={$interfaceMode == 'default'}
-      class:fa-eye={$interfaceMode == 'default'}
-      class:fa-regular={$interfaceMode == 'minimal'}
-      class:fa-eye-slash={$interfaceMode == 'minimal'}
-    />
-  </button>
+  <span>
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      class:active={$interfaceMode == 'minimal'}
+      aria-label={controlsText}
+      use:tooltippy={{ content: controlsText }}
+      on:click={toggleInterface}
+    >
+      <i
+        class:fa-solid={$interfaceMode == 'default'}
+        class:fa-eye={$interfaceMode == 'default'}
+        class:fa-regular={$interfaceMode == 'minimal'}
+        class:fa-eye-slash={$interfaceMode == 'minimal'}
+      />
+    </button>
+  </span>
 
   <!-- <button type="button" class="btn btn-outline-dark d-none d-sm-block">
     <i class="fa-regular fa-circle-question"></i>
@@ -157,7 +168,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom In"
         disabled={!enableZoomIn}
-        use:tooltip
+        use:tooltippy
         on:click={() => zoom(1)}
       >
         <i class="fa-solid fa-plus" />
@@ -167,7 +178,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom Out"
         disabled={!enableZoomOut}
-        use:tooltip
+        use:tooltippy
         on:click={() => zoom(-1)}
       >
         <i class="fa-solid fa-minus" />
@@ -182,7 +193,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -192,7 +203,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -202,7 +213,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -212,7 +223,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
@@ -225,7 +236,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -235,7 +246,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -245,7 +256,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -255,7 +266,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltip
+        use:tooltippy
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
@@ -268,8 +279,8 @@
     <button
       type="button"
       class="btn btn-outline-dark"
-      aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Full Screen'}
-      use:tooltip
+      aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+      use:tooltippy={{content: `${fullscreenButtonContent}`, appendTo: 'parent'}}
       on:click={toggleFullscreen}
     >
       <i class="fa-solid fa-maximize" />

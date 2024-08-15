@@ -1,6 +1,6 @@
 <script>
   import { getContext } from 'svelte';
-  import { tooltip } from '../../lib/tooltip';
+  import { tooltippy } from '../../lib/tippy';
 
   const emitter = getContext('emitter');
 
@@ -18,14 +18,31 @@
   export let pageZoom = 1;
   export let allowPageZoom = false;
   export let allowRotate = false;
+  export let rotateButtonContent = '90';
+
+  let selectedButtonContent;
+
+
+  function scanSelected () {
+    if (selected) {
+      selectedButtonContent = `Scan #${seq} is selected`
+    } else if(!selected) {
+      selectedButtonContent = `Select scan #${seq}`
+    }
+  };
+
+  scanSelected()
 
   // let isOpen = true; // selected || null;
   let isDisabled = view == 'thumb' && !allowFullDownload;
+  // let tippyDataContent = document.querySelector('[data-tippy-content]').getAttribute('data-tippy-content')
 
   export let rotateScan = function () {};
   export let updateZoom = function () {};
   export let togglePageSelection = function () {};
   export let openLightbox = function () {};
+
+
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -56,9 +73,11 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
+        use:tooltippy={{content: `${selectedButtonContent}`}}
+        data-tippy-placement="left"
         on:click|stopPropagation={togglePageSelection}
-        aria-label={selected ? `Page scan #${seq} is selected` : `Select page scan #${seq}`}
+        on:click|stopPropagation={scanSelected}
+        aria-label={selected ? `Scan #${seq} is selected` : `Select scan #${seq}`}
         aria-pressed={selected}
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
@@ -69,7 +88,8 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
+        use:tooltippy
+        data-tippy-placement="left"
         on:click|stopPropagation={openLightbox}
         data-bs-placement={side == 'verso' ? 'right' : 'left'}
         aria-label="Open foldout for page scan #{seq}"
@@ -84,8 +104,9 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltip
-        aria-label="Rotate page"
+        use:tooltippy={{content: `Rotate scan #${seq}, ${rotateButtonContent}°`}}
+        data-tippy-placement="left"
+        aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
         on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right" /></button
@@ -97,8 +118,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltip
-          aria-label="Zoom in #{seq}"
+          use:tooltippy={{content: `Zoom in scan #${seq}, ${(pageZoom + 0.5)*100}%`}}
+          data-tippy-placement="left"
+          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(0.5)}
@@ -109,8 +131,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltip
-          aria-label="Zoom out #{seq}"
+          use:tooltippy={{content: `Zoom out scan #${seq}, ${(pageZoom - 0.5)*100}%`}}
+          data-tippy-placement="left"
+          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(-0.5)}
