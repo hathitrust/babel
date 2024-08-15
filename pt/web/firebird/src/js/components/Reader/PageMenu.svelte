@@ -18,14 +18,31 @@
   export let pageZoom = 1;
   export let allowPageZoom = false;
   export let allowRotate = false;
+  export let rotateButtonContent = '90';
+
+  let selectedButtonContent;
+
+
+  function scanSelected () {
+    if (selected) {
+      selectedButtonContent = `Scan #${seq} is selected`
+    } else if(!selected) {
+      selectedButtonContent = `Select scan #${seq}`
+    }
+  };
+
+  scanSelected()
 
   // let isOpen = true; // selected || null;
   let isDisabled = view == 'thumb' && !allowFullDownload;
+  // let tippyDataContent = document.querySelector('[data-tippy-content]').getAttribute('data-tippy-content')
 
   export let rotateScan = function () {};
   export let updateZoom = function () {};
   export let togglePageSelection = function () {};
   export let openLightbox = function () {};
+
+
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -56,10 +73,11 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy
+        use:tooltippy={{content: `${selectedButtonContent}`}}
         data-tippy-placement="left"
         on:click|stopPropagation={togglePageSelection}
-        aria-label={selected ? `Page scan #${seq} is selected` : `Select page scan #${seq}`}
+        on:click|stopPropagation={scanSelected}
+        aria-label={selected ? `Scan #${seq} is selected` : `Select scan #${seq}`}
         aria-pressed={selected}
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
@@ -86,9 +104,9 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy
+        use:tooltippy={{content: `Rotate scan, ${rotateButtonContent}°`}}
         data-tippy-placement="left"
-        aria-label="Rotate page"
+        aria-label="Rotate page, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
         on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right" /></button
@@ -100,9 +118,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltippy
+          use:tooltippy={{content: `Zoom in #${seq}, ${(pageZoom + 0.5)*100}%`}}
           data-tippy-placement="left"
-          aria-label="Zoom in #{seq}"
+          aria-label="Zoom in #{seq}, {(pageZoom + 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(0.5)}
@@ -113,9 +131,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltippy
+          use:tooltippy={{content: `Zoom out #${seq}, ${(pageZoom - 0.5)*100}%`}}
           data-tippy-placement="left"
-          aria-label="Zoom out #{seq}"
+          aria-label="Zoom out #{seq}, {(pageZoom - 0.5)*100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(-0.5)}

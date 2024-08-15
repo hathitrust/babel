@@ -22,9 +22,17 @@ const hideOnEsc = {
   },
 };
 
-export function tooltippy(element) {
+
+
+export function tooltippy(element, params = {}) {
+  const custom = params.content;
+  const label = element.getAttribute("aria-label");
+  
+  const content = custom || label;
+
   const tooltippy = tippy(element, {
-    content: (reference) => reference.getAttribute('aria-label'),
+    // content: (reference) => reference.getAttribute('aria-label'),
+    content,
     appendTo: document.body,
     interactive: true,
     plugins: [hideOnEsc],
@@ -32,11 +40,12 @@ export function tooltippy(element) {
     placement: 'top',
     theme: 'pt',
     maxWidth: 'none',
+    ...params
   });
   console.log('tippy', tooltippy);
   return {
-    update(options) {
-      tooltippy.setProps(options);
+    update(newParams) {
+      tooltippy.setProps({content, ...newParams});
     },
     destroy() {
       tooltippy.destroy();
