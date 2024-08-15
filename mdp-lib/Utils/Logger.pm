@@ -184,7 +184,7 @@ Description
 # ---------------------------------------------------------------------
 sub __Log_simple {
     my $s = shift;
-    return '' unless __logging_enabled;
+    return unless __logging_enabled;
 
     my $date = Utils::Time::iso_Time('date');
     my $time = Utils::Time::iso_Time('time');
