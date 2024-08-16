@@ -35,6 +35,9 @@ export function tooltippy(element, params = {}) {
     content,
     appendTo: document.body,
     interactive: true,
+    aria: { 
+      expanded: false, 
+    },
     plugins: [hideOnEsc],
     // hideOnClick: true,
     placement: 'top',
