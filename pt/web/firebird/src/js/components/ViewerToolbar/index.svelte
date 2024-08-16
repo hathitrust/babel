@@ -279,7 +279,7 @@
     <button
       type="button"
       class="btn btn-outline-dark"
-      aria-label={screenfull.isFullScreen ? 'Exit Full Screen' : 'Enter Full Screen'}
+      aria-label={`${fullscreenButtonContent}`}
       use:tooltippy={{content: `${fullscreenButtonContent}`, appendTo: 'parent'}}
       on:click={toggleFullscreen}
     >
