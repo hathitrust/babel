@@ -28,7 +28,7 @@
     if (!pageDiv) {
       return;
     }
-    emitter.emit('view.switch', { seq: pageDiv.dataset.seq });
+    emitter.emit('view.switch', { seq: Number(pageDiv.dataset.seq) });
   };
 
   const handleKeydown = function (event) {
@@ -40,7 +40,7 @@
       return;
     }
     if (event.code == 'Enter') {
-      emitter.emit('view.switch', { seq: pageDiv.dataset.seq });
+      emitter.emit('view.switch', { seq: Number(pageDiv.dataset.seq) });
     } else if (event.code == 'Tab') {
       // should grid view be different about
       // handling which pages are focus-able?
