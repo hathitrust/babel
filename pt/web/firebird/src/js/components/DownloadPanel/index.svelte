@@ -680,7 +680,7 @@
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button type="button" class="btn btn-secondary" on:click={cancelDownload}>Cancel</button>
+      <button type="button" class="btn btn-secondary" on:click={cancelDownload} aria-disabled={status.done} class:disabled={status.done}>Cancel</button>
       <!-- <button 
         type="button" 
         class="btn btn-primary"
