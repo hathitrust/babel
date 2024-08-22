@@ -91,6 +91,7 @@
       status.done = true;
       percent = 100;
       downloadInProgress = false;
+      HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`)
     } else {
       status.done = false;
       current = data.current_page;
@@ -655,7 +656,8 @@
   </svelte:fragment>
   <svelte:fragment slot="body">
     <div xxstyle="width: 30rem">
-      {#if status.percent < 100}
+      <div>
+        {#if status.percent < 100}
         <p>Please wait while we build your {formatTitle[format]}.</p>
         <div class="progress">
           <div
@@ -673,9 +675,11 @@
             >What affects the download speed?</a
           >
         </p>
-      {:else}
-        <p>All done! Your {formatTitle[format]} is ready for download.</p>
-      {/if}
+        {/if}
+        </div>
+          {#if status.done}
+          <p>All done! Your {formatTitle[format]} is ready for download.</p>
+          {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
