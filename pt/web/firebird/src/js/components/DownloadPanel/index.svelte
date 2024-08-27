@@ -24,6 +24,7 @@
   let selected = manifest.selected;
   let format = 'pdf';
   let range = manifest.allowFullDownload ? 'volume' : 'current-page';
+  let totalSeq = manifest.totalSeq;
 
   let modal;
   let tunnelFrame;
@@ -96,6 +97,7 @@
       status.done = false;
       current = data.current_page;
       percent = 100 * (current / totalPages);
+      // HT.live.announce(`Download in progress, ${percent} complete.`)
     }
 
     if (lastPercent != percent) {
@@ -179,6 +181,10 @@
       if (selection.pages.length == 0) {
         errorMessage = `You haven't selected any pages to download.
         To select pages, use the selection checkbox in the page toolbar.`;
+        return;
+      }
+      if (format == 'image-tiff' && selection.pages.length > 10) {
+        errorMessage = `TIFF downloads are limited to 10 page scans at a time.`;
         return;
       }
     } else if (range.startsWith('current-page')) {
@@ -484,6 +490,11 @@
 
         <fieldset class="mb-3">
           <legend class="fs-5">Range</legend>
+          <div aria-live="polite">
+          {#if format == 'image-tiff'}
+          <p class="fw-bold mb-3">TIFF downloads are limited to 10 page scans at a time.</p>
+          {/if}
+          </div>
           {#if $currentView == '1up'}
             <div class="form-check">
               <input
@@ -542,6 +553,7 @@
                 value="volume"
                 id="range-download-volume"
                 bind:group={range}
+                disabled={format == 'image-tiff' && totalSeq > 10}
               />
               <label class="form-check-label" for="range-download-volume"> Whole item </label>
             </div>
