@@ -97,7 +97,6 @@
       status.done = false;
       current = data.current_page;
       percent = 100 * (current / totalPages);
-      // HT.live.announce(`Download in progress, ${percent} complete.`)
     }
 
     if (lastPercent != percent) {
@@ -181,12 +180,17 @@
       if (selection.pages.length == 0) {
         errorMessage = `You haven't selected any pages to download.
         To select pages, use the selection checkbox in the page toolbar.`;
+        HT.live.announce(errorMessage);
         return;
-      }
-      if (format == 'image-tiff' && selection.pages.length > 10) {
-        errorMessage = `TIFF downloads are limited to 10 page scans at a time.`;
+      } else if (format == 'image-tiff' && selection.pages.length > 10 ) {
+        errorMessage = `You have selected ${Array.from($selected).length} page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
+        HT.live.announce(errorMessage);
         return;
-      }
+      } 
+    } else if (format == 'image-tiff' && totalSeq > 10) {
+        errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`
+        HT.live.announce(errorMessage);
+        return;
     } else if (range.startsWith('current-page')) {
       let page;
       switch (range) {
@@ -488,13 +492,14 @@
           </fieldset>
         {/if}
 
-        <fieldset class="mb-3">
+        <fieldset class="mb-3" id="download-range">
           <legend class="fs-5">Range</legend>
-          <div aria-live="polite">
-          {#if format == 'image-tiff'}
-          <p class="fw-bold mb-3">TIFF downloads are limited to 10 page scans at a time.</p>
-          {/if}
+          <div aria-live="polite" aria-atomic="true">
+            {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume') }
+            <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.</p>
+            {/if}
           </div>
+         
           {#if $currentView == '1up'}
             <div class="form-check">
               <input
@@ -553,7 +558,6 @@
                 value="volume"
                 id="range-download-volume"
                 bind:group={range}
-                disabled={format == 'image-tiff' && totalSeq > 10}
               />
               <label class="form-check-label" for="range-download-volume"> Whole item </label>
             </div>
@@ -569,6 +573,7 @@
               />
               <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
             </div>
+
             <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
               <ul class="list-unstyled mx-4 mb-1">
                 {#each flattenedSelection as sel}
@@ -605,7 +610,10 @@
           </button>
         </p>
         {#if errorMessage}
-          <div class="alert alert-warning fs-7">{errorMessage}</div>
+          <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
+            <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
+            <p class="py-3">{errorMessage}</p>
+          </div>
         {/if}
 
         <p class="fs-7 mb-1">
@@ -715,5 +723,33 @@
   </svelte:fragment>
 </Modal>
 
-<style>
+<style lang="scss">
+  .alert-warning {
+    --bs-alert-color: var(--color-neutral-800);
+    --bs-alert-border-color: #997404;
+  }
+  .alert {
+    border: none;
+    border-inline-start: 0.25rem solid var(--bs-alert-border-color);
+    padding: 0;
+    border-radius: 0.25rem;
+    box-shadow: 0px 4px 8px 0px rgba(25, 11, 1, 0.04);
+  i.alert-icon {
+        color: var(--bs-alert-border-color);
+        display: flex;
+        width: 1.5rem;
+        padding-block-start: 1rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        align-self: stretch;
+        margin-inline-start: 0.5rem;
+        line-height: 1.3125rem;
+      }
+      p {
+        line-height: 1.3125rem;
+        letter-spacing: -0.01rem;
+        margin-block-end: 0;
+      }
+    }
 </style>
