@@ -121,7 +121,7 @@
       class="btn btn-outline-dark"
       class:active={$interfaceMode == 'minimal'}
       aria-label={controlsText}
-      use:tooltippy={{ content: controlsText }}
+      use:tooltippy={{ content: controlsText, appendTo: 'parent' }}
       on:click={toggleInterface}
     >
       <i
@@ -193,7 +193,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -203,7 +203,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -213,7 +213,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -223,7 +223,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
@@ -236,7 +236,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
@@ -246,7 +246,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Previous Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
@@ -256,7 +256,7 @@
         type="button"
         class="btn btn-outline-dark"
         aria-label="Next Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
@@ -266,7 +266,7 @@
         type="button"
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
