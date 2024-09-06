@@ -29,6 +29,8 @@ use POSIX;
 sub dumpstats {
   my $self = shift;
 
+  return unless $ENV{USE_CATPROCIO};
+
   my $total_utime;
   my $total_stime;
 
