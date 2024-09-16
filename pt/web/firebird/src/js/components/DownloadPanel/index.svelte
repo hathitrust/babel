@@ -187,7 +187,7 @@
         HT.live.announce(errorMessage);
         return;
       } 
-    } else if (format == 'image-tiff' && totalSeq > 10) {
+    } else if (format == 'image-tiff' && range == 'volume' && totalSeq > 10) {
         errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`
         HT.live.announce(errorMessage);
         return;
