@@ -40,8 +40,8 @@
     if (mode) {
       $interfaceMode = mode;
     } else {
-      // console.log("-- toggleInterface", $interfaceMode);
       $interfaceMode = $interfaceMode == 'default' ? 'minimal' : 'default';
+      // console.log("-- toggleInterface", $interfaceMode);
     }
     document.body.dataset.interface = $interfaceMode;
     emitter.emit('toggle.interface', $interfaceMode);
@@ -62,6 +62,18 @@
       $isFullscreen ? fullscreenButtonContent = 'Exit Full Screen' : fullscreenButtonContent = 'Enter Full Screen'
     });
   };
+
+  // checking for a change in fullscreen mode
+  // if it's not fullscreen but the interface is still in 'minimal' mode,
+  // change the interface back to default and update the tooltip text 
+  if (screenfull.isEnabled) {
+    screenfull.on('change', () => {
+      if (!screenfull.isFullscreen && $interfaceMode == 'minimal') {
+        toggleInterface()
+        fullscreenButtonContent = 'Enter Full Screen'
+      }
+    });
+  }
 
   const handleValue = function (event) {
     let value = event.target.value;
@@ -105,7 +117,7 @@
 
   onMount(() => {
     isFullscreenEnabled = screenfull.isEnabled;
-    isFullscreenEnabled ? fullscreenButtonContent = 'Enter Full Screen' : fullscreenButtonContent = 'Exit Full Screen'
+    isFullscreen ? fullscreenButtonContent = 'Enter Full Screen' : fullscreenButtonContent = 'Exit Full Screen'
     window.screenfull = screenfull;
     return () => {
       // emitter.off('location.updated', updateSeq);
@@ -287,6 +299,8 @@
     </button>
   {/if}
 </div>
+
+<!-- <svelte:window on:keydown={escFullscreen} /> -->
 
 <style lang="scss">
   .view--toolbar {
