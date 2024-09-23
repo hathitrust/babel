@@ -259,7 +259,7 @@ button:hover i.border-dark {
 // when you append a tooltip to a button group, bootstrap styling makes the border radius look 
 // weird at the end of the button group because it thinks there's another element in the group 
 // (because technically there is, but it isn't a button!)
-.btn-group[aria-label='Pagination'] button:nth-child(4), .btn-group[aria-label='Zoom'] button:nth-child(2), button[aria-label='Sort by page scan'] {
+.btn-group[aria-label='Pagination'] button:nth-child(4), .btn-group[aria-label='Zoom'] button:nth-child(2), .btn-group[aria-label='Sort Results'] button[aria-label='Sort by page scan'] {
   border-end-end-radius: .375rem !important;
   border-start-end-radius: .375rem !important;
 }
@@ -269,7 +269,7 @@ button:hover i.border-dark {
 }
 
 .tippy-content {
-  text-wrap:nowrap;
+  white-space:nowrap;
 }
 
 .tippy-box[data-theme~='pt'] {
