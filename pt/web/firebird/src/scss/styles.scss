@@ -69,6 +69,8 @@ html[data-activated] .apps {
       var(--aside-collapsed-width, minmax(var(--aside-min-width), var(--aside-width)))
       min-content
       minmax(0, 1fr);
+    
+    background-color: #fff;
 
     @media (max-width: 768px) {
       grid-template-areas:
@@ -257,9 +259,17 @@ button:hover i.border-dark {
 // when you append a tooltip to a button group, bootstrap styling makes the border radius look 
 // weird at the end of the button group because it thinks there's another element in the group 
 // (because technically there is, but it isn't a button!)
-.btn-group[aria-label='Pagination'] button:nth-child(4) {
-  border-bottom-right-radius: .375rem !important;
-  border-top-right-radius: .375rem !important;
+.btn-group[aria-label='Pagination'] button:nth-child(4), .btn-group[aria-label='Zoom'] button:nth-child(2), button[aria-label='Sort by page scan'] {
+  border-end-end-radius: .375rem !important;
+  border-start-end-radius: .375rem !important;
+}
+.page-menu .btn-group-vertical button:nth-child(2) {
+  border-end-end-radius: .375rem !important;
+  border-end-start-radius: .375rem !important;
+}
+
+.tippy-content {
+  text-wrap:nowrap;
 }
 
 .tippy-box[data-theme~='pt'] {

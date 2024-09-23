@@ -64,12 +64,15 @@
   };
 
   // checking for a change in fullscreen mode
-  // if it's not fullscreen but the interface is still in 'minimal' mode,
-  // change the interface back to default and update the tooltip text 
+  // if it's not fullscreen and the interface is still in 'minimal' mode,
+  // change the interface back to default
+  // regardless, the tooltip text should change
   if (screenfull.isEnabled) {
     screenfull.on('change', () => {
-      if (!screenfull.isFullscreen && $interfaceMode == 'minimal') {
-        toggleInterface()
+      if (!screenfull.isFullscreen) {
+        if ($interfaceMode == 'minimal') {
+          toggleInterface()
+        }
         fullscreenButtonContent = 'Enter Full Screen'
       }
     });
@@ -133,7 +136,7 @@
       class="btn btn-outline-dark"
       class:active={$interfaceMode == 'minimal'}
       aria-label={controlsText}
-      use:tooltippy={{ content: controlsText, appendTo: 'parent' }}
+      use:tooltippy={{ content: controlsText }}
       on:click={toggleInterface}
     >
       <i
@@ -180,7 +183,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom In"
         disabled={!enableZoomIn}
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
         on:click={() => zoom(1)}
       >
         <i class="fa-solid fa-plus" />
@@ -190,7 +193,7 @@
         class="btn btn-outline-dark"
         aria-label="Zoom Out"
         disabled={!enableZoomOut}
-        use:tooltippy
+        use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
         on:click={() => zoom(-1)}
       >
         <i class="fa-solid fa-minus" />
@@ -292,7 +295,7 @@
       type="button"
       class="btn btn-outline-dark"
       aria-label={`${fullscreenButtonContent}`}
-      use:tooltippy={{content: `${fullscreenButtonContent}`, appendTo: 'parent'}}
+      use:tooltippy={{content: `${fullscreenButtonContent}`}}
       on:click={toggleFullscreen}
     >
       <i class="fa-solid fa-maximize" />
