@@ -67,16 +67,16 @@
   // if it's not fullscreen and the interface is still in 'minimal' mode,
   // change the interface back to default
   // regardless, the tooltip text should change
-  if (screenfull.isEnabled) {
-    screenfull.on('change', () => {
-      if (!screenfull.isFullscreen) {
-        if ($interfaceMode == 'minimal') {
-          toggleInterface()
+  addEventListener("fullscreenchange", () => {
+    if (screenfull.isEnabled) {
+        if (!screenfull.isFullscreen) {
+          if ($interfaceMode == 'minimal') {
+            toggleInterface()
+          }
+          fullscreenButtonContent = 'Enter Full Screen'
         }
-        fullscreenButtonContent = 'Enter Full Screen'
-      }
-    });
-  }
+    }
+  });
 
   const handleValue = function (event) {
     let value = event.target.value;
