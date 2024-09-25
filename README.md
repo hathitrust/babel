@@ -1,7 +1,5 @@
 # Setting up babel-local-dev
 
-> DRAFT DRAFT DRAFT
-
 ## Step 1: check out all the things
 
 Clone all the repositories in a working directory.
@@ -10,7 +8,7 @@ so `babel-local-dev` has access to the other repositories.
 
 First clone this repository:
 ```bash
-git clone git@github.com:hathitrust/babel-local-dev.git babel
+git clone git@github.com:hathitrust/babel.git babel
 ```
 
 Then run:
