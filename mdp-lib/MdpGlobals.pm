@@ -34,8 +34,8 @@ my $host = $ENV{'HTTP_HOST'} || '';
 $gFeedbackCGIUrl = $protocol . $host . $cgi_path_component . q{/feedback};
 
 # General configuration
-$adminLink  = q{mailto:dlps-help@umich.edu};
-$adminText  = q{UMDL Help};
+$adminLink  = q{mailto:support@hathitrust.org};
+$adminText  = q{HathiTrust Support};
 
 # App::MdpItem
 $gMetsFileExtension    = '.mets.xml';
