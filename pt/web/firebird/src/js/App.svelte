@@ -434,7 +434,7 @@
   <ViewerToolbar />
 {/if}
 <aside>
-  <div class="inner" class:invisible={!asideExpanded}>
+  <div class="inner" class:invisible={!asideExpanded || $interfaceMode == 'minimal'}>
     <div class="accordion">
       <SurveyPanel />
       <AccessStatusPanel />

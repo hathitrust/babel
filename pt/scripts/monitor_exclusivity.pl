@@ -115,7 +115,7 @@ if ( $is_reporting ) {
                       {
                        'To'       => q{hathitrust-exclusivity-report@umich.edu},
                        # 'Bcc'      => $bccAddrArrRef,
-                       'From'     => q{roger@umich.edu},
+                       'From'     => q{hathitrust-system@umich.edu},
                        'Subject'  => "HathiTrust Exclusivity Report: $timestamp",
                        'Content-Type' => qq{multipart/alternative; boundary="$boundary"}
                       }
