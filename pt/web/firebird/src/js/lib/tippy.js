@@ -33,7 +33,7 @@ export function tooltippy(element, params = {}) {
   const tooltippy = tippy(element, {
     // content: (reference) => reference.getAttribute('aria-label'),
     content,
-    appendTo: document.body,
+    appendTo: 'parent',
     interactive: true,
     aria: { 
       expanded: false, 
