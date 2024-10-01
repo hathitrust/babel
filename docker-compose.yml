@@ -26,6 +26,7 @@ services:
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
       - ${BABEL_HOME}/sample-data/watermarks:/htapps/babel/watermarks
       - ${BABEL_HOME}/sample-data:/tmp/sample-data
+      - ${BABEL_HOME}/logs:/var/log/babel
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
@@ -55,6 +56,7 @@ services:
       - ${BABEL_HOME}/catalog:/htapps/catalog
       - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
       - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+      - ${BABEL_HOME}/logs:/var/log/babel
 
     environment:
       - SDRROOT=/htapps/babel
@@ -151,6 +153,7 @@ services:
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
       - ${BABEL_HOME}/sample-data:/tmp/sample-data
+      - ${BABEL_HOME}/logs:/var/log/babel
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1

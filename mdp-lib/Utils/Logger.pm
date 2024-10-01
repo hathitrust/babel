@@ -25,6 +25,7 @@ various
 
 use strict;
 
+use File::Basename qw(basename);
 use Utils;
 use Utils::Time;
 
@@ -87,48 +88,29 @@ sub __Log_string {
 
     my $config = ref($C) eq 'Context' ? $C->get_object('MdpConfig') : $C;
 
-    my $logdir = __get_logdir_root() . $config->get('logdir');
-    if (defined($optional_dir_key) && defined($optional_dir_pattern)) {
-        $logdir =~ s,$optional_dir_pattern,$optional_dir_key,;
+    if(my $local_log = $config->get('local_logdir')) {
+        my $log_prefix = $config->get('logdir');
+        if (defined($optional_dir_key) && defined($optional_dir_pattern)) {
+            $log_prefix =~ s,$optional_dir_pattern,$optional_dir_key,;
+        }
+        my $logfile = $log_prefix . '-' . $config->get($logfile_key);
+        $logfile =~ s/___DATE___//;
+        if (defined($optional_logfile_key) && defined($optional_logfile_pattern)) {
+            $logfile =~ s,$optional_logfile_pattern,$optional_logfile_key,;
+        }
+
+        $logfile = basename($logfile);
+
+        # if on a local filesystem, writes in "append mode" should be atomic, so 
+        # multiple processes' log output shouldn't stomp on each other
+        if (open(LOG, ">>:encoding(UTF-8)", "$local_log/$logfile")) {
+            LOG->autoflush(1);
+            print LOG qq{$s\n};
+            close(LOG);
+        } else {
+          print STDERR "Can't open $local_log/$logfile: $!\n";
+        }
     }
-    $logdir .= q{/} . Utils::Time::iso_Time('hour');
-
-    my $logfile = $config->get($logfile_key);
-    my $date = Utils::Time::iso_Time('date');
-    $logfile =~ s,___DATE___,-$date,;
-    if (defined($optional_logfile_key) && defined($optional_logfile_pattern)) {
-        $logfile =~ s,$optional_logfile_pattern,$optional_logfile_key,;
-    }
-    $logfile .= qq{.$ENV{SERVER_ADDR}};
-    $logfile .= qq{.$$};
-    
-    Utils::mkdir_path($logdir);
-
-    my $logfile_path = $logdir . '/' . $logfile;
-
-    # # Obtain an exclusive lock to protect access to the logfile when
-    # # multiple producers are writing to the logfile for the same shard
-    # # my $lock_file = $logfile_path . '.sem';
-    # my $lock_file = "/ram/" . $logfile . ".sem";
-
-    # # --- BEGIN CRITICAL SECTION ---
-    # my $sem;
-    # my $tries = 0;
-    # while (! ($sem = new Semaphore($lock_file))) {
-    #     $tries++;
-    #     return if ($tries > MAX_TRIES);
-    #     Time::HiRes::sleep(0.5);
-    # }
-
-    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
-        LOG->autoflush(1);
-        print LOG qq{$s\n};
-        close(LOG);
-        chmod(0666, $logfile_path) if (-o $logfile_path);
-    }
-
-    # $sem->unlock();
-    # --- END CRITICAL SECTION ---
 }
 
 sub __Log_struct {
