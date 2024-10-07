@@ -2,10 +2,6 @@
 <p align="center">
   <h1><code>whoami</code></h1>
   <br/>
-  <br/>
-  <a href="https://github.com/Ronster/SuperAwesomeProject/issues">Report Bug</a>
-  -
-  <a href="https://github.com/Ronster/SuperAwesomeProject/issues">Request Feature</a>
 </p>
 
 
@@ -13,13 +9,8 @@
 
 * [About the Project](#about-the-project)
 * [Built With](#built-with)
-* [Project Set Up](#project-set-up)
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-  * [Creating A Pull Request](#creating-a-pull-request)
-* [Content Structure](#content-structure)
-  * [Project Structure](#project-structure)
-  * [Site Maps](#site-maps)
+* [Project Set Up and Installation](#project-set-up-and-installation)
+* [Project Structure](#project-structure)
 * [Design](#design)
 * [Functionality](#functionality)
 * [Usage](#usage)
@@ -49,10 +40,7 @@ Follow the instructions in the `babel` README file. There are no additional setu
 required for `whoami`.
 
 
-## Content Structure
-This is where you explain the content structure, otherwise known as the Information Architecture (IA). There are a few parts to this, depending on how complicated and broad the project. Try to include relationships between files and services.
-
-### Project Structure
+## Project Structure
 ```markdown
 babel
 └── whoami
