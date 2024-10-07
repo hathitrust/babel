@@ -20,11 +20,9 @@
 
 ## About The Project
 
-This section should clealy outline what the goal of this project is.
-Here, one can talk about the intention, the problem, and how this is the solution.
-
 This is a utility CGI to which we can point users who are attempting to diagnose access
-issues. A Jira ticket can be appended to the URL and `whoami` will automatically
+issues. It prints a list of relevant `ENV` values and cookies for submission to HathiTrust
+technical staff. A Jira ticket can be appended to the URL and `whoami` will automatically
 submit an internal comment on that ticket.
 
 
