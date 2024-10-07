@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
   libdevel-cover-perl \
   libfcgi-perl \
   libfcgi-procmanager-perl \
+  libgeo-ip-perl \
   libimage-exiftool-perl \
   libimage-info-perl \
   libimage-size-perl \
