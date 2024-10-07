@@ -14,6 +14,28 @@ x-node: &node
 
 
 services:
+  perl-dev:
+    build:
+      context: .
+      target: perl-dev
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+      - ${BABEL_HOME}/sample-data:/tmp/sample-data
+      - ${BABEL_HOME}/catalog:/htapps/catalog
+      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
+      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+    depends_on:
+      - mysql-sdr
+      - solr-lss-dev
+      - solr-sdr-catalog
+      - solr-ptsearch
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
 
   imgsrv:
     build:
@@ -61,6 +83,7 @@ services:
       - SDRDATAROOT=/sdr1
     depends_on:
       - mysql-sdr
+      - solr-lss-dev
       - solr-sdr-catalog
       - solr-ptsearch
       - imgsrv
