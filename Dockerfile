@@ -22,7 +22,6 @@ RUN apt-get update && apt-get install -y \
   libdevel-cover-perl \
   libfcgi-perl \
   libfcgi-procmanager-perl \
-  libgeo-ip-perl \
   libimage-exiftool-perl \
   libimage-info-perl \
   libimage-size-perl \
@@ -72,9 +71,6 @@ RUN /bin/bash -c 'for cmd in pamflip jpegtopnm tifftopnm bmptopnm pngtopam ppmma
 
 RUN mkdir /htapps/babel/cache
 RUN chmod 4777 /htapps/babel/cache
-
-RUN mkdir /htapps/babel/logs
-RUN chmod 4777 /htapps/babel/logs
 
 RUN ln -s /htapps/babel /htapps/test.babel
 RUN cd /htapps/babel
