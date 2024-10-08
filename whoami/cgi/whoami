@@ -21,6 +21,7 @@ use MdpConfig;
 use Session;
 use Auth::Auth;
 use Utils::Date;
+use Utils::GeoIP;
 
 use Auth::Logging;
 
@@ -161,14 +162,15 @@ print qq{</body>};
 exit 0;
 
 sub get_geoip {
-    use Geo::IP;
-
     my $IP = shift;
-
-    my $geoIp = Geo::IP->new();
-    my $countryCode = $geoIp->country_code_by_addr($IP);
-    my $countryName = $geoIp->country_name_by_addr($IP);
-    return "$countryCode / $countryName";
+    my $geoip_database = Utils::GeoIP::get_db($C);
+    my $data = $geoip_database->record_for_address($IP);
+    if (!defined $data) {
+      return 'unknown';
+    }
+    my $country_code = $data->{country}->{iso_code};
+    my $country_name = $data->{country}->{names}->{en};
+    return "$country_code / $country_name";
 }
 
 
