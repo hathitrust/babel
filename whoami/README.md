@@ -76,6 +76,6 @@ When testing functionality for a logged-in user, it may be necessary to add a li
 `whoami` runs under Docker and in the `babel` production environment.
 
 ## Resources
-- `Geo::IP`
+
 - If actual Jira calls are to be made, make sure the credentials listed in the `jira_request` routine
 have been configured.
