@@ -28,8 +28,9 @@ submit an internal comment on that ticket.
 
 ## Built With
 
+- `CGI`
 - `mdp-lib`
-- `Geo::IP`
+- `IP::Geolocation::MMDB`
 
 
 ## Project Set Up and Installation
