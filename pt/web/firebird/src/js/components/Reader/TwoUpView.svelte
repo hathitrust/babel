@@ -1,15 +1,21 @@
 <script>
   import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
-  import View from './View.svelte';
+  import ImageFormat from './ImageFormat.svelte';
+	import PlaintextFormat from './PlaintextFormat.svelte'
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
 
   export let container;
   export let startSeq = 1;
+  export let format;
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
+
+  const formats = {};
+	formats['image'] = ImageFormat;
+	formats['plaintext'] = PlaintextFormat;
 
   let view;
   let isInitialized = true;
@@ -93,7 +99,8 @@
   };
 </script>
 
-<View
+
+<!-- <View
   {container}
   {startSeq}
   {currentLocation}
@@ -103,7 +110,9 @@
   {handleKeydown}
   format={$currentFormat}
   bind:this={view}
-/>
+/> -->
+
+<svelte:component this={formats[$currentFormat]} {container} {startSeq} {currentLocation} {findTarget} {findFocusItems} {handleClick} {handleKeydown} bind:this={view}></svelte:component>
 
 <style>
 </style>

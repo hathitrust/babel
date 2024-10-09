@@ -476,7 +476,7 @@
       <RestrictedView />
     {:else}
       <!-- <ViewerToolbar></ViewerToolbar> -->
-      <svelte:component this={views[$currentView]} startSeq={$currentSeq} container={stage} />
+      <svelte:component this={views[$currentView]} format={format} startSeq={$currentSeq} container={stage} />
     {/if}
   {/if}
 </main>

@@ -1,24 +1,25 @@
 <script>
-  import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
-  import View from './View.svelte';
+  import { getContext } from 'svelte';
+  import ImageFormat from './ImageFormat.svelte';
+	import PlaintextFormat from './PlaintextFormat.svelte'
 
-  const emitter = getContext('emitter');
   const manifest = getContext('manifest');
+  let view;
 
   export let container;
-  export let startSeq = 1;
+	export let startSeq = 1;
+
+  const formats = {};
+	formats['image'] = ImageFormat;
+	formats['plaintext'] = PlaintextFormat;
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
-
-  let view;
 
   export const currentLocation = function () {
     return { page: view.item($currentSeq) };
   };
 </script>
 
-<View {container} {startSeq} {currentLocation} format={$currentFormat} bind:this={view} />
+ <svelte:component this={formats[$currentFormat]} {startSeq} {container} bind:this={view}></svelte:component>
 
-<style>
-</style>
