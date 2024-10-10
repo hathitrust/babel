@@ -38,12 +38,15 @@ submit an internal comment on that ticket.
 Follow the instructions in the `babel` README file. There are no additional setup steps
 required for `whoami`.
 
-These are the two whoami URLs that can be visited once apache is up and running:
+These are the two URL types that can be visited once apache is up and running:
 ```
 http://localhost:8080/cgi/whoami
 http://localhost:8080/cgi/whoami/JIRA_TICKET
 ```
 
+Note: the LOG IN (`wayf`) link displayed for an anonymous user (the default) will return an
+error if followed because HTTPS is not supported under Docker. See [Tests](#tests) below
+for an alternative using `switch_auth.sh`.
 
 ## Project Structure
 ```markdown
