@@ -317,7 +317,9 @@ sub _load_text_xml {
 
     my $t0 = time;
 
-    open my $fh, '<', $self->source->{filename}; binmode $fh;
+    open my $fh, '<', $self->source->{filename};
+    binmode $fh;
+
     my $line = <$fh>;
     $line = <$fh> if ( $line =~ m,<\?xml version, );
     seek $fh, 0, 0;
@@ -325,7 +327,6 @@ sub _load_text_xml {
 
     unless ( $self->format ) {
         $self->format('application/xml');
-        # print STDERR "LOAD XML: $line\n";
         if ( $line =~ m,DOCTYPE, ) {
             # JATS will likely be handled by ArticleHandler to include version
             if ( $line =~ m,article PUBLIC '-//NLM//DTD Journal Publishing DTD, ) {
@@ -335,32 +336,13 @@ sub _load_text_xml {
             }
         } else {
             foreach my $tuple ( ["alto", "alto"], [ "DjVuXML", "djvu"] ) {
-                # my $xpc = XML::LibXML::XPathContext->new($self->dom->documentElement);
-                # if ( my $xmlns_uri = $self->dom->documentElement->getAttribute('xmlns') ) {
-                #     $xpc->registerNs("", $xmlns_uri);
-                # }
-                # # my $check = $self->dom->findnodes($$tuple[0]);
-                # my $check = $xpc->findnodes($$tuple[0]);
-                # print STDERR "XML CHECK: $$tuple[0] : " . $self->dom->documentElement->nodeName . "\n";
-
                 if ( $self->dom->documentElement->nodeName eq $$tuple[0] ) {
-                    $self->format('application/' . $$tuple[1] . "+xml"); last;
+		    $self->format('application/' . $$tuple[1] . "+xml");
+		    last;
                 }
-
-                # if ( scalar @$check ) { $self->format('application/' . $$tuple[1] . "+xml"); last; };
             }
-
-            # if ( $self->format() eq 'application/alto+xml' ) {
-            #     # check that this has the namespace
-            #     my $node =  $self->dom->documentElement;
-            #     unless ( $node->getAttribute('xmlns') || $node->getAttribute('xmlns:alto') ) {
-            #         print STDERR "AHOY SHOULD BE SETTING SOMETHING\n";
-            #         $node->setAttribute('xmlns', 'http://www.loc.gov/standards/alto/ns-v2#');
-            #     }
-            # }
         }
     }
-
 }
 
 
