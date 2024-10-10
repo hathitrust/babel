@@ -70,16 +70,17 @@ sub run {
         $file = $mdpItem->GetValidSequence($file);
     }
 
+    my $ocr_filename      = $mdpItem->GetFileNameBySequence($file, 'ocrfile');
     my $ocr_filename_path = $mdpItem->GetFilePathMaybeExtract($file, 'ocrfile');
-    my $ocr_filename = $mdpItem->GetFileNameBySequence($file, 'ocrfile');
-
+    my $html_filename     = $mdpItem->GetFileNameBySequence($file, 'coordOCRfile');
     my $html_filename_path;
-    my $html_filename = $mdpItem->GetFileNameBySequence($file, 'coordOCRfile');
 
     my %words = ();
     if ( $self->q1 ) {
         my $seq = $self->_get_fileid;
-        my $solrTextRef = SRV::SearchUtils::Solr_retrieve_OCR_page($C, $gId, $mdpItem->GetPhysicalPageSequence($seq));
+        my $solrTextRef = SRV::SearchUtils::Solr_retrieve_OCR_page(
+	    $C, $gId, $mdpItem->GetPhysicalPageSequence($seq)
+	);
 
         ## -- for when we decide to do multiple search term highlighting
         ## my @retval = ( $text =~ m,(\{lt:\}strong[^\{].*?\{gt:\}.*?\{lt:\}/strong\{gt:\}),gsm );
@@ -103,6 +104,22 @@ sub run {
     }
 
     my $target = $p->process();
+
+    if ($target->{contents} eq '<div></div>' && $target->{mimetype} eq 'text/html') {
+	# This means we tried to get coordinate xml and got nothing.
+	# Do it again but force text/plain to get the plain text OCR.
+	# Re-using the Process::Text object does not work well, roll a new one.
+	$p = new Process::Text;
+	$p->fragment(1);
+	$p->missing(1) if ( grep(/MISSING_PAGE/, $mdpItem->GetPageFeatures($file)) );
+	$p->missing(1) unless ( $ocr_filename );
+	$p->restricted(1) if ( $restricted );
+	$p->readingOrder($mdpItem->Get('readingOrder'));
+	$p->source(mimetype => 'text/plain');
+	$p->source(filename => $ocr_filename_path);
+
+	$target = $p->process();
+    }
 
     # missing, checkout page sequence
     my $page_info = $mdpItem->{ 'pageinfo' };
