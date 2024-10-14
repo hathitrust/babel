@@ -761,7 +761,7 @@
               <xsl:text>;facet_format=</xsl:text>
               <xsl:value-of select="//Param[@name='facet_format']" />
             </xsl:if>
-            <xsl:if test="//Param[@name='lmg']">
+            <xsl:if test="//Param[@name='lmt']">
               <xsl:text>;lmt=</xsl:text>
               <xsl:value-of select="//Param[@name='lmt']" />
             </xsl:if>
