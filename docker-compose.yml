@@ -10,7 +10,6 @@ x-node: &node
       - ${BABEL_HOME}/pt:/htapps/babel/pt
       - ${BABEL_HOME}/.npm:/.npm
 
-
 services:
 
   imgsrv:
@@ -63,6 +62,7 @@ services:
       - solr-ptsearch
       - imgsrv
       - vufind
+      - solr-lss-dev
     ports:
       - "8080:8080"
       - "5173:5173"
