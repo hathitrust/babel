@@ -11,7 +11,7 @@ RUN echo "setting up docker apt repo"; \
       "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
       tee /etc/apt/sources.list.d/docker.list
 
-RUN apt-get update && apt-get install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin
+RUN apt-get update && apt-get install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin rsync
 
 WORKDIR /usr/src/babel/stage-item
 

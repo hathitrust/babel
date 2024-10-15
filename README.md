@@ -88,6 +88,8 @@ docker compose --profile node up
 
 ## Staging an Item
 
+### From production repository
+
 The easiest way to do this (for internal developers) is to copy a ZIP and METS
 from production:
 
@@ -107,6 +109,22 @@ This will download the item via scp as well as its catalog metadata, stage it
 to the local repository, and index it in the local full-text index. You should
 then be able to view it via for example
 http://localhost:8080/cgi/pt?id=uc2.ark:/13960/t4mk66f1d
+
+### From datasets
+
+With access to the `ht_text_pd` dataset (this should work from the Library VPN
+but is also [available to other qualified
+individuals](https://www.hathitrust.org/member-libraries/resources-for-librarians/data-resources/research-datasets/),
+it is also possible to stage only the full-text for the item using the HTRC
+datasets. This
+is potentially faster, since you only need to transfesr the full-text rather
+than the images. This allows full-text search and access via e.g.
+`http://localhost/cgi/ssd?id=HTID`, but PageTurner won't work (because the zip
+doesn't contain the images.)
+
+```
+bash ./stage_item_rsync.sh uc2.ark:/13960/t4mk66f1d
+```
 
 ## Database Utilities
 
