@@ -27,3 +27,6 @@ etc/
 
 #node module cache
 .npm
+
+# perl language server
+.vscode/perl-lang

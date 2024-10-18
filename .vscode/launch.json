@@ -1,0 +1,49 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+  
+    {
+      "type": "perl",
+      "request": "launch",
+      "name": "mb listis",
+      "program": "/htapps/babel/mb/cgi/mb",
+      "args": ["a=listis","c=2012580529"],
+      "cwd": "/htapps/babel",
+      "reloadModules": true,
+
+    },
+    {
+      "type": "perl",
+      "request": "launch",
+      "name": "mb listsrch",
+      "program": "/htapps/babel/mb/cgi/mb",
+      "args": ["q1=fils","c=2012580529","a=listsrch","pn=1","sort=title_a"],
+      "cwd": "/htapps/babel",
+      "reloadModules": true,
+    },
+    {
+      "type": "perl",
+      "request": "launch",
+      "name": "pt",
+      "program": "/htapps/babel/pt/cgi/pt",
+      "args": ["id=njp.32101071839623","seq=17"],
+      "cwd": "/htapps/babel",
+      "reloadModules": true,
+    },
+    {
+      "type": "perl",
+      "request": "launch",
+      "name": "ls",
+      "program": "/htapps/babel/ls/cgi/ls",
+      "args": ["q1=*","field1=ocr","a=srchls","lmt=all"],
+      "cwd": "/htapps/babel",
+      "reloadModules": true,
+      "stopOnEntry": true
+    },
+
+
+  ]
+}

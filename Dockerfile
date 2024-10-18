@@ -85,6 +85,14 @@ FROM babel-base AS imgsrv-fcgi
 WORKDIR /htapps/babel/imgsrv
 CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
 
+FROM babel-base AS perl-dev
+
+RUN apt-get -y install libanyevent-perl libclass-refresh-perl libcompiler-lexer-perl \
+    libdata-dump-perl libio-aio-perl libjson-perl libmoose-perl libpadwalker-perl \
+    libscalar-list-utils-perl libcoro-perl
+
+RUN cpanm --notest Perl::LanguageServer
+
 FROM babel-base AS apache
 
 RUN apt-get -y install apache2 libapache2-mod-fcgid
