@@ -207,7 +207,6 @@
     if (!isInitialized) {
       return;
     }
-
     let max = { seq: -1, percentage: 0 };
     let possibles = Array.from(currentInView).sort((a, b) => a - b);
 

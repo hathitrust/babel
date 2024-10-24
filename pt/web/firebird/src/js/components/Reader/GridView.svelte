@@ -1,6 +1,6 @@
 <script>
   import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
-  import View from './View.svelte';
+  import ImageFormat from './ImageFormat.svelte'
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
@@ -13,7 +13,7 @@
   let view;
 
   export const currentLocation = function () {
-    return { page: view.item($currentSeq) };
+    return { page: view.view.item($currentSeq) };
   };
 
   const handleClick = function (event) {
@@ -48,7 +48,7 @@
   };
 </script>
 
-<View
+<!-- <View
   {container}
   {startSeq}
   {currentLocation}
@@ -57,7 +57,8 @@
   zoomScales={[0.5, 0.75, 1.0]}
   {handleClick}
   bind:this={view}
-/>
+/> -->
+<ImageFormat {container} {startSeq} {currentLocation} {handleKeydown} format="image" maxHeight={250} zoomScales={[0.5, 0.75, 1.0]} {handleClick} bind:this={view}></ImageFormat>
 
 <style>
 </style>
