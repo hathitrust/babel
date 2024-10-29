@@ -17,9 +17,9 @@
   const currentFormat = manifest.currentFormat;
 
   export const currentLocation = function () {
-    return { page: view.item($currentSeq) };
+    return { page: view.view.item($currentSeq) };
   };
 </script>
 
- <svelte:component this={formats[$currentFormat]} {startSeq} {container} bind:this={view}></svelte:component>
+ <svelte:component this={formats[$currentFormat]} {startSeq} {currentLocation} {container} bind:this={view}></svelte:component>
 

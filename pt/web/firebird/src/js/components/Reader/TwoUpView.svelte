@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
+  import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
 	import PlaintextFormat from './PlaintextFormat.svelte'
 
@@ -8,7 +8,6 @@
 
   export let container;
   export let startSeq = 1;
-  export let format;
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
@@ -22,12 +21,12 @@
 
   export const currentLocation = function () {
     let location = {};
-    if (view.item($currentSeq)) {
-      let item = view.item($currentSeq);
+    if (view.view.item($currentSeq)) {
+      let item = view.view.item($currentSeq);
       location[item.side] = item;
 
-      if (view.item($currentSeq).side == 'verso') {
-        let item = view.item($currentSeq + 1);
+      if (view.view.item($currentSeq).side == 'verso') {
+        let item = view.view.item($currentSeq + 1);
         if (item) {
           location[item.side] = item;
         }
@@ -38,24 +37,24 @@
 
   const findTarget = function (options) {
     let targetIdx;
-    let item = view.item($currentSeq);
+    let item = view.view.item($currentSeq);
     let currentSpread = item.spreadIndex;
     if (options.delta !== undefined) {
       targetIdx = currentSpread + options.delta;
     } else if (options.seq && !isNaN(options.seq)) {
-      targetIdx = view.item(options.seq).spreadIndex;
+      targetIdx = view.view.item(options.seq).spreadIndex;
     } else {
       // invalid option;
       return;
     }
     // console.log("-- 2up.findTarget", currentSpread, targetIdx);
-    return view.spread(targetIdx).el;
+    return view.view.spread(targetIdx).el;
   };
 
   const findFocusItems = function (seq) {
     let pages = [];
-    let item = view.item($currentSeq);
-    const spread = view.spread(item.spreadIndex);
+    let item = view.view.item($currentSeq);
+    const spread = view.view.spread(item.spreadIndex);
     pages = Array.from(spread.items);
     return pages;
   };
