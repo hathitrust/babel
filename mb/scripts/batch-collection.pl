@@ -696,6 +696,14 @@ sub bc_handle_add_items_to {
 
         my $metadata_hashref = $metadata_ref->[0];
 
+#use Data::Dumper;
+#Log_print( sprintf("metadata: %s\n", Dumper $metadata_hashref) );
+if (length $metadata_hashref->{sort_date} > 125) {
+  $metadata_hashref->{sort_date} = substr($metadata_hashref->{sort_date}, 0, 125);
+  #my $trunc = substr($metadata_hashref->{sort_date}, 0, 125);
+  #Log_print( sprintf("truncated: %d\n", length $trunc) );
+}
+
         my ($ok, $item_added) = bc_add_item($id, $coll_id, $metadata_hashref);
         if (! $ok) {
             Log_print( qq{ERROR: Failed to add "$id" to collection\n} );
