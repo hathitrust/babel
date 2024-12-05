@@ -109,6 +109,7 @@ sub _initialize
         $self->__set_map2han($map2han);
         $self->__set_format_list($formats_list);
         $self->__set_language_list($language_list);
+        $self->__set_location_list($location_list);
     };
         
 } 
@@ -207,6 +208,15 @@ sub __set_format_list
     my $formats_list = shift;
     
     $self->{'formats_list'} = $formats_list;
+}
+
+# ---------------------------------------------------------------------
+sub __set_location_list
+{
+    my $self = shift;
+    my $location_list = shift;
+    
+    $self->{'location_list'} = $location_list;
 }
 
 
