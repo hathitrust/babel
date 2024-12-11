@@ -765,6 +765,12 @@
               <xsl:text>;lmt=</xsl:text>
               <xsl:value-of select="//Param[@name='lmt']" />
             </xsl:if>
+            <xsl:if test="//Param[@name='facet']">
+              <xsl:for-each select="//Param[@name='facet']">
+                <xsl:text>;facet=</xsl:text>
+                <xsl:value-of select="." />
+              </xsl:for-each>
+            </xsl:if>
           </xsl:attribute>
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           <span class="visually-hidden">Remove filter
