@@ -757,7 +757,7 @@
               <xsl:text>;facet_lang=</xsl:text>
               <xsl:value-of select="//Param[@name='facet_lang']" />
             </xsl:if>
-            <xsl:if test="//Param[@name='facet_lang']">
+            <xsl:if test="//Param[@name='facet_format']">
               <xsl:text>;facet_format=</xsl:text>
               <xsl:value-of select="//Param[@name='facet_format']" />
             </xsl:if>
