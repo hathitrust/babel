@@ -1,7 +1,7 @@
 name: babel-firebird
 
 x-node: &node
-    image: node:18-slim
+    image: node:22-slim
     user: ${CURRENT_USER}
     profiles:
       - node
@@ -87,7 +87,6 @@ services:
       - solr-ptsearch
       - imgsrv
       - vufind
-      - solr-lss-dev
     ports:
       - "8080:8080"
       - "5173:5173"
