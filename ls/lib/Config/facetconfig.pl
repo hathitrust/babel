@@ -247,7 +247,7 @@ $map2han={
 
 #----------------------------------------------------------------------
 # load list of languages and formats for dropdown in advanced search menu
-($language_list,$formats_list) = getLangFormats($lang_format_file);
+($language_list,$formats_list,$location_list) = getLangFormats($lang_format_file);
 
 #----------------------------------------------------------------------
 sub getLangFormats
@@ -257,7 +257,8 @@ sub getLangFormats
     my $parsed = readYamlFile($yamlfile);
     $language_list= $parsed->{'languages'};
     $formats_list = $parsed->{'formats'};
-    return ($language_list,$formats_list);
+    $location_list = $parsed->{'locations'};
+    return ($language_list,$formats_list,$location_list);
 }
 
 

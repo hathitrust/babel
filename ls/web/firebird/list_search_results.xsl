@@ -757,13 +757,19 @@
               <xsl:text>;facet_lang=</xsl:text>
               <xsl:value-of select="//Param[@name='facet_lang']" />
             </xsl:if>
-            <xsl:if test="//Param[@name='facet_lang']">
+            <xsl:if test="//Param[@name='facet_format']">
               <xsl:text>;facet_format=</xsl:text>
               <xsl:value-of select="//Param[@name='facet_format']" />
             </xsl:if>
             <xsl:if test="//Param[@name='lmt']">
               <xsl:text>;lmt=</xsl:text>
               <xsl:value-of select="//Param[@name='lmt']" />
+            </xsl:if>
+            <xsl:if test="//Param[@name='facet']">
+              <xsl:for-each select="//Param[@name='facet']">
+                <xsl:text>;facet=</xsl:text>
+                <xsl:value-of select="." />
+              </xsl:for-each>
             </xsl:if>
           </xsl:attribute>
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>

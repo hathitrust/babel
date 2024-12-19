@@ -49,12 +49,15 @@ sub handle_ADVANCED_SEARCH_CONFIG_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my @format_data; my @language_data;
+    my @format_data; my @language_data; my @location_data;
 
     my $catalog_derived_data_dir = qq{/htapps/catalog/web/derived_data};
     my $format_filename = qq{$catalog_derived_data_dir/format.txt};
     my $language_filename = qq{$catalog_derived_data_dir/language.txt};
-    if (-f $language_filename && -f $format_filename ) {
+    my $location_filename = qq{$catalog_derived_data_dir/locations.txt};
+    
+    if (-f $language_filename && -f $format_filename && -f $location_filename) {
+
         open my $fh, "<:encoding(UTF-8)", $language_filename;
         chomp(@language_data = <$fh>);
         close($fh);
@@ -62,24 +65,33 @@ sub handle_ADVANCED_SEARCH_CONFIG_PI
         open my $fh, "<", $format_filename;
         chomp( @format_data = <$fh> );
         close($fh);
-    } else {
+        
+        open my $fh, "<:encoding(UTF-8)", $location_filename;
+        chomp(@location_data = <$fh>);
+        close($fh);
+        
+            } else {
         my $fconfig =         $C->get_object('FacetConfig');
+
         @format_data  =     @{ $fconfig->{'formats_list'} };
         @language_data = @{ $fconfig->{'language_list'} };
+        @location_data = @{ $fconfig->{'location_list'} };
         print STDERR "AHOY NOT FOUND $format_filename\n";
     }
 
     my $s = '';
-    # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @format_data), 'FormatData');
-    # $s .= wrap_string_in_tag(join("\n", map { wrap_string_in_tag($_, 'Value') } @language_data), 'LanguageData');
-
     my $json_xs = JSON::XS->new->utf8(0);
+
     my $data = $json_xs->encode(\@format_data);
     $data =~ s,&,&amp;,g;
     $s .= wrap_string_in_tag($data, 'FormatData');
     $data = $json_xs->encode(\@language_data);
     $data =~ s,&,&amp;,g;
     $s .= wrap_string_in_tag($data, 'LanguageData');
+    $data = $json_xs->encode(\@location_data);
+    $data =~ s,&,&amp;,g;
+    $s .= wrap_string_in_tag($data, 'LocationData');
+    
     return $s;
 }
 
@@ -190,6 +202,7 @@ sub handle_ADVANCED_SEARCH_FORM_PI
     # add facets for language and format
     my $formats_list = $fconfig->{'formats_list'};
     my $language_list = $fconfig->{'language_list'};
+    my $location_list = $fconfig->{'location_list'};
     my $facets;
     
     my $list;
@@ -332,13 +345,12 @@ sub getDropdown
     my $selected;
     my $param_name;
     my $selected="";
-    
 
     if ($list_type eq 'format')
     {
         $param_name='facet_format';
     }
-    else
+    else 
     {
         $param_name='facet_lang';
     }
