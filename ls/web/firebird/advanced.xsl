@@ -52,6 +52,7 @@
     <hathi-advanced-search-form
       data-prop-language-data="{//AdvancedSearchConfig/LanguageData}"
       data-prop-format-data="{//AdvancedSearchConfig/FormatData}"
+      data-prop-location-data="{//AdvancedSearchConfig/LocationData}"
       data-prop-collid="{$coll_id}"
       data-prop-collection-name="{/MBooksTop/AdvancedSearch/COLL_INFO/COLL_NAME}"
     ></hathi-advanced-search-form>

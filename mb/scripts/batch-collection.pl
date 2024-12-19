@@ -695,6 +695,10 @@ sub bc_handle_add_items_to {
         Log_print( qq{Adding item $num_ids "$id"\n} );
 
         my $metadata_hashref = $metadata_ref->[0];
+        # Truncate to fit in a VARCHAR(125) which is the current size of mb_item.sort_date
+        if (length $metadata_hashref->{sort_date} > 125) {
+          $metadata_hashref->{sort_date} = substr($metadata_hashref->{sort_date}, 0, 125);
+        }
 
         my ($ok, $item_added) = bc_add_item($id, $coll_id, $metadata_hashref);
         if (! $ok) {
