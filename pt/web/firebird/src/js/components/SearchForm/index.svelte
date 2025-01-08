@@ -35,8 +35,10 @@
   let payload = manifest.payload;
   let hasPreviousItem = false;
   let hasNextItem = false;
+  let hasRange = false;
   let nextHref;
   let prevHref;
+  let pageGroup;
   let status = { class: null };
 
   if (manifest.payload) {
@@ -54,6 +56,7 @@
   function configureNavigationLinks() {
     hasNextItem = payload.next;
     hasPreviousItem = payload.prev;
+    hasRange = payload.range.max > 0;
 
     if (hasNextItem) {
       searchParams.set('start', payload.next);
@@ -65,6 +68,10 @@
       searchParams.set('start', payload.prev);
       searchUrl.search = searchParams.toString();
       prevHref = searchUrl.toString();
+    }
+
+    if (hasRange) {
+      pageGroup = payload.range.value;
     }
   }
 
@@ -161,7 +168,8 @@
     updateHistory();
   }
 
-  function jumpToPage(event) {
+  function jumpToPage(paginationPage) {
+    start = ((paginationPage - 1) * 25) + 1
     onSubmit();
   }
 
@@ -361,7 +369,7 @@
           </li>
         </ul>
       </div>
-      <form on:submit|preventDefault={jumpToPage}>
+      <form on:submit|preventDefault={jumpToPage(pageGroup)}>
         <div class="d-flex gap-1 w-xxsm-50 align-items-center justify-content-end">
           <label for="results-pagination" class="form-label text-nowrap fw-normal m-0 visually-hidden">Go to:</label>
           <input
@@ -370,7 +378,7 @@
             id="results-pagination"
             min={payload.range.min}
             max={payload.range.max}
-            bind:value={start}
+            bind:value={pageGroup}
           />
           <span class="text-nowrap">of {payload.range.max}</span>
           <button type="submit" class="btn btn-secondary">Go</button>
