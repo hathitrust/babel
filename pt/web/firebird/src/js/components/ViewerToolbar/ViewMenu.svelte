@@ -39,7 +39,7 @@
     <i
       class="fa-solid"
       class:fa-up-down={$view == '1up'}
-      class:fa-book-open={$view == '2up'}
+      class:fa-book-open={$view == '2up'|| manifest.ui == 'embed'}
       class:fa-table-cells={$view == 'thumb'}
       aria-hidden="true"
     />
@@ -82,6 +82,7 @@
         </button>
       </li>
     </ul>
+    {#if manifest.ui !== 'embed'}
     <li aria-hidden="true"><hr class="dropdown-divider" /></li>
     <li>
       <span class="dropdown-header">
@@ -134,6 +135,7 @@
         <span>Thumbnails</span>
       </button>
     </li>
+    {/if}
   </ul>
 </div>
 
