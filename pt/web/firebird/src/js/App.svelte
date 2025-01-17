@@ -72,6 +72,11 @@
     view = '2up';
   }
 
+  //remove cookie banner from embed UI
+  if (manifest.ui == 'embed') {
+    document.querySelector('hathi-cookie-consent-banner').remove()
+  }
+
   if (manifest.totalSeq == 1 && view == '2up' && isReaderView) {
     view = '1up';
   }
