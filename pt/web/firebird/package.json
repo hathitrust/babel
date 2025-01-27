@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "babel": "NODE_ENV=development vite build --watch"
+    "babel": "NODE_ENV=development vite build --watch",
+    "test": "vitest"
   },
   "devDependencies": {
     "@popperjs/core": "^2.11.6",
@@ -19,6 +20,7 @@
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
     "fast-glob": "^3.2.12",
+    "happy-dom": "^16.7.3",
     "p-queue": "^7.3.4",
     "prettier": "^2.8.7",
     "prettier-plugin-svelte": "^2.10.1",
@@ -26,7 +28,8 @@
     "svelte": "^3.55.1",
     "svelte-preprocess": "^5.0.3",
     "svelte-splitpanes": "^0.7.13",
-    "vite": "^4.2.0"
+    "vite": "^4.2.0",
+    "vitest": "^3.0.4"
   },
   "overrides": {
     "chokidar": "^3.0.0",

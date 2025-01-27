@@ -19,6 +19,7 @@ export function updateHistory(options) {
   }
 
   let title = document.title;
+  console.log('update history', document.title)
   if (options.seq) {
     // remove any ownerid parameters
     searchParams.delete('ownerid');
