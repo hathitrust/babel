@@ -745,9 +745,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 <style lang="scss">
   .page {
     --vh: 100dvh;
-    @supports not (height: 100dvh) {
-      --vh: 98vh; // Fallback for browsers not supporting dvh
-    }
     --defaultPageHeight: calc(var(--vh) - ((var(--stage-header-height) + var(--paddingBottom, 0)) * 1px));
     --actualPageHeight: var(--scanHeight, var(--defaultPageHeight));
     --actualZoom: var(--zoom, 1);
@@ -762,8 +759,10 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     grid-template-columns: minmax(0, 1fr) min-content;
     align-items: center;
     justify-content: center;
-
     position: relative;
+    @supports not (height: 100dvh) {
+      --vh: 98vh; // Fallback for browsers not supporting dvh
+    }
 
     // overflow: hidden;
 
@@ -952,9 +951,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         height: var(--frameHeight);
         width: auto;
         aspect-ratio: var(--ratio);
-        @supports not (aspect-ratio: 16 / 9) {
-          width: calc(var(--frameHeight) * var(--ratio));
-        }
 
         margin: auto;
 
@@ -966,6 +962,10 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         flex-grow: 0;
 
         transition: opacity 0.125s linear;
+
+        @supports not (aspect-ratio: 16 / 9) {
+          width: calc(var(--frameHeight) * var(--ratio));
+        }
       }
     }
 
