@@ -145,8 +145,7 @@ RUN apt-get install -y \
   unzip \
   wget \
   zip \
-  zlib1g-dev \
-  netcat
+  zlib1g-dev
 
 RUN cpan \
   File::Value \

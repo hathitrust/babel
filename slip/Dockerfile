@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y \
   libwww-perl \
   libxml-libxml-perl \
   libxml-libxslt-perl \
-  netcat-traditional \
   perl \
   procps \
   unzip \

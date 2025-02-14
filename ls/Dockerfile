@@ -36,7 +36,6 @@ RUN apt-get update && apt-get install -y \
   libxml-libxml-perl \
   libxml-libxslt-perl \
   libyaml-libyaml-perl \
-  netcat-traditional \
   netpbm \
   perl \
   procps \
@@ -60,7 +59,6 @@ RUN apt-get install -y \
   libsqlite3-dev \
   libssl-dev \
   libyaml-dev \
-  netcat \
   openssh-server \
   unzip \
   wget \
