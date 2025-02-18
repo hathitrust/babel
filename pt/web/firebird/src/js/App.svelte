@@ -13,6 +13,7 @@
 
   // components
   import WebsiteHeader from '~firebird-common/src/js/components/Header';
+  import AlertBanner from '~firebird-common/src/js/components/AlertBanner';
 
   import ViewerToolbar from './components/ViewerToolbar';
   import Panel from './components/Panel';
@@ -74,7 +75,7 @@
 
   //remove cookie banner from embed UI
   if (manifest.ui == 'embed') {
-    document.querySelector('hathi-cookie-consent-banner').remove()
+    document.querySelector('hathi-cookie-consent-banner').remove();
   }
 
   if (manifest.totalSeq == 1 && view == '2up' && isReaderView) {
@@ -423,6 +424,9 @@
 <hathi-website-header>
   <WebsiteHeader searchState="toggle" compact={true} />
 </hathi-website-header>
+<hathi-alert-banner>
+  <AlertBanner />
+</hathi-alert-banner>
 <div style="grid-area: options">
   <button
     data-action="toggle-options"
@@ -481,7 +485,7 @@
       <RestrictedView />
     {:else}
       <!-- <ViewerToolbar></ViewerToolbar> -->
-      <svelte:component this={views[$currentView]} format={format} startSeq={$currentSeq} container={stage} />
+      <svelte:component this={views[$currentView]} {format} startSeq={$currentSeq} container={stage} />
     {/if}
   {/if}
 </main>
