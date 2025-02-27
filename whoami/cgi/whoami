@@ -64,7 +64,7 @@ print qq{
             <div>
               <a id="htlogo" href="https://www.hathitrust.org">
                 <!-- Original is 1200x312 -->
-                <img src="/common/firebird/src/public/hathitrust-logo-horizontal-orange-gray.svg"
+                <img src="/common/firebird/dist/hathitrust-logo-horizontal-orange-gray.svg"
                      alt="HathiTrust Digital Library" width="320" height="83" />
               </a>
             </div>

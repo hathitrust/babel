@@ -38,7 +38,6 @@ RUN apt-get update && apt-get install -y \
   libxml-libxml-perl \
   libxml-libxslt-perl \
   libyaml-libyaml-perl \
-  netcat-traditional \
   netpbm \
   perl \
   procps \
@@ -88,8 +87,8 @@ CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
 FROM babel-base AS perl-dev
 
 RUN apt-get -y install libanyevent-perl libclass-refresh-perl libcompiler-lexer-perl \
-    libdata-dump-perl libio-aio-perl libjson-perl libmoose-perl libpadwalker-perl \
-    libscalar-list-utils-perl libcoro-perl
+  libdata-dump-perl libio-aio-perl libjson-perl libmoose-perl libpadwalker-perl \
+  libscalar-list-utils-perl libcoro-perl
 
 RUN cpanm --notest Perl::LanguageServer
 
@@ -100,13 +99,13 @@ RUN apt-get -y install apache2 libapache2-mod-fcgid
 RUN a2dissite '*'
 RUN a2disconf other-vhosts-access-log
 RUN a2dismod 'mpm_*'
-RUN a2enmod headers \ 
-            mpm_prefork \
-            rewrite \
-            proxy \
-            proxy_fcgi \
-            proxy_http \
-            cgi
+RUN a2enmod headers \
+  mpm_prefork \
+  rewrite \
+  proxy \
+  proxy_fcgi \
+  proxy_http \
+  cgi
 
 COPY apache/000-default.conf /etc/apache2/sites-enabled
 STOPSIGNAL SIGWINCH
