@@ -10,11 +10,14 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "babel": "NODE_ENV=development vite build --watch"
+    "babel": "NODE_ENV=development vite build --watch",
+    "test": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.1",
     "@popperjs/core": "^2.11.6",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
+    "@types/node": "^22.13.5",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
