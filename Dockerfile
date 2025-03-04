@@ -81,6 +81,9 @@ WORKDIR /htapps/babel
 
 FROM babel-base AS imgsrv-fcgi
 
+# Util used for testing and connecting to fast-cgi
+RUN apt-get -y install libfcgi0ldbl
+
 WORKDIR /htapps/babel/imgsrv
 CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
 
