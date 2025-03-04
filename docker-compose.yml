@@ -10,6 +10,15 @@ x-node: &node
       - ${BABEL_HOME}/pt:/htapps/babel/pt
       - ${BABEL_HOME}/.npm:/.npm
 
+    x-condition-healthy: &healthy
+      condition: service_healthy
+
+    x-healthcheck-defaults: &healthcheck-defaults
+      interval: 5s
+      timeout: 10s
+      start_period: 10s
+      retries: 5
+
 services:
   perl-dev:
     build:
@@ -27,10 +36,10 @@ services:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
     depends_on:
-      - mysql-sdr
-      - solr-lss-dev
-      - solr-sdr-catalog
-      - solr-ptsearch
+     mysql-sdr: *healthy
+     solr-lss-dev: *healthy
+     solr-sdr-catalog: *healthy
+     solr-ptsearch: *healthy
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
 
@@ -54,11 +63,14 @@ services:
       - HTTP_HOST=127.0.0.1
       - APACHE_LOG_DIR=/tmp
     depends_on:
-      - mysql-sdr
-      - solr-sdr-catalog
+      mysql-sdr: *healthy
+      solr-sdr-catalog: *healthy
     ports:
       - "31028:31028"
     command: bash -c "/htapps/babel/imgsrv/bin/startup_imgsrv"
+    healthcheck:
+          <<: *healthcheck-defaults
+          test: "cgi-fcgi -bind -connect 127.0.0.1:31028"
 
   apache:
     build:
@@ -81,12 +93,12 @@ services:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
     depends_on:
-      - mysql-sdr
-      - solr-lss-dev
-      - solr-sdr-catalog
-      - solr-ptsearch
-      - imgsrv
-      - vufind
+      mysql-sdr: *healthy
+      solr-lss-dev: *healthy
+      solr-sdr-catalog: *healthy
+      solr-ptsearch: *healthy
+      imgsrv: *healthy
+      vufind: *healthy
     ports:
       - "8080:8080"
       - "5173:5173"
@@ -101,8 +113,11 @@ services:
     environment:
       - FIREBIRD_HOME=/htapps/babel/firebird-common
     depends_on:
-      - mysql-sdr
-      - solr-sdr-catalog
+      mysql-sdr: *healthy
+      solr-sdr-catalog: *healthy
+    healthcheck:
+          <<: *healthcheck-defaults
+          test: "service php7.4-fpm status | grep running"
 
   firebird:
     <<: *node
@@ -124,6 +139,9 @@ services:
       - "9033:9033"
     volumes:
       - solr_sdr_catalog:/var/solr
+    healthcheck:
+          <<: *healthcheck-defaults
+          test: "curl -f --retry-connrefused http://localhost:9033"
 
   solr-lss-dev:
     image: solr:6.6.6-alpine
@@ -136,11 +154,17 @@ services:
       - ${BABEL_HOME}/lss_solr_configs/solr6_standalone:/opt/lss_solr_configs
       - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lib:/opt/solr/server/solr/lib
       - ${BABEL_HOME}/logs/solr:/opt/solr/server/logs
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "ping -c 1 solr-lss-dev:8983"
 
   solr-ptsearch:
     build: ./ptsearch-solr
     ports:
       - "8984:8983"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "curl -f --retry-connrefused http://solr-ptsearch:8983/solr/ptsearch/admin/ping"
 
   mysql-sdr:
     image: ghcr.io/hathitrust/db-image:latest
@@ -153,9 +177,11 @@ services:
       - mysql_sdr_data:/var/lib/mysql
     ports:
       - "3307:3306"
-
     environment:
       MYSQL_ROOT_PASSWORD: TIMTOWTDIBSCINABTE
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
 
 #### INDEXING
 
@@ -179,9 +205,9 @@ services:
       - SDRDATAROOT=/sdr1
       - HT_DEV=docker
     depends_on:
-      - mysql-sdr
-      - solr-sdr-catalog
-      - solr-lss-dev
+      mysql-sdr: *healthy
+      solr-sdr-catalog: *healthy
+      solr-lss-dev: *healthy
     command: bash
     profiles:
       - indexing
@@ -194,7 +220,7 @@ services:
       - NO_DB=1
       - DDIR=/app/metadata
     depends_on:
-      - solr-sdr-catalog
+      solr-sdr-catalog: *healthy
     volumes:
       - ${BABEL_HOME}/sample-data/metadata:/app/metadata
       - ${BABEL_HOME}/hathitrust_catalog_indexer:/app
@@ -210,7 +236,7 @@ services:
       - gem_cache:/gems
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - mysql-sdr
+      mysql-sdr: *healthy
     environment:
       - CATALOG_SOLR=http://solr-sdr-catalog:9033/solr/catalog
       - LSS_SOLR=http://solr-lss-dev:8983/solr/core-x
