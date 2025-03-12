@@ -20,6 +20,15 @@ x-node: &node
       retries: 5
 
 services:
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.50.1
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+    working_dir: "/htapps/babel/pt/web/firebird"
+    command: "npm test"
+    depends_on:
+      apache: *healthy
+
   perl-test:
     build:
       context: .
@@ -33,8 +42,9 @@ services:
       - SDRDATAROOT=/sdr1
       - MARIADB_USER=ht_web
     depends_on:
-      - mysql-sdr
-    command: bash -c "cd /htapps/babel/mdp-lib && t/test.pl"
+      mysql-sdr: *healthy
+    working_dir: "/htapps/babel/mdp-lib"
+    command: "t/test.pl"
 
   perl-dev:
     build:
@@ -119,6 +129,9 @@ services:
       - "8080:8080"
       - "5173:5173"
       - "8173:8173"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "curl -f --retry-connrefused http://localhost:8080/"
 
   vufind:
     build: ./catalog
