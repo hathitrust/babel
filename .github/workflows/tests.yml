@@ -1,0 +1,21 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  perl_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build docker image
+        run: docker compose build perl-test
+
+      - name: Run tests
+        run: docker compose run perl-test
