@@ -10,20 +10,14 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "babel": "NODE_ENV=development vite build --watch"
+    "babel": "NODE_ENV=development vite build --watch",
+    "test": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.1",
     "@popperjs/core": "^2.11.6",
-    "@storybook/addon-essentials": "^7.0.0-rc.3",
-    "@storybook/addon-interactions": "^7.0.0-rc.3",
-    "@storybook/addon-links": "^7.0.0-rc.3",
-    "@storybook/addon-svelte-csf": "^3.0.0-next.3",
-    "@storybook/blocks": "^7.0.0-rc.3",
-    "@storybook/jest": "^0.0.11-next.0",
-    "@storybook/svelte": "^7.0.0-rc.3",
-    "@storybook/svelte-vite": "^7.0.0-rc.3",
-    "@storybook/testing-library": "^0.0.14-next.1",
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
+    "@types/node": "^22.13.5",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
@@ -32,7 +26,6 @@
     "prettier": "^2.8.7",
     "prettier-plugin-svelte": "^2.10.1",
     "sass": "^1.60.0",
-    "storybook": "^7.0.0-rc.3",
     "svelte": "^3.55.1",
     "svelte-preprocess": "^5.0.3",
     "svelte-splitpanes": "^0.7.13",
@@ -47,5 +40,9 @@
     "firebird-common": "github:hathitrust/firebird-common",
     "screenfull": "^6.0.2",
     "tippy.js": "^6.3.7"
-  }
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64": "0.17.15"
+  },
+  "//": "if you have issues with esbuild not installing the correct package for a platform, try updating this to match the version of esbuild that vite installs, npm list --all will help!"
 }

@@ -1,12 +1,12 @@
 --- inserts for users with elevated access
 REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
-('totaluser@hathitrust.org','HathiTrust Totaluser','totaluser@hathitrust.org','staff','staffdeveloper','total',ADD_MONTHS(CURRENT_TIMESTAMP, 60),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
+('totaluser@hathitrust.org','HathiTrust Totaluser','totaluser@hathitrust.org','staff','staffdeveloper','total',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
 REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
-('ssdproxy@hathitrust.org','HathiTrust Ssdproxy','ssdproxy@hathitrust.org','external','ssdproxy','normal',ADD_MONTHS(CURRENT_TIMESTAMP, 60),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
+('ssdproxy@hathitrust.org','HathiTrust Ssdproxy','ssdproxy@hathitrust.org','external','ssdproxy','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
 REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
-('ssduser@hathitrust.org','HathiTrust Ssduser','ssduser@hathitrust.org','student','ssd','normal',ADD_MONTHS(CURRENT_TIMESTAMP, 60),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
+('ssduser@hathitrust.org','HathiTrust Ssduser','ssduser@hathitrust.org','student','ssd','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
 --- inserts/updates for ht_institutions
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 

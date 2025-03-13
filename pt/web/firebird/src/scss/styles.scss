@@ -59,22 +59,25 @@ html[data-activated] .apps {
     display: grid;
     grid-template-areas:
       'header header header'
+      'banner banner banner'
       'options options options'
       'aside divider reader';
     grid-template-rows:
       var(--header-height, min-content)
+      min-content
       min-content
       minmax(0, 1fr);
     grid-template-columns:
       var(--aside-collapsed-width, minmax(var(--aside-min-width), var(--aside-width)))
       min-content
       minmax(0, 1fr);
-    
+
     background-color: #fff;
 
     @media (max-width: 768px) {
       grid-template-areas:
         'header header'
+        'banner banner'
         'options options'
         'aside reader';
       grid-template-columns: 0% 100%;
@@ -256,20 +259,22 @@ button:hover i.border-dark {
   --bs-tooltip-opacity: 1;
 }
 
-// when you append a tooltip to a button group, bootstrap styling makes the border radius look 
-// weird at the end of the button group because it thinks there's another element in the group 
+// when you append a tooltip to a button group, bootstrap styling makes the border radius look
+// weird at the end of the button group because it thinks there's another element in the group
 // (because technically there is, but it isn't a button!)
-.btn-group[aria-label='Pagination'] button:nth-child(4), .btn-group[aria-label='Zoom'] button:nth-child(2), .btn-group[aria-label='Sort Results'] button[aria-label='Sort by page scan'] {
-  border-end-end-radius: .375rem !important;
-  border-start-end-radius: .375rem !important;
+.btn-group[aria-label='Pagination'] button:nth-child(4),
+.btn-group[aria-label='Zoom'] button:nth-child(2),
+.btn-group[aria-label='Sort Results'] button[aria-label='Sort by page scan'] {
+  border-end-end-radius: 0.375rem !important;
+  border-start-end-radius: 0.375rem !important;
 }
 .page-menu .btn-group-vertical button:nth-child(2) {
-  border-end-end-radius: .375rem !important;
-  border-end-start-radius: .375rem !important;
+  border-end-end-radius: 0.375rem !important;
+  border-end-start-radius: 0.375rem !important;
 }
 
 .tippy-content {
-  white-space:nowrap;
+  white-space: nowrap;
 }
 
 .tippy-box[data-theme~='pt'] {
