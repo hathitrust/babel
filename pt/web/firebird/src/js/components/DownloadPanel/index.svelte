@@ -492,6 +492,7 @@
           </fieldset>
         {/if}
 
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
         <fieldset class="mb-3" id="download-range">
           <legend class="fs-5">Range</legend>
           <div aria-live="polite" aria-atomic="true">
