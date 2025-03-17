@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: setup env
+        run:  setup-env.sh
+
       - name: Run perl tests
         run: docker compose run perl-test
 
@@ -26,5 +29,3 @@ jobs:
 
       - name: Run playwright tests (PageTurner)
         run: docker compose run playwright
-
-
