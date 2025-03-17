@@ -16,19 +16,18 @@
   "devDependencies": {
     "@playwright/test": "^1.50.1",
     "@popperjs/core": "^2.11.6",
-    "@sveltejs/vite-plugin-svelte": "^2.0.3",
+    "@sveltejs/vite-plugin-svelte": "^2.4.1",
     "@types/node": "^22.13.5",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
     "fast-glob": "^3.2.12",
-    "p-queue": "^7.3.4",
+    "p-queue": "^8.1.0",
     "prettier": "^2.8.7",
     "prettier-plugin-svelte": "^2.10.1",
     "sass": "^1.60.0",
-    "svelte": "^3.55.1",
+    "svelte": "^4.0.0",
     "svelte-preprocess": "^5.0.3",
-    "svelte-splitpanes": "^0.7.13",
     "vite": "^4.2.0"
   },
   "overrides": {
