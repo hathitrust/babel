@@ -679,18 +679,15 @@
       <div>
         {#if status.percent < 100}
         <p>Please wait while we build your {formatTitle[format]}.</p>
-        <div class="progress">
+        <div class="progress" role="progressbar" aria-label="Download Progress" aria-valuenow={status.percent}
+            aria-valuemin="0"
+            aria-valuemax="100">
           <div
             class="progress-bar progress-bar-striped progress-bar-animated"
-            role="progressbar"
-            aria-label="Download Progress"
-            aria-valuenow={status.percent}
-            aria-valuemin="0"
-            aria-valuemax="100"
             style:width={`${status.percent}%`}
           />
         </div>
-        <p class="fs-7 text-muted">
+        <p class="fs-7 text-body-secondary">
           <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
             >What affects the download speed?</a
           >
