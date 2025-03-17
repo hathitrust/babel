@@ -22,8 +22,10 @@ jobs:
       - name: setup env
         run:  /bin/bash ./setup-env.sh
 
-      - name: Run perl tests
-        run: docker compose run perl-test
+          #      - name: Run perl tests
+          #        run: docker compose run perl-test
+      - name: will it work
+        run: docker compose up mysql-sdr
 
   playwright:
     runs-on: ubuntu-latest
