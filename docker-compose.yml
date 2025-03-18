@@ -2,7 +2,7 @@ name: babel-firebird
 
 x-node: &node
     image: node:22-slim
-    # user: ${CURRENT_USER}
+    user: ${CURRENT_USER}
     profiles:
       - node
     volumes:
