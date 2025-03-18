@@ -150,7 +150,7 @@ services:
 
   firebird:
     <<: *node
-    # working_dir: /firebird-common
+    working_dir: /htapps/babel/
     command: ['npm', 'run', 'babel']
 
   page-turner:
