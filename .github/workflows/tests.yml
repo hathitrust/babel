@@ -48,11 +48,11 @@ jobs:
       - name: setup env
         run:  /bin/bash ./setup-env.sh
 
-      # - name: Build firebird
-      #   run: docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
+      - name: Build firebird
+        run: docker compose run firebird firebird-common/bin/build.sh
 
-      # - name: Build pageturner
-      #   run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
+      - name: Build pageturner
+        run: docker compose run page-turner pt/bin/build.sh
 
       # - name: Run playwright tests (PageTurner)
       #   run: docker compose run playwright
