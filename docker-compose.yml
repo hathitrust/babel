@@ -155,7 +155,7 @@ services:
 
   page-turner:
     <<: *node
-    working_dir: /htapps/babel/pt/web/firebird
+    working_dir: /htapps/babel/pt/
     command: ['npm', 'run', 'babel']
 
 

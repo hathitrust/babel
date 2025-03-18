@@ -52,7 +52,7 @@ jobs:
         run: docker compose run firebird ./bin/build.sh
 
       - name: Build pageturner
-        run: docker compose run page-turner pt/bin/build.sh
+        run: docker compose run page-turner ./bin/build.sh
 
       # - name: Run playwright tests (PageTurner)
       #   run: docker compose run playwright
