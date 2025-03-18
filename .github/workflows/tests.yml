@@ -49,7 +49,7 @@ jobs:
         run:  /bin/bash ./setup-env.sh
 
       - name: Build firebird
-        run: docker compose run firebird /bin/bash -x /bin/build.sh
+        run: docker compose run firebird /bin/bash -x /firebird-common/bin/build.sh
 
       - name: Build pageturner
         run: docker compose run page-turner pt/bin/build.sh
