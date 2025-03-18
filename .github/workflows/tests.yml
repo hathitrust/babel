@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Check Workspace
-        run: echo $GITHUB_WORKSPACE
+        run: echo $GITHUB_WORKSPACE && ls -lh
 
       - uses: actions/checkout@v4 # Check out this repo by default
 
