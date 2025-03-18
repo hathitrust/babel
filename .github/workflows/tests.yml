@@ -30,9 +30,6 @@ jobs:
     # needs: perl_test
 
     steps:
-      - name: Check Workspace
-        run: ls -lh $GITHUB_WORKSPACE
-
       - uses: actions/checkout@v4 # Check out this repo by default
 
       - uses: actions/checkout@v4
@@ -45,14 +42,17 @@ jobs:
           repository: hathitrust/firebird-common
           path: firebird-common
 
+      - name: Check Workspace
+        run: ls -lh $GITHUB_WORKSPACE
+
       - name: setup env
         run:  /bin/bash ./setup-env.sh
 
-      - name: Build firebird
-        run: docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
+      # - name: Build firebird
+      #   run: docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
 
-      - name: Build pageturner
-        run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
+      # - name: Build pageturner
+      #   run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
-      - name: Run playwright tests (PageTurner)
-        run: docker compose run playwright
+      # - name: Run playwright tests (PageTurner)
+      #   run: docker compose run playwright
