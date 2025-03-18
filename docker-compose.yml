@@ -10,14 +10,14 @@ x-node: &node
       - ${BABEL_HOME}/pt:/htapps/babel/pt
       - ${BABEL_HOME}/.npm:/.npm
 
-    x-condition-healthy: &healthy
-      condition: service_healthy
+x-condition-healthy: &healthy
+  condition: service_healthy
 
-    x-healthcheck-defaults: &healthcheck-defaults
-      interval: 5s
-      timeout: 10s
-      start_period: 10s
-      retries: 5
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 5s
+  timeout: 10s
+  start_period: 10s
+  retries: 5
 
 services:
   playwright:
@@ -150,7 +150,7 @@ services:
 
   firebird:
     <<: *node
-    working_dir: /htapps/babel/firebird-common
+    # working_dir: /htapps/babel/firebird-common
     command: ['npm', 'run', 'babel']
 
   page-turner:
