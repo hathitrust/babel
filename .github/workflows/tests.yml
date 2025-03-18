@@ -49,7 +49,7 @@ jobs:
         run:  /bin/bash ./setup-env.sh
 
       - name: Build firebird
-        run: docker compose run firebird npm ci && npm run build
+        run: docker compose run firebird npm install && npm run build
 
       - name: Build pageturner
         run: docker compose run page-turner pt/bin/build.sh
