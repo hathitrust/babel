@@ -43,9 +43,6 @@ jobs:
           repository: hathitrust/firebird-common
           path: firebird-common
 
-      - name: Check Workspace
-        run: ls -lh $GITHUB_WORKSPACE
-
       - name: setup env
         run: /bin/bash ./setup-env.sh
 
