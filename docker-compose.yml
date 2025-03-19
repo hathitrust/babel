@@ -2,7 +2,6 @@ name: babel-firebird
 
 x-node: &node
     image: node:22-slim
-    user: ${CURRENT_USER}
     profiles:
       - node
     volumes:
@@ -10,16 +9,75 @@ x-node: &node
       - ${BABEL_HOME}/pt:/htapps/babel/pt
       - ${BABEL_HOME}/.npm:/.npm
 
-    x-condition-healthy: &healthy
-      condition: service_healthy
+x-condition-healthy: &healthy
+  condition: service_healthy
 
-    x-healthcheck-defaults: &healthcheck-defaults
-      interval: 5s
-      timeout: 10s
-      start_period: 10s
-      retries: 5
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 5s
+  timeout: 10s
+  start_period: 10s
+  retries: 5
+
+x-apache-volumes: &apache-volumes
 
 services:
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.50.1
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+    working_dir: "/htapps/babel/pt/web/firebird"
+    command: "npm test"
+    profiles: 
+      - test
+    depends_on:
+      apache-test: *healthy
+
+  apache-test:
+    build:
+      context: .
+      target: apache
+    user: ${CURRENT_USER}
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+      - ${BABEL_HOME}/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ${BABEL_HOME}/apache/auth:/etc/apache2/auth
+      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+      - ${BABEL_HOME}/sample-data:/tmp/sample-data
+      - ${BABEL_HOME}/catalog:/htapps/catalog
+      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
+      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+      - ${BABEL_HOME}/logs:/var/log/babel
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+    depends_on:
+      mysql-sdr: *healthy
+      solr-sdr-catalog: *healthy
+      imgsrv: *healthy
+    profiles: 
+      - test
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "curl -f --retry-connrefused http://localhost:8080/"
+
+  perl-test:
+    build:
+      context: .
+      target: babel-base
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+      - MARIADB_USER=ht_web
+    depends_on:
+      mysql-sdr: *healthy
+    working_dir: "/htapps/babel/mdp-lib"
+    command: "t/test.pl"
+
   perl-dev:
     build:
       context: .
@@ -88,7 +146,6 @@ services:
       - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
       - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
       - ${BABEL_HOME}/logs:/var/log/babel
-
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
@@ -101,8 +158,9 @@ services:
       vufind: *healthy
     ports:
       - "8080:8080"
-      - "5173:5173"
-      - "8173:8173"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "curl -f --retry-connrefused http://localhost:8080/"
 
   vufind:
     build: ./catalog
@@ -121,15 +179,13 @@ services:
 
   firebird:
     <<: *node
-    working_dir: /htapps/babel/firebird-common
+    working_dir: /htapps/babel/firebird-common/
     command: ['npm', 'run', 'babel']
 
   page-turner:
     <<: *node
     working_dir: /htapps/babel/pt/web/firebird
     command: ['npm', 'run', 'babel']
-
-
 
 ### DATA STORES
 
@@ -170,15 +226,11 @@ services:
     image: ghcr.io/hathitrust/db-image:latest
     volumes:
       - ${BABEL_HOME}/slip/etc/sql/100_slip.sql:/docker-entrypoint-initdb.d/100_slip.sql
-      - ${BABEL_HOME}/catalog/docker/vufind.sql:/docker-entrypoint-initdb.d/101_vufind.sql
-      - ${BABEL_HOME}/sql/auth.sql:/docker-entrypoint-initdb.d/102_auth.sql
       - ${BABEL_HOME}/sql/permissions.sql:/docker-entrypoint-initdb.d/201_permissions.sql
       - ${BABEL_HOME}/mb/etc/sql/999_mb.sql:/docker-entrypoint-initdb.d/999_mb.sql
       - mysql_sdr_data:/var/lib/mysql
     ports:
       - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: TIMTOWTDIBSCINABTE
     healthcheck:
       <<: *healthcheck-defaults
       test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
