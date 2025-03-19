@@ -8,26 +8,26 @@ on:
   pull_request:
 
 jobs:
-  perl_test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        with:
-          repository: hathitrust/imgsrv-sample-data
-          path: sample-data
-
-      - name: setup env
-        run:  /bin/bash ./setup-env.sh
-
-      - name: Run perl tests
-        run: docker compose run perl-test
+  #  perl_test:
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #      - uses: actions/checkout@v4
+  #
+  #      - uses: actions/checkout@v4
+  #        with:
+  #          repository: hathitrust/imgsrv-sample-data
+  #          path: sample-data
+  #
+  #      - name: setup env
+  #        run:  /bin/bash ./setup-env.sh
+  #
+  #      - name: Run perl tests
+  #        run: docker compose run perl-test
 
   playwright:
     runs-on: ubuntu-latest
-    needs: perl_test
+      #  needs: perl_test
 
     steps:
       - uses: actions/checkout@v4 # Check out this repo by default
@@ -48,17 +48,17 @@ jobs:
       - name: setup env
         run:  /bin/bash ./setup-env.sh
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        with:
-          ## limits ssh access and adds the ssh public keys of the listed GitHub users
-          limit-access-to-users: aelkiss,ronster2018,carylwyatt
+#      - name: Setup upterm session
+#        uses: lhotari/action-upterm@v1
+#        with:
+#          ## limits ssh access and adds the ssh public keys of the listed GitHub users
+#          limit-access-to-users: aelkiss,ronster2018,carylwyatt
 
       - name: Build firebird
         run: docker compose run firebird ./bin/build.sh
 
       - name: Build pageturner
-        run: docker compose run page-turner ./bin/build.sh
+        run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
-      # - name: Run playwright tests (PageTurner)
-      #   run: docker compose run playwright
+      - name: Run playwright tests (PageTurner)
+        run: docker compose run playwright

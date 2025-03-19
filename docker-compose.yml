@@ -25,8 +25,43 @@ services:
       - ${BABEL_HOME}:/htapps/babel
     working_dir: "/htapps/babel/pt/web/firebird"
     command: "npm test"
+    profiles: 
+      - test
     depends_on:
-      apache: *healthy
+      apache-test: *healthy
+
+  apache-test:
+    build:
+      context: .
+      target: apache
+    user: ${CURRENT_USER}
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+      - ${BABEL_HOME}/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ${BABEL_HOME}/apache/auth:/etc/apache2/auth
+      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+      - ${BABEL_HOME}/sample-data:/tmp/sample-data
+      - ${BABEL_HOME}/catalog:/htapps/catalog
+      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
+      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+      - ${BABEL_HOME}/logs:/var/log/babel
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+    depends_on:
+      mysql-sdr: *healthy
+      solr-sdr-catalog: *healthy
+      imgsrv: *healthy
+    ports:
+      - "8080:8080"
+      - "5173:5173"
+      - "8173:8173"
+    profiles: 
+      - test
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "curl -f --retry-connrefused http://localhost:8080/"
 
   perl-test:
     build:
@@ -154,7 +189,7 @@ services:
 
   page-turner:
     <<: *node
-    working_dir: /htapps/babel/pt/
+    working_dir: /htapps/babel/pt/web/firebird
     command: ['npm', 'run', 'babel']
 
 
