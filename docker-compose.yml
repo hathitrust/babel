@@ -18,6 +18,8 @@ x-healthcheck-defaults: &healthcheck-defaults
   start_period: 10s
   retries: 5
 
+x-apache-volumes: &apache-volumes
+
 services:
   playwright:
     image: mcr.microsoft.com/playwright:v1.50.1
@@ -53,10 +55,6 @@ services:
       mysql-sdr: *healthy
       solr-sdr-catalog: *healthy
       imgsrv: *healthy
-    ports:
-      - "8080:8080"
-      - "5173:5173"
-      - "8173:8173"
     profiles: 
       - test
     healthcheck:
@@ -148,7 +146,6 @@ services:
       - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
       - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
       - ${BABEL_HOME}/logs:/var/log/babel
-
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
@@ -161,8 +158,6 @@ services:
       vufind: *healthy
     ports:
       - "8080:8080"
-      - "5173:5173"
-      - "8173:8173"
     healthcheck:
       <<: *healthcheck-defaults
       test: "curl -f --retry-connrefused http://localhost:8080/"
@@ -191,8 +186,6 @@ services:
     <<: *node
     working_dir: /htapps/babel/pt/web/firebird
     command: ['npm', 'run', 'babel']
-
-
 
 ### DATA STORES
 
