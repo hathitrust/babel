@@ -48,6 +48,12 @@ jobs:
       - name: setup env
         run:  /bin/bash ./setup-env.sh
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          ## limits ssh access and adds the ssh public keys of the listed GitHub users
+          limit-access-to-users: aelkiss,ronster2018,carylwyatt
+
       - name: Build firebird
         run: docker compose run firebird ./bin/build.sh
 
