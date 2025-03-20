@@ -551,6 +551,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="inner"
   class:view-2up={$currentView == '2up'}

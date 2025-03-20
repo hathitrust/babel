@@ -1,4 +1,8 @@
 <script>
+  import { getContext } from 'svelte';
+
+  const HT = getContext('HT');
+
   export let link;
 </script>
 
