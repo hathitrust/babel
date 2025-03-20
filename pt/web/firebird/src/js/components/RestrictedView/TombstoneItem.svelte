@@ -1,3 +1,4 @@
+<!-- svelte-ignore unused-export-let -->
 <script>
   import { getContext } from 'svelte';
 

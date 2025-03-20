@@ -1,5 +1,9 @@
+<!-- svelte-ignore unused-export-let -->
 <script>
+  import { getContext } from 'svelte';
   import Panel from '../Panel';
+
+  const HT = getContext('HT');
 
   export let accessType;
   export let onToggle;

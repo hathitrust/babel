@@ -191,9 +191,3 @@
     </p>
   </svelte:fragment>
 </Modal>
-
-<style>
-  .alert:empty {
-    display: none;
-  }
-</style>

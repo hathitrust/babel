@@ -699,7 +699,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
                 Image Temporarily Unavailable
               </div>
-              <p class="fs-7 text-muted text-center">Error code: 429</p>
+              <p class="fs-7 text-body-secondary text-center">Error code: 429</p>
             </div>
           </div>
         {/if}
