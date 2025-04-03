@@ -41,6 +41,45 @@
   let pageGroup;
   let status = { class: null };
 
+  let referrer = document.referrer;
+  let keywords = '';
+
+  if (referrer) {
+    let params = new URL(referrer).searchParams;
+    if (referrer.match('/Search') && !params.has('adv')) {
+      //advanced search uses lookfor[] but regular catalog search does not
+      keywords = params.get('lookfor');
+    }
+    if (referrer.match('/Search') && params.has('adv')) {
+      let lookfors = params.getAll('lookfor[]');
+      lookfors.forEach((phrase, index, array) => {
+        if (index === array.length - 1) {
+          keywords += `${phrase}`;
+        } else {
+          keywords += `${phrase}; `;
+        }
+      });
+    }
+    if (referrer.match('/cgi/ls')) {
+      // keywords = params.getAll('q1');
+      const qs = [];
+
+      for (const [key, value] of params) {
+        if (/^q/.test(key)) {
+          qs.push(value);
+        }
+      }
+      qs.forEach((phrase, index, array) => {
+        if (index === array.length - 1) {
+          keywords += `${phrase}`;
+        } else {
+          keywords += `${phrase}; `;
+        }
+      });
+      console.log(keywords);
+    }
+  }
+
   if (manifest.payload) {
     q1 = manifest.payload.q1;
     configureNavigationLinks();
@@ -50,7 +89,7 @@
   function toggleHighlights() {
     showHighlights = !showHighlights;
     document.documentElement.dataset.showHighlights = showHighlights;
-    showHighlights ? highlightButtonContent = 'Hide' : highlightButtonContent = 'Show'
+    showHighlights ? (highlightButtonContent = 'Hide') : (highlightButtonContent = 'Show');
   }
 
   function configureNavigationLinks() {
@@ -169,7 +208,7 @@
   }
 
   function jumpToPage(paginationPage) {
-    start = ((paginationPage - 1) * 25) + 1
+    start = (paginationPage - 1) * 25 + 1;
     onSubmit();
   }
 
@@ -240,11 +279,16 @@
         />
         <label class="form-check-label" for="search-form-target"> Open results in a new tab </label>
       </div>
+      {#if keywords}
+        <div class="lh-1">
+          <span class="fs-7"><span class="fw-semibold">Your search terms: </span>{keywords}</span>
+        </div>
+      {/if}
     </div>
   {/if}
 </form>
 {#if status.class}
-  <div class="alert {status.class} mt-3" tabindex="-1" bind:this={alert}>
+  <div class="alert {status.class} mt-3 py-1 fs-7 lh-sm" tabindex="-1" bind:this={alert}>
     {status.message}
   </div>
 {/if}
@@ -286,7 +330,7 @@
         class="btn btn-outline-secondary"
         class:active={showHighlights}
         on:click={toggleHighlights}
-        use:tooltippy={{content: `${highlightButtonContent} highlights`}}
+        use:tooltippy={{ content: `${highlightButtonContent} highlights` }}
         aria-label={showHighlights ? 'Hide Highlights' : 'Show Highlights'}
       >
         <i class="fa-solid fa-sun" aria-hidden="true" />
