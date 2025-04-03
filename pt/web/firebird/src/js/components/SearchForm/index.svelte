@@ -288,7 +288,7 @@
   {/if}
 </form>
 {#if status.class}
-  <div class="alert {status.class} mt-3 py-1 fs-7 lh-sm" tabindex="-1" bind:this={alert}>
+  <div class="alert {status.class} mt-3" tabindex="-1" bind:this={alert}>
     {status.message}
   </div>
 {/if}
