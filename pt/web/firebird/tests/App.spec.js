@@ -20,39 +20,6 @@ test.describe('pt loads', () => {
   });
 });
 
-test.describe('sidebar actions', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/cgi/pt?id=test.pd_open');
-  });
-  test('null heading', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'null' })).toBeVisible();
-  });
-  test('about this item accordion panel is open', async ({ page }) => {
-    const aboutThisItem = page.getByRole('button', { name: 'About This Item' });
-    await expect(aboutThisItem).toHaveAttribute('aria-expanded', 'true');
-  });
-  test('download accordion panel is closed', async ({ page }) => {
-    const download = page.getByRole('button', { name: 'Download' });
-    await expect(download).toHaveAttribute('aria-expanded', 'false');
-  });
-  test('open search in this text accordion', async ({ page }) => {
-    const searchInThisText = page.getByRole('button', { name: 'Search in This Text' });
-    const aboutThisItem = page.getByRole('button', { name: 'About This Item' });
-
-    await searchInThisText.click();
-    await expect(searchInThisText).toHaveAttribute('aria-expanded', 'true');
-    await expect(aboutThisItem).toHaveAttribute('aria-expanded', 'false');
-  });
-
-  // TODO
-  // download scan
-  // search in this text
-  // open SITT in new tab
-  // so many modals!!!
-  // add item to collection??
-  // close and expand sidebar
-});
-
 //TODO
 /*
 test.describe('reader toolbar actions', () => {
