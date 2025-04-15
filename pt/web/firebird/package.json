@@ -11,7 +11,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "babel": "NODE_ENV=development vite build --watch",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test-local": "LOCAL=local playwright test",
+    "test-ui": "LOCAL=local playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",
