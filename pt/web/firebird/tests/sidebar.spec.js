@@ -9,6 +9,7 @@ test.describe('sidebar actions', () => {
     //close the cookie banner before each test
     await page.getByRole('button', { name: 'Close banner', exact: true }).click();
   });
+
   test('null heading', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'null' })).toBeVisible();
   });
@@ -32,10 +33,20 @@ test.describe('sidebar actions', () => {
 
   // download scan
   test.describe('download scans', () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page, context }) => {
       const downloadAccordion = page.getByRole('heading', { name: 'Download' });
       const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
       await downloadAccordionButton.click();
+
+      //need an MDPsid session cookie for downloading scans
+      await context.addCookies([
+        {
+          name: 'MDPsid',
+          value: 'fcc24f7e70228bcbb6e1ee5e0a80a201',
+          domain: 'apache-test',
+          path: '/',
+        },
+      ]);
     });
     test('download accordion is open', async ({ page }) => {
       // const downloadAccordion = page.getByRole('heading', { name: 'Download' });
@@ -68,14 +79,6 @@ test.describe('sidebar actions', () => {
       const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
       await downloadButton.click();
 
-      // const modalHeading = page
-      //   .getByLabel('Building your Image (JPEG)')
-      //   .getByRole('heading', { name: 'Building your Image (JPEG)' });
-      // await expect(modalHeading).toHaveText('Building your Image (JPEG)');
-      // await expect(modalHeading).toBeVisible();
-
-      // await expect(page.getByRole('dialog').getByRole('heading', { name: 'Building your Image (JPEG)' })).toBeVisible();
-      // await expect(page.getByText('Building your Image (JPEG) Close')).toBeVisible();
       await expect(page.getByLabel('Building your Image (JPEG)')).toBeVisible();
 
       const downloadPromise = page.waitForEvent('download');
@@ -90,7 +93,7 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test.skip('download selected scans as tiff', async ({ page }) => {
+    test('download selected scans as tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
 
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
@@ -99,11 +102,7 @@ test.describe('sidebar actions', () => {
       await page.getByLabel('Selected page scans').check();
 
       await page.getByRole('button', { name: 'Download', exact: true }).click();
-      await expect(
-        page.getByText(
-          `You haven't selected any pages to download. To select pages, use the selection checkbox in the page toolbar.`
-        )
-      ).toBeVisible();
+      await expect(page.getByLabel('Download', { exact: true }).getByText("You haven't selected any")).toBeVisible();
 
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
