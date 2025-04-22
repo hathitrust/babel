@@ -56,7 +56,7 @@ use Config::Tiny;
 
 use Utils;
 use Debug::DUtils;
-
+use Data::Dumper;
 
 sub new {
     my $package = shift;
@@ -112,8 +112,11 @@ sub add_config_from_file {
     if (defined($config_key)) {
         $self->{$config_key} = $config;
     }
+printf STDERR "add_config_from_file($config_file) before merge: %s\n", Dumper $self;
     $self->merge_from_config_tiny($config);
+printf STDERR "after merge: %s\n", Dumper $self;
     $self->override_from_ENV($config_file);
+printf STDERR "after override: %s\n", Dumper $self;
 }
 
 
