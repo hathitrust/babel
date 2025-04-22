@@ -21,7 +21,6 @@ my $config = new MdpConfig(File::Spec->catdir($ENV{SDRROOT}, 'mdp-lib/Config/ube
                            File::Spec->catdir($ENV{SDRROOT}, 'slip-lib/Config/common.conf'));
 $C->set_object('MdpConfig', $config);
 my $db_user = $ENV{'MARIADB_USER'} || 'ht_testing';
-print STDERR "MARIADB_USER $db_user\n";
 my $db = new Database($db_user);
 $C->set_object('Database', $db);
 my $dbh = $db->get_DBH($C);
