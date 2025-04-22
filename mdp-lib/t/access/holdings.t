@@ -21,18 +21,16 @@ my $config = new MdpConfig(File::Spec->catdir($ENV{SDRROOT}, 'mdp-lib/Config/ube
                            File::Spec->catdir($ENV{SDRROOT}, 'slip-lib/Config/common.conf'));
 $C->set_object('MdpConfig', $config);
 my $db_user = $ENV{'MARIADB_USER'} || 'ht_testing';
-#my $db_user = 'mdp-admin';
+print STDERR "MARIADB_USER $db_user\n";
 my $db = new Database($db_user);
 $C->set_object('Database', $db);
 my $dbh = $db->get_DBH($C);
-#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
+DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 # HACK HACK HACK HACK
 # FIXME: Remove this once we transition to Holdings API.
 # We won't be needing updated ht_institutions unless we want to mock the Holdings API based on
 # database contents, and that seems kinda silly.
 DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
-
-#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 
 # FIXME: these will not be needed when testing holdings API
 my $fake_lock_id = 'fake_lock_id';
@@ -141,6 +139,6 @@ $ua->map_response($item_held_by_endpoint, HTTP::Response->new('200', 'OK', ['Con
 # ====================== FUTURE WORK HERE ======================
 
 # Clean up
-#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
+DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 done_testing();
 

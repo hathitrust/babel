@@ -89,7 +89,7 @@ sub __get_db_connect_params {
         $conf_file = ___conf_file($Production_Config_Root, $_db_user);
     }
     ASSERT(-e $conf_file, qq{Config file=$conf_file missing for db_user=$_db_user});
-
+print STDERR "CONF FILE $conf_file\n";
     my $db_config = new MdpConfig($conf_file);
 
     my $db_name   = $db_config->get('db_name');
