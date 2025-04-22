@@ -3,8 +3,30 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 test.describe('sidebar actions', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
+
+    const response = await context.request.get('/cgi/pt?id=test.pd_open');
+    expect(response.ok());
+    const headers = response.headersArray();
+    // console.log(headers);
+
+    var cookieString = headers.find(function (o) {
+      return o.name === 'Set-Cookie';
+    }).value;
+
+    const match = cookieString.match(/MDPsid=([^;]+)/);
+    const MDPsid = match ? match[1] : null;
+
+    await context.addCookies([
+      {
+        name: 'MDPsid',
+        value: MDPsid,
+        domain: 'apache-test',
+        path: '/',
+        httpOnly: true,
+      },
+    ]);
 
     //close the cookie banner before each test
     await page.getByRole('button', { name: 'Close banner', exact: true }).click();
@@ -37,19 +59,8 @@ test.describe('sidebar actions', () => {
       const downloadAccordion = page.getByRole('heading', { name: 'Download' });
       const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
       await downloadAccordionButton.click();
-
-      //need an MDPsid session cookie for downloading scans
-      await context.addCookies([
-        {
-          name: 'MDPsid',
-          value: 'fcc24f7e70228bcbb6e1ee5e0a80a201',
-          domain: 'apache-test',
-          path: '/',
-        },
-      ]);
     });
     test('download accordion is open', async ({ page }) => {
-      // const downloadAccordion = page.getByRole('heading', { name: 'Download' });
       const downloadAccordionButton = page
         .getByRole('heading', { name: 'Download' })
         .getByRole('button', { name: 'Download' });
@@ -69,7 +80,10 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download whole item jpeg, full resolution', async ({ page }) => {
+    test('download whole item jpeg, full resolution', async ({ page, context }) => {
+      const cookies = await context.cookies();
+      // console.log(cookies);
+
       await page.getByRole('radio', { name: 'Image (JPEG)' }).check();
       await page.getByLabel('Full / 600 dpi').check();
       await page.getByLabel('Whole item').check();
@@ -81,9 +95,10 @@ test.describe('sidebar actions', () => {
 
       await expect(page.getByLabel('Building your Image (JPEG)')).toBeVisible();
 
-      const downloadPromise = page.waitForEvent('download');
-
       await expect(page.getByRole('progressbar')).toBeHidden({ timeout: 9000 });
+      await expect(page.getByLabel('Building your Image (JPEG)').getByRole('paragraph')).toBeVisible();
+
+      const downloadPromise = page.waitForEvent('download');
       await page.getByRole('link', { name: 'Download', exact: true }).click();
       const download = await downloadPromise;
       const downloadPath = await download.path();
@@ -93,7 +108,10 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download selected scans as tiff', async ({ page }) => {
+    test('download selected scans as tiff', async ({ page, context }) => {
+      // const cookies = await context.cookies();
+      // console.log(cookies);
+
       const downloadPromise = page.waitForEvent('download');
 
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });

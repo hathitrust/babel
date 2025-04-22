@@ -97,6 +97,7 @@
       status.done = false;
       current = data.current_page;
       percent = 100 * (current / totalPages);
+      console.log('totalPages', totalPages);
     }
 
     if (lastPercent != percent) {
