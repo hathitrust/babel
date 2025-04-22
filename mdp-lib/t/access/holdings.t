@@ -25,7 +25,7 @@ my $db_user = $ENV{'MARIADB_USER'} || 'ht_testing';
 my $db = new Database($db_user);
 $C->set_object('Database', $db);
 my $dbh = $db->get_DBH($C);
-DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
+#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 # HACK HACK HACK HACK
 # FIXME: Remove this once we transition to Holdings API.
 # We won't be needing updated ht_institutions unless we want to mock the Holdings API based on
