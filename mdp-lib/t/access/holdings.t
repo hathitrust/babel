@@ -32,7 +32,7 @@ DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 # database contents, and that seems kinda silly.
 DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
 
-DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
+#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 
 # FIXME: these will not be needed when testing holdings API
 my $fake_lock_id = 'fake_lock_id';
@@ -141,6 +141,6 @@ $ua->map_response($item_held_by_endpoint, HTTP::Response->new('200', 'OK', ['Con
 # ====================== FUTURE WORK HERE ======================
 
 # Clean up
-DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
+#DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 done_testing();
 
