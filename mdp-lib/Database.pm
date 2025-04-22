@@ -90,6 +90,9 @@ sub __get_db_connect_params {
     }
     ASSERT(-e $conf_file, qq{Config file=$conf_file missing for db_user=$_db_user});
 print STDERR "CONF FILE $conf_file\n";
+use File::Slurp ();
+my $contents = File::Slurp::slurp($conf_file);
+print STDERR "CONF FILE CONTENTS: $contents\n";
     my $db_config = new MdpConfig($conf_file);
 use Data::Dumper;
 printf STDERR "DB Config %s", Dumper $db_config;
