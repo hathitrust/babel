@@ -49,6 +49,14 @@ subtest "id_is_held" => sub {
     my $htid = 'mdp.002';
     my $ret = Access::Holdings::id_is_held($C, $htid, 'umich');
     is($ret, 0);
+
+    subtest "DEBUG=held wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'held';
+      my $ret = Access::Holdings::id_is_held($C, $htid, 'umich');
+      is($ret, 1);
+      $ENV{DEBUG} = $save_debug;
+    };
   };
 
   subtest "held according to DB" => sub {
@@ -57,6 +65,14 @@ subtest "id_is_held" => sub {
     DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, 'umich', 3);
     my $ret = Access::Holdings::id_is_held($C, $htid, 'umich');
     is($ret, 3);
+
+    subtest "DEBUG=notheld wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'notheld';
+      my $ret = Access::Holdings::id_is_held($C, $htid, 'umich');
+      is($ret, 0);
+      $ENV{DEBUG} = $save_debug;
+    };
   };
 };
 
@@ -76,6 +92,14 @@ subtest "id_is_held_and_BRLM" => sub {
     my $htid = 'mdp.005';
     my $ret = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
     is($ret, 0);
+
+    subtest "DEBUG=heldb wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'heldb';
+      my $ret = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
+      is($ret, 1);
+      $ENV{DEBUG} = $save_debug;
+    };
   };
 
   subtest "held according to DB" => sub {
@@ -84,6 +108,14 @@ subtest "id_is_held_and_BRLM" => sub {
     DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, 'umich', 5);
     my $ret = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
     is($ret, 5);
+
+    subtest "DEBUG=notheldb wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'notheldb';
+      my $ret = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
+      is($ret, 0);
+      $ENV{DEBUG} = $save_debug;
+    };
   };
 };
 
