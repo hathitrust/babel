@@ -65,8 +65,8 @@ jobs:
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Install Dependencies
-        run: cd pt/web/firebird/ && npm ci
+      # - name: Install Dependencies
+      #   run: npm ci
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
