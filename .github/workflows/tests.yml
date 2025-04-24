@@ -53,4 +53,24 @@ jobs:
         run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
       - name: Run playwright tests (PageTurner)
-        run: docker compose run playwright
+        # run: docker compose run playwright
+
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+      - name: Install Playwright Browsers - Cached
+        run: npx playwright install-deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+      - name: Run tests
+        run: npm test
