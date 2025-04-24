@@ -43,6 +43,9 @@ jobs:
           repository: hathitrust/firebird-common
           path: firebird-common
 
+      - name: See env
+        run: ls -lh
+
       - name: setup env
         run: /bin/bash ./setup-env.sh
 
