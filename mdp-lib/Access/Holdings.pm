@@ -36,6 +36,7 @@ Description
 =cut
 
 # ---------------------------------------------------------------------
+# NOTE THIS IS THE ONLY THING WE NEED TO USE API FOR DEV-1638
 sub id_is_held {
     my ($C, $id, $inst) = @_;
 
@@ -59,10 +60,15 @@ sub id_is_held {
 
         my $sth;
 
+        # The revised API will use item_id instead of ht_id <<===== NOTE
         # The lock ID depends on the item format:
-        #   single part monograph (cluster_id present, no n_enum): cluster_id
-        #   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum
+        # (the lock id is destined for storage in pt_exclusivity_ng
+        #   single part monograph (cluster_id present, no n_enum): cluster_id (API version: concatenated OCNs)
+        #   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum (API version: concatenated OCNs + n_enum)
+        #      may need to truncate each to 50 because edge cases, don't overthink
         #   serial (cluster id will not be present): volume_id
+        #
+        # Fallback in case of API issue: not available, do not 500
         my $SELECT_clause = <<EOT;
           SELECT lock_id,
                  sum(copy_count)
