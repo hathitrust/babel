@@ -153,6 +153,31 @@ subtest "holding_BRLM_institutions" => sub {
   is_deeply(\@ret, \@holding_institutions);
 };
 
+subtest "generate_lock_id" => sub {
+  my $htid = 'test.001';
+  my $test_data = [
+    [$htid, 'spm', 'v.1', ['001', '002'], '001-002'],
+    [$htid, 'mpm', 'v.1', ['001', '002'], '001-002:v.1'],
+    [$htid, 'ser', 'v.1', ['001', '002'], $htid]
+  ];
+  foreach my $t (@$test_data) {
+    is(Access::Holdings::generate_lock_id($t->[0], $t->[1], $t->[2], @{$t->[3]}), $t->[4]);
+  }
+
+  subtest "mpm with long n_enum" => sub {
+    my $really_long_enum = 'abcdefghij' x 10;
+    my $lock_id = Access::Holdings::generate_lock_id($htid, 'mpm', $really_long_enum , '001', '002');
+    ok(length($lock_id) <= 100);
+    ok($lock_id =~ m/^001-002:/);
+  };
+
+  subtest "mpm with long ocns list" => sub {
+    my @really_long_ocns_list = ('9876543210', '0123456789', '55555');
+    my $lock_id = Access::Holdings::generate_lock_id($htid, 'mpm', 'v.1', @really_long_ocns_list);
+    is($lock_id, '0123456789-55555-987:v.1');
+  };
+};
+
 # ====================== FUTURE WORK HERE ======================
 # This will likely be the testing procedure for the Holdings API
 my $item_held_by_endpoint = qr{/v1/item_held_by};

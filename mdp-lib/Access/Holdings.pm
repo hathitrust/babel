@@ -27,6 +27,45 @@ use Utils;
 use DbUtils;
 use Debug::DUtils;
 
+# Generate a lock id string destined for storage in the pt_exclusivity_ng table
+# The lock ID depends on the item format:
+#   single part monograph (cluster_id present, no n_enum): cluster_id (API version: concatenated OCNs)
+#   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum (API version: concatenated OCNs + n_enum)
+#      may need to truncate each to 50 because edge cases, don't overthink
+#   serial (cluster id will not be present): volume_id
+# Example usage: generate_lock_id('mdp.001', 'mpm', 'v.1', 1001, 1002);
+# > '1001-1002:v.1'
+# For OCNs + n_enum we reserve 20 characters for the OCNs, then add ': and the n_enum and trim the whole thing at the end
+# so we can fit in the VARCHAR(100) pt_exclusivity_ng.lock_id column
+# FIXME: check schema for pt_exclusivity_ng
+sub generate_lock_id {
+  my $id     = shift;
+  my $format = shift;
+  my $n_enum = shift || '';
+  my @ocns   = sort @_;
+
+  my $lock_id = 'blah';
+  if ($format eq 'spm') {
+    $lock_id = join('-', @ocns);
+  } elsif ($format eq 'mpm') {
+    $lock_id = join('-', @ocns);
+    if (length($lock_id) > 20) {
+      $lock_id = substr($lock_id, 0, 20);
+    }
+    $lock_id .= ':' . $n_enum;
+  } elsif ($format eq 'ser') {
+    $lock_id = $id;
+  } else {
+    die "unknown format in generate_lock_id($id, $format, ...)";
+  }
+  # FIXME: use constant for the 100-char limit
+  # Trim to 100 characters
+  if (length($lock_id) > 100) {
+    $lock_id = substr($lock_id, 0, 100);
+  }
+  return $lock_id;
+}
+
 # ---------------------------------------------------------------------
 
 =item id_is_held
