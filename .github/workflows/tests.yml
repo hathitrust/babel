@@ -43,11 +43,14 @@ jobs:
           repository: hathitrust/firebird-common
           path: firebird-common
 
-      - name: See env
-        run: ls -lh
-
       - name: setup env
         run: /bin/bash ./setup-env.sh
+
+      - name: Setup Docker Compose
+        uses: docker/setup-compose-action@v1.2.0
+        with:
+          version: latest
+          cache-binary: true
 
       - name: Build firebird
         run: docker compose run firebird ./bin/build.sh
@@ -55,33 +58,7 @@ jobs:
       - name: Build pageturner
         run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
-      - name: Run playwright tests (PageTurner)
-        # run: docker compose run playwright
-
-        uses: actions/cache@v3
-        id: playwright-cache
-        with:
-          path: |
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Dependencies
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - run: npm --prefix firebird-common/ ci
-
-      - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-
-      - name: Install Playwright Browsers - Cached
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-
       - name: Run tests
-       # run: npm --prefix firebird-common/ test
-        
         run: docker compose run playwright
 
 #       - uses: actions/upload-artifact@v4
