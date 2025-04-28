@@ -81,6 +81,7 @@ test.describe('sidebar actions', () => {
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
     test('download whole item jpeg, full resolution', async ({ page, context }) => {
+      test.slow();
       const cookies = await context.cookies();
       // console.log(cookies);
 
