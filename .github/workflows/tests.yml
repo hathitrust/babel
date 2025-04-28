@@ -69,14 +69,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-      - run: npm --prefix pt/web/firebird/ ci
+      - run: npm --prefix firebird-common/ ci
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
 
       - name: Install Playwright Browsers - Cached
-        run: npx playwright install-deps
         if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+
       - name: Run tests
-        run: npm --prefix pt/web/firebird/ test
+        run: npm --prefix firebird-common/ test
