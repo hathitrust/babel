@@ -43,14 +43,25 @@ jobs:
           repository: hathitrust/firebird-common
           path: firebird-common
 
+      - name: See env
+        run: ls -lh
+
       - name: setup env
         run: /bin/bash ./setup-env.sh
 
-      - name: Setup Docker Compose
-        uses: docker/setup-compose-action@v1.2.0
+      - name: Build and Check Cache
+        uses: docker/bake-action@master
         with:
-          version: latest
-          cache-binary: true
+          push: false
+          load: true # Load from cache
+          set: |
+              firebird.cache-from=type=gha
+              firebird.cache-to=type=gha
+              page-turner.cache-from=type=gha
+              page-turner.cache-to=type=gha
+              playwright.cache-from=type=gha
+              playwright.cache-to=type=gha
+
 
       - name: Build firebird
         run: docker compose run firebird ./bin/build.sh
@@ -58,12 +69,12 @@ jobs:
       - name: Build pageturner
         run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
-      - name: Run tests
+      - name: Run playwright tests (PageTurner)
         run: docker compose run playwright
 
-#       - uses: actions/upload-artifact@v4
-#         if: ${{ !cancelled() }}
-#         with:
-#           name: test-results
-#           path: pt/web/firebird/test-results/
-#           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-results
+          path: pt/web/firebird/test-results/
+          retention-days: 30
