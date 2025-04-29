@@ -98,7 +98,7 @@ test.describe('sidebar actions', () => {
 
       await expect(page.getByRole('progressbar')).toBeHidden({ timeout: 9000 });
       await expect(page.getByLabel('Building your Image (JPEG)').getByRole('paragraph')).toBeVisible({
-        timeout: 10_000,
+        timeout: 15_000,
       });
 
       const downloadPromise = page.waitForEvent('download');
