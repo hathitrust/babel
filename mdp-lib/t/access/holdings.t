@@ -94,7 +94,6 @@ subtest "id_is_held_api" => sub {
     my $htid = 'api.003';
     my $ua = get_ua_for_held(1);
     my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
-    #print STDERR "api.003 LOCK ID $lock_id, HELD $held\n";
     is($held, 1);
 
     subtest "DEBUG=notheld wins" => sub {
