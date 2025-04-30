@@ -40,6 +40,8 @@ use Utils::Logger;
 # For OCNs + n_enum we reserve 20 characters for the OCNs, then add ': and the n_enum and
 # rtrim so we can fit in the VARCHAR(100)
 
+# 5-second timeout. Can we go lower?
+use constant HOLDINGS_API_TIMEOUT => 5;
 use constant LOCK_ID_MAX_LENGTH => 100;
 use constant LOCK_ID_OCNS_LENGTH => 20;
 our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
@@ -82,6 +84,7 @@ sub query_item_access {
   my $uri = URI->new($url_string);
   $uri->query_form({item_id => $htid, organization => $inst});
   my $req = HTTP::Request->new('GET' => $uri->as_string);
+  $ua->timeout(HOLDINGS_API_TIMEOUT);
   my $res = $ua->request($req);
   if (!$res->is_success()) {
     # Newline at end of error message prevents `die` from appending file and line number,
