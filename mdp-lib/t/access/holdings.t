@@ -31,6 +31,18 @@ DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
 
 my $jsonxs = JSON::XS->new->utf8->canonical(1)->pretty(0);
+use constant ERROR_LOG => "/var/log/babel/holdings_api-error.log";
+
+unlink ERROR_LOG;
+
+sub error_log_contains {
+  my $search_string = shift;
+
+  my $cmd = "grep -c '$search_string' " . ERROR_LOG;
+  my $count = `$cmd` || 0;
+  chomp $count;
+  return $count;
+}
 
 my $not_held_response = {
   'copy_count' => 0,
@@ -119,7 +131,7 @@ subtest "id_is_held_api" => sub {
     };
   };
 
-  subtest "return error message and held = 0 if API fails" => sub {
+  subtest "return error message and held = 0 if API fails, and log error message" => sub {
     my $htid = 'api.004';
     my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
     my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
@@ -127,6 +139,7 @@ subtest "id_is_held_api" => sub {
     my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
     is($held, 0);
     like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+    ok(error_log_contains($htid));
   };
 };
 
@@ -221,6 +234,16 @@ subtest "holding_institutions_API" => sub {
   my @got = sort @{Access::Holdings::holding_institutions_API($C, $htid, $ua)};
   my @expected = sort @{$institutions_response->{organizations}};
   is_deeply(\@got, \@expected);
+
+  subtest "return empty list and log error if API fails" => sub {
+    my $htid = 'api.007';
+    my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+    my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+    $ua->map_response($item_held_by_endpoint, $resp);
+    my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
+    is_deeply($got, []);
+    ok(error_log_contains($htid));
+  };
 };
 
 subtest "holding_institutions" => sub {
