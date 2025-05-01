@@ -31,6 +31,18 @@ DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
 
 my $jsonxs = JSON::XS->new->utf8->canonical(1)->pretty(0);
+use constant ERROR_LOG => "/var/log/babel/holdings_api-error.log";
+
+unlink ERROR_LOG;
+
+sub error_log_contains {
+  my $search_string = shift;
+
+  my $cmd = "grep -c '$search_string' " . ERROR_LOG;
+  my $count = `$cmd` || 0;
+  chomp $count;
+  return $count;
+}
 
 my $not_held_response = {
   'copy_count' => 0,
@@ -45,9 +57,16 @@ my $held_response = {
   'n_enum' => 'v.1-5 (1901-1905)',
   'ocns' => ['001', '002', '003']
 };
+
+my $institutions_response = {
+  'organizations' => ['umich', 'keio']
+};
+
 my $not_held_response_json = $jsonxs->encode($not_held_response);
 my $held_response_json = $jsonxs->encode($held_response);
-my $item_held_by_endpoint = qr{$Access::Holdings::ITEM_ACCESS_ENDPOINT};
+my $institutions_response_json = $jsonxs->encode($institutions_response);
+my $item_access_endpoint = qr{$Access::Holdings::ITEM_ACCESS_ENDPOINT};
+my $item_held_by_endpoint = qr{$Access::Holdings::ITEM_HELD_BY_ENDPOINT};
 
 sub get_ua_for_held {
   my $held = shift;
@@ -55,6 +74,13 @@ sub get_ua_for_held {
   my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
   my $json = ($held) ? $held_response_json : $not_held_response_json;
   my $resp = HTTP::Response->new('200', 'OK', ['Content-Type' => 'application/json'], $json);
+  $ua->map_response($item_access_endpoint, $resp);
+  return $ua;
+}
+
+sub get_ua_for_institutions {
+  my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+  my $resp = HTTP::Response->new('200', 'OK', ['Content-Type' => 'application/json'], $institutions_response_json);
   $ua->map_response($item_held_by_endpoint, $resp);
   return $ua;
 }
@@ -105,14 +131,15 @@ subtest "id_is_held_api" => sub {
     };
   };
 
-  subtest "return error message and held = 0 if API fails" => sub {
+  subtest "return error message and held = 0 if API fails, and log error message" => sub {
     my $htid = 'api.004';
     my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
     my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
-    $ua->map_response($item_held_by_endpoint, $resp);
+    $ua->map_response($item_access_endpoint, $resp);
     my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
     is($held, 0);
     like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+    ok(error_log_contains($htid));
   };
 };
 
@@ -198,6 +225,24 @@ subtest "id_is_held_and_BRLM" => sub {
       is($held, 0);
       $ENV{DEBUG} = $save_debug;
     };
+  };
+};
+
+subtest "holding_institutions_API" => sub {
+  my $htid = 'api.007';
+  my $ua = get_ua_for_institutions;
+  my @got = sort @{Access::Holdings::holding_institutions_API($C, $htid, $ua)};
+  my @expected = sort @{$institutions_response->{organizations}};
+  is_deeply(\@got, \@expected);
+
+  subtest "return empty list and log error if API fails" => sub {
+    my $htid = 'api.007';
+    my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+    my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+    $ua->map_response($item_held_by_endpoint, $resp);
+    my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
+    is_deeply($got, []);
+    ok(error_log_contains($htid));
   };
 };
 

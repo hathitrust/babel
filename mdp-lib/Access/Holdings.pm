@@ -45,6 +45,7 @@ use constant HOLDINGS_API_TIMEOUT => 5;
 use constant LOCK_ID_MAX_LENGTH => 100;
 use constant LOCK_ID_OCNS_LENGTH => 20;
 our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
+our $ITEM_HELD_BY_ENDPOINT = '/v1/item_held_by';
 
 sub generate_lock_id {
   my $id     = shift;
@@ -72,17 +73,18 @@ sub generate_lock_id {
   return $lock_id;
 }
 
-# Retrieve Holdings API `item_access` data
-sub query_item_access {
-  my $C    = shift;
-  my $htid = shift;
-  my $inst = shift;
-  my $ua   = shift || LWP::UserAgent->new;
+# Query one of the Holdings API endpoints
+sub query_api {
+  my $C        = shift;
+  my $endpoint = shift;
+  my $ua       = shift || LWP::UserAgent->new;
 
+  my %params = @_;
+#printf STDERR "query_api PARAMS %s\n", Dumper \%params;
   my $err;
-  my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $ITEM_ACCESS_ENDPOINT;
+  my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $endpoint;
   my $uri = URI->new($url_string);
-  $uri->query_form({item_id => $htid, organization => $inst});
+  $uri->query_form(\%params);
   my $req = HTTP::Request->new('GET' => $uri->as_string);
   $ua->timeout(HOLDINGS_API_TIMEOUT);
   my $res = $ua->request($req);
@@ -126,7 +128,7 @@ sub id_is_held_API {
 
         my $holdings_data;
         eval {
-            $holdings_data = query_item_access($C, $id, $inst, $ua);
+            $holdings_data = query_api($C, $ITEM_ACCESS_ENDPOINT, $ua, organization => $inst, item_id => $id);
             $lock_id = generate_lock_id(
               $id,
               $holdings_data->{format},
@@ -135,8 +137,7 @@ sub id_is_held_API {
             );
         };
         if (my $err = $@) {
-            chomp $err;
-            Utils::Logger::__Log_struct($C, [['error', $err]], 'holdings_api_error_logfile', '___QUERY___', 'holdings_api');
+            log_error($err);
             return ($err, 0);
         }
 
@@ -265,6 +266,25 @@ sub id_is_held_and_BRLM {
     return ( $lock_id, $held );
 }
 
+
+sub holding_institutions_API {
+    my ($C, $id, $ua) = @_;
+
+    my $inst_arr_ref = [];
+    eval {
+        $holdings_data = query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
+        $inst_arr_ref = $holdings_data->{organizations};
+    };
+    if (my $err = $@) {
+        log_error($err);
+        return [];
+    }
+    DEBUG('auth,all,held,notheld', qq{<h4>Holding institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
+
+    return $inst_arr_ref;
+}
+
+
 # ---------------------------------------------------------------------
 
 =item holding_institutions
@@ -276,6 +296,10 @@ Description
 # ---------------------------------------------------------------------
 sub holding_institutions {
     my ($C, $id) = @_;
+
+    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
+      return holding_institutions_API(@_);
+    }
 
     my $dbh = $C->get_object('Database')->get_DBH($C);
 
@@ -333,6 +357,13 @@ sub holding_BRLM_institutions {
     return $inst_arr_ref;
 }
 
+# Log Holdings API errors using common interface.
+sub log_error {
+  my $err = shift;
+
+  chomp $err;
+  Utils::Logger::__Log_struct($C, [['error', $err]], 'holdings_api_error_logfile', '___QUERY___', 'holdings_api');
+}
 
 
 1;
