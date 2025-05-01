@@ -81,7 +81,7 @@
       {#each sectionList as section}
         <li>
           <a href={section.url} on:click|preventDefault|stopPropagation={() => goto(section.seq)}
-            >{section.label}{#if section.page} - page {section.page}{/if}</a
+            >{section.label}{#if section.page}&nbsp;(p. {section.page}){/if}</a
           >
         </li>
       {/each}
