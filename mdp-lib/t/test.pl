@@ -3,6 +3,8 @@
 use strict;
 use Test::Harness;
 use FindBin;
+use File::Find;
+
 use lib "$FindBin::Bin/..";
 use lib "$FindBin::Bin/../../slip-lib";
 use Term::ANSIColor qw(:constants);
@@ -28,11 +30,14 @@ foreach my $i (0 .. 9)
 }
 print "\n";
 
-#my @test_files = ('mdp-lib/t/namespace.t',
-#                  'mdp-lib/t/rights.t',
-#                 );
-#runtests map { File::Spec->catdir($ENV{SDRROOT}, $_); } @test_files;
-my @test_files = glob("$FindBin::Bin/../t/*.t");
+my @test_files;
+find(
+  sub {
+    push(@test_files, $File::Find::name) if /\.t$/;
+  },
+  "$FindBin::Bin"
+);
+
 @test_files = @ARGV if ( scalar @ARGV );
 runtests @test_files;
 

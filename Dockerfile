@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
   libnet-dns-perl \
   libplack-perl \
   libtest-class-perl \
+  libtest-lwp-useragent-perl \
   libtry-tiny-perl \
   libxml-libxml-perl \
   libxml-libxslt-perl \
