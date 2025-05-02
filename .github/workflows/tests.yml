@@ -46,19 +46,6 @@ jobs:
       - name: setup env
         run: /bin/bash ./setup-env.sh
 
-      # - name: Build and Check Cache
-      #   uses: docker/bake-action@master
-      #   with:
-      #     push: false
-      #     load: true # Load from cache
-      #     set: |
-      #         firebird.cache-from=type=gha
-      #         firebird.cache-to=type=gha
-      #         page-turner.cache-from=type=gha
-      #         page-turner.cache-to=type=gha
-      #         playwright.cache-from=type=gha
-      #         playwright.cache-to=type=gha
-
       - name: Set Cache Location
         run: touch ${{ runner.temp }}/.buildx-cache
 
