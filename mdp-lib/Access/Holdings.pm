@@ -80,8 +80,6 @@ sub query_api {
   my $ua       = shift || LWP::UserAgent->new;
 
   my %params = @_;
-#printf STDERR "query_api PARAMS %s\n", Dumper \%params;
-  my $err;
   my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $endpoint;
   my $uri = URI->new($url_string);
   $uri->query_form(\%params);
@@ -91,7 +89,7 @@ sub query_api {
   if (!$res->is_success()) {
     # Newline at end of error message prevents `die` from appending file and line number,
     # which we do not need. Caller `chomp`s it before logging and using as lock id.
-    $err = sprintf "%s : %s : %s\n", $res->code, $res->message, $uri->as_string;
+    my $err = sprintf "%s : %s : %s\n", $res->code, $res->message, $uri->as_string;
     die $err;
   }
   my $jsonxs = JSON::XS->new->utf8;
