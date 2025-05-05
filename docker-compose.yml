@@ -69,10 +69,13 @@ services:
       - ${BABEL_HOME}:/htapps/babel
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+      # Allow tests to modify database
+      - ${BABEL_HOME}/mdp-lib/t/config/mdp-admin.conf:/htapps/babel/etc/mdp-admin.conf
+      - ${BABEL_HOME}/logs:/var/log/babel
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
-      - MARIADB_USER=ht_web
+      - MARIADB_USER=mdp-admin
     depends_on:
       mysql-sdr: *healthy
     working_dir: "/htapps/babel/mdp-lib"
@@ -228,6 +231,7 @@ services:
       - ${BABEL_HOME}/slip/etc/sql/100_slip.sql:/docker-entrypoint-initdb.d/100_slip.sql
       - ${BABEL_HOME}/sql/permissions.sql:/docker-entrypoint-initdb.d/201_permissions.sql
       - ${BABEL_HOME}/mb/etc/sql/999_mb.sql:/docker-entrypoint-initdb.d/999_mb.sql
+      - ${BABEL_HOME}/sql/vufind_session.sql:/docker-entrypoint-initdb.d/888_vufind.sql
       - mysql_sdr_data:/var/lib/mysql
     ports:
       - "3307:3306"

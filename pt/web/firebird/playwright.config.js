@@ -1,6 +1,13 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
 
+let testUrl;
+if (process.env.LOCAL == 'local') {
+  testUrl = 'http://localhost:8080';
+} else {
+  testUrl = 'http://apache-test:8080';
+}
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -24,14 +31,16 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'list',
+  // reporter: process.env.CI ? '["list", "html"]' : 'list',
+  reporter: [['list'], ['html', { open: 'never' }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://apache-test:8080',
+    baseURL: testUrl,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
+    // trace: 'on',
   },
 
   /* Configure projects for major browsers */

@@ -23,9 +23,130 @@ affecting every user with an assertion failure.
 =cut
 
 use Context;
+use Data::Dumper;
 use Utils;
 use DbUtils;
 use Debug::DUtils;
+use HTTP::Request;
+use Utils::Logger;
+
+# Generate a lock id string destined for storage in `ht.pt_exclusivity_ng.lock_id`
+# The lock ID depends on the item format:
+#   single part monograph (cluster_id present, no n_enum): concatenated OCNs
+#   multi-part monograph (cluster_id and n_enum both present): concatenated OCNs + : + n_enum)
+#   serial (cluster id will not be present): volume_id
+# Example usage: generate_lock_id('mdp.001', 'mpm', 'v.1', 1001, 1002);
+# > '1001-1002:v.1'
+# For OCNs + n_enum we reserve 20 characters for the OCNs, then add ': and the n_enum and
+# rtrim so we can fit in the VARCHAR(100)
+
+# 5-second timeout. Can we go lower?
+use constant HOLDINGS_API_TIMEOUT => 5;
+use constant LOCK_ID_MAX_LENGTH => 100;
+use constant LOCK_ID_OCNS_LENGTH => 20;
+our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
+
+sub generate_lock_id {
+  my $id     = shift;
+  my $format = shift;
+  my $n_enum = shift || '';
+  my @ocns   = sort @_;
+
+  my $lock_id = '';
+  if ($format eq 'spm') {
+    $lock_id = join('-', @ocns);
+  } elsif ($format eq 'mpm') {
+    $lock_id = join('-', @ocns);
+    if (length($lock_id) > LOCK_ID_OCNS_LENGTH) {
+      $lock_id = substr($lock_id, 0, LOCK_ID_OCNS_LENGTH);
+    }
+    $lock_id .= ':' . $n_enum;
+  } elsif ($format eq 'ser') {
+    $lock_id = $id;
+  } else {
+    die "unknown format in generate_lock_id($id, $format, ...)";
+  }
+  if (length($lock_id) > LOCK_ID_MAX_LENGTH) {
+    $lock_id = substr($lock_id, 0, LOCK_ID_MAX_LENGTH);
+  }
+  return $lock_id;
+}
+
+# Retrieve Holdings API `item_access` data
+sub query_item_access {
+  my $C    = shift;
+  my $htid = shift;
+  my $inst = shift;
+  my $ua   = shift || LWP::UserAgent->new;
+
+  my $err;
+  my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $ITEM_ACCESS_ENDPOINT;
+  my $uri = URI->new($url_string);
+  $uri->query_form({item_id => $htid, organization => $inst});
+  my $req = HTTP::Request->new('GET' => $uri->as_string);
+  $ua->timeout(HOLDINGS_API_TIMEOUT);
+  my $res = $ua->request($req);
+  if (!$res->is_success()) {
+    # Newline at end of error message prevents `die` from appending file and line number,
+    # which we do not need. Caller `chomp`s it before logging and using as lock id.
+    $err = sprintf "%s : %s : %s\n", $res->code, $res->message, $uri->as_string;
+    die $err;
+  }
+  my $jsonxs = JSON::XS->new->utf8;
+  return $jsonxs->decode($res->content);
+}
+
+# ---------------------------------------------------------------------
+
+=item id_is_held_API
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub id_is_held_API {
+    my ($C, $id, $inst, $ua) = @_;
+
+    my $held = 0;
+    my $lock_id = $id;
+
+    if (DEBUG('held')) {
+        $held = 1;
+    }
+    elsif (DEBUG('notheld')) {
+        $held = 0;
+    }
+    else {
+        my $ses = $C->get_object('Session', 1);
+        if ( $ses && defined $ses->get_transient("held.$id") ) {
+            ( $lock_id, $held ) = @{ $ses->get_transient("held.$id") };
+            return ( $lock_id, $held );
+        }
+
+        my $holdings_data;
+        eval {
+            $holdings_data = query_item_access($C, $id, $inst, $ua);
+            $lock_id = generate_lock_id(
+              $id,
+              $holdings_data->{format},
+              $holdings_data->{n_enum},
+              @{$holdings_data->{ocns}}
+            );
+        };
+        if (my $err = $@) {
+            chomp $err;
+            Utils::Logger::__Log_struct($C, [['error', $err]], 'holdings_api_error_logfile', '___QUERY___', 'holdings_api');
+            return ($err, 0);
+        }
+
+        $held = $holdings_data->{copy_count};
+        $ses->set_transient("held.$id", [$lock_id, $held]) if ( $ses );
+    }
+    DEBUG('auth,all,held,notheld', qq{<h4>Holdings for inst=$inst id="$id": held=$held</h4>});
+
+    return ( $lock_id, $held );
+}
 
 # ---------------------------------------------------------------------
 
@@ -38,6 +159,10 @@ Description
 # ---------------------------------------------------------------------
 sub id_is_held {
     my ($C, $id, $inst) = @_;
+
+    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
+      return id_is_held_API(@_);
+    }
 
     my $held = 0;
     my $lock_id = $id;
@@ -60,9 +185,13 @@ sub id_is_held {
         my $sth;
 
         # The lock ID depends on the item format:
-        #   single part monograph (cluster_id present, no n_enum): cluster_id
-        #   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum
+        # (the lock id is destined for storage in pt_exclusivity_ng
+        #   single part monograph (cluster_id present, no n_enum): cluster_id (API version: concatenated OCNs)
+        #   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum (API version: concatenated OCNs + n_enum)
+        #      may need to truncate each to 50 because edge cases, don't overthink
         #   serial (cluster id will not be present): volume_id
+        #
+        # Fallback in case of API issue: not available, do not 500
         my $SELECT_clause = <<EOT;
           SELECT lock_id,
                  sum(copy_count)

@@ -92,11 +92,12 @@
       status.done = true;
       percent = 100;
       downloadInProgress = false;
-      HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`)
+      HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`);
     } else {
       status.done = false;
       current = data.current_page;
       percent = 100 * (current / totalPages);
+      console.log('totalPages', totalPages);
     }
 
     if (lastPercent != percent) {
@@ -182,15 +183,17 @@
         To select pages, use the selection checkbox in the page toolbar.`;
         HT.live.announce(errorMessage);
         return;
-      } else if (format == 'image-tiff' && selection.pages.length > 10 ) {
-        errorMessage = `You have selected ${Array.from($selected).length} page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
+      } else if (format == 'image-tiff' && selection.pages.length > 10) {
+        errorMessage = `You have selected ${
+          Array.from($selected).length
+        } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
         HT.live.announce(errorMessage);
         return;
-      } 
+      }
     } else if (format == 'image-tiff' && range == 'volume' && totalSeq > 10) {
-        errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`
-        HT.live.announce(errorMessage);
-        return;
+      errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`;
+      HT.live.announce(errorMessage);
+      return;
     } else if (range.startsWith('current-page')) {
       let page;
       switch (range) {
@@ -496,11 +499,13 @@
         <fieldset class="mb-3" id="download-range">
           <legend class="fs-5">Range</legend>
           <div aria-live="polite" aria-atomic="true">
-            {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume') }
-            <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.</p>
+            {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume')}
+              <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">
+                Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.
+              </p>
             {/if}
           </div>
-         
+
           {#if $currentView == '1up'}
             <div class="form-check">
               <input
@@ -612,7 +617,7 @@
         </p>
         {#if errorMessage}
           <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
-            <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
+            <i class="alert-icon fa-solid fa-triangle-exclamation" />
             <p class="py-3">{errorMessage}</p>
           </div>
         {/if}
@@ -679,30 +684,38 @@
     <div xxstyle="width: 30rem">
       <div>
         {#if status.percent < 100}
-        <p>Please wait while we build your {formatTitle[format]}.</p>
-        <div class="progress" role="progressbar" aria-label="Download Progress" aria-valuenow={status.percent}
-            aria-valuemin="0"
-            aria-valuemax="100">
+          <p>Please wait while we build your {formatTitle[format]}.</p>
           <div
-            class="progress-bar progress-bar-striped progress-bar-animated"
-            style:width={`${status.percent}%`}
-          />
-        </div>
-        <p class="fs-7 text-body-secondary">
-          <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
-            >What affects the download speed?</a
+            class="progress"
+            role="progressbar"
+            aria-label="Download Progress"
+            aria-valuenow={status.percent}
+            aria-valuemin="0"
+            aria-valuemax="100"
           >
-        </p>
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style:width={`${status.percent}%`} />
+          </div>
+          <p class="fs-7 text-body-secondary">
+            <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
+              >What affects the download speed?</a
+            >
+          </p>
         {/if}
-        </div>
-          {#if status.done}
-          <p>All done! Your {formatTitle[format]} is ready for download.</p>
-          {/if}
+      </div>
+      {#if status.done}
+        <p>All done! Your {formatTitle[format]} is ready for download.</p>
+      {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button type="button" class="btn btn-secondary" on:click={cancelDownload} aria-disabled={status.done} class:disabled={status.done}>Cancel</button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        on:click={cancelDownload}
+        aria-disabled={status.done}
+        class:disabled={status.done}>Cancel</button
+      >
       <!-- <button 
         type="button" 
         class="btn btn-primary"
@@ -732,22 +745,22 @@
     padding: 0;
     border-radius: 0.25rem;
     box-shadow: 0px 4px 8px 0px rgba(25, 11, 1, 0.04);
-  i.alert-icon {
-        color: var(--bs-alert-border-color);
-        display: flex;
-        width: 1.5rem;
-        padding-block-start: 1rem;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        align-self: stretch;
-        margin-inline-start: 0.5rem;
-        line-height: 1.3125rem;
-      }
-      p {
-        line-height: 1.3125rem;
-        letter-spacing: -0.01rem;
-        margin-block-end: 0;
-      }
+    i.alert-icon {
+      color: var(--bs-alert-border-color);
+      display: flex;
+      width: 1.5rem;
+      padding-block-start: 1rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      align-self: stretch;
+      margin-inline-start: 0.5rem;
+      line-height: 1.3125rem;
     }
+    p {
+      line-height: 1.3125rem;
+      letter-spacing: -0.01rem;
+      margin-block-end: 0;
+    }
+  }
 </style>
