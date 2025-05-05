@@ -80,7 +80,8 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download whole item jpeg, full resolution', async ({ page, context }) => {
+    test.skip('download whole item jpeg, full resolution', async ({ page, context }) => {
+      //skipping this test for now until we can investigate what's going on with imgsrv and/or test imgsrv on its own
       test.slow();
       const cookies = await context.cookies();
       // console.log(cookies);
