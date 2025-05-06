@@ -80,7 +80,9 @@
     <ul class="list-unstyled">
       {#each sectionList as section}
         <li>
-          <a href={section.url} on:click|preventDefault|stopPropagation={() => goto(section.seq)}>{section.label}</a>
+          <a href={section.url} on:click|preventDefault|stopPropagation={() => goto(section.seq)}
+            >{section.label}&nbsp;({#if section.page}p. {section.page},&nbsp;{/if}{#if section.seq}scan #{section.seq}{/if})</a
+          >
         </li>
       {/each}
     </ul>
