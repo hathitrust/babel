@@ -5,6 +5,8 @@ use warnings;
 
 use CGI;
 use Data::Dumper;
+use File::Spec::Functions;
+use File::Temp;
 use JSON::XS;
 use Test::More;
 use Test::LWP::UserAgent;
@@ -31,14 +33,29 @@ DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
 
 my $jsonxs = JSON::XS->new->utf8->canonical(1)->pretty(0);
-use constant ERROR_LOG => "/var/log/babel/holdings_api-error.log";
+use constant ERROR_LOG => 'holdings_api-error.log';
 
-unlink ERROR_LOG;
+# Call a subroutine ref flanked by temp error directory setup and teardown.
+sub with_local_logdir {
+  my $sub = shift;
+
+  my $save_local_logdir = $config->get('local_logdir');
+  my $tempdir = File::Temp->newdir;
+  $config->override('local_logdir', $tempdir);
+  my $local_error_log = File::Spec::Functions::catfile($tempdir, ERROR_LOG);
+  eval {
+    $sub->($local_error_log);
+  };
+  my $err = $@;
+  $config->override('local_logdir', $save_local_logdir);
+  die $err if $err;
+}
 
 sub error_log_contains {
+  my $log_file      = shift;
   my $search_string = shift;
 
-  my $cmd = "grep -c '$search_string' " . ERROR_LOG;
+  my $cmd = "grep -c '$search_string' " . $log_file;
   my $count = `$cmd` || 0;
   chomp $count;
   return $count;
@@ -133,13 +150,17 @@ subtest "id_is_held_api" => sub {
 
   subtest "return error message and held = 0 if API fails, and log error message" => sub {
     my $htid = 'api.004';
-    my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-    my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
-    $ua->map_response($item_access_endpoint, $resp);
-    my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
-    is($held, 0);
-    like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
-    ok(error_log_contains($htid));
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+      my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+      $ua->map_response($item_access_endpoint, $resp);
+      my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+      is($held, 0);
+      like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+      ok(error_log_contains($local_logfile, $htid));
+    });
   };
 };
 
@@ -237,12 +258,16 @@ subtest "holding_institutions_API" => sub {
 
   subtest "return empty list and log error if API fails" => sub {
     my $htid = 'api.007';
-    my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-    my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
-    $ua->map_response($item_held_by_endpoint, $resp);
-    my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
-    is_deeply($got, []);
-    ok(error_log_contains($htid));
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+      my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+      $ua->map_response($item_held_by_endpoint, $resp);
+      my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
+      is_deeply($got, []);
+      ok(error_log_contains($local_logfile, $htid));
+    });
   };
 };
 
