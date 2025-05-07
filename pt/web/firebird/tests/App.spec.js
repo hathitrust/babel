@@ -21,17 +21,6 @@ test.describe('pt loads', () => {
 });
 
 //TODO
-/*
-test.describe('reader toolbar actions', () => {
-    // hide controls
-    // switch views
-    // switch formats
-    // zoom
-    // navigate pages
-    // go fullscreen
-    // exit fullscreen
-})
-*/
 
 /*
 test.describe('scan/page toolbar actions', () => [
