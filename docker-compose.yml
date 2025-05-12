@@ -76,10 +76,12 @@ services:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
       - MARIADB_USER=mdp-admin
+      - HTDEV=test
+      - PERL5LIB=/htapps/babel/mdp-lib
     depends_on:
       mysql-sdr: *healthy
     working_dir: "/htapps/babel/mdp-lib"
-    command: "t/test.pl"
+    command: "prove -r t/"
 
   perl-dev:
     build:
