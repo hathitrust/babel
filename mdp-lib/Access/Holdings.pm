@@ -217,6 +217,57 @@ EOT
 
 # ---------------------------------------------------------------------
 
+=item id_is_held_and_BRLM_API
+
+Description
+
+=cut
+
+# ---------------------------------------------------------------------
+sub id_is_held_and_BRLM_API {
+    my ($C, $id, $inst, $ua) = @_;
+
+    my $held = 0;
+    my $lock_id = $id;
+
+    if (DEBUG('heldb')) {
+        $held = 1;
+    }
+    elsif (DEBUG('notheldb')) {
+        $held = 0;
+    }
+    else {
+        my $ses = $C->get_object('Session', 1);
+        if ( $ses && defined $ses->get_transient("held.brlm.$id") ) {
+            ( $lock_id, $held ) = @{ $ses->get_transient("held.brlm.$id") };
+            return ( $lock_id, $held );
+        }
+
+        my $holdings_data;
+        eval {
+            $holdings_data = query_api($C, $ITEM_ACCESS_ENDPOINT, $ua, organization => $inst, item_id => $id, constraint => 'brlm');
+            $lock_id = generate_lock_id(
+              $id,
+              $holdings_data->{format},
+              $holdings_data->{n_enum},
+              @{$holdings_data->{ocns}}
+            );
+        };
+        if (my $err = $@) {
+            log_error($err);
+            return ($err, 0);
+        }
+
+        $held = $holdings_data->{copy_count};
+        $ses->set_transient("held.brlm.$id", [$lock_id, $held]) if ( $ses );
+    }
+    DEBUG('auth,all,heldb,notheldb', qq{<h4>BRLM holdings for inst=$inst id="$id": held=$held</h4>});
+
+    return ( $lock_id, $held );
+}
+
+# ---------------------------------------------------------------------
+
 =item id_is_held_and_BRLM
 
 Description
@@ -226,6 +277,10 @@ Description
 # ---------------------------------------------------------------------
 sub id_is_held_and_BRLM {
     my ($C, $id, $inst) = @_;
+
+    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
+      return id_is_held_and_BRLM_API(@_);
+    }
 
     my $held = 0;
     my $lock_id = $id;
