@@ -74,7 +74,7 @@ sub generate_lock_id {
 }
 
 # Query one of the Holdings API endpoints
-sub query_api {
+sub _query_api {
   my $C        = shift;
   my $endpoint = shift;
   my $ua       = shift || LWP::UserAgent->new;
@@ -94,6 +94,36 @@ sub query_api {
   }
   my $jsonxs = JSON::XS->new->utf8;
   return $jsonxs->decode($res->content);
+}
+
+# Internal wrapper for calling query_api with `item_access` endpoint
+sub _query_item_access_api {
+  my ($C, $inst, $id, $constraint, $ua) = @_;
+
+  my $holdings_data;
+  my $lock_id = $id;
+  eval {
+    $holdings_data = _query_api(
+      $C,
+      $ITEM_ACCESS_ENDPOINT,
+      $ua,
+      organization => $inst,
+      item_id => $id,
+      constraint => $constraint
+    );
+    $lock_id = generate_lock_id(
+      $id,
+      $holdings_data->{format},
+      $holdings_data->{n_enum},
+      @{$holdings_data->{ocns}}
+    );
+    $held = $holdings_data->{copy_count};
+  };
+  if (my $err = $@) {
+    log_error($err);
+    return ($err, 0);
+  }
+  return ($lock_id, $held);
 }
 
 # ---------------------------------------------------------------------
@@ -123,27 +153,10 @@ sub id_is_held_API {
             ( $lock_id, $held ) = @{ $ses->get_transient("held.$id") };
             return ( $lock_id, $held );
         }
-
-        my $holdings_data;
-        eval {
-            $holdings_data = query_api($C, $ITEM_ACCESS_ENDPOINT, $ua, organization => $inst, item_id => $id);
-            $lock_id = generate_lock_id(
-              $id,
-              $holdings_data->{format},
-              $holdings_data->{n_enum},
-              @{$holdings_data->{ocns}}
-            );
-        };
-        if (my $err = $@) {
-            log_error($err);
-            return ($err, 0);
-        }
-
-        $held = $holdings_data->{copy_count};
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, undef, $ua);
         $ses->set_transient("held.$id", [$lock_id, $held]) if ( $ses );
     }
     DEBUG('auth,all,held,notheld', qq{<h4>Holdings for inst=$inst id="$id": held=$held</h4>});
-
     return ( $lock_id, $held );
 }
 
@@ -242,23 +255,7 @@ sub id_is_held_and_BRLM_API {
             ( $lock_id, $held ) = @{ $ses->get_transient("held.brlm.$id") };
             return ( $lock_id, $held );
         }
-
-        my $holdings_data;
-        eval {
-            $holdings_data = query_api($C, $ITEM_ACCESS_ENDPOINT, $ua, organization => $inst, item_id => $id, constraint => 'brlm');
-            $lock_id = generate_lock_id(
-              $id,
-              $holdings_data->{format},
-              $holdings_data->{n_enum},
-              @{$holdings_data->{ocns}}
-            );
-        };
-        if (my $err = $@) {
-            log_error($err);
-            return ($err, 0);
-        }
-
-        $held = $holdings_data->{copy_count};
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, 'brlm', $ua);
         $ses->set_transient("held.brlm.$id", [$lock_id, $held]) if ( $ses );
     }
     DEBUG('auth,all,heldb,notheldb', qq{<h4>BRLM holdings for inst=$inst id="$id": held=$held</h4>});
@@ -325,7 +322,7 @@ sub holding_institutions_API {
 
     my $inst_arr_ref = [];
     eval {
-        $holdings_data = query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
+        $holdings_data = _query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
         $inst_arr_ref = $holdings_data->{organizations};
     };
     if (my $err = $@) {
