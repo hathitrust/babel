@@ -96,7 +96,7 @@ sub _query_api {
   return $jsonxs->decode($res->content);
 }
 
-# Internal wrapper for calling query_api with `item_access` endpoint
+# Internal wrapper for calling `_query_api` with `item_access` endpoint.
 sub _query_item_access_api {
   my ($C, $inst, $id, $constraint, $ua) = @_;
 
