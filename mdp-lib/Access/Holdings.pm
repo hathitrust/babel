@@ -138,7 +138,7 @@ sub _query_item_held_by_api {
       $ITEM_HELD_BY_ENDPOINT,
       $ua,
       item_id => $id,
-      constraint => 'brlm'
+      constraint => $constraint
     );
     $institutions = $holdings_data->{organizations};
   };
