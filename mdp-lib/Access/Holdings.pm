@@ -232,7 +232,15 @@ EOT
 
 =item id_is_held_and_BRLM_API
 
-Description
+Uses the Holdings item access API to determine if item `id` is held by `inst`,
+and qualifies as brittle/lost/missing. User Agent `ua` is only intended
+for testing.
+
+Calls `_query_item_access_api` which in turn calls `_query_api` if
+the data is not recoverable from the transient session cache.
+
+Returns two-element array of `(lock_id, held)`, in case of error `lock_id` is an
+error message and `held` is 0.
 
 =cut
 
