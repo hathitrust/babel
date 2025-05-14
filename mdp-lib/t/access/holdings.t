@@ -79,8 +79,15 @@ my $institutions_response = {
   'organizations' => ['umich', 'keio']
 };
 
-sub error_http_response {
-  return HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+sub get_ua_for_error {
+  my $endpoint = shift;
+
+  my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+  $ua->map_response(
+    $endpoint,
+    HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred')
+  );
+  return $ua;
 }
 
 my $not_held_response_json = $jsonxs->encode($not_held_response);
@@ -157,8 +164,7 @@ subtest "id_is_held_api" => sub {
     with_local_logdir(sub {
       my $local_logfile = shift;
 
-      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-      $ua->map_response($item_access_endpoint, error_http_response);
+      my $ua = get_ua_for_error($item_access_endpoint);
       my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
       is($held, 0);
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
@@ -256,8 +262,7 @@ subtest "id_is_held_and_BRLM_API" => sub {
     with_local_logdir(sub {
       my $local_logfile = shift;
 
-      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-      $ua->map_response($item_access_endpoint, error_http_response);
+      my $ua = get_ua_for_error($item_access_endpoint);
       my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
       is($held, 0);
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
@@ -321,8 +326,7 @@ subtest "holding_institutions_API" => sub {
     with_local_logdir(sub {
       my $local_logfile = shift;
 
-      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-      $ua->map_response($item_held_by_endpoint, error_http_response);
+      my $ua = get_ua_for_error($item_held_by_endpoint);
       my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
       is_deeply($got, []);
       ok(error_log_contains($local_logfile, $htid));
@@ -340,6 +344,26 @@ subtest "holding_institutions" => sub {
   }
   my @ret = sort @{Access::Holdings::holding_institutions($C, $htid)};
   is_deeply(\@ret, \@holding_institutions);
+};
+
+subtest "holding_BRLM_institutions_API" => sub {
+  my $htid = 'api.008';
+  my $ua = get_ua_for_institutions;
+  my @got = sort @{Access::Holdings::holding_BRLM_institutions_API($C, $htid, $ua)};
+  my @expected = sort @{$institutions_response->{organizations}};
+  is_deeply(\@got, \@expected);
+
+  subtest "return empty list and log error if API fails" => sub {
+    my $htid = 'api.009';
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = get_ua_for_error($item_held_by_endpoint);
+      my $got = Access::Holdings::holding_BRLM_institutions_API($C, $htid, $ua);
+      is_deeply($got, []);
+      ok(error_log_contains($local_logfile, $htid));
+    });
+  };
 };
 
 subtest "holding_BRLM_institutions" => sub {
