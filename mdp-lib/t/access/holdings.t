@@ -113,11 +113,32 @@ sub get_ua_for_institutions {
   return $ua;
 }
 
+# Verify that the parameters passed to the API by `ua` match the names and values we expect.
+# If an expected parameter value is `undef` we expect it _not_ to be sent.
+sub expect_params {
+  my $ua = shift;
+  my %expected = @_;
+
+  my %sent = $ua->last_http_request_sent->uri->query_form;
+  my $expected_count = 0;
+  foreach my $expected_key (keys %expected) {
+    my $expected_value = $expected{$expected_key};
+    if (defined $expected_value) {
+      ok(defined($sent{$expected_key}), "parameter $expected_key was sent");
+      is($sent{$expected_key}, $expected_value, "parameter $expected_key was sent as $expected_value");
+      $expected_count++;
+    } else {
+      ok(!defined($sent{$expected_key}), "undef parameter $expected_key was not sent");
+    }
+  }
+  is(scalar keys %sent, $expected_count, "number of parameters sent equals number expected ($expected_count)");
+}
+
 # TODO: these are only needed for testing the legacy (non-API) interface
 my $fake_lock_id = 'fake_lock_id';
 my $fake_cluster_id = 'fake_cluster_id';
 
-subtest "id_is_held_api" => sub {
+subtest "id_is_held_API" => sub {
   subtest "held according to session" => sub {
     my $htid = 'api.001';
     my $ses = Session::start_session($C);
@@ -149,6 +170,7 @@ subtest "id_is_held_api" => sub {
     my $ua = get_ua_for_held(1);
     my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
     is($held, 1);
+    expect_params($ua, item_id => $htid, organization => 'umich', constraint => undef);
 
     subtest "DEBUG=notheld wins" => sub {
       my $save_debug = $ENV{DEBUG};
@@ -232,6 +254,7 @@ subtest "id_is_held_and_BRLM_API" => sub {
     my $ua = get_ua_for_held(0);
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
     is($held, 0);
+    expect_params($ua, item_id => $htid, organization => 'umich', constraint => 'brlm');
 
     subtest "DEBUG=heldb wins" => sub {
       my $save_debug = $ENV{DEBUG};
@@ -320,6 +343,7 @@ subtest "holding_institutions_API" => sub {
   my @got = sort @{Access::Holdings::holding_institutions_API($C, $htid, $ua)};
   my @expected = sort @{$institutions_response->{organizations}};
   is_deeply(\@got, \@expected);
+  expect_params($ua, item_id => $htid, constraint => undef);
 
   subtest "return empty list and log error if API fails" => sub {
     my $htid = 'api.007';
@@ -352,6 +376,7 @@ subtest "holding_BRLM_institutions_API" => sub {
   my @got = sort @{Access::Holdings::holding_BRLM_institutions_API($C, $htid, $ua)};
   my @expected = sort @{$institutions_response->{organizations}};
   is_deeply(\@got, \@expected);
+  expect_params($ua, item_id => $htid, constraint => 'brlm');
 
   subtest "return empty list and log error if API fails" => sub {
     my $htid = 'api.009';
