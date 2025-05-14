@@ -80,6 +80,11 @@ sub _query_api {
   my $ua       = shift || LWP::UserAgent->new;
 
   my %params = @_;
+  # Remove any unnecessary undefs from the parameters
+  # (mainly to avoid sending `constraint=` with empty value).
+  foreach my $key (keys %params) {
+    delete $params{$key} unless defined $params{$key};
+  }
   my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $endpoint;
   my $uri = URI->new($url_string);
   $uri->query_form(\%params);
