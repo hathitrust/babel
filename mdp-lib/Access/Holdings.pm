@@ -74,7 +74,7 @@ sub generate_lock_id {
 }
 
 # Query one of the Holdings API endpoints
-sub query_api {
+sub _query_api {
   my $C        = shift;
   my $endpoint = shift;
   my $ua       = shift || LWP::UserAgent->new;
@@ -94,6 +94,36 @@ sub query_api {
   }
   my $jsonxs = JSON::XS->new->utf8;
   return $jsonxs->decode($res->content);
+}
+
+# Internal wrapper for calling `_query_api` with `item_access` endpoint.
+sub _query_item_access_api {
+  my ($C, $inst, $id, $constraint, $ua) = @_;
+
+  my $holdings_data;
+  my $lock_id = $id;
+  eval {
+    $holdings_data = _query_api(
+      $C,
+      $ITEM_ACCESS_ENDPOINT,
+      $ua,
+      organization => $inst,
+      item_id => $id,
+      constraint => $constraint
+    );
+    $lock_id = generate_lock_id(
+      $id,
+      $holdings_data->{format},
+      $holdings_data->{n_enum},
+      @{$holdings_data->{ocns}}
+    );
+    $held = $holdings_data->{copy_count};
+  };
+  if (my $err = $@) {
+    log_error($err);
+    return ($err, 0);
+  }
+  return ($lock_id, $held);
 }
 
 # ---------------------------------------------------------------------
@@ -123,27 +153,10 @@ sub id_is_held_API {
             ( $lock_id, $held ) = @{ $ses->get_transient("held.$id") };
             return ( $lock_id, $held );
         }
-
-        my $holdings_data;
-        eval {
-            $holdings_data = query_api($C, $ITEM_ACCESS_ENDPOINT, $ua, organization => $inst, item_id => $id);
-            $lock_id = generate_lock_id(
-              $id,
-              $holdings_data->{format},
-              $holdings_data->{n_enum},
-              @{$holdings_data->{ocns}}
-            );
-        };
-        if (my $err = $@) {
-            log_error($err);
-            return ($err, 0);
-        }
-
-        $held = $holdings_data->{copy_count};
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, undef, $ua);
         $ses->set_transient("held.$id", [$lock_id, $held]) if ( $ses );
     }
     DEBUG('auth,all,held,notheld', qq{<h4>Holdings for inst=$inst id="$id": held=$held</h4>});
-
     return ( $lock_id, $held );
 }
 
@@ -217,6 +230,49 @@ EOT
 
 # ---------------------------------------------------------------------
 
+=item id_is_held_and_BRLM_API
+
+Uses the Holdings item access API to determine if item `id` is held by `inst`,
+and qualifies as brittle/lost/missing. User Agent `ua` is only intended
+for testing.
+
+Calls `_query_item_access_api` which in turn calls `_query_api` if
+the data is not recoverable from the transient session cache.
+
+Returns two-element array of `(lock_id, held)`, in case of error `lock_id` is an
+error message and `held` is 0.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub id_is_held_and_BRLM_API {
+    my ($C, $id, $inst, $ua) = @_;
+
+    my $held = 0;
+    my $lock_id = $id;
+
+    if (DEBUG('heldb')) {
+        $held = 1;
+    }
+    elsif (DEBUG('notheldb')) {
+        $held = 0;
+    }
+    else {
+        my $ses = $C->get_object('Session', 1);
+        if ( $ses && defined $ses->get_transient("held.brlm.$id") ) {
+            ( $lock_id, $held ) = @{ $ses->get_transient("held.brlm.$id") };
+            return ( $lock_id, $held );
+        }
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, 'brlm', $ua);
+        $ses->set_transient("held.brlm.$id", [$lock_id, $held]) if ( $ses );
+    }
+    DEBUG('auth,all,heldb,notheldb', qq{<h4>BRLM holdings for inst=$inst id="$id": held=$held</h4>});
+
+    return ( $lock_id, $held );
+}
+
+# ---------------------------------------------------------------------
+
 =item id_is_held_and_BRLM
 
 Description
@@ -226,6 +282,10 @@ Description
 # ---------------------------------------------------------------------
 sub id_is_held_and_BRLM {
     my ($C, $id, $inst) = @_;
+
+    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
+      return id_is_held_and_BRLM_API(@_);
+    }
 
     my $held = 0;
     my $lock_id = $id;
@@ -270,7 +330,7 @@ sub holding_institutions_API {
 
     my $inst_arr_ref = [];
     eval {
-        $holdings_data = query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
+        $holdings_data = _query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
         $inst_arr_ref = $holdings_data->{organizations};
     };
     if (my $err = $@) {

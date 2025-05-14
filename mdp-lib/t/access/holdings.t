@@ -79,6 +79,10 @@ my $institutions_response = {
   'organizations' => ['umich', 'keio']
 };
 
+sub error_http_response {
+  return HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
+}
+
 my $not_held_response_json = $jsonxs->encode($not_held_response);
 my $held_response_json = $jsonxs->encode($held_response);
 my $institutions_response_json = $jsonxs->encode($institutions_response);
@@ -154,8 +158,7 @@ subtest "id_is_held_api" => sub {
       my $local_logfile = shift;
 
       my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-      my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
-      $ua->map_response($item_access_endpoint, $resp);
+      $ua->map_response($item_access_endpoint, error_http_response);
       my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
       is($held, 0);
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
@@ -203,6 +206,63 @@ subtest "id_is_held" => sub {
       is($held, 0);
       $ENV{DEBUG} = $save_debug;
     };
+  };
+};
+
+subtest "id_is_held_and_BRLM_API" => sub {
+  subtest "held and BRLM according to session" => sub {
+    my $htid = 'api.004';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held(0);
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    $ses->close;
+  };
+
+  subtest "not held and BRLM according to API" => sub {
+    my $htid = 'api.005';
+    my $ua = get_ua_for_held(0);
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+    is($held, 0);
+
+    subtest "DEBUG=heldb wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'heldb';
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      is($held, 1);
+      $ENV{DEBUG} = $save_debug;
+    };
+  };
+
+  subtest "held and BRLM according to API" => sub {
+    my $htid = 'api.006';
+    my $ua = get_ua_for_held(1);
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+    is($held, 1);
+
+    subtest "DEBUG=notheldb wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'notheldb';
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      is($held, 0);
+      $ENV{DEBUG} = $save_debug;
+    };
+  };
+
+  subtest "return error message and held = 0 if API fails, and log error message" => sub {
+    my $htid = 'api.007';
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
+      $ua->map_response($item_access_endpoint, error_http_response);
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      is($held, 0);
+      like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+      ok(error_log_contains($local_logfile, $htid));
+    });
   };
 };
 
@@ -262,8 +322,7 @@ subtest "holding_institutions_API" => sub {
       my $local_logfile = shift;
 
       my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-      my $resp = HTTP::Response->new('500', 'ERROR', ['Content-Type' => 'text/plain'], 'An error occurred');
-      $ua->map_response($item_held_by_endpoint, $resp);
+      $ua->map_response($item_held_by_endpoint, error_http_response);
       my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
       is_deeply($got, []);
       ok(error_log_contains($local_logfile, $htid));
