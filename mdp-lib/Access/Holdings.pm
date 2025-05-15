@@ -113,8 +113,7 @@ sub _query_item_access_api {
       $ITEM_ACCESS_ENDPOINT,
       $ua,
       organization => $inst,
-      item_id => $id,
-      constraint => $constraint
+      item_id => $id
     );
     $lock_id = generate_lock_id(
       $id,
@@ -122,7 +121,7 @@ sub _query_item_access_api {
       $holdings_data->{n_enum},
       @{$holdings_data->{ocns}}
     );
-    $held = $holdings_data->{copy_count};
+    $held = ($constraint eq 'brlm') ? $holdings_data->{brlm_count} : $holdings_data->{copy_count};
   };
   if (my $err = $@) {
     log_error($err);
