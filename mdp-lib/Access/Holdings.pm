@@ -80,6 +80,11 @@ sub _query_api {
   my $ua       = shift || LWP::UserAgent->new;
 
   my %params = @_;
+  # Remove any unnecessary undefs from the parameters
+  # (mainly to avoid sending `constraint=` with empty value).
+  foreach my $key (keys %params) {
+    delete $params{$key} unless defined $params{$key};
+  }
   my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $endpoint;
   my $uri = URI->new($url_string);
   $uri->query_form(\%params);
@@ -126,11 +131,41 @@ sub _query_item_access_api {
   return ($lock_id, $held);
 }
 
+# Internal wrapper for calling `_query_api` with `item_held_by` endpoint.
+sub _query_item_held_by_api {
+  my ($C, $id, $constraint, $ua) = @_;
+
+  my $holdings_data;
+  my $institutions = [];
+  eval {
+    $holdings_data = _query_api(
+      $C,
+      $ITEM_HELD_BY_ENDPOINT,
+      $ua,
+      item_id => $id,
+      constraint => $constraint
+    );
+    $institutions = $holdings_data->{organizations};
+  };
+  if (my $err = $@) {
+    log_error($err);
+    return [];
+  }
+  return $institutions;
+}
+
 # ---------------------------------------------------------------------
 
 =item id_is_held_API
 
-Description
+Uses the Holdings item access API to determine if item `id` is held by `inst`.
+User Agent `ua` is only intended for testing.
+
+Calls `_query_item_access_api` which in turn calls `_query_api` if
+the data is not recoverable from the transient session cache.
+
+Returns two-element array of `(lock_id, held)`, in case of error `lock_id` is an
+error message and `held` is 0.
 
 =cut
 
@@ -324,24 +359,39 @@ sub id_is_held_and_BRLM {
     return ( $lock_id, $held );
 }
 
+# ---------------------------------------------------------------------
 
+=item holding_institutions_API
+
+Return arrayref of institutions holding `id`.
+
+=cut
+
+# ---------------------------------------------------------------------
 sub holding_institutions_API {
-    my ($C, $id, $ua) = @_;
+  my ($C, $id, $ua) = @_;
 
-    my $inst_arr_ref = [];
-    eval {
-        $holdings_data = _query_api($C, $ITEM_HELD_BY_ENDPOINT, $ua, item_id => $id);
-        $inst_arr_ref = $holdings_data->{organizations};
-    };
-    if (my $err = $@) {
-        log_error($err);
-        return [];
-    }
-    DEBUG('auth,all,held,notheld', qq{<h4>Holding institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
-
-    return $inst_arr_ref;
+  my $institutions = _query_item_held_by_api($C, $id, undef, $ua);
+  DEBUG('auth,all,held,notheld', qq{<h4>Holding institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
+  return $institutions;
 }
 
+# ---------------------------------------------------------------------
+
+=item holding_BRLM_institutions_API
+
+Return arrayref of institutions holding `id` where `id` is brittle, lost, or missing.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub holding_BRLM_institutions_API {
+  my ($C, $id, $ua) = @_;
+
+  my $institutions = _query_item_held_by_api($C, $id, 'brlm', $ua);
+  DEBUG('auth,all,held,notheld', qq{<h4>Holding (BRLM) institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
+  return $institutions;
+}
 
 # ---------------------------------------------------------------------
 
@@ -392,6 +442,10 @@ Description
 # ---------------------------------------------------------------------
 sub holding_BRLM_institutions {
     my ($C, $id) = @_;
+
+    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
+      return holding_BRLM_institutions_API(@_);
+    }
 
     my $dbh = $C->get_object('Database')->get_DBH($C);
 
