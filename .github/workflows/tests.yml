@@ -56,8 +56,8 @@ jobs:
         run: docker compose run playwright
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: failure()
         with:
           name: test-results
           path: pt/web/firebird/test-results/
-          retention-days: 30
+          retention-days: 21
