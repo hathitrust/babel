@@ -61,15 +61,9 @@ sub error_log_contains {
   return $count;
 }
 
-my $not_held_response = {
-  'copy_count' => 0,
-  'format' => 'spm',
-  'n_enum' => 'v.1-5 (1901-1905)',
-  'ocns' => ['001', '002', '003']
-};
-
 my $held_response = {
-  'copy_count' => 1,
+  'copy_count' => 555,
+  'brlm_count' => 222,
   'format' => 'spm',
   'n_enum' => 'v.1-5 (1901-1905)',
   'ocns' => ['001', '002', '003']
@@ -90,27 +84,28 @@ sub get_ua_for_error {
   return $ua;
 }
 
-my $not_held_response_json = $jsonxs->encode($not_held_response);
 my $held_response_json = $jsonxs->encode($held_response);
 my $institutions_response_json = $jsonxs->encode($institutions_response);
 my $item_access_endpoint = qr{$Access::Holdings::ITEM_ACCESS_ENDPOINT};
 my $item_held_by_endpoint = qr{$Access::Holdings::ITEM_HELD_BY_ENDPOINT};
 
-sub get_ua_for_held {
-  my $held = shift;
+# Create user agent with specified endpoint and 200 OK JSON response
+sub get_ua {
+  my $endpoint = shift;
+  my $response = shift;
 
   my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-  my $json = ($held) ? $held_response_json : $not_held_response_json;
-  my $resp = HTTP::Response->new('200', 'OK', ['Content-Type' => 'application/json'], $json);
-  $ua->map_response($item_access_endpoint, $resp);
+  my $resp = HTTP::Response->new('200', 'OK', ['Content-Type' => 'application/json'], $response);
+  $ua->map_response($endpoint, $resp);
   return $ua;
 }
 
+sub get_ua_for_held {
+  return get_ua($item_access_endpoint, $held_response_json);
+}
+
 sub get_ua_for_institutions {
-  my $ua = Test::LWP::UserAgent->new(network_fallback => 0);
-  my $resp = HTTP::Response->new('200', 'OK', ['Content-Type' => 'application/json'], $institutions_response_json);
-  $ua->map_response($item_held_by_endpoint, $resp);
-  return $ua;
+  return get_ua($item_held_by_endpoint, $institutions_response_json);
 }
 
 # Verify that the parameters passed to the API by `ua` match the names and values we expect.
@@ -119,7 +114,11 @@ sub expect_params {
   my $ua = shift;
   my %expected = @_;
 
-  my %sent = $ua->last_http_request_sent->uri->query_form;
+  my %sent = ();
+  # There may not have been a query sent if the API call was preempted by session or DEBUG
+  if (defined $ua->last_http_request_sent) {
+    %sent = $ua->last_http_request_sent->uri->query_form;
+  }
   my $expected_count = 0;
   foreach my $expected_key (keys %expected) {
     my $expected_value = $expected{$expected_key};
@@ -153,30 +152,33 @@ subtest "id_is_held_API" => sub {
   subtest "not held according to API" => sub {
     my $htid = 'api.002';
     my $ua = get_ua_for_held(0);
-    my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
-    is($held, 0);
+    # It's not interesting to test the "not held" case for the API since the "held" test below
+    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=held wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'held';
       my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
       is($held, 1);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
   };
 
   subtest "held according to API" => sub {
     my $htid = 'api.003';
-    my $ua = get_ua_for_held(1);
+    my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
-    is($held, 1);
+    is($held, 555);
     expect_params($ua, item_id => $htid, organization => 'umich', constraint => undef);
 
     subtest "DEBUG=notheld wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'notheld';
+      $ua = get_ua_for_held;
       my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
       is($held, 0);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
   };
@@ -238,44 +240,47 @@ subtest "id_is_held" => sub {
 };
 
 subtest "id_is_held_and_BRLM_API" => sub {
-  subtest "held and BRLM according to session" => sub {
+  subtest "held/BRLM according to session" => sub {
     my $htid = 'api.004';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
     $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held(0);
+    my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
     $ses->close;
   };
 
-  subtest "not held and BRLM according to API" => sub {
+  subtest "not held/BRLM according to API" => sub {
     my $htid = 'api.005';
-    my $ua = get_ua_for_held(0);
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
-    is($held, 0);
-    expect_params($ua, item_id => $htid, organization => 'umich', constraint => 'brlm');
+    my $ua = get_ua_for_held;
+    # It's not interesting to test the "not held" case for the API since the "held" test below
+    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=heldb wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'heldb';
       my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
       is($held, 1);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
   };
 
-  subtest "held and BRLM according to API" => sub {
+  subtest "held/BRLM according to API" => sub {
     my $htid = 'api.006';
-    my $ua = get_ua_for_held(1);
+    my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
-    is($held, 1);
+    expect_params($ua, item_id => $htid, organization => 'umich');
+    is($held, 222);
 
     subtest "DEBUG=notheldb wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'notheldb';
+      $ua = get_ua_for_held;
       my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
       is($held, 0);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
   };
@@ -296,7 +301,7 @@ subtest "id_is_held_and_BRLM_API" => sub {
 
 subtest "id_is_held_and_BRLM" => sub {
   DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
-  subtest "held according to session" => sub {
+  subtest "held/BRLM according to session" => sub {
     my $htid = 'mdp.004';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
@@ -306,7 +311,7 @@ subtest "id_is_held_and_BRLM" => sub {
     $ses->close;
   };
 
-  subtest "not held according to DB" => sub {
+  subtest "not held/BRLM according to DB" => sub {
     my $htid = 'mdp.005';
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
     is($held, 0);
@@ -320,7 +325,7 @@ subtest "id_is_held_and_BRLM" => sub {
     };
   };
 
-  subtest "held according to DB" => sub {
+  subtest "held/BRLM according to DB" => sub {
     my $htid = 'mdp.006';
     my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, access_count) VALUES (?, ?, ?, ?, ?)';
     DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, 'umich', 5);
