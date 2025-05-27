@@ -126,9 +126,7 @@ sub expect_params {
   is(scalar keys %sent, $expected_count, "number of parameters sent equals number expected ($expected_count)");
 }
 
-# TODO: these are only needed for testing the legacy (non-API) interface
 my $fake_lock_id = 'fake_lock_id';
-my $fake_cluster_id = 'fake_cluster_id';
 
 subtest "id_is_held" => sub {
   subtest "held according to session" => sub {
