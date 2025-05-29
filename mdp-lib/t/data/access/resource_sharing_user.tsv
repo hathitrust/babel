@@ -2,14 +2,14 @@ Attribute Code	Attribute	Access Profile	Access Type	Can access volume?	Can downl
 1	pd	open	resource_sharing_user	allow	allow	allow	allow
 1	pd	google	resource_sharing_user	allow	allow	deny	allow
 1	pd	page	resource_sharing_user	allow	allow	deny	allow
-2	ic	open	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-2	ic	google	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-2	ic	page	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-3	op	open	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-3	op	google	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-5	und	open	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-5	und	google	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
-5	und	page	resource_sharing_user	allow_ssd_by_holdings	allow	deny	allow
+2	ic	open	resource_sharing_user	allow	allow	deny	allow
+2	ic	google	resource_sharing_user	deny	allow	deny	allow
+2	ic	page	resource_sharing_user	allow	allow	deny	allow
+3	op	open	resource_sharing_user	allow	allow	deny	allow
+3	op	google	resource_sharing_user	deny	allow	deny	allow
+5	und	open	resource_sharing_user	allow	allow	deny	allow
+5	und	google	resource_sharing_user	deny	allow	deny	allow
+5	und	page	resource_sharing_user	allow	allow	deny	allow
 7	ic-world	open	resource_sharing_user	allow	allow	allow	allow
 7	ic-world	google	resource_sharing_user	allow	allow	deny	allow
 7	ic-world	page	resource_sharing_user	allow	allow	deny	allow
@@ -33,10 +33,10 @@ Attribute Code	Attribute	Access Profile	Access Type	Can access volume?	Can downl
 17	cc-zero	google	resource_sharing_user	allow	allow	allow	allow
 17	cc-zero	page	resource_sharing_user	allow	allow	allow	allow
 18	und-world	page+lowres	resource_sharing_user	allow	allow	deny	allow
-19	icus	open	resource_sharing_user - US	allow_ssd_by_holdings_by_geo_ipaddr	allow	allow	allow
-19	icus	google	resource_sharing_user - NONUS	allow_ssd_by_holdings_by_geo_ipaddr	allow	deny	allow
-19	icus	open	resource_sharing_user - US	allow_ssd_by_holdings_by_geo_ipaddr	allow	allow	allow
-19	icus	google	resource_sharing_user - NONUS	allow_ssd_by_holdings_by_geo_ipaddr	allow	deny	allow
+19	icus	open	resource_sharing_user - US	allow	allow	allow	allow
+19	icus	google	resource_sharing_user - US	deny	allow	deny	allow
+19	icus	open	resource_sharing_user - NONUS	allow	allow	allow	allow
+19	icus	google	resource_sharing_user - NONUS	allow	allow	deny	allow
 20	cc-by-4.0	open	resource_sharing_user	allow	allow	allow	allow
 20	cc-by-4.0	google	resource_sharing_user	allow	allow	allow	allow
 21	cc-by-nd-4.0	open	resource_sharing_user	allow	allow	allow	allow
@@ -54,9 +54,9 @@ Attribute Code	Attribute	Access Profile	Access Type	Can access volume?	Can downl
 26	pd-pvt	google	resource_sharing_user	deny	deny	deny	deny
 27	supp	open	resource_sharing_user	deny	deny	deny	deny
 27	supp	google	resource_sharing_user	deny	deny	deny	deny
-9	pdus	open	resource_sharing_user - NONUS	deny	deny	deny	deny
+9	pdus	open	resource_sharing_user - NONUS	allow	deny	deny	deny
 9	pdus	google	resource_sharing_user - NONUS	deny	deny	deny	deny
-9	pdus	page	resource_sharing_user - NONUS	deny	deny	deny	deny
-9	pdus	open	resource_sharing_user - US	allow_us_aff_by_ipaddr	allow	allow	allow
-9	pdus	google	resource_sharing_user - US	allow_us_aff_by_ipaddr	allow	deny	allow
-9	pdus	page	resource_sharing_user - US	allow_us_aff_by_ipaddr	allow	deny	allow
+9	pdus	page	resource_sharing_user - NONUS	allow	deny	deny	deny
+9	pdus	open	resource_sharing_user - US	allow	allow	allow	allow
+9	pdus	google	resource_sharing_user - US	allow	allow	deny	allow
+9	pdus	page	resource_sharing_user - US	allow	allow	deny	allow

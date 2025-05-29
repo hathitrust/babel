@@ -35,12 +35,14 @@ local *Auth::Auth::auth_sys_is_SHIBBOLETH = sub {
     return 1;
 };
 
-local *Auth::Auth::user_is_print_disabled_proxy = sub {
+local *Auth::Auth::user_is_resource_sharing_user = sub {
     return 1;
 };
 
-local *Auth::Auth::affiliation_has_emergency_access = sub {
-    return 0;
+local *Access::Holdings::id_is_held = sub {
+    my ( $C, $id, $inst ) = @_;
+    # pretend that no google books are held by the institution
+    return ( $id =~ m,google, ) ? 0 : 1;
 };
 #---- MONEKYPATCHES
 
@@ -61,8 +63,10 @@ $C->set_object('Auth', $auth);
 
 mock_institutions($C);
 # FIXME: what is the role name we will use in ht_users?
-Test::ACL::mock_acls($C, { userid => 'user@umich.edu', role => 'rs', usertype => 'external', access => 'normal', expires => '2040-12-31 23:59:59', identity_provider => Auth::Auth::get_umich_IdP_entity_id() });
-
+Test::ACL::mock_acls($C, [
+    { userid => 'user@umich.edu', role => 'resource_sharing', usertype => 'student', access => 'normal', expires => '2040-12-31 23:59:59', identity_provider => Auth::Auth::get_umich_IdP_entity_id() },
+    { userid => 'user@ox.ac.edu', role => 'resource_sharing', usertype => 'student', access => 'normal', expires => '2040-12-31 23:59:59', identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp} }
+]);
 
 local %ENV = %ENV;
 $ENV{HTTP_HOST} = q{babel.hathitrust.org};
@@ -76,6 +80,15 @@ sub setup_us_institution {
     $ENV{eppn} = q{user@umich.edu};
     $ENV{umichCosignFactor} = q{UMICH.EDU};
     $ENV{Shib_Identity_Provider} = Auth::Auth::get_umich_IdP_entity_id();    
+}
+
+sub setup_nonus_instition {
+    $ENV{REMOTE_USER} = 'user@ox.ac.edu';
+    $ENV{eppn} = q{user@ox.ac.edu};
+    delete $ENV{umichCosignFactor};
+    $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
+    $ENV{affiliation} = q{member@ox.ac.edu};
+    #$ENV{entitlement} = q{http://www.hathitrust.org/access/enhancedText};
 }
 
 sub test_attr {
@@ -98,10 +111,10 @@ my $tests = Test::File::load_data("$FindBin::Bin/data/access/resource_sharing_us
 
 foreach my $test ( @$tests ) {
     my ( 
-        $code, 
-        $attr, 
-        $access_profile, 
-        $access_type, 
+        $code,
+        $attr,
+        $access_profile,
+        $access_type,
         $expected_volume,
         $expected_download_page,
         $expected_download_volume,
@@ -111,7 +124,6 @@ foreach my $test ( @$tests ) {
     my $location = $access_type =~ m,NONUS, ? 'NONUS' : 'US';
     if ( $location eq 'US' ) { setup_us_institution(); }
     else { setup_nonus_instition(); }
-
     is(test_attr($attr, $access_profile, $location), $expected_volume, "resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
     $num_tests += 1;
 }
@@ -131,7 +143,14 @@ sub mock_institutions {
         allowed_affiliations => q{^(alum|member)@umich.edu},
         us => 1,
     };
+    $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
+        sdrinst => 'ox',
+        inst_id => 'ox',
+        entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
+        enabled => 1,
+        allowed_affiliations => q{^(alum|member)@ox.ac.uk},
+        us => 0,
+    };
     bless $inst_ref, 'Institutions';
     $C->set_object('Institutions', $inst_ref);
 }
-

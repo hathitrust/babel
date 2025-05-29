@@ -1386,6 +1386,26 @@ sub affiliation_has_emergency_access {
 
 }
 
+sub user_is_resource_sharing_user {
+    my $self = shift;
+    my $C = shift;
+    my $check_possible = shift;
+
+    # ACL test
+    my $is_resource_sharing_user = Auth::ACL::a_Authorized( {role => 'resource_sharing'} );
+
+    return $is_resource_sharing_user if ( $check_possible );
+
+    if ( $is_resource_sharing_user ) {
+        # check that the user has toggled this setting
+        my $activated = $C->get_object('Session')->get_persistent('activated_role') eq 'resource_sharing';
+        unless ( $activated ) { $is_resource_sharing_user = 0; }
+    }
+
+    return $is_resource_sharing_user;
+}
+
+
 # ---------------------------------------------------------------------
 
 =item get_user_display_name

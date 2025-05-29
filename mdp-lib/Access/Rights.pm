@@ -344,7 +344,6 @@ sub check_final_access_status {
 
     my $initial_access_status =
         _determine_initial_access_status($rights_attribute, $access_type);
-
     my $final_access_status =
         _Check_final_access_status($C, $initial_access_status, $id);
 
@@ -1043,6 +1042,19 @@ sub _Assert_final_access_status {
     elsif ($initial_access_status eq 'allow_us_aff_by_ipaddr_or_emergency_access_by_holdings') {
         ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 1, 'NONUS');
     }
+    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings') {
+      ### IC, IP, etc
+      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_holdings($C, $id, 1);
+    }
+    elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
+      ### RESOURCE SHARING PDUS
+      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 1, 'US');
+    }
+    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
+      ### RESOURCE SHARING ICUS
+      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 1, 'NONUS');
+    }
+
 
     ___final_access_status_check($final_access_status);
 
@@ -1151,6 +1163,33 @@ sub _Check_final_access_status {
             $final_access_status = 'allow';
         }
     }
+    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings') {
+        if (defined($id)) {
+            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_holdings($C, $id, 1);
+        }
+        else {
+            # downstream must filter on holdings
+            $final_access_status = 'allow';
+        }
+    }
+    elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
+        if (defined($id)) {
+            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 1, 'US');
+        }
+        else {
+            # downstream must filter on holdings
+            $final_access_status = 'allow';
+        }
+    }
+    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
+        if (defined($id)) {
+            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 1, 'NONUS');
+        }
+        else {
+            # downstream must filter on holdings
+            $final_access_status = 'allow';
+        }
+    }
 
     ___final_access_status_check($final_access_status);
 
@@ -1224,6 +1263,9 @@ sub _determine_access_type {
     }
     elsif ($auth->affiliation_has_emergency_access($C)) {
         $access_type = $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE;
+    }
+    elsif ($auth->user_is_resource_sharing_user($C)) {
+         $access_type = $RightsGlobals::RESOURCE_SHARING_USER;
     }
     elsif ($auth->is_in_library()) {
         # full pd PDF + brittle book access limited by number held and
@@ -1452,7 +1494,6 @@ sub _resolve_access_by_GeoIP {
     else {
         $status = 'deny';
     }
-
     DEBUG('auth',
           sub { my $s = qq{_resolve_access_by_GeoIP: status=$status remote_addr_country_code=$remote_addr_country_code required_location=$required_location correct_location=$correct_location};
                 $s .= qq{ proxy_detected=$proxy_detected forwarded_addr_country_code=$proxied_addr_country_code} if ($proxy_detected);
@@ -1744,6 +1785,67 @@ sub _resolve_emergency_access_by_held_by_GeoIP {
 
     DEBUG('pt,auth,all,held,notheld', qq{<h5>Emergency Access ICUS access=$status Holdings institution=$inst held=$held"</h5>});
 
+    return ($status, $granted, $owner, $expires);
+}
+
+sub _resolve_resource_sharing_access_by_holdings {
+    my ($C, $id, $assert_ownership) = @_;
+
+    my ($status, $granted, $owner, $expires) = ('deny', 0, undef, '0000-00-00 00:00:00');
+    my $inst = 'not defined';
+    my $held = 0;
+
+    $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    # FIXME: THIS IS NOT THE CORRECT HOLDINGS CALL
+    $held = Access::Holdings::id_is_held($C, $id, $inst);
+    if ($held) {
+        # new
+        $status = 'allow';
+    }
+
+    DEBUG('pt,auth,all,held,notheld', qq{<h5>RS access=$status Holdings institution=$inst held=$held"</h5>});
+
+    return ($status, $granted, $owner, $expires);
+}
+
+sub _resolve_resource_sharing_by_held_by_GeoIP {
+    my ($C, $id, $assert_ownership, $required_location) = @_;
+
+    my ($status, $granted, $owner, $expires) = ('deny', 0, undef, '0000-00-00 00:00:00');
+    my $inst = 'not defined';
+    my $held = 0;
+
+    my $geoip_status = _resolve_access_by_GeoIP($C, $required_location);
+    #print STDERR "_resolve_resource_sharing_by_held_by_GeoIP: required $required_location, status $geoip_status\n";
+    if ($geoip_status eq 'deny') {
+        $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+        # FIXME: THIS IS NOT THE CORRECT HOLDINGS CALL
+        $held = Access::Holdings::id_is_held($C, $id, $inst);
+        if ($held) {
+            # new
+            $status = 'allow';
+            # FIXME: do we need exclusivity?
+            #if (1) {
+            #    if ($assert_ownership) {
+            #        ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id, 0, 1);
+            #        if ( $status eq 'deny' ) {
+            #            my $checkout = $C->get_object('Session')->get_transient_subkey('checkouts', $id);
+            #            if ( $checkout ) {
+            #                ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
+            #            }
+            #        }
+            #    }
+            #    else {
+            #        ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
+            #    }
+            #}
+        }
+    } else {
+      $status = 'allow';
+    }
+
+    DEBUG('pt,auth,all,held,notheld', qq{<h5>Resource Sharing GeoIP required_location=$required_location access=$status Holdings institution=$inst held=$held"</h5>});
+#print STDERR "_resolve_resource_sharing_by_held_by_GeoIP: RETURN status $status\n";
     return ($status, $granted, $owner, $expires);
 }
 

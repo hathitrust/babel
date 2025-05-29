@@ -105,7 +105,7 @@ our $EMERGENCY_ACCESS_AFFILIATE = 9;
 our $HT_STAFF_USER       = 10;
 our $RESOURCE_SHARING_USER = 11;
 
-@g_access_types = ($HT_TOTAL_USER .. $HT_STAFF_USER);
+@g_access_types = ($HT_TOTAL_USER .. $RESOURCE_SHARING_USER);
 
 %g_access_type_names =
     (
