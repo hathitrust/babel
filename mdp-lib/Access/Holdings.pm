@@ -169,7 +169,7 @@ error message and `held` is 0.
 =cut
 
 # ---------------------------------------------------------------------
-sub id_is_held_API {
+sub id_is_held {
     my ($C, $id, $inst, $ua) = @_;
 
     my $held = 0;
@@ -196,74 +196,6 @@ sub id_is_held_API {
 
 # ---------------------------------------------------------------------
 
-=item id_is_held
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub id_is_held {
-    my ($C, $id, $inst) = @_;
-
-    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
-      return id_is_held_API(@_);
-    }
-
-    my $held = 0;
-    my $lock_id = $id;
-
-    if (DEBUG('held')) {
-        $held = 1;
-    }
-    elsif (DEBUG('notheld')) {
-        $held = 0;
-    }
-    else {
-        my $ses = $C->get_object('Session', 1);
-        if ( $ses && defined $ses->get_transient("held.$id") ) { 
-            ( $lock_id, $held ) = @{ $ses->get_transient("held.$id") }; 
-            return ( $lock_id, $held );
-        }
-
-        my $dbh = $C->get_object('Database')->get_DBH($C);
-
-        my $sth;
-
-        # The lock ID depends on the item format:
-        # (the lock id is destined for storage in pt_exclusivity_ng
-        #   single part monograph (cluster_id present, no n_enum): cluster_id (API version: concatenated OCNs)
-        #   multi-part monograph (cluster_id and n_enum both present): cluster_id:n_enum (API version: concatenated OCNs + n_enum)
-        #      may need to truncate each to 50 because edge cases, don't overthink
-        #   serial (cluster id will not be present): volume_id
-        #
-        # Fallback in case of API issue: not available, do not 500
-        my $SELECT_clause = <<EOT;
-          SELECT lock_id,
-                 sum(copy_count)
-          FROM holdings_htitem_htmember h 
-          JOIN ht_institutions t ON h.member_id = t.inst_id
-          WHERE h.volume_id = ? AND mapto_inst_id = ?
-          GROUP BY h.volume_id, mapto_inst_id;
-EOT
-        eval {
-            $sth = DbUtils::prep_n_execute($dbh, $SELECT_clause, $id, $inst);
-        };
-        if (my $err = $@) {
-            return ($err, 0);
-        }
-
-        my @row = $sth->fetchrow_array();
-        ( $lock_id, $held ) = @row if ( scalar @row );
-        $ses->set_transient("held.$id", [$lock_id, $held]) if ( $ses );
-    }
-    DEBUG('auth,all,held,notheld', qq{<h4>Holdings for inst=$inst id="$id": held=$held</h4>});
-
-    return ( $lock_id, $held );
-}
-
-# ---------------------------------------------------------------------
-
 =item id_is_held_and_BRLM_API
 
 Uses the Holdings item access API to determine if item `id` is held by `inst`,
@@ -279,7 +211,7 @@ error message and `held` is 0.
 =cut
 
 # ---------------------------------------------------------------------
-sub id_is_held_and_BRLM_API {
+sub id_is_held_and_BRLM {
     my ($C, $id, $inst, $ua) = @_;
 
     my $held = 0;
@@ -307,67 +239,14 @@ sub id_is_held_and_BRLM_API {
 
 # ---------------------------------------------------------------------
 
-=item id_is_held_and_BRLM
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub id_is_held_and_BRLM {
-    my ($C, $id, $inst) = @_;
-
-    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
-      return id_is_held_and_BRLM_API(@_);
-    }
-
-    my $held = 0;
-    my $lock_id = $id;
-
-    if (DEBUG('heldb')) {
-        $held = 1;
-    }
-    elsif (DEBUG('notheldb')) {
-        $held = 0;
-    }
-    else {
-        my $ses = $C->get_object('Session', 1);
-        if ( $ses && defined $ses->get_transient("held.brlm.$id") ) { 
-            ( $lock_id, $held ) = @{ $ses->get_transient("held.brlm.$id") }; 
-            return ( $lock_id, $held );
-        }
-
-        my $dbh = $C->get_object('Database')->get_DBH($C);
-
-        my $sth;
-        my $SELECT_clause = qq{SELECT lock_id, access_count FROM holdings_htitem_htmember h WHERE h.volume_id = ? AND member_id = ?};
-        eval {
-            $sth = DbUtils::prep_n_execute($dbh, $SELECT_clause, $id, $inst);
-        };
-        if ($@) {
-            return 0;
-        }
-
-        my @row = $sth->fetchrow_array();
-        ( $lock_id, $held ) = @row if ( scalar @row );
-        $ses->set_transient("held.brlm.$id", [$lock_id, $held]) if ( $ses );
-    }
-    DEBUG('auth,all,heldb,notheldb', qq{<h4>BRLM holdings for inst=$inst id="$id": access_count=$held</h4>});
-
-    # @OPB
-    return ( $lock_id, $held );
-}
-
-# ---------------------------------------------------------------------
-
-=item holding_institutions_API
+=item holding_institutions
 
 Return arrayref of institutions holding `id`.
 
 =cut
 
 # ---------------------------------------------------------------------
-sub holding_institutions_API {
+sub holding_institutions {
   my ($C, $id, $ua) = @_;
 
   my $institutions = _query_item_held_by_api($C, $id, undef, $ua);
@@ -377,95 +256,19 @@ sub holding_institutions_API {
 
 # ---------------------------------------------------------------------
 
-=item holding_BRLM_institutions_API
+=item holding_BRLM_institutions
 
 Return arrayref of institutions holding `id` where `id` is brittle, lost, or missing.
 
 =cut
 
 # ---------------------------------------------------------------------
-sub holding_BRLM_institutions_API {
+sub holding_BRLM_institutions {
   my ($C, $id, $ua) = @_;
 
   my $institutions = _query_item_held_by_api($C, $id, 'brlm', $ua);
   DEBUG('auth,all,held,notheld', qq{<h4>Holding (BRLM) institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
   return $institutions;
-}
-
-# ---------------------------------------------------------------------
-
-=item holding_institutions
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub holding_institutions {
-    my ($C, $id) = @_;
-
-    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
-      return holding_institutions_API(@_);
-    }
-
-    my $dbh = $C->get_object('Database')->get_DBH($C);
-
-    my $sth;
-    my $SELECT_clause = qq{SELECT member_id FROM holdings_htitem_htmember WHERE volume_id=?};
-    eval {
-        $sth = DbUtils::prep_n_execute($dbh, $SELECT_clause, $id);
-    };
-    if ($@) {
-        return [];
-    }
-
-    my $ref_to_arr_of_arr_ref = $sth->fetchall_arrayref([0]);
-
-    my $inst_arr_ref = [];
-    if (scalar(@$ref_to_arr_of_arr_ref)) {
-        $inst_arr_ref = [ map {$_->[0]} @$ref_to_arr_of_arr_ref ];
-    }
-    DEBUG('auth,all,held,notheld', qq{<h4>Holding institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
-
-    return $inst_arr_ref;
-}
-
-# ---------------------------------------------------------------------
-
-=item holding_BRLM_institutions
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub holding_BRLM_institutions {
-    my ($C, $id) = @_;
-
-    if ($C->get_object('MdpConfig')->get('use_holdings_api')) {
-      return holding_BRLM_institutions_API(@_);
-    }
-
-    my $dbh = $C->get_object('Database')->get_DBH($C);
-
-    my $sth;
-    my $SELECT_clause = qq{SELECT member_id FROM holdings_htitem_htmember WHERE volume_id=? AND access_count > 0};
-    eval {
-        $sth = DbUtils::prep_n_execute($dbh, $SELECT_clause, $id);
-    };
-    if ($@) {
-        return [];
-    }
-
-    my $ref_to_arr_of_arr_ref = $sth->fetchall_arrayref([0]);
-
-    my $inst_arr_ref = [];
-    if (scalar(@$ref_to_arr_of_arr_ref)) {
-        $inst_arr_ref = [ map {$_->[0]} @$ref_to_arr_of_arr_ref ];
-    }
-    DEBUG('auth,all,held,notheld', qq{<h4>Holding (BRLM) institutions for id="$id": } . join(' ', @$inst_arr_ref) . q{</h4>});
-
-    return $inst_arr_ref;
 }
 
 # Log Holdings API errors using common interface.
