@@ -130,11 +130,22 @@ sub expect_params {
 my $fake_lock_id = 'fake_lock_id';
 
 subtest "id_is_held" => sub {
+  subtest "held according to session" => sub {
+    my $htid = 'api.001';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held(0);
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
+    $ses->close;
+    $C->set_object('Session', undef, 1);
+  };
+
   subtest "not held according to API" => sub {
     my $htid = 'api.002';
     my $ua = get_ua_for_held(0);
-    # It's not interesting to test the "not held" case for the API since the "held" test below
-    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=held wins" => sub {
       my $save_debug = $ENV{DEBUG};
@@ -183,27 +194,25 @@ subtest "id_is_held" => sub {
     my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, undef, $ua);
     is($held, 0);
   };
-
-  # Run last since the Session object can bleed over into other tests that use the same $C
-  # TODO set up a new Context for each subtest so they don't step on each other.
-  subtest "held according to session" => sub {
-    my $htid = 'api.001';
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held(0);
-    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
-    is($held, 1, "$htid is held in session transient");
-    $ses->close;
-  };
 };
 
 subtest "id_is_held_and_BRLM" => sub {
+  subtest "held/BRLM according to session" => sub {
+    my $htid = 'api.004';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
+    $ses->close;
+    $C->set_object('Session', undef, 1);
+  };
+
   subtest "not held/BRLM according to API" => sub {
     my $htid = 'api.005';
     my $ua = get_ua_for_held;
-    # It's not interesting to test the "not held" case for the API since the "held" test below
-    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=heldb wins" => sub {
       my $save_debug = $ENV{DEBUG};
@@ -252,27 +261,25 @@ subtest "id_is_held_and_BRLM" => sub {
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
     is($held, 0);
   };
-
-  # Run last since the Session object can bleed over into other tests that use the same $C
-  # TODO set up a new Context for each subtest so they don't step on each other.
-  subtest "held/BRLM according to session" => sub {
-    my $htid = 'api.004';
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
-    is($held, 1, "$htid is held in session transient");
-    $ses->close;
-  };
 };
 
 subtest "id_is_currently_held" => sub {
+  subtest "currently held according to session" => sub {
+    my $htid = 'api.014';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.curr.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
+    $ses->close;
+    $C->set_object('Session', undef, 1);
+  };
+
   subtest "not held/BRLM according to API" => sub {
     my $htid = 'api.010';
     my $ua = get_ua_for_held;
-    # It's not interesting to test the "not held" case for the API since the "held" test below
-    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=heldc wins" => sub {
       my $save_debug = $ENV{DEBUG};
@@ -320,19 +327,6 @@ subtest "id_is_currently_held" => sub {
     my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
     is($held, 0);
-  };
-
-  # Run last since the Session object can bleed over into other tests that use the same $C
-  # TODO set up a new Context for each subtest so they don't step on each other.
-  subtest "currently held according to session" => sub {
-    my $htid = 'api.014';
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    $ses->set_transient("held.curr.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
-    is($held, 1, "$htid is held in session transient");
-    $ses->close;
   };
 };
 
