@@ -167,7 +167,7 @@ sub _query_item_held_by_api {
 
 # ---------------------------------------------------------------------
 
-=item id_is_held_API
+=item id_is_held
 
 Uses the Holdings item access API to determine if item `id` is held by `inst`.
 User Agent `ua` is only intended for testing.
@@ -211,7 +211,7 @@ sub id_is_held {
 
 # ---------------------------------------------------------------------
 
-=item id_is_held_and_BRLM_API
+=item id_is_held_and_BRLM
 
 Uses the Holdings item access API to determine if item `id` is held by `inst`,
 and qualifies as brittle/lost/missing. User Agent `ua` is only intended
