@@ -325,7 +325,7 @@ subtest "id_is_currently_held" => sub {
   subtest "return 0 if institution is missing" => sub {
     my $htid = 'api.013';
     my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, undef, $ua);
     is($held, 0);
   };
 };
