@@ -69,13 +69,11 @@ services:
       - ${BABEL_HOME}:/htapps/babel
       - ${BABEL_HOME}/sample-data/sdr1:/sdr1
       - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      # Allow tests to modify database
-      - ${BABEL_HOME}/mdp-lib/t/config/mdp-admin.conf:/htapps/babel/etc/mdp-admin.conf
       - ${BABEL_HOME}/logs:/var/log/babel
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
-      - MARIADB_USER=mdp-admin
+      - MARIADB_USER=ht_web
       - HTDEV=test
       - PERL5LIB=/htapps/babel/mdp-lib
     depends_on:
