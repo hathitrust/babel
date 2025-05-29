@@ -121,7 +121,19 @@ sub _query_item_access_api {
       $holdings_data->{n_enum},
       @{$holdings_data->{ocns}}
     );
-    $held = ($constraint eq 'brlm') ? $holdings_data->{brlm_count} : $holdings_data->{copy_count};
+    $held = $holdings_data->{copy_count};
+    # Use constraint to determine which field of the return structure is requested.
+    if ($constraint) {
+      if ($constraint eq 'brlm') {
+        $held = $holdings_data->{brlm_count}
+      }
+      elsif ($constraint eq 'current') {
+        $held = $holdings_data->{currently_held_count}
+      }
+      else {
+        die "Unknown _query_item_access_api constraint '$constraint'";
+      }
+    }
   };
   if (my $err = $@) {
     log_error($err);
@@ -239,6 +251,52 @@ sub id_is_held_and_BRLM {
         $ses->set_transient("held.brlm.$id", [$lock_id, $held]) if ( $ses );
     }
     DEBUG('auth,all,heldb,notheldb', qq{<h4>BRLM holdings for inst=$inst id="$id": held=$held</h4>});
+
+    return ( $lock_id, $held );
+}
+
+# ---------------------------------------------------------------------
+
+=item id_is_currently_held
+
+Uses the Holdings item access API to determine if item `id` is held by `inst`,
+and is not lost, missing, or withdrawn. User Agent `ua` is only intended
+for testing.
+
+Calls `_query_item_access_api` which in turn calls `_query_api` if
+the data is not recoverable from the transient session cache.
+
+Returns two-element array of `(lock_id, held)`, in case of error `lock_id` is an
+error message and `held` is 0.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub id_is_currently_held {
+    my ($C, $id, $inst, $ua) = @_;
+
+    my $held = 0;
+    my $lock_id = $id;
+
+    if (DEBUG('heldc')) {
+        $held = 1;
+    }
+    elsif (DEBUG('notheldc')) {
+        $held = 0;
+    }
+    elsif (!$inst) {
+        $held = 0;
+    }
+    else {
+        my $ses = $C->get_object('Session', 1);
+        if ( $ses && defined $ses->get_transient("held.curr.$id") ) {
+            ( $lock_id, $held ) = @{ $ses->get_transient("held.curr.$id") };
+            return ( $lock_id, $held );
+        }
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, 'current', $ua);
+        $ses->set_transient("held.curr.$id", [$lock_id, $held]) if ( $ses );
+    }
+    DEBUG('auth,all,heldc,notheldc', qq{<h4>Current holdings for inst=$inst id="$id": held=$held</h4>});
 
     return ( $lock_id, $held );
 }

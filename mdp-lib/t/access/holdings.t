@@ -57,6 +57,7 @@ sub error_log_contains {
 my $held_response = {
   'copy_count' => 555,
   'brlm_count' => 222,
+  'currently_held_count' => 111,
   'format' => 'spm',
   'n_enum' => 'v.1-5 (1901-1905)',
   'ocns' => ['001', '002', '003']
@@ -261,6 +262,75 @@ subtest "id_is_held_and_BRLM" => sub {
     $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    $ses->close;
+  };
+};
+
+subtest "id_is_currently_held" => sub {
+  subtest "not held/BRLM according to API" => sub {
+    my $htid = 'api.010';
+    my $ua = get_ua_for_held;
+    # It's not interesting to test the "not held" case for the API since the "held" test below
+    # ascertains that we pass and parse correct info to and from `ua`.
+
+    subtest "DEBUG=heldc wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'heldc';
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+      is($held, 1);
+      expect_params($ua);
+      $ENV{DEBUG} = $save_debug;
+    };
+  };
+
+  subtest "currently held according to API" => sub {
+    my $htid = 'api.011';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+    expect_params($ua, item_id => $htid, organization => 'umich');
+    is($held, 111);
+
+    subtest "DEBUG=notheldc wins" => sub {
+      my $save_debug = $ENV{DEBUG};
+      $ENV{DEBUG} = 'notheldc';
+      $ua = get_ua_for_held;
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+      is($held, 0);
+      expect_params($ua);
+      $ENV{DEBUG} = $save_debug;
+    };
+  };
+
+  subtest "return error message and held = 0 if API fails, and log error message" => sub {
+    my $htid = 'api.012';
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = get_ua_for_error($item_access_endpoint);
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+      is($held, 0);
+      like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+      ok(error_log_contains($local_logfile, $htid));
+    });
+  };
+
+  subtest "return 0 if institution is missing" => sub {
+    my $htid = 'api.013';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
+    is($held, 0);
+  };
+
+  # Run last since the Session object can bleed over into other tests that use the same $C
+  # TODO set up a new Context for each subtest so they don't step on each other.
+  subtest "currently held according to session" => sub {
+    my $htid = 'api.014';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.curr.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
     $ses->close;
   };
