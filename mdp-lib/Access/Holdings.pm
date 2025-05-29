@@ -181,6 +181,9 @@ sub id_is_held {
     elsif (DEBUG('notheld')) {
         $held = 0;
     }
+    elsif (!$inst) {
+        $held = 0;
+    }
     else {
         my $ses = $C->get_object('Session', 1);
         if ( $ses && defined $ses->get_transient("held.$id") ) {
@@ -221,6 +224,9 @@ sub id_is_held_and_BRLM {
         $held = 1;
     }
     elsif (DEBUG('notheldb')) {
+        $held = 0;
+    }
+    elsif (!$inst) {
         $held = 0;
     }
     else {
