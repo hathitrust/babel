@@ -129,17 +129,6 @@ sub expect_params {
 my $fake_lock_id = 'fake_lock_id';
 
 subtest "id_is_held" => sub {
-  subtest "held according to session" => sub {
-    my $htid = 'api.001';
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held(0);
-    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
-    is($held, 1, "$htid is held in session transient");
-    $ses->close;
-  };
-
   subtest "not held according to API" => sub {
     my $htid = 'api.002';
     my $ua = get_ua_for_held(0);
@@ -186,20 +175,29 @@ subtest "id_is_held" => sub {
       ok(error_log_contains($local_logfile, $htid));
     });
   };
-};
 
-subtest "id_is_held_and_BRLM" => sub {
-  subtest "held/BRLM according to session" => sub {
+  subtest "return 0 if institution is missing" => sub {
     my $htid = 'api.004';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, undef, $ua);
+    is($held, 0);
+  };
+
+  # Run last since the Session object can bleed over into other tests that use the same $C
+  # TODO set up a new Context for each subtest so they don't step on each other.
+  subtest "held according to session" => sub {
+    my $htid = 'api.001';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
-    my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
+    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held(0);
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
     $ses->close;
   };
+};
 
+subtest "id_is_held_and_BRLM" => sub {
   subtest "not held/BRLM according to API" => sub {
     my $htid = 'api.005';
     my $ua = get_ua_for_held;
@@ -245,6 +243,26 @@ subtest "id_is_held_and_BRLM" => sub {
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
       ok(error_log_contains($local_logfile, $htid));
     });
+  };
+
+  subtest "return 0 if institution is missing" => sub {
+    my $htid = 'api.004';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
+    is($held, 0);
+  };
+
+  # Run last since the Session object can bleed over into other tests that use the same $C
+  # TODO set up a new Context for each subtest so they don't step on each other.
+  subtest "held/BRLM according to session" => sub {
+    my $htid = 'api.004';
+    my $ses = Session::start_session($C);
+    $C->set_object('Session', $ses);
+    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
+    is($held, 1, "$htid is held in session transient");
+    $ses->close;
   };
 };
 
