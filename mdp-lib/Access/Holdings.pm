@@ -47,13 +47,6 @@ use constant LOCK_ID_OCNS_LENGTH => 20;
 our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
 our $ITEM_HELD_BY_ENDPOINT = '/v1/item_held_by';
 
-# Map _query_item_access_api constraint to field returned by API
-my %ITEM_ACCESS_DATA_MAP = (
-  '' => 'copy_count',
-  'brlm' => 'brlm_count',
-  'current' => 'currently_held_count'
-);
-
 sub generate_lock_id {
   my $id     = shift;
   my $format = shift;
@@ -110,9 +103,8 @@ sub _query_api {
 
 # Internal wrapper for calling `_query_api` with `item_access` endpoint.
 sub _query_item_access_api {
-  my ($C, $inst, $id, $constraint, $ua) = @_;
+  my ($C, $inst, $id, $field, $ua) = @_;
 
-  $constraint //= '';
   my $holdings_data;
   my $lock_id = $id;
   eval {
@@ -130,10 +122,7 @@ sub _query_item_access_api {
       @{$holdings_data->{ocns}}
     );
     $held = $holdings_data->{copy_count};
-    if (!defined $ITEM_ACCESS_DATA_MAP{$constraint}) {
-      die "Unknown _query_item_access_api constraint '$constraint'";
-    }
-    $held = $holdings_data->{$ITEM_ACCESS_DATA_MAP{$constraint}};
+    $held = $holdings_data->{$field};
   };
   if (my $err = $@) {
     log_error($err);
@@ -172,7 +161,8 @@ sub _query_item_held_by_api {
 Common code for id_is_held, id_is_held_and_BRLM, and id_is_currently_held.
 
 Required additional parameter:
-  `constraint` in {undef/'', 'brlm', 'current'}
+  `field` in {'copy_count', 'brlm_count', 'currently_held_count'}
+  This is the name of the field in the API return structure to extract
 
 Calls `_query_item_access_api` which in turn calls `_query_api` if
 the data is not recoverable from the transient session cache.
@@ -184,15 +174,14 @@ error message and `held` is 0.
 
 # ---------------------------------------------------------------------
 sub _id_is_held_core {
-    my ($C, $id, $inst, $constraint, $ua) = @_;
+    my ($C, $id, $inst, $field, $ua) = @_;
 
     my $held = 0;
     my $lock_id = $id;
-    $constraint //= '';
     # debug suffix will be appended to {`held`, `notheld`}
-    my $debug_suffixes = {'' => '', 'brlm' => 'b', 'current' => 'c'};
-    my $held_debug_key = 'held' . $debug_suffixes->{$constraint};
-    my $notheld_debug_key = 'notheld' . $debug_suffixes->{$constraint};
+    my $debug_suffixes = {'copy_count' => '', 'brlm_count' => 'b', 'currently_held_count' => 'c'};
+    my $held_debug_key = 'held' . $debug_suffixes->{$field};
+    my $notheld_debug_key = 'notheld' . $debug_suffixes->{$field};
     if (DEBUG($held_debug_key)) {
         $held = 1;
     }
@@ -204,20 +193,17 @@ sub _id_is_held_core {
     }
     else {
         my $ses = $C->get_object('Session', 1);
-        # Session key is of the form "held.[$constraint.]HTID"
-        my $session_key = 'held';
-        $session_key .= ".$constraint" if $constraint;
-        $session_key .= ".$id";
+        my $session_key = "held.$field.$id";
         if ( $ses && defined $ses->get_transient($session_key) ) {
             ( $lock_id, $held ) = @{ $ses->get_transient($session_key) };
             return ( $lock_id, $held );
         }
-        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, $constraint, $ua);
+        ($lock_id, $held) = _query_item_access_api($C, $inst, $id, $field, $ua);
         $ses->set_transient($session_key, [$lock_id, $held]) if ( $ses );
     }
     DEBUG(
       "auth,all,$held_debug_key,$notheld_debug_key",
-      qq{<h4>Holdings for constraint=$constraint inst=$inst id="$id": held=$held</h4>}
+      qq{<h4>Holdings for field=$field inst=$inst id="$id": held=$held</h4>}
     );
     return ( $lock_id, $held );
 }
@@ -235,7 +221,7 @@ User Agent `ua` is only intended for testing.
 sub id_is_held {
     my ($C, $id, $inst, $ua) = @_;
 
-    return _id_is_held_core($C, $id, $inst, undef, $ua);
+    return _id_is_held_core($C, $id, $inst, 'copy_count', $ua);
 }
 
 # ---------------------------------------------------------------------
@@ -252,7 +238,7 @@ for testing.
 sub id_is_held_and_BRLM {
     my ($C, $id, $inst, $ua) = @_;
 
-    return _id_is_held_core($C, $id, $inst, 'brlm', $ua);
+    return _id_is_held_core($C, $id, $inst, 'brlm_count', $ua);
 }
 
 # ---------------------------------------------------------------------
@@ -269,7 +255,7 @@ for testing.
 sub id_is_currently_held {
     my ($C, $id, $inst, $ua) = @_;
 
-    return _id_is_held_core($C, $id, $inst, 'current', $ua);
+    return _id_is_held_core($C, $id, $inst, 'currently_held_count', $ua);
 }
 
 # ---------------------------------------------------------------------

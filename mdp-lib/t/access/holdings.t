@@ -134,7 +134,7 @@ subtest "id_is_held" => sub {
     my $htid = 'api.001';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.copy_count.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held(0);
     my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
@@ -201,7 +201,7 @@ subtest "id_is_held_and_BRLM" => sub {
     my $htid = 'api.004';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.brlm_count.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
@@ -268,7 +268,7 @@ subtest "id_is_currently_held" => sub {
     my $htid = 'api.014';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.current.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.currently_held_count.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
