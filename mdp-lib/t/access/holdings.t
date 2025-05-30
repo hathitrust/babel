@@ -268,7 +268,7 @@ subtest "id_is_currently_held" => sub {
     my $htid = 'api.014';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.curr.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.current.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held;
     my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
@@ -277,7 +277,7 @@ subtest "id_is_currently_held" => sub {
     $C->set_object('Session', undef, 1);
   };
 
-  subtest "not held/BRLM according to API" => sub {
+  subtest "not currently held according to API" => sub {
     my $htid = 'api.010';
     my $ua = get_ua_for_held;
 
