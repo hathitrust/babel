@@ -19,3 +19,8 @@ REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, a
   VALUES ('nfb','National Federation of the Blind','nfb.org','1','1','pumex-idp','^(member)@nfb.org');
 
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
+
+--- sample data for testing authenticated access
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_currently_held','2','1','19','1','babel','Synthetic test item');
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_not_held','2','1','19','1','babel','Synthetic test item');
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_not_current','2','1','19','1','babel','Synthetic test item');
