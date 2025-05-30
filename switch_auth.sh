@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-auth_path=$(dirname $(realpath $0))/apache/auth
+babel_home=$(dirname $(realpath $0))
+auth_path=$babel_home/apache/auth
 
 userdesc() {
   desc=$(head -1 $1)
@@ -49,6 +50,9 @@ cp -v $auth_file $auth_path/active_auth.conf
 echo -e "${color_cyan}Setting local development mode${color_reset}"
 docker compose up -d apache
 docker compose exec apache bash -c "perl mdp-lib/bin/debug.pl --enable > /dev/null"
+echo -e "${color_cyan}Configuring mocked holdings API${color_reset}"
+echo "holdings_api_url = http://apache:8080/mock-holdings-api" >> $babel_home/imgsrv/lib/Config/local.conf
+echo "holdings_api_url = http://apache:8080/mock-holdings-api" >> $babel_home/pt/lib/Config/local.conf
 echo -e "${color_cyan}Resetting ht_sessions database table ${color_reset}"
 docker compose exec mysql-sdr mariadb -vv -u mdp-lib -pmdp-lib -h localhost ht -e "DELETE FROM ht_sessions;"
 echo -e "${color_cyan}Reloading Apache configuration${color_reset}"
