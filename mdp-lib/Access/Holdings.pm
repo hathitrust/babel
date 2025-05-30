@@ -47,6 +47,13 @@ use constant LOCK_ID_OCNS_LENGTH => 20;
 our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
 our $ITEM_HELD_BY_ENDPOINT = '/v1/item_held_by';
 
+# Map _query_item_access_api constraint to field returned by API
+my %ITEM_ACCESS_DATA_MAP = (
+  '' => 'copy_count',
+  'brlm' => 'brlm_count',
+  'current' => 'currently_held_count'
+);
+
 sub generate_lock_id {
   my $id     = shift;
   my $format = shift;
@@ -105,6 +112,7 @@ sub _query_api {
 sub _query_item_access_api {
   my ($C, $inst, $id, $constraint, $ua) = @_;
 
+  $constraint //= '';
   my $holdings_data;
   my $lock_id = $id;
   eval {
@@ -122,18 +130,10 @@ sub _query_item_access_api {
       @{$holdings_data->{ocns}}
     );
     $held = $holdings_data->{copy_count};
-    # Use constraint to determine which field of the return structure is requested.
-    if ($constraint) {
-      if ($constraint eq 'brlm') {
-        $held = $holdings_data->{brlm_count}
-      }
-      elsif ($constraint eq 'current') {
-        $held = $holdings_data->{currently_held_count}
-      }
-      else {
-        die "Unknown _query_item_access_api constraint '$constraint'";
-      }
+    if (!defined $ITEM_ACCESS_DATA_MAP{$constraint}) {
+      die "Unknown _query_item_access_api constraint '$constraint'";
     }
+    $held = $holdings_data->{$ITEM_ACCESS_DATA_MAP{$constraint}};
   };
   if (my $err = $@) {
     log_error($err);
