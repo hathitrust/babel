@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "dialog-polyfill": "^0.5.6",
-    "firebird-common": "github:hathitrust/firebird-common",
+    "firebird-common": "github:hathitrust/firebird-common#svelte4",
     "screenfull": "^6.0.2",
     "tippy.js": "^6.3.7"
   },
