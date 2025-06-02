@@ -1756,36 +1756,31 @@ sub _resolve_emergency_access_by_held_by_GeoIP {
         $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
         $held = Access::Holdings::id_is_held($C, $id, $inst);
         if ($held) {
-            # new
             $status = 'allow';
-            # obsolete
-            if (1) {
-                if ($assert_ownership) {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id, 0, 1);
-                    if ( $status eq 'deny' ) {
-                        my $checkout = $C->get_object('Session')->get_transient_subkey('checkouts', $id);
-                        if ( $checkout ) {
-                            ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
-                        }
+            if ($assert_ownership) {
+                ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id, 0, 1);
+                if ( $status eq 'deny' ) {
+                    my $checkout = $C->get_object('Session')->get_transient_subkey('checkouts', $id);
+                    if ( $checkout ) {
+                        ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
                     }
                 }
-                else {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
-                }
+            }
+            else {
+                ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
             }
         }
     }
     else {
-        # User in at (1) non-US IP or a (2) originating at a US IP
-        # through a blacklisted US proxy. No exclusivity or holdings
-        # requirements if (1). If (2), do we really care if a print
-        # disabled user is trying to get non-exclusive non-held access
-        # by using a blacklisted US proxy?  Executive decision: NO.
+        # User is in $required_location (i.e., US for pdus, NONUS for icus)
+        # so no additional holdings or exclusivity checks are needed.
         $status = 'allow';
     }
 
-
-    DEBUG('pt,auth,all,held,notheld', qq{<h5>Emergency Access ICUS access=$status Holdings institution=$inst held=$held"</h5>});
+    DEBUG(
+      'pt,auth,all,held,notheld',
+      qq{<h5>Emergency Access PDUS/ICUS required_location=$required_location geoip_status=$geoip_status access=$status Holdings institution=$inst held=$held"</h5>}
+    );
 
     return ($status, $granted, $owner, $expires);
 }
@@ -1823,6 +1818,8 @@ sub _resolve_resource_sharing_by_held_by_GeoIP {
             $status = 'allow';
         }
     } else {
+      # User is in $required_location (i.e., US for pdus, NONUS for icus)
+      # so no additional holdings or exclusivity checks are needed.
       $status = 'allow';
     }
 
