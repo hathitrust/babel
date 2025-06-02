@@ -1050,11 +1050,11 @@ sub _Assert_final_access_status {
     }
     elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
       ### RESOURCE SHARING PDUS
-      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 'US');
+      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'US');
     }
     elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
       ### RESOURCE SHARING ICUS
-      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 'NONUS');
+      ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'NONUS');
     }
 
 
@@ -1176,7 +1176,7 @@ sub _Check_final_access_status {
     }
     elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
         if (defined($id)) {
-            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 'US');
+            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'US');
         }
         else {
             # downstream must filter on holdings
@@ -1185,7 +1185,7 @@ sub _Check_final_access_status {
     }
     elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
         if (defined($id)) {
-            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_by_held_by_GeoIP($C, $id, 'NONUS');
+            ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'NONUS');
         }
         else {
             # downstream must filter on holdings
@@ -1776,7 +1776,7 @@ sub _resolve_resource_sharing_access_by_holdings {
     return ($status, $granted, $owner, $expires);
 }
 
-sub _resolve_resource_sharing_by_held_by_GeoIP {
+sub _resolve_resource_sharing_access_by_held_by_GeoIP {
     my ($C, $id, $required_location) = @_;
 
     my ($status, $granted, $owner, $expires) = ('deny', 0, undef, '0000-00-00 00:00:00');
