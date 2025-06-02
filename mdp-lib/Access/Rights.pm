@@ -1644,31 +1644,24 @@ sub _resolve_emergency_access_by_held {
     my ($C, $id, $assert_ownership) = @_;
 
     my ($status, $granted, $owner, $expires) = ('deny', 0, undef, '0000-00-00 00:00:00');
-    my $inst = 'not defined';
     my $held = 0;
 
-    my $US_status = _resolve_access_by_GeoIP($C, 'US');
-    if (1 || $US_status eq 'allow') {
-        $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-        $held = Access::Holdings::id_is_held($C, $id, $inst);
-        if ($held) {
-            # new
-            $status = 'allow';
-            if (1) {
-                if ($assert_ownership) {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id, 0, 1);
-                    if ( $status eq 'deny' ) {
-                        my $checkout = $C->get_object('Session')->get_transient_subkey('checkouts', $id);
-                        $status = 'allow' if ( $checkout );
-                    }
-                    if ( $status eq 'allow' ) {
-                        ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
-                    }
-                }
-                else {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
-                }
+    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    $held = Access::Holdings::id_is_held($C, $id, $inst);
+    if ($held) {
+        $status = 'allow';
+        if ($assert_ownership) {
+            ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id, 0, 1);
+            if ( $status eq 'deny' ) {
+                my $checkout = $C->get_object('Session')->get_transient_subkey('checkouts', $id);
+                $status = 'allow' if ( $checkout );
             }
+            if ( $status eq 'allow' ) {
+                ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
+            }
+        }
+        else {
+            ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
         }
     }
 
