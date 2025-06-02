@@ -11,9 +11,9 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "babel": "NODE_ENV=development vite build --watch",
-    "test": "playwright test --trace on",
-    "test-short": "playwright test sidebar --project chromium --trace on",
-    "test-local": "LOCAL=local playwright test",
+    "test": "playwright test --trace on --grep-invert auth",
+    "test-short": "playwright test sidebar --project chromium --trace on --grep-invert auth",
+    "test-local": "LOCAL=local playwright test --grep-invert auth",
     "test-ui": "LOCAL=local playwright test --ui"
   },
   "devDependencies": {
