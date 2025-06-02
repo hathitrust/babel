@@ -1699,17 +1699,7 @@ sub _resolve_ssd_access_by_held_by_GeoIP {
         $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
         $held = Access::Holdings::id_is_held($C, $id, $inst);
         if ($held) {
-            # new
             $status = 'allow';
-            # obsolete
-            if (0) {
-                if ($assert_ownership) {
-                    ($status, $granted, $owner, $expires) = _assert_access_exclusivity($C, $id);
-                }
-                else {
-                    ($status, $granted, $owner, $expires) = _check_access_exclusivity($C, $id);
-                }
-            }
         }
     }
     else {
