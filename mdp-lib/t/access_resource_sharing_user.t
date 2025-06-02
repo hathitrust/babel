@@ -39,7 +39,7 @@ local *Auth::Auth::user_is_resource_sharing_user = sub {
     return 1;
 };
 
-local *Access::Holdings::id_is_held = sub {
+local *Access::Holdings::id_is_currently_held = sub {
     my ( $C, $id, $inst ) = @_;
     # pretend that no google books are held by the institution
     return ( $id =~ m,google, ) ? 0 : 1;
