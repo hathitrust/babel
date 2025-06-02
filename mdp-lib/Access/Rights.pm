@@ -1037,10 +1037,12 @@ sub _Assert_final_access_status {
         ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held($C, $id, 1);
     }
     elsif ($initial_access_status eq 'allow_emergency_access_by_holdings_by_geo_ipaddr') {
-        ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 1, 'US');
+        # ETAS ICUS
+        ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 1, 'NONUS');
     }
     elsif ($initial_access_status eq 'allow_us_aff_by_ipaddr_or_emergency_access_by_holdings') {
-        ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 1, 'NONUS');
+        # ETAS PDUS
+        ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 1, 'US');
     }
     elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings') {
       ### RESOURCE SHARING IC, OP, etc
@@ -1147,7 +1149,7 @@ sub _Check_final_access_status {
     }
     elsif ($initial_access_status eq 'allow_emergency_access_by_holdings_by_geo_ipaddr') {
         if (defined($id)) {
-            ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'US');
+            ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'NONUS');
         }
         else {
             # downstream must filter on holdings
@@ -1156,7 +1158,7 @@ sub _Check_final_access_status {
     }
     elsif ($initial_access_status eq 'allow_us_aff_by_ipaddr_or_emergency_access_by_holdings') {
         if (defined($id)) {
-            ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'NONUS');
+            ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'US');
         }
         else {
             # downstream must filter on holdings
@@ -1750,7 +1752,7 @@ sub _resolve_emergency_access_by_held_by_GeoIP {
     my $held = 0;
 
     my $geoip_status = _resolve_access_by_GeoIP($C, $required_location);
-    if ($geoip_status eq 'allow') {
+    if ($geoip_status eq 'deny') {
         $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
         $held = Access::Holdings::id_is_held($C, $id, $inst);
         if ($held) {
