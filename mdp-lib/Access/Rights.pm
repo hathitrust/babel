@@ -1479,23 +1479,10 @@ sub _resolve_access_by_GeoIP {
     }
 
     my $correct_location = ($required_location eq $address_location) || 0;
-
     if ($correct_location) {
-        # veryify this is not a blacklisted proxy that does not
-        # forward the address of its client
-        require "Access/Proxy.pm";
-        my $dbh = $C->get_object('Database')->get_DBH($C);
+        $status = 'allow';
+    }
 
-        if (Access::Proxy::blacklisted($dbh, $REMOTE_ADDR, $ENV{SERVER_ADDR}, $ENV{SERVER_PORT})) {
-            $status = 'deny';
-        }
-        else {
-            $status = 'allow';
-        }
-    }
-    else {
-        $status = 'deny';
-    }
     DEBUG('auth',
           sub { my $s = qq{_resolve_access_by_GeoIP: status=$status remote_addr_country_code=$remote_addr_country_code required_location=$required_location correct_location=$correct_location};
                 $s .= qq{ proxy_detected=$proxy_detected forwarded_addr_country_code=$proxied_addr_country_code} if ($proxy_detected);
