@@ -62,10 +62,24 @@ my $auth = Auth::Auth->new($C);
 $C->set_object('Auth', $auth);
 
 mock_institutions($C);
-# FIXME: what is the role name we will use in ht_users?
+
 Test::ACL::mock_acls($C, [
-    { userid => 'user@umich.edu', role => 'resource_sharing', usertype => 'student', access => 'normal', expires => '2040-12-31 23:59:59', identity_provider => Auth::Auth::get_umich_IdP_entity_id() },
-    { userid => 'user@ox.ac.edu', role => 'resource_sharing', usertype => 'student', access => 'normal', expires => '2040-12-31 23:59:59', identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp} }
+    {
+      userid => 'user@umich.edu',
+      role => 'resource_sharing',
+      usertype => 'external',
+      access => 'normal',
+      expires => '2040-12-31 23:59:59',
+      identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+    },
+    {
+      userid => 'user@ox.ac.edu',
+      role => 'resource_sharing',
+      usertype => 'external',
+      access => 'normal',
+      expires => '2040-12-31 23:59:59',
+      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
+    }
 ]);
 
 local %ENV = %ENV;
