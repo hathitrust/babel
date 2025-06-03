@@ -56,7 +56,16 @@ my $auth = Auth::Auth->new($C);
 $C->set_object('Auth', $auth);
 
 mock_institutions($C);
-Test::ACL::mock_acls($C, { userid => 'user@umich.edu', role => 'corrections', usertype => 'staff', access => 'total', expires => '2040-12-31 23:59:59', identity_provider => Auth::Auth::get_umich_IdP_entity_id() });
+Test::ACL::mock_acls($C,
+  {
+    userid => 'user@umich.edu',
+    role => 'corrections',
+    usertype => 'staff',
+    access => 'total',
+    expires => Test::ACL::future_date_string(),
+    identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+  }
+);
 
 
 local %ENV = %ENV;

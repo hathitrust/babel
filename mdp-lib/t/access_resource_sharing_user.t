@@ -69,7 +69,7 @@ Test::ACL::mock_acls($C, [
       role => 'resource_sharing',
       usertype => 'external',
       access => 'normal',
-      expires => '2040-12-31 23:59:59',
+      expires => Test::ACL::future_date_string(),
       identity_provider => Auth::Auth::get_umich_IdP_entity_id()
     },
     {
@@ -77,7 +77,7 @@ Test::ACL::mock_acls($C, [
       role => 'resource_sharing',
       usertype => 'external',
       access => 'normal',
-      expires => '2040-12-31 23:59:59',
+      expires => Test::ACL::future_date_string(),
       identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
     }
 ]);
