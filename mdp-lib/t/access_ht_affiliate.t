@@ -61,7 +61,8 @@ Test::ACL::mock_acls($C, { userid => 'user@umich.edu', identity_provider => Auth
 
 local %ENV = %ENV;
 $ENV{HTTP_HOST} = q{babel.hathitrust.org};
-$ENV{SERVER_ADDR} = q{141.213.128.185};
+# SERVER_ADDR from TEST-NET-1 block, may not be needed at all
+$ENV{SERVER_ADDR} = q{192.0.2.0};
 $ENV{SERVER_PORT} = q{443};
 $ENV{AUTH_TYPE} = q{shibboleth};
 $ENV{affiliation} = q{member@umich.edu};
