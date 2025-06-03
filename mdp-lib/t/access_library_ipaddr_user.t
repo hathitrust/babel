@@ -138,7 +138,7 @@ sub mock_institutions {
 
     my $inst_ref = { entityIDs => {} };
     $$inst_ref{entityIDs}{Auth::Auth::get_umich_IdP_entity_id()} = {
-        sdrinst => 'uom',
+        sdrinst => 'umich',
         inst_id => 'umich',
         entityID => Auth::Auth::get_umich_IdP_entity_id(),
         enabled => 1,
