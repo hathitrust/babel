@@ -19,7 +19,6 @@ crms/
 
 logs/
 cache/
-geoip/
 etc/
 
 #macOS 

@@ -1000,19 +1000,6 @@ sub handle_SETUP_MANIFEST_PARAMS
 
     ### SHAMELESS GREEN
     my $external_links = [];
-    my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
-    if ($allow_pod) {
-        my $dbh = $C->get_object('Database')->get_DBH($C);
-
-        my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
-        my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
-
-        my $url = $sth->fetchrow_array();
-        if ( $url ) {
-            $url = Utils::xml_escape_url_separators($url);
-            push @$external_links, { type => 'pod', href => $url };
-        }
-    }
 
     my $digitization_source = $mdpItem->Get('digitization_source');
     if ( $digitization_source eq 'google' ) {
