@@ -65,12 +65,12 @@ mock_institutions($C);
 
 Test::ACL::mock_acls($C, [
     {
-      userid => 'user@umich.edu',
+      userid => 'user@iu.edu',
       role => 'resource_sharing',
       usertype => 'external',
       access => 'normal',
       expires => Test::ACL::future_date_string(),
-      identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+      identity_provider => 'https://idp.login.iu.edu/idp/shibboleth'
     },
     {
       userid => 'user@ox.ac.edu',
@@ -88,22 +88,19 @@ $ENV{HTTP_HOST} = q{babel.hathitrust.org};
 $ENV{SERVER_ADDR} = q{192.0.2.0};
 $ENV{SERVER_PORT} = q{443};
 $ENV{AUTH_TYPE} = q{shibboleth};
-$ENV{affiliation} = q{member@umich.edu};
+$ENV{affiliation} = q{member@iu.edu};
 
 sub setup_us_institution {
-    $ENV{REMOTE_USER} = 'user@umich.edu';
-    $ENV{eppn} = q{user@umich.edu};
-    $ENV{umichCosignFactor} = q{UMICH.EDU};
-    $ENV{Shib_Identity_Provider} = Auth::Auth::get_umich_IdP_entity_id();    
+    $ENV{REMOTE_USER} = 'user@iu.edu';
+    $ENV{eppn} = q{user@iu.edu};
+    $ENV{Shib_Identity_Provider} = 'https://idp.login.iu.edu/idp/shibboleth';
 }
 
 sub setup_nonus_instition {
     $ENV{REMOTE_USER} = 'user@ox.ac.edu';
     $ENV{eppn} = q{user@ox.ac.edu};
-    delete $ENV{umichCosignFactor};
     $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
     $ENV{affiliation} = q{member@ox.ac.edu};
-    #$ENV{entitlement} = q{http://www.hathitrust.org/access/enhancedText};
 }
 
 sub test_attr {
@@ -150,12 +147,12 @@ sub mock_institutions {
     my ( $C ) = @_;
 
     my $inst_ref = { entityIDs => {} };
-    $$inst_ref{entityIDs}{Auth::Auth::get_umich_IdP_entity_id()} = {
-        sdrinst => 'uom',
-        inst_id => 'umich',
-        entityID => Auth::Auth::get_umich_IdP_entity_id(),
+    $$inst_ref{entityIDs}{'https://idp.login.iu.edu/idp/shibboleth'} = {
+        sdrinst => 'iu',
+        inst_id => 'iu',
+        entityID => 'https://idp.login.iu.edu/idp/shibboleth',
         enabled => 1,
-        allowed_affiliations => q{^(alum|member)@umich.edu},
+        allowed_affiliations => '^(member|alum|faculty|staff|student|employee)@iu.edu',
         us => 1,
     };
     $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
