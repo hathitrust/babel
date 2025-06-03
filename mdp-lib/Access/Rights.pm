@@ -389,52 +389,6 @@ sub check_initial_access_status_by_attribute {
 
     return $initial_access_status;
 }
-# ---------------------------------------------------------------------
-
-=item PUBLIC: get_POD_access_status
-
-POD access is limited to "PD" to users on "US soil" REGARDLESS OF
-THEIR AFFILIATION. This sub supports just display of the POD link.
-The link currently goes "elsewhere" where it is anybody's guess how it
-is determined whether the user is allowed the POD.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub get_POD_access_status {
-    my $self = shift;
-    my ($C, $id) = @_;
-
-    $self->_validate_id($id);
-
-    my $status = 'deny';
-
-    my $attribute = $self->get_rights_attribute($C, $id);
-    if (grep(/^$attribute$/, @RightsGlobals::g_public_domain_world_attribute_values)) {
-        if ($attribute == $RightsGlobals::g_public_domain_US_attribute_value) {
-            $status = _resolve_access_by_GeoIP($C, 'US');
-        }
-        elsif ($attribute == $RightsGlobals::g_public_domain_non_US_attribute_value) {
-            # Must be in the US, but this volume is IC in US
-            $status = 'deny';
-        }
-        else {
-            $status = _resolve_access_by_GeoIP($C, 'US');
-        }
-    }
-    elsif ($self->creative_commons($C, $id)) {
-        $status = _resolve_access_by_GeoIP($C, 'US');
-    }
-    elsif (Auth::ACL::S___superuser_using_DEBUG_super) {
-        $status = 'allow';
-    }
-    else {
-        $status = 'deny';
-    }
-
-    DEBUG('pt,auth', qq{<h5>get_POD_access_status: status=$status</h5>});
-    return $status;
-}
 
 # ---------------------------------------------------------------------
 

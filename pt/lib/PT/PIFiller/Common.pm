@@ -354,40 +354,6 @@ sub handle_CONTENT_PROVIDER_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_POD_DATA_PI :  PI_handler(POD_DATA)
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_POD_DATA_PI
-    :  PI_handler(POD_DATA)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    # Even HT affiliates can only see the POD link to a PDUS on US
-    # soil.
-    my $id = $C->get_object('CGI')->param('id');
-    my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
-
-    my $url = '';
-
-    if ($allow_pod) {
-        my $dbh = $C->get_object('Database')->get_DBH($C);
-
-        my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
-        my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
-
-        $url = $sth->fetchrow_array();
-        $url = Utils::xml_escape_url_separators($url);
-    }
-
-    return wrap_string_in_tag($url, 'Url');
-}
-
-# ---------------------------------------------------------------------
-
 =item handle_FEEDBACK_CGI_URL_PI : PI_handler(FEEDBACK_CGI_URL)
 
 Handler for FEEDBACK_CGI_URL

@@ -15,7 +15,6 @@
   <xsl:variable name="gAccessUseIcon" select="/MBooksTop/MBooksGlobals/AccessUse/Icon"/>
   <xsl:variable name="gAccessUseAuxIcon" select="/MBooksTop/MBooksGlobals/AccessUse/AuxIcon"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
-  <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
   <xsl:variable name="gSdrInst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
   <xsl:variable name="gRightsAttribute" select="/MBooksTop/MBooksGlobals/RightsAttribute"/>
@@ -1096,29 +1095,6 @@
             </xsl:element>
           </xsl:for-each>
         </li>
-
-        <xsl:if test="$gPodUrl != ''">
-          <li>
-            <xsl:element name="a">
-              <xsl:attribute name="class">tracked</xsl:attribute>
-              <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-              <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
-              <xsl:attribute name="href">
-                <xsl:value-of select="$gPodUrl"/>
-              </xsl:attribute>
-              <!-- <xsl:if test="$gGoogleOnclickTracking = 'true'">
-                <xsl:attribute name="onclick">
-                  <xsl:call-template name="PageTracker">
-                    <xsl:with-param name="category" select="'outLinks'"/>
-                    <xsl:with-param name="action" select="'click'"/>
-                    <xsl:with-param name="label" select="'PT Buy a reprint'"/>
-                  </xsl:call-template>
-                </xsl:attribute>
-              </xsl:if> -->
-              <xsl:text>Buy a copy</xsl:text>
-            </xsl:element>
-          </li>
-        </xsl:if>
 
         <xsl:if test="$gFinalAccessStatus = 'allow' and $gUsingSearch = 'false'">
         <li>

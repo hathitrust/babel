@@ -27,7 +27,6 @@
 <SSDSession><?SSD_SESSION?></SSDSession>
 <Skin><?MY_SKIN?></Skin>
 <DebugUncompressed><?DEBUG_UNCOMPRESSED?></DebugUncompressed>
-<Pod><?POD_DATA?></Pod>
 <HasOcr><?HAS_OCR?></HasOcr>
 <AccessUse><?ACCESS_USE?></AccessUse>
 <HtId><?HT_ID?></HtId>
