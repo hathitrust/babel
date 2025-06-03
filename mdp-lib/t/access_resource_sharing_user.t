@@ -103,7 +103,21 @@ sub setup_nonus_instition {
     $ENV{affiliation} = q{member@ox.ac.edu};
 }
 
-sub test_attr {
+sub test_initial_access_status {
+    my ( $code, $attr, $access_profile, $location ) = @_;
+    my $id = "test.$attr\_$access_profile";
+    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+
+    unless ( $code && $attr ) {
+        print STDERR caller();
+    }
+
+    my $ar = Access::Rights->new($C, $id);
+    my $status = $ar->check_initial_access_status_by_attribute($C, $code, $id);
+    return $status;
+}
+
+sub test_final_access_status {
     my ( $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
     $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
@@ -127,7 +141,8 @@ foreach my $test ( @$tests ) {
         $attr,
         $access_profile,
         $access_type,
-        $expected_volume,
+        $expected_initial_access_status,
+        $expected_final_access_status,
         $expected_download_page,
         $expected_download_volume,
         $expected_download_plaintext
@@ -136,7 +151,11 @@ foreach my $test ( @$tests ) {
     my $location = $access_type =~ m,NONUS, ? 'NONUS' : 'US';
     if ( $location eq 'US' ) { setup_us_institution(); }
     else { setup_nonus_instition(); }
-    is(test_attr($attr, $access_profile, $location), $expected_volume, "resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
+    my $got_initial_access_status = test_initial_access_status($code, $attr, $access_profile, $location);
+    is($got_initial_access_status, $expected_initial_access_status, "INITIAL resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
+    $num_tests += 1;
+    my $got_final_access_status = test_final_access_status($attr, $access_profile, $location);
+    is($got_final_access_status, $expected_final_access_status, "FINAL resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
     $num_tests += 1;
 }
 
