@@ -2,8 +2,8 @@
 import '../scss/styles.scss';
 
 import { setupHTEnv } from '~firebird-common/src/js/lib/utils';
-import { AnalyticsManager } from '~firebird-common/src/js/lib/analytics';
-import { HotjarManager } from '~firebird-common/src/js/lib/hotjar';
+import { AnalyticsManager } from '~firebird-common/src/js/lib/analytics.svelte.js';
+import { HotjarManager } from '~firebird-common/src/js/lib/hotjar.svelte.js';
 
 // Import all of Bootstrap's JS
 // these are made available globally
@@ -21,6 +21,7 @@ import { writable } from 'svelte/store';
 
 import App from './App.svelte';
 import CookieConsentBanner from '~firebird-common/src/js/components/CookieConsentBanner';
+import { mount } from 'svelte';
 
 const toCamel = (s) => {
   return s.replace(/([-_][a-z])/gi, ($1) => {
@@ -83,7 +84,7 @@ HT.postPingCallback = function (login_status) {
   let el = document.getElementById('root');
   let props = buildProps(el);
 
-  app = new App({
+  app = mount(App, {
     target: document.getElementById('root'),
     props: props,
   });
