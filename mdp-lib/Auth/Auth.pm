@@ -1398,7 +1398,7 @@ sub user_is_resource_sharing_user {
 
     if ( $is_resource_sharing_user ) {
         # check that the user has toggled this setting
-        my $activated = $C->get_object('Session')->get_persistent('activated_role') eq 'resource_sharing';
+        my $activated = $C->get_object('Session')->get_persistent('activated_role') eq 'resourceSharing';
         unless ( $activated ) { $is_resource_sharing_user = 0; }
     }
 
