@@ -122,6 +122,7 @@ sub start_session
                         -path    => '/',
                         -domain  => Utils::get_cookie_domain($cgi),
                         -httponly => 1,
+                        -samesite => 'Lax',
                       );
 
     $ses->set_cookie($session_cookie);

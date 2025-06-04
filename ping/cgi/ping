@@ -259,26 +259,16 @@ JAVASCRIPT
         $response = Plack::Response->new(200);
         $response->content_type('application/javascript');
         if ( $$info{auth_type} && $$info{auth_type} eq 'shibboleth' && ! exists($request->cookies->{HT_AUTHTYPE}) ) {
-            $response->cookies->{HT_AUTHTYPE} = {
-                'value' => 'shibboleth',
-                'path' => '/',
-                'domain' => '.hathitrust.org',
-                'secure' => 1,
-            };
+            $response->cookies->{HT_AUTHTYPE} = Utils::build_cookie(value => 'shibboleth')
         }
 
         my $escapedProviderName = uri_escape_utf8($$info{providerName});
-        $response->cookies->{HTproviderName} = {
-            value => $escapedProviderName,
-            path => '/',
-            domain => '.hathitrust.org',
-            secure => 1,
-        } unless ( exists($request->cookies->{HTproviderName}) && $request->cookies->{HTproviderName} eq $escapedProviderName );
-        $response->cookies->{'HTstatus'} = {
-            'value' => encode_json($info),
-            'path'  => '/',
-            'domain' => Utils::get_cookie_domain()
-        };
+
+        if( !( exists($request->cookies->{HTproviderName}) && $request->cookies->{HTproviderName} eq $escapedProviderName )) {
+          $response->cookies->{HTproviderName} = Utils::build_cookie(value => $escapedProviderName);
+        }
+
+        $response->cookies->{'HTstatus'} = Utils::build_cookie(value => encode_json($info));
         
         $$info{notificationData} = Ping::Notifications::get_notification_data($C);
 
@@ -303,23 +293,19 @@ JAVASCRIPT
     $response->content_type('application/javascript');
 
     my $cookie_name = $config->get('cookie_name');
-    $response->cookies->{$cookie_name} = {
-        'value' => $ses->get_session_id(),
-        'path' => '/',
-        'domain' => Utils::get_cookie_domain(),
-        'httponly' => 1
-    };
+    $response->cookies->{$cookie_name} = Utils::build_cookie(
+      'value' => $ses->get_session_id(),
+      'httponly' => 1
+    );
 
     my $logged_out = $ses->get_persistent('logged_out', 0);
     if ( exists($request->cookies->{HTstatus}) && $request->cookies->{HTstatus} ne '' ) {
         $logged_out = 1;
     }
-    $response->cookies->{'HTstatus'} = {
+    $response->cookies->{'HTstatus'} = Utils::build_cookie(
         value  => '',
-        path   => '/',
-        domain => Utils::get_cookie_domain(),
         expires => 'Thu, 01-Jan-1970 00:00:00 GMT'
-    };
+    );
 
     my $info = {
         institution_name => '',

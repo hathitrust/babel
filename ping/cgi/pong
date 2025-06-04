@@ -117,20 +117,16 @@ my $app = sub {
     $response = Plack::Response->new(302);
     
     # return session cookie
-    $response->cookies->{$cookie_name} = { 
+    $response->cookies->{$cookie_name} = Utils::build_cookie( 
         'value' => $ses->get_session_id(), 
-        'path' => '/',
-        'domain' => Utils::get_cookie_domain(),
         'httponly' => 1
-    };
+    );
     
     # return session information
     my $info = Ping::Utils::identify_user( $C, $env );
-    $response->cookies->{'HTstatus'} = {
+    $response->cookies->{'HTstatus'} = Utils::build_cookie(
         'value' => encode_json($info),
-        'path'  => '/',
-        'domain' => Utils::get_cookie_domain()
-    };
+    );
 
     $response->redirect($target_url);
     
