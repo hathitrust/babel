@@ -1,7 +1,7 @@
 <script>
   import { getContext, onMount } from 'svelte';
   import NotificationsManager from '~firebird-common/src/js/lib/notifications';
-  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
+  import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
 
   import Panel from '../Panel';
 
@@ -25,7 +25,7 @@
   function onToggle(event, open) {
     let id = this.id;
     prefs.pt.alerts[id] = open ? 'open' : 'closed';
-    if ($preferencesConsent === 'true') {
+    if (consent.preferencesConsent === 'true') {
       HT.prefs.set(prefs);
     }
     console.log('-- survey.panel.toggle', id, open);
