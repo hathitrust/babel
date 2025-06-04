@@ -271,10 +271,36 @@ sub get_hostname
 
 # ---------------------------------------------------------------------
 
+=item build_cookie
+
+Builds a cookie with default attributes for domain, SameSite, secure, etc.
+
+=cut
+
+sub build_cookie {
+
+  my %attrs = @_;
+
+  my $is_https = $ENV{HTTPS} eq 'on' || $ENV{REQUEST_SCHEME} eq 'https' || $ENV{HTTPS_X_FORWARDED_PROTO} eq 'https';
+
+  return {
+    'path' => '/',
+    'secure' => $is_https,
+    'samesite' => 'lax',
+    'domain' => get_cookie_domain(),
+    %attrs
+  }
+}
+
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
+
 =item get_cookie_domain
 
 Class method to build a domain string "two dot" requirement based on
-the virtual host
+the virtual host. Returns empty for local development (i.e. localhost) since
+some browsers (e.g. webkit) don't support localhost cookies.
 
 =cut
 
@@ -284,8 +310,16 @@ sub get_cookie_domain
     my $cgi = shift;
 
     my $virtual_host = HTTP_hostname();
-    return 'localhost' if ( $virtual_host =~ m,^localhost,);
 
+    print STDERR "in get cookie domain, hostname was '$virtual_host'\n";
+
+    # running locally or in docker -- no dots in domain domain -- don't set a
+    # cookie domain; some browsers don't accept cookies with localhost for
+    # cookie domain. Cookie domain will default to the virtual host.
+    return undef if ( $virtual_host !~ m,\.,);
+
+    # vhost has at least two dots -- e.g. test.babel.hathitrust.org
+    # if so extract trailing parts as cookie domain
     my ($cookie_domain) = ($virtual_host =~ m,^.*(\..+?\..+?)$,);
     if (! $cookie_domain)
     {
