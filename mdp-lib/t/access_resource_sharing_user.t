@@ -201,7 +201,6 @@ foreach my $test ( @$tests ) {
         my $held_conditions = translate_holdings_code($held);
         foreach my $held_condition (@$held_conditions) {
           $g_held_condition = $held_condition;
-          #printf STDERR "HELD CONDITION $g_held_condition FROM %s\n", Dumper $held_conditions;
           my $got_initial_access_status = test_initial_access_status($code, $attr, $access_profile, $test_location);
           is($got_initial_access_status, $expected_initial_access_status, "INITIAL resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
           $num_tests += 1;
