@@ -1071,7 +1071,7 @@ The id is required to determine holdings. If the id is not available
 (such as determining which attributes equate to 'allow' for a Facet
 for just fulltext items), set access to 'allow'. Downstream code will
 have to filter records based on its holdings data over all items to
-determine which should appear in search results. There are two cases
+determine which should appear in search results. There are cases
 where holdings come into play in the absence of an id.
 
 (1) When resolving the final_access_status for a Facet query where
@@ -1081,6 +1081,8 @@ acquired by a user other that the user viewing results filtered by the
 'fulltext' Facet.
 
 (2) SSD users only can see items held by their institution.
+
+(2) Resource Sharing users only can see items currently held by their institution.
 
 =cut
 
@@ -1110,86 +1112,47 @@ sub _Check_final_access_status {
       ($initial_access_status eq 'allow_nonus_aff_by_ipaddr') {
         $final_access_status = _resolve_nonus_aff_access_by_GeoIP($C);
     }
-    elsif ($initial_access_status eq 'allow_by_held_BRLM') {
-        if (defined($id)) {
+    else {
+        # All of the following statuses have holdings dependencies,
+        # so shortcut 'allow' if `$id` is not set.
+        # Downstream must filter on holdings.
+        # See the documentation above.
+        if (!defined($id)) {
+            # This will result in permissive behavior if $initial_access_status is not one
+            # of the constants defined below. This is a crude validation; could also define
+            # an authoritative list in RightsGlobals.pm and grep the status.
+            ASSERT(
+              ($initial_access_status =~ m/held/ || $initial_access_status =~ m/holdings/),
+              "initial_access_status $initial_access_status does not appear to implicate holdings"
+            );
+            $final_access_status = 'allow';
+        }
+        elsif ($initial_access_status eq 'allow_by_held_BRLM') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_access_by_held_BRLM($C, $id, 0);
         }
-        else {
-            $final_access_status = 'allow';
-        }
-    }
-    elsif
-      ($initial_access_status eq 'allow_ssd_by_holdings') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_ssd_by_holdings') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_ssd_access_by_held($C, $id, 0);
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_ssd_by_holdings_by_geo_ipaddr') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_ssd_by_holdings_by_geo_ipaddr') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_ssd_access_by_held_by_GeoIP($C, $id, 0);
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif
-      ($initial_access_status eq 'allow_emergency_access_by_holdings') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_emergency_access_by_holdings') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held($C, $id, 0);
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_emergency_access_by_holdings_by_geo_ipaddr') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_emergency_access_by_holdings_by_geo_ipaddr') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'NONUS');
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_us_aff_by_ipaddr_or_emergency_access_by_holdings') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_us_aff_by_ipaddr_or_emergency_access_by_holdings') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_emergency_access_by_held_by_GeoIP($C, $id, 0, 'US');
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_holdings($C, $id);
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'US');
         }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
-        }
-    }
-    elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
-        if (defined($id)) {
+        elsif ($initial_access_status eq 'allow_resource_sharing_by_holdings_by_geo_ipaddr') {
             ($final_access_status, $granted, $owner, $expires) = _resolve_resource_sharing_access_by_held_by_GeoIP($C, $id, 'NONUS');
-        }
-        else {
-            # downstream must filter on holdings
-            $final_access_status = 'allow';
         }
     }
 
