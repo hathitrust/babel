@@ -5,31 +5,8 @@ import fs from 'fs';
 test.describe('sidebar actions', () => {
   test.beforeEach(async ({ page, context }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
-
-    const response = await context.request.get('/cgi/pt?id=test.pd_open');
-    expect(response.ok());
-    const headers = response.headersArray();
-    // console.log(headers);
-
-    var cookieString = headers.find(function (o) {
-      return o.name === 'Set-Cookie';
-    }).value;
-
-    const match = cookieString.match(/MDPsid=([^;]+)/);
-    const MDPsid = match ? match[1] : null;
-
-    await context.addCookies([
-      {
-        name: 'MDPsid',
-        value: MDPsid,
-        domain: 'apache-test',
-        path: '/',
-        httpOnly: true,
-      },
-    ]);
-
-    //close the cookie banner before each test
-    await page.getByRole('button', { name: 'Close banner', exact: true }).click();
+    //accept the cookie banner before each test
+    await page.getByRole('button', { name: 'Allow all cookies' }).click();
   });
 
   test('null heading', async ({ page }) => {
