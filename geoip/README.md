@@ -24,5 +24,12 @@ mmdbctl import always_us.json always_us.mmdb
 * The babel apps expect `GeoIP2-Country.mmdb` to be present; create a symlink to the one you want to use:
 
 ```bash
-ln -s always_us.mmdb GeoIP2-Country.mmdb
+ln -sf always_us.mmdb GeoIP2-Country.mmdb
 ```
+
+or 
+
+```bash
+ln -sf always_nonus.mmdb GeoIP2-Country.mmdb
+```
+
