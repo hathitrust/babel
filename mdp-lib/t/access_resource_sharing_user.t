@@ -25,6 +25,10 @@ use Test::ACL;
 use Data::Dumper;
 use feature qw(say);
 
+# Controls the behavior of the monkeypatched Access::Holdings routines.
+# The only one we care about for the Resource Sharing user type is `id_is_currently_held`
+my $g_held_condition = undef;
+
 #---- MONEKYPATCHES
 no warnings 'redefine';
 local *Auth::Auth::affiliation_is_hathitrust = sub {
@@ -41,8 +45,8 @@ local *Auth::Auth::user_is_resource_sharing_user = sub {
 
 local *Access::Holdings::id_is_currently_held = sub {
     my ( $C, $id, $inst ) = @_;
-    # pretend that no google books are held by the institution
-    return ( $id =~ m,google, ) ? 0 : 1;
+
+    return ( $g_held_condition eq 'currently' ) ? 1 : 0;
 };
 #---- MONEKYPATCHES
 
@@ -135,28 +139,78 @@ my $num_tests = 0;
 
 my $tests = Test::File::load_data("$FindBin::Bin/data/access/resource_sharing_user.tsv");
 
+
+my $holdings_codes = {
+  "n" => "notheld",
+  "h" => "held",
+  "b" => "brlm",
+  "c" => "currently"
+};
+# Translate the shorthand codes used in the TSV file for holdings states or groups of states
+# Possible input [-]nhbc\*+
+# Possible translations are "notheld", "held", "brlm", "currently"
+# Output is sorted arrayref
+sub translate_holdings_code {
+  my $code = shift;
+
+  my $negate = 0;
+  my $resolved = {};
+  $code =~ s/\*/nhbc/g;
+  if ($code =~ m/-/) {
+    $negate = 1;
+    $code = substr($code, 1);
+    $resolved->{$holdings_codes->{$_}} = 1 for keys %$holdings_codes;
+  }
+  while (my ($key, $val) = each %$holdings_codes) {
+    if ($code =~ m/$key/) {
+      if ($negate) {
+        delete $resolved->{$val};
+      } else {
+        $resolved->{$val} = 1;
+      }
+    }
+  }
+  my @retval = sort keys %$resolved;
+  return \@retval;
+}
+
 foreach my $test ( @$tests ) {
     my ( 
         $code,
         $attr,
         $access_profile,
-        $access_type,
+        $location,
+        $held,
         $expected_initial_access_status,
         $expected_final_access_status,
         $expected_download_page,
         $expected_download_volume,
         $expected_download_plaintext
     ) = @$test;
-
-    my $location = $access_type =~ m,NONUS, ? 'NONUS' : 'US';
-    if ( $location eq 'US' ) { setup_us_institution(); }
-    else { setup_nonus_instition(); }
-    my $got_initial_access_status = test_initial_access_status($code, $attr, $access_profile, $location);
-    is($got_initial_access_status, $expected_initial_access_status, "INITIAL resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
-    $num_tests += 1;
-    my $got_final_access_status = test_final_access_status($attr, $access_profile, $location);
-    is($got_final_access_status, $expected_final_access_status, "FINAL resource_sharing_user + attr=$attr + location=$location + profile=$access_profile");
-    $num_tests += 1;
+    my @test_locations = ();
+    if ($location eq '*') {
+        @test_locations = ('US', 'NONUS');
+    } else {
+        @test_locations = ( $location );
+    }
+    foreach my $test_location (@test_locations) {
+        # Note: FORCE_GEOIP may be a viable alternative to some of this setup.
+        # (Would need to adjust its use in Access::Rights::_resolve_access_by_GeoIP)
+        if ( $test_location eq 'US' ) { setup_us_institution(); }
+        else { setup_nonus_instition(); }
+        my $held_conditions = translate_holdings_code($held);
+        foreach my $held_condition (@$held_conditions) {
+          $g_held_condition = $held_condition;
+          #printf STDERR "HELD CONDITION $g_held_condition FROM %s\n", Dumper $held_conditions;
+          my $got_initial_access_status = test_initial_access_status($code, $attr, $access_profile, $test_location);
+          is($got_initial_access_status, $expected_initial_access_status, "INITIAL resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
+          $num_tests += 1;
+          my $got_final_access_status = test_final_access_status($attr, $access_profile, $test_location);
+          is($got_final_access_status, $expected_final_access_status, "FINAL resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
+          $num_tests += 1;
+        }
+    }
+    # NOTE: there are no tests yet for the $expected_download_* values
 }
 
 done_testing($num_tests);
