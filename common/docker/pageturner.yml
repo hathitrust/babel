@@ -1,0 +1,12 @@
+services:
+  page-turner:
+    # Used for front end development
+    image: node:22-slim
+    profiles:
+    - node
+    volumes:
+    - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
+    - ${BABEL_HOME}/pt:/htapps/babel/pt
+    - ${BABEL_HOME}/.npm:/.npm
+    working_dir: /htapps/babel/pt/web/firebird
+    command: [ 'npm', 'run', 'babel' ]

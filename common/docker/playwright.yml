@@ -1,0 +1,13 @@
+services:
+  playwright:
+    # Testing the front end for pageturner (tests in the browser)
+    image: mcr.microsoft.com/playwright:v1.50.1
+    volumes:
+    - ${BABEL_HOME}:/htapps/babel
+    working_dir: "/htapps/babel/pt/web/firebird"
+    command: "npm test"
+    profiles:
+    - test
+    depends_on:
+      apache-test:
+        condition: service_healthy
