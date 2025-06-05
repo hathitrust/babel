@@ -39,6 +39,8 @@
   import ConfiguringView from './components/Reader/ConfiguringView';
 
   // set up context
+  console.log('hi from app!')
+  console.log('HT?', HT)
   const emitter = new Emittery();
   setContext('emitter', emitter);
 
@@ -63,6 +65,8 @@
   // otherwise, set it from the parameter
   export let view = manifest.view;
   export let format = manifest.format || 'image';
+
+  console.log('format', format)
 
   let isReaderView = views[view] != null;
 

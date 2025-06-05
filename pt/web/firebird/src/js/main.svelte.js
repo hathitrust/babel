@@ -1,4 +1,5 @@
 // @ts-nocheck
+console.log('hi from main!');
 import '../scss/styles.scss';
 
 import { setupHTEnv } from '~firebird-common/src/js/lib/utils';
@@ -40,6 +41,7 @@ const buildProps = (el) => {
       } catch (error) {}
 
       props[toCamel(attr.name.replace(propProperty, ''))] = value;
+      console.log('are we building props?', value);
     }
   }
   return props;
@@ -64,6 +66,7 @@ apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
 let needLoggedInStatus = true;
 
 HT.postPingCallback = function (login_status) {
+  console.log('AHOY from pingCallback');
   if (!needLoggedInStatus) {
     return;
   }
@@ -78,11 +81,13 @@ HT.postPingCallback = function (login_status) {
 
   // if the app was already initialized, punt
   if (app) {
+    console.log('app already initialized');
     return;
   }
 
   let el = document.getElementById('root');
   let props = buildProps(el);
+  console.log('props', props);
 
   app = mount(App, {
     target: document.getElementById('root'),
@@ -90,6 +95,7 @@ HT.postPingCallback = function (login_status) {
   });
   Object.keys(apps).forEach((slug) => {
     document.querySelectorAll(slug).forEach((el) => {
+      console.log('hi from ', el);
       if (el.component) {
         return;
       }
