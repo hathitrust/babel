@@ -4,6 +4,7 @@ import pkg from 'svelte-preprocess';
 const { scss } = pkg;
 import path from 'node:path';
 import glob from 'fast-glob';
+import fs from 'fs';
 
 // Find all HTML files and build an object of names and paths to work from
 const files = glob.sync(path.resolve(__dirname, 'src') + '/**/*.html').reduce((acc, cur) => {
@@ -34,11 +35,39 @@ if (process.env.NODE_ENV == 'development') {
   firebird = path.resolve(__dirname, 'node_modules/firebird-common');
 }
 
+const removeStylesheet = () => {
+  return {
+    name: 'remove-stylesheet',
+    enforce: 'post',
+    apply: 'build',
+    transformIndexHtml(html) {
+      return html.replaceAll(/<link\s+rel="stylesheet"(\s.*\s)href="(.*)\.css">/gi, '');
+    },
+  };
+};
+
 export default defineConfig({
   plugins: [
     svelte({
       preprocess: [scss({})],
     }),
+    //custom vite plugin to rewrite the name of the CSS file in manifest.json
+    //hopefully temporary workaround until we can upgrade to svelte 5/vite 6
+    {
+      name: 'postbuild-commands',
+      closeBundle: () => {
+        const path = 'dist/manifest.json';
+        const manifest = JSON.parse(fs.readFileSync(path).toString());
+        if (manifest['style.css']) {
+          const newKey = 'index.css';
+          manifest[newKey] = manifest['style.css'];
+          manifest['index.css'].file = manifest['index.css'].file.replace('style', 'index');
+          delete manifest['style.css'];
+          fs.writeFileSync(path, JSON.stringify(manifest, null, 2));
+        }
+      },
+    },
+    removeStylesheet(),
   ],
   root: path.resolve(__dirname, 'src'),
   build: {
@@ -46,8 +75,19 @@ export default defineConfig({
     minify: false,
     outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,
+    cssCodeSplit: false,
     rollupOptions: {
       input: files,
+      //renames the style asset file to index
+      //hopefully temporary workaround until we can upgrade to svelte 5/vite 6
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name == 'style.css') {
+            return `assets/index-[hash].[ext]`;
+          }
+          return assetInfo;
+        },
+      },
     },
   },
   resolve: {
