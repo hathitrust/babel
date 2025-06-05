@@ -81,7 +81,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-share-nodes" slot="icon" />
+  <i class="fa-solid fa-share-nodes" slot="icon"></i>
   <slot:fragment slot="title">Share</slot:fragment>
   <slot:fragment slot="body">
     <div class="mb-3">
@@ -105,7 +105,7 @@
           bind:this={btnShareHandle}
           on:click={() => copySelection(btnShareHandle, shareHandle)}
         >
-          <i class="fa-solid fa-copy" aria-hidden="true" />
+          <i class="fa-solid fa-copy" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -130,7 +130,7 @@
           bind:this={btnShareHandleLink}
           on:click={() => copySelection(btnShareHandleLink, shareHandleLink)}
         >
-          <i class="fa-solid fa-copy" aria-hidden="true" />
+          <i class="fa-solid fa-copy" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -155,7 +155,7 @@
           bind:value={codeBlockText[view]}
           on:blur={selectInnerText}
           on:click={selectInnerText}
-        />
+       ></textarea>
         <button
           class="btn btn-outline-dark"
           aria-label="Copy iframe code"
@@ -164,7 +164,7 @@
           bind:this={btnCodeBlock}
           on:click={() => copySelection(codeBlock)}
         >
-          <i class="fa-solid fa-copy" aria-hidden="true" />
+          <i class="fa-solid fa-copy" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -172,14 +172,14 @@
       <div class="form-check form-check-inline">
         <input id="embed-view-1up" class="form-check-input" type="radio" value="1up" bind:group={view} />
         <label class="form-check-label" for="embed-view-1up">
-          <i class="fa-solid fa-up-down" aria-hidden="true" />
+          <i class="fa-solid fa-up-down" aria-hidden="true"></i>
           Scroll View
         </label>
       </div>
       <div class="form-check form-check-inline">
         <input id="embed-view-2up" class="form-check-input" type="radio" value="2up" bind:group={view} />
         <label class="form-check-label" for="embed-view-2up">
-          <i class="fa-solid fa-book-open" aria-hidden="true" />
+          <i class="fa-solid fa-book-open" aria-hidden="true"></i>
           Flip View
         </label>
       </div>

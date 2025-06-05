@@ -202,7 +202,7 @@
       style:height={highlight.height}
       style:top={highlight.top}
       style:left={highlight.left}
-    />
+   ></mark>
   {/each}
 {/if}
 

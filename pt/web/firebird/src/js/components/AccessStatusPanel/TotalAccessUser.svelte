@@ -10,7 +10,7 @@
 </script>
 
 <Panel {expanded} class="dark" {onToggle}>
-  <i class="fa-solid fa-unlock" slot="icon" />
+  <i class="fa-solid fa-unlock" slot="icon"></i>
   <slot:fragment slot="title">
     {#if accessType.role == 'ht_staff_user' || accessType.role == 'ht_total_user'}
       Collection Administration Access

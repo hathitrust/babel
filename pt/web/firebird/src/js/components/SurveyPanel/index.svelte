@@ -43,7 +43,7 @@
   <!-- <div class="accordion"> -->
   {#each notificationsManager.surveyData as survey}
     <Panel expanded={isExpanded(survey)} class="dark" id={survey.id} onToggle={onToggle.bind(survey)}>
-      <i class="fa-solid fa-square-poll-vertical" slot="icon" />
+      <i class="fa-solid fa-square-poll-vertical" slot="icon"></i>
       <slot:fragment slot="title">{survey.title}</slot:fragment>
       <slot:fragment slot="body">
         {#if survey.message.indexOf('<p>') > -1}

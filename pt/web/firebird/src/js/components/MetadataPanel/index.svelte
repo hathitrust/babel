@@ -37,7 +37,7 @@
 {#if referrerLabel}
   <div class="px-3">
     <a href={referrer} referrerpolicy="unsafe-url" class="btn btn-secondary">
-      <i class="fa-solid fa-arrow-left-long" aria-hidden="true" />
+      <i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i>
       {referrerLabel}
     </a>
   </div>
@@ -52,7 +52,7 @@
   >
 </h1>
 <Panel parent="#controls" expanded={true} class="border-top rounded-1">
-  <i class="fa-solid fa-book" slot="icon" />
+  <i class="fa-solid fa-book" slot="icon"></i>
   <slot:fragment slot="title">About This Item</slot:fragment>
   <slot:fragment slot="body">
     <BibData {title} />

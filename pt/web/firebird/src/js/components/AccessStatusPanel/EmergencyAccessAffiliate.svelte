@@ -40,7 +40,7 @@
 </script>
 
 <Panel {expanded} class="dark" {onToggle}>
-  <i class="fa-solid fa-unlock" slot="icon" />
+  <i class="fa-solid fa-unlock" slot="icon"></i>
   <slot:fragment slot="title">
     Checked out until <span class="expires-display">{expiresDisplay}</span>
   </slot:fragment>
