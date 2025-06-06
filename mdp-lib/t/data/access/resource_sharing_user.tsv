@@ -1,17 +1,17 @@
-Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can access volume?	Can download single page?	Can download multiple pages?	Can view multiple plaintext?
+Attribute Code	Attribute	Access Profile	Location	Held	Initial access status	Can access volume?	Can download single page?	Can download multiple pages?	Can view multiple plaintext?
 1	pd	open	*	*	allow	allow	allow	allow	allow
-1	pd	google	*	*	allow	allow	allow	deny	allow
+1	pd	google	*	*	allow	allow	allow	allow	allow
 1	pd	page	*	*	allow	allow	allow	deny	allow
 2	ic	open	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 2	ic	google	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 2	ic	page	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
-2	ic	open	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
-2	ic	google	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
+2	ic	open	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
+2	ic	google	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
 2	ic	page	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
 3	op	open	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 3	op	google	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
-3	op	open	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
-3	op	google	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
+3	op	open	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
+3	op	google	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
 5	und	open	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 5	und	google	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 5	und	page	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
@@ -19,7 +19,7 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can 
 5	und	google	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
 5	und	page	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
 7	ic-world	open	*	*	allow	allow	allow	allow	allow
-7	ic-world	google	*	*	allow	allow	allow	deny	allow
+7	ic-world	google	*	*	allow	allow	allow	allow	allow
 7	ic-world	page	*	*	allow	allow	allow	deny	allow
 8	nobody	open	*	*	deny	deny	deny	deny	deny
 8	nobody	google	*	*	deny	deny	deny	deny	deny
@@ -28,13 +28,13 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can 
 9	pdus	google	NONUS	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	deny	deny	deny	deny
 9	pdus	page	NONUS	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	deny	deny	deny	deny
 9	pdus	open	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
-9	pdus	google	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
+9	pdus	google	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
 9	pdus	page	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
-9	pdus	open	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
-9	pdus	google	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
+9	pdus	open	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	deny
+9	pdus	google	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	deny
 9	pdus	page	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
 9	pdus	open	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
-9	pdus	google	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
+9	pdus	google	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
 9	pdus	page	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
 10	cc-by-3.0	open	*	*	allow	allow	allow	allow	allow
 10	cc-by-3.0	google	*	*	allow	allow	allow	allow	allow
@@ -56,11 +56,11 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can 
 19	icus	open	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	deny	deny	deny
 19	icus	google	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	deny	deny	deny
 19	icus	open	NONUS	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
-19	icus	google	NONUS	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	deny	allow
+19	icus	google	NONUS	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
 19	icus	open	US	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
-19	icus	google	US	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	deny	allow
+19	icus	google	US	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
 19	icus	open	NONUS	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
-19	icus	google	NONUS	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	deny	allow
+19	icus	google	NONUS	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
 20	cc-by-4.0	open	*	*	allow	allow	allow	allow	allow
 20	cc-by-4.0	google	*	*	allow	allow	allow	allow	allow
 21	cc-by-nd-4.0	open	*	*	allow	allow	allow	allow	allow
