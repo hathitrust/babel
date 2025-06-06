@@ -1,20 +1,21 @@
 services:
-  traject: # This is a back end service. Used for preparing solr sample catalog data. Talk with LS about this too. ONly used as apart of the metadata processing workflow and here to create a sample catalog. Take a look at the readme maybe.
-  build: ./hathitrust_catalog_indexer
-  environment:
-  - SOLR_URL=http://solr-sdr-catalog:9033/solr/catalog
-  - redirect_file=/dev/null
-  - NO_DB=1
-  - DDIR=/app/metadata
-  depends_on:
-    solr-sdr-catalog:
-      condition: service_healthy
-  volumes:
-  - ${BABEL_HOME}/sample-data/metadata:/app/metadata
-  - ${BABEL_HOME}/hathitrust_catalog_indexer:/app
-  - gem_cache:/gems
-  profiles:
-  - indexing
+  traject:
+    # This is a back end service. Used for preparing solr sample catalog data. Talk with LS about this too. ONly used as apart of the metadata processing workflow and here to create a sample catalog. Take a look at the readme maybe.
+    build: ../../hathitrust_catalog_indexer
+    environment:
+    - SOLR_URL=http://solr-sdr-catalog:9033/solr/catalog
+    - redirect_file=/dev/null
+    - NO_DB=1
+    - DDIR=/app/metadata
+    depends_on:
+      solr-sdr-catalog:
+        condition: service_healthy
+    volumes:
+    - ${BABEL_HOME}/sample-data/metadata:/app/metadata
+    - ${BABEL_HOME}/hathitrust_catalog_indexer:/app
+    - gem_cache:/gems
+    profiles:
+    - indexing
 
-volumes:
-  gem_cache:
+  volumes:
+    gem_cache:

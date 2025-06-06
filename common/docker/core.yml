@@ -62,7 +62,7 @@ services:
   imgsrv:
     # This a core dependency
     build:
-      context: .
+      context: ../../
       target: imgsrv-fcgi
     user: ${CURRENT_USER}
     volumes:

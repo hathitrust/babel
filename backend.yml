@@ -1,0 +1,70 @@
+include:
+- common/docker/core.yml
+
+services:
+  apache:
+    extends:
+      file: common/docker/apache.yml
+      service: apache
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+      solr-lss-dev:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+      solr-ptsearch:
+        condition: service_healthy
+      imgsrv:
+        condition: service_healthy
+      vufind:
+        condition: service_healthy
+
+  perl-test:
+    extends:
+      file: common/docker/perl.yml
+      service: perl
+    command: "prove -r t/"
+
+  perl-dev:
+    extends:
+      file: common/docker/perl.yml
+      service: perl
+    environment:
+      - SDRROOT=/htapps/babel
+      - SDRDATAROOT=/sdr1
+    command: "sleep infinity"
+
+  traject:
+    extends:
+      file: common/docker/traject.yml
+      service: traject
+    depends_on:
+      solr-sdr-catalog:
+        condition: service_healthy
+    profiles:
+    - indexing
+
+  stage-item:
+    extends:
+      file: common/docker/stage-item.yml
+      service: stage-item
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+    profiles:
+    - stage_item
+
+  slip:
+    extends:
+      file: common/docker/slip.yml
+      service: slip
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+      solr-lss-dev:
+        condition: service_healthy
+    profiles:
+    - indexing

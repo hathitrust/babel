@@ -2,7 +2,7 @@ services:
   apache:
     # Used for serving everything. A core service as well.
     build:
-      context: .
+      context: ../../
       target: apache
     user: ${CURRENT_USER}
     volumes:
