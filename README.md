@@ -74,16 +74,16 @@ To rebuild the CSS and JavaScript for `firebird-common` and `pt`:
 
 ```bash
 #build firebird-common
-docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
+docker compose -f frontend.yml run firebird /htapps/babel/firebird-common/bin/build.sh
 
 # build pt/firebird
-docker compose run page-turner /htapps/babel/pt/bin/build.sh
+docker compose -f frontend.yml run page-turner /htapps/babel/pt/bin/build.sh
 ```
 
 To stand up a development environment while working strictly on the front-end.
 
 ```bash
-docker compose --profile node up
+docker compose -f frontend.yml --profile node up
 ```
 
 ## Staging an Item
