@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import fs from 'fs';
 
 test.describe('resource_sharing_user access to ic material', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,6 +16,27 @@ test.describe('resource_sharing_user access to ic material', () => {
 
     await page.goto('/cgi/pt?id=test.ic_currently_held');
     await expect(page.getByRole('figure')).toBeVisible();
+  });
+
+
+  test('download single page from ic_currently_held', async ({ page }) => {
+    await page.goto('/cgi/pt?id=test.ic_currently_held');
+    const downloadAccordion = page.getByRole('heading', { name: 'Download' });
+    const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
+    await downloadAccordionButton.click();
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByLabel('Image (JPEG)').check();
+    await page.getByLabel('Current page scan (#1)').check();
+    const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
+    await downloadButton.click();
+    const download = await downloadPromise;
+    const downloadPath = await download.path();
+
+    //expect download to be pdf
+    expect(download.suggestedFilename()).toContain('jpg');
+    //expect file to exist before playwright deletes it
+    expect(fs.existsSync(downloadPath)).toBeTruthy();
   });
 
   // resource sharing users cannot see lost/missing/withdrawn material
