@@ -30,9 +30,9 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can 
 9	pdus	open	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
 9	pdus	google	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
 9	pdus	page	US	-c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
-9	pdus	open	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	deny	deny	deny
-9	pdus	google	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	deny	deny	deny
-9	pdus	page	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	deny	deny	deny
+9	pdus	open	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
+9	pdus	google	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
+9	pdus	page	NONUS	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	deny
 9	pdus	open	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	allow	allow
 9	pdus	google	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
 9	pdus	page	US	c	allow_by_us_geo_ipaddr_or_resource_sharing_by_holdings	allow	allow	deny	allow
@@ -53,8 +53,8 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status Can 
 17	cc-zero	google	*	*	allow	allow	allow	allow	allow
 17	cc-zero	page	*	*	allow	allow	allow	allow	allow
 18	und-world	page+lowres	*	*	allow	allow	allow	deny	allow
-19	icus	open	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	allow	allow	allow
-19	icus	google	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	allow	deny	allow
+19	icus	open	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	deny	deny	deny
+19	icus	google	US	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	deny	deny	deny	deny
 19	icus	open	NONUS	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
 19	icus	google	NONUS	-c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	deny	allow
 19	icus	open	US	c	allow_resource_sharing_by_holdings_by_geo_ipaddr	allow	allow	allow	allow
