@@ -3,33 +3,10 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 test.describe('sidebar actions', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
-
-    const response = await context.request.get('/cgi/pt?id=test.pd_open');
-    expect(response.ok());
-    const headers = response.headersArray();
-    // console.log(headers);
-
-    var cookieString = headers.find(function (o) {
-      return o.name === 'Set-Cookie';
-    }).value;
-
-    const match = cookieString.match(/MDPsid=([^;]+)/);
-    const MDPsid = match ? match[1] : null;
-
-    await context.addCookies([
-      {
-        name: 'MDPsid',
-        value: MDPsid,
-        domain: 'apache-test',
-        path: '/',
-        httpOnly: true,
-      },
-    ]);
-
-    //close the cookie banner before each test
-    await page.getByRole('button', { name: 'Close banner', exact: true }).click();
+    //accept the cookie banner before each test
+    await page.getByRole('button', { name: 'Allow all cookies' }).click();
   });
 
   test('null heading', async ({ page }) => {
@@ -55,7 +32,7 @@ test.describe('sidebar actions', () => {
 
   // download scan
   test.describe('download scans', () => {
-    test.beforeEach(async ({ page, context }) => {
+    test.beforeEach(async ({ page }) => {
       const downloadAccordion = page.getByRole('heading', { name: 'Download' });
       const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
       await downloadAccordionButton.click();
@@ -80,11 +57,8 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test.skip('download whole item jpeg, full resolution', async ({ page, context }) => {
-      //skipping this test for now until we can investigate what's going on with imgsrv and/or test imgsrv on its own
+    test.skip('download whole item jpeg, full resolution', async ({ page }) => {
       test.slow();
-      const cookies = await context.cookies();
-      // console.log(cookies);
 
       await page.getByRole('radio', { name: 'Image (JPEG)' }).check();
       await page.getByLabel('Full / 600 dpi').check();
@@ -112,10 +86,7 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download selected scans as tiff', async ({ page, context }) => {
-      // const cookies = await context.cookies();
-      // console.log(cookies);
-
+    test('download selected scans as tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
 
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });

@@ -8,6 +8,9 @@ REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, ex
 REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
 ('ssduser@hathitrust.org','HathiTrust Ssduser','ssduser@hathitrust.org','student','ssd','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
+REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
+('rsuser@hathitrust.org','HathiTrust Resource-Sharinguser','rsuser@hathitrust.org','external','resource_sharing','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
+
 --- inserts/updates for ht_institutions
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
   VALUES ('umich','University of Michigan','umich.edu','1','1','https://shibboleth.umich.edu/idp/shibboleth','^(member|alum|faculty|staff|student|employee)@umich.edu');
