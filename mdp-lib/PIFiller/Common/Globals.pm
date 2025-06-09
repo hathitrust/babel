@@ -265,24 +265,32 @@ sub handle_ACCESS_HOLDINGS_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    my $held = 'NO';
-    my $brittle_held = 'NO';
     my $inst = 'notaninstitution';
+    my $s = '';
 
     my $id = $C->get_object('CGI')->param('id');
     if ($id) {
         $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
-        if (Access::Holdings::id_is_held($C, $id, $inst)) {
-            $held = 'YES';
+
+        my $rights = $C->get_object('Access::Rights');
+        # Get access type as string
+        my $access_type = $rights->get_access_type($C, 1);
+        if ($access_type eq 'emergency_access_affiliate') {
+          my $held = 'NO';
+          if (Access::Holdings::id_is_held($C, $id, $inst)) {
+              $held = 'YES';
+          }
+          $s .= wrap_string_in_tag($held, 'Held');
         }
-        if (Access::Holdings::id_is_held_and_BRLM($C, $id, $inst)) {
-            $brittle_held = 'YES';
+        elsif ($user_access_type eq 'in_library_user') {
+          my $brittle_held = 'NO';
+          if (Access::Holdings::id_is_held_and_BRLM($C, $id, $inst)) {
+              $brittle_held = 'YES';
+          }
+          $s .= wrap_string_in_tag($brittle_held, 'BrittleHeld');
         }
     }
 
-    my $s;
-    $s .= wrap_string_in_tag($held, 'Held');
-    $s .= wrap_string_in_tag($brittle_held, 'BrittleHeld');
     $s .= wrap_string_in_tag($inst, 'Institution');
 
     return $s;
