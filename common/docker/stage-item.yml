@@ -7,15 +7,10 @@ services:
     - ${BABEL_HOME}:/usr/src/babel
     - gem_cache:/gems
     - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      mysql-sdr:
-        condition: service_healthy
     environment:
     - CATALOG_SOLR=http://solr-sdr-catalog:9033/solr/catalog
     - LSS_SOLR=http://solr-lss-dev:8983/solr/core-x
     - MYSQL_URL=mysql2://mdp-admin:mdp-admin@mysql-sdr:3306/ht
-    profiles:
-    - stage_item
 
-volumes:
-  gem_cache:
+# volumes:
+#   gem_cache:

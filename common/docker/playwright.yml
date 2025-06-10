@@ -6,8 +6,3 @@ services:
     - ${BABEL_HOME}:/htapps/babel
     working_dir: "/htapps/babel/pt/web/firebird"
     command: "npm test"
-    profiles:
-    - test
-    depends_on:
-      apache-test:
-        condition: service_healthy

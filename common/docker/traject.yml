@@ -7,15 +7,10 @@ services:
     - redirect_file=/dev/null
     - NO_DB=1
     - DDIR=/app/metadata
-    depends_on:
-      solr-sdr-catalog:
-        condition: service_healthy
     volumes:
     - ${BABEL_HOME}/sample-data/metadata:/app/metadata
     - ${BABEL_HOME}/hathitrust_catalog_indexer:/app
     - gem_cache:/gems
-    profiles:
-    - indexing
 
-  volumes:
-    gem_cache:
+# volumes:
+#   gem_cache:
