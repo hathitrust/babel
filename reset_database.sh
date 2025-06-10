@@ -7,6 +7,6 @@ echo "Stopping mysql.."
 docker compose stop mysql-sdr
 docker compose rm -f mysql-sdr
 echo "Removing database.."
-docker volume rm $(basename $BABEL_HOME)_mysql_sdr_data
+docker volume rm babel-firebird_mysql_sdr_data
 echo "Restarting.."
 docker compose up -d mysql-sdr

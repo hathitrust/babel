@@ -24,13 +24,6 @@ $C->set_object('MdpConfig', $config);
 my $db_user = $ENV{'MARIADB_USER'} || 'ht_testing';
 my $db = new Database($db_user);
 $C->set_object('Database', $db);
-my $dbh = $db->get_DBH($C);
-DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
-# HACK HACK HACK HACK
-# TODO: Remove this once we transition fully to Holdings API.
-# We won't be needing updated ht_institutions unless we want to mock the Holdings API based on
-# database contents, and that seems kinda silly.
-DbUtils::prep_n_execute($dbh, 'UPDATE ht_institutions SET mapto_inst_id=inst_id WHERE mapto_inst_id IS NULL');
 
 my $jsonxs = JSON::XS->new->utf8->canonical(1)->pretty(0);
 use constant ERROR_LOG => 'holdings_api-error.log';
@@ -42,7 +35,7 @@ sub with_local_logdir {
   my $save_local_logdir = $config->get('local_logdir');
   my $tempdir = File::Temp->newdir;
   $config->override('local_logdir', $tempdir);
-  my $local_error_log = File::Spec::Functions::catfile($tempdir, ERROR_LOG);
+  my $local_error_log = File::Spec->catfile($tempdir, ERROR_LOG);
   eval {
     $sub->($local_error_log);
   };
@@ -64,6 +57,7 @@ sub error_log_contains {
 my $held_response = {
   'copy_count' => 555,
   'brlm_count' => 222,
+  'currently_held_count' => 111,
   'format' => 'spm',
   'n_enum' => 'v.1-5 (1901-1905)',
   'ocns' => ['001', '002', '003']
@@ -133,32 +127,30 @@ sub expect_params {
   is(scalar keys %sent, $expected_count, "number of parameters sent equals number expected ($expected_count)");
 }
 
-# TODO: these are only needed for testing the legacy (non-API) interface
 my $fake_lock_id = 'fake_lock_id';
-my $fake_cluster_id = 'fake_cluster_id';
 
-subtest "id_is_held_API" => sub {
+subtest "id_is_held" => sub {
   subtest "held according to session" => sub {
     my $htid = 'api.001';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.copy_count.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held(0);
-    my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
     $ses->close;
+    $C->set_object('Session', undef, 1);
   };
 
   subtest "not held according to API" => sub {
     my $htid = 'api.002';
     my $ua = get_ua_for_held(0);
-    # It's not interesting to test the "not held" case for the API since the "held" test below
-    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=held wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'held';
-      my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
       is($held, 1);
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
@@ -168,7 +160,7 @@ subtest "id_is_held_API" => sub {
   subtest "held according to API" => sub {
     my $htid = 'api.003';
     my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
     is($held, 555);
     expect_params($ua, item_id => $htid, organization => 'umich', constraint => undef);
 
@@ -176,7 +168,7 @@ subtest "id_is_held_API" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'notheld';
       $ua = get_ua_for_held;
-      my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
       is($held, 0);
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
@@ -189,78 +181,43 @@ subtest "id_is_held_API" => sub {
       my $local_logfile = shift;
 
       my $ua = get_ua_for_error($item_access_endpoint);
-      my ($lock_id, $held) = Access::Holdings::id_is_held_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich', $ua);
       is($held, 0);
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
       ok(error_log_contains($local_logfile, $htid));
     });
   };
-};
 
-subtest "id_is_held" => sub {
-  subtest "held according to session" => sub {
-    my $htid = 'mdp.001';
-    my $ses = Session::start_session($C);
-    $C->set_object('Session', $ses);
-    $ses->set_transient("held.$htid", [$fake_lock_id, 1]);
-    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich');
-    is($held, 1, "$htid is held in session transient");
-    $ses->close;
-  };
-
-  subtest "not held according to DB" => sub {
-    my $htid = 'mdp.002';
-    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich');
+  subtest "return 0 if institution is missing" => sub {
+    my $htid = 'api.004';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, undef, $ua);
     is($held, 0);
-
-    subtest "DEBUG=held wins" => sub {
-      my $save_debug = $ENV{DEBUG};
-      $ENV{DEBUG} = 'held';
-      my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich');
-      is($held, 1);
-      $ENV{DEBUG} = $save_debug;
-    };
-  };
-
-  subtest "held according to DB" => sub {
-    my $htid = 'mdp.003';
-    my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, copy_count) VALUES (?, ?, ?, ?, ?)';
-    DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, 'umich', 3);
-    my $ret = Access::Holdings::id_is_held($C, $htid, 'umich');
-    is($ret, 3);
-
-    subtest "DEBUG=notheld wins" => sub {
-      my $save_debug = $ENV{DEBUG};
-      $ENV{DEBUG} = 'notheld';
-      my ($lock_id, $held) = Access::Holdings::id_is_held($C, $htid, 'umich');
-      is($held, 0);
-      $ENV{DEBUG} = $save_debug;
-    };
   };
 };
 
-subtest "id_is_held_and_BRLM_API" => sub {
+subtest "id_is_held_and_BRLM" => sub {
   subtest "held/BRLM according to session" => sub {
     my $htid = 'api.004';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
+    $ses->set_transient("held.brlm_count.$htid", [$fake_lock_id, 1]);
     my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
     $ses->close;
+    $C->set_object('Session', undef, 1);
   };
 
   subtest "not held/BRLM according to API" => sub {
     my $htid = 'api.005';
     my $ua = get_ua_for_held;
-    # It's not interesting to test the "not held" case for the API since the "held" test below
-    # ascertains that we pass and parse correct info to and from `ua`.
 
     subtest "DEBUG=heldb wins" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'heldb';
-      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
       is($held, 1);
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
@@ -270,7 +227,7 @@ subtest "id_is_held_and_BRLM_API" => sub {
   subtest "held/BRLM according to API" => sub {
     my $htid = 'api.006';
     my $ua = get_ua_for_held;
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
     expect_params($ua, item_id => $htid, organization => 'umich');
     is($held, 222);
 
@@ -278,7 +235,7 @@ subtest "id_is_held_and_BRLM_API" => sub {
       my $save_debug = $ENV{DEBUG};
       $ENV{DEBUG} = 'notheldb';
       $ua = get_ua_for_held;
-      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
       is($held, 0);
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
@@ -291,61 +248,92 @@ subtest "id_is_held_and_BRLM_API" => sub {
       my $local_logfile = shift;
 
       my $ua = get_ua_for_error($item_access_endpoint);
-      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM_API($C, $htid, 'umich', $ua);
+      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich', $ua);
       is($held, 0);
       like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
       ok(error_log_contains($local_logfile, $htid));
     });
   };
+
+  subtest "return 0 if institution is missing" => sub {
+    my $htid = 'api.004';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, undef, $ua);
+    is($held, 0);
+  };
 };
 
-subtest "id_is_held_and_BRLM" => sub {
-  DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
-  subtest "held/BRLM according to session" => sub {
-    my $htid = 'mdp.004';
+subtest "id_is_currently_held" => sub {
+  subtest "currently held according to session" => sub {
+    my $htid = 'api.014';
     my $ses = Session::start_session($C);
     $C->set_object('Session', $ses);
-    $ses->set_transient("held.brlm.$htid", [$fake_lock_id, 1]);
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
+    $ses->set_transient("held.currently_held_count.$htid", [$fake_lock_id, 1]);
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
     is($held, 1, "$htid is held in session transient");
+    # Get rid of the Session so we don't affect other tests.
     $ses->close;
+    $C->set_object('Session', undef, 1);
   };
 
-  subtest "not held/BRLM according to DB" => sub {
-    my $htid = 'mdp.005';
-    my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
-    is($held, 0);
+  subtest "not currently held according to API" => sub {
+    my $htid = 'api.010';
+    my $ua = get_ua_for_held;
 
-    subtest "DEBUG=heldb wins" => sub {
+    subtest "DEBUG=heldc wins" => sub {
       my $save_debug = $ENV{DEBUG};
-      $ENV{DEBUG} = 'heldb';
-      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
+      $ENV{DEBUG} = 'heldc';
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
       is($held, 1);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
   };
 
-  subtest "held/BRLM according to DB" => sub {
-    my $htid = 'mdp.006';
-    my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, access_count) VALUES (?, ?, ?, ?, ?)';
-    DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, 'umich', 5);
-    my $ret = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
-    is($ret, 5);
+  subtest "currently held according to API" => sub {
+    my $htid = 'api.011';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+    expect_params($ua, item_id => $htid, organization => 'umich');
+    is($held, 111);
 
-    subtest "DEBUG=notheldb wins" => sub {
+    subtest "DEBUG=notheldc wins" => sub {
       my $save_debug = $ENV{DEBUG};
-      $ENV{DEBUG} = 'notheldb';
-      my ($lock_id, $held) = Access::Holdings::id_is_held_and_BRLM($C, $htid, 'umich');
+      $ENV{DEBUG} = 'notheldc';
+      $ua = get_ua_for_held;
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
       is($held, 0);
+      expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
+  };
+
+  subtest "return error message and held = 0 if API fails, and log error message" => sub {
+    my $htid = 'api.012';
+    with_local_logdir(sub {
+      my $local_logfile = shift;
+
+      my $ua = get_ua_for_error($item_access_endpoint);
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+      is($held, 0);
+      like($lock_id, qr/500 : ERROR/, 'lock id contains error message');
+      ok(error_log_contains($local_logfile, $htid));
+    });
+  };
+
+  subtest "return 0 if institution is missing" => sub {
+    my $htid = 'api.013';
+    my $ua = get_ua_for_held;
+    my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, undef, $ua);
+    is($held, 0);
   };
 };
 
-subtest "holding_institutions_API" => sub {
+subtest "holding_institutions" => sub {
   my $htid = 'api.007';
   my $ua = get_ua_for_institutions;
-  my @got = sort @{Access::Holdings::holding_institutions_API($C, $htid, $ua)};
+  my @got = sort @{Access::Holdings::holding_institutions($C, $htid, $ua)};
   my @expected = sort @{$institutions_response->{organizations}};
   is_deeply(\@got, \@expected);
   expect_params($ua, item_id => $htid, constraint => undef);
@@ -356,29 +344,17 @@ subtest "holding_institutions_API" => sub {
       my $local_logfile = shift;
 
       my $ua = get_ua_for_error($item_held_by_endpoint);
-      my $got = Access::Holdings::holding_institutions_API($C, $htid, $ua);
+      my $got = Access::Holdings::holding_institutions($C, $htid, $ua);
       is_deeply($got, []);
       ok(error_log_contains($local_logfile, $htid));
     });
   };
 };
 
-subtest "holding_institutions" => sub {
-  my @holding_institutions = sort ('asu', 'harvard');
-  my @not_holding_institutions = sort ('loc', 'umich', 'utexas');
-  my $htid = 'mdp.007';
-  foreach my $inst (@holding_institutions) {
-    my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, copy_count) VALUES (?, ?, ?, ?, ?)';
-    DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, $inst, 1);
-  }
-  my @ret = sort @{Access::Holdings::holding_institutions($C, $htid)};
-  is_deeply(\@ret, \@holding_institutions);
-};
-
-subtest "holding_BRLM_institutions_API" => sub {
+subtest "holding_BRLM_institutions" => sub {
   my $htid = 'api.008';
   my $ua = get_ua_for_institutions;
-  my @got = sort @{Access::Holdings::holding_BRLM_institutions_API($C, $htid, $ua)};
+  my @got = sort @{Access::Holdings::holding_BRLM_institutions($C, $htid, $ua)};
   my @expected = sort @{$institutions_response->{organizations}};
   is_deeply(\@got, \@expected);
   expect_params($ua, item_id => $htid, constraint => 'brlm');
@@ -389,27 +365,11 @@ subtest "holding_BRLM_institutions_API" => sub {
       my $local_logfile = shift;
 
       my $ua = get_ua_for_error($item_held_by_endpoint);
-      my $got = Access::Holdings::holding_BRLM_institutions_API($C, $htid, $ua);
+      my $got = Access::Holdings::holding_BRLM_institutions($C, $htid, $ua);
       is_deeply($got, []);
       ok(error_log_contains($local_logfile, $htid));
     });
   };
-};
-
-subtest "holding_BRLM_institutions" => sub {
-  my @holding_institutions = sort ('asu', 'harvard');
-  my @not_holding_institutions = sort ('loc', 'umich', 'utexas');
-  my $htid = 'mdp.008';
-  foreach my $inst (@holding_institutions) {
-    my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, access_count) VALUES (?, ?, ?, ?, ?)';
-    DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, $inst, 1);
-  }
-  foreach my $inst (@not_holding_institutions) {
-    my $sql = 'INSERT INTO holdings_htitem_htmember (lock_id, cluster_id, volume_id, member_id, access_count) VALUES (?, ?, ?, ?, ?)';
-    DbUtils::prep_n_execute($dbh, $sql, $fake_lock_id, $fake_cluster_id, $htid, $inst, 0);
-  }
-  my @ret = sort @{Access::Holdings::holding_BRLM_institutions($C, $htid)};
-  is_deeply(\@ret, \@holding_institutions);
 };
 
 subtest "generate_lock_id" => sub {
@@ -437,7 +397,5 @@ subtest "generate_lock_id" => sub {
   };
 };
 
-# Clean up
-DbUtils::prep_n_execute($dbh, 'DELETE FROM holdings_htitem_htmember');
 done_testing();
 

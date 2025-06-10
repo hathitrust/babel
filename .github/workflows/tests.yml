@@ -53,11 +53,11 @@ jobs:
         run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
       - name: Run playwright tests (PageTurner)
-        run: docker compose run playwright
+        run: ./bin/run_playwright_tests.sh resource_sharing_user
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: ${{ failure() }}
         with:
           name: test-results
           path: pt/web/firebird/test-results/
-          retention-days: 30
+          retention-days: 21

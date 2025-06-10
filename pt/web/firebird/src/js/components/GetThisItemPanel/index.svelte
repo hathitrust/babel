@@ -19,11 +19,6 @@
             <a href={link.href}>Find in a library</a>
           </li>
         {/each}
-        {#each externalLinks.filter((link) => link.type == 'pod') as link}
-          <li>
-            <a href={link.href}>Buy a copy</a>
-          </li>
-        {/each}
         {#each externalLinks.filter((link) => link.type == 'service') as link}
           <li>
             <a href={link.href}>{link.title}</a>

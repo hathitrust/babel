@@ -95,6 +95,53 @@ Huzzah!
 
 
 
+## Running Tests
+
+There are two sets of tests:
+
+### Back-end tests using perl
+
+```bash
+docker compose run perl-test
+```
+
+### End-to-end tests using playwright
+
+There is a helper script to set up the environment for unauthenticated and
+authenticated tests with playwright.
+
+To run all playwright tests:
+
+```bash
+bin/run_playwright_tests.sh all
+```
+
+If a particular suite fails, the tests will stop; you can examine the traces with
+
+```bash
+docker compose up -d playwright_reports
+```
+
+then going to <http://localhost:9323>.
+
+You can run a particular set of tests with:
+
+
+Tests with an unauthenticated user (most of them):
+```bash
+bin/run_playwright_tests.sh unauthed
+```
+
+Tests for print-disabled access:
+```bash
+bin/run_playwright_tests.sh ssd_user
+```
+
+Tests for resource sharing:
+```bash
+bin/run_playwright_tests.sh resource_sharing_user
+```
+
 ## Staging an Item
 
 ### From production repository
@@ -144,7 +191,6 @@ schema, you will need to make sure the persistent volumes for them are removed
 so that when you restart the containers they will get a fresh copy of the
 schema. The `reset_database.sh` script will do this.
 
-
 `mysql_sdr.sh`: This will connect to the `ht` database running inside the mysql
 container.
 
@@ -155,6 +201,17 @@ variables in Apache. There is appropriate setup for a variety of scenarios and
 user types in configuration files under `apache-cgi/auth`, and a helper script
 `switch_auth.sh` to allow you to pick a particular scenario and configure the
 local Apache server to use it.
+
+There are several synthetic items in the sample data that can be tested with
+authenticated access:
+
+* `test.ic_currently_held`: in-copyright; holdings API indicates it is currently held
+* `test.ic_not_current`: in-copyright; holdings API indicates it is withdrawn
+* `test.ic_not_held`: in-copyright; holdings API indicates it is not held at all
+
+By default, all access will be geolocated as from the US. See [info about the
+test geoip databases](geoip/README.md) for more information about how for
+testing non-US access.
 
 ## TODO
 

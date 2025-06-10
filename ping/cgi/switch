@@ -144,11 +144,9 @@ my $app = sub {
 
             $response = Plack::Response->new(302);
             my $info = Ping::Utils::identify_user( $C, $env );
-            $response->cookies->{'HTstatus'} = {
+            $response->cookies->{'HTstatus'} = Utils::build_cookie(
                 'value'  => encode_json($info),
-                'path'   => '/',
-                'domain' => Utils::get_cookie_domain()
-            };
+            );
 
             $response->redirect($request->param("referer"));
         }

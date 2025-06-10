@@ -19,7 +19,6 @@ crms/
 
 logs/
 cache/
-geoip/
 etc/
 
 #macOS 
@@ -30,3 +29,4 @@ etc/
 
 # perl language server
 .vscode/perl-lang
+**/*.sw?
