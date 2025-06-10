@@ -1,310 +1,113 @@
-name: babel-firebird
-
-x-node: &node
-    image: node:22-slim
-    profiles:
-      - node
-    volumes:
-      - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
-      - ${BABEL_HOME}/pt:/htapps/babel/pt
-      - ${BABEL_HOME}/.npm:/.npm
-
-x-condition-healthy: &healthy
-  condition: service_healthy
-
-x-healthcheck-defaults: &healthcheck-defaults
-  interval: 5s
-  timeout: 10s
-  start_period: 10s
-  retries: 5
-
-x-apache-volumes: &apache-volumes
+include:
+  - common/docker/core.yml
 
 services:
+  # Fontend Services
   playwright:
-    image: mcr.microsoft.com/playwright:v1.50.1
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-    working_dir: "/htapps/babel/pt/web/firebird"
-    command: "npm test"
-    profiles: 
-      - test
-    depends_on:
-      apache-test: *healthy
+    extends:
+      file: common/docker/playwright.yml
+      service: playwright
+    profiles:
+      - frontend
+  firebird:
+    extends:
+      file: common/docker/firebird.yml
+      service: firebird
+    profiles:
+      - frontend
+  page-turner:
+    extends:
+      file: common/docker/pageturner.yml
+      service: page-turner
+    profiles:
+      - frontend
 
   apache-test:
-    build:
-      context: .
-      target: apache
-    user: ${CURRENT_USER}
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      - ${BABEL_HOME}/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
-      - ${BABEL_HOME}/apache/auth:/etc/apache2/auth
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data:/tmp/sample-data
-      - ${BABEL_HOME}/catalog:/htapps/catalog
-      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
-      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
-      - ${BABEL_HOME}/logs:/var/log/babel
-    environment:
-      - SDRROOT=/htapps/babel
-      - SDRDATAROOT=/sdr1
+    extends:
+      file: common/docker/apache.yml
+      service: apache
     depends_on:
-      mysql-sdr: *healthy
-      solr-sdr-catalog: *healthy
-      imgsrv: *healthy
-    profiles: 
-      - test
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: "curl -f --retry-connrefused http://localhost:8080/"
+      mysql-sdr:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+      imgsrv:
+        condition: service_healthy
+    profiles:
+    - frontend
+
+# Backend Services
+  apache:
+    extends:
+      file: common/docker/apache.yml
+      service: apache
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+      solr-lss-dev:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+      solr-ptsearch:
+        condition: service_healthy
+      imgsrv:
+        condition: service_healthy
+      vufind:
+        condition: service_healthy
+    profiles:
+      - backend
 
   perl-test:
-    build:
-      context: .
-      target: babel-base
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      # Allow tests to modify database
-      - ${BABEL_HOME}/mdp-lib/t/config/mdp-admin.conf:/htapps/babel/etc/mdp-admin.conf
-      - ${BABEL_HOME}/logs:/var/log/babel
-    environment:
-      - SDRROOT=/htapps/babel
-      - SDRDATAROOT=/sdr1
-      - MARIADB_USER=mdp-admin
-      - HTDEV=test
-      - PERL5LIB=/htapps/babel/mdp-lib
-    depends_on:
-      mysql-sdr: *healthy
-    working_dir: "/htapps/babel/mdp-lib"
+    extends:
+      file: common/docker/perl.yml
+      service: perl
     command: "prove -r t/"
+    profiles:
+      - testing
+      - backend
 
   perl-dev:
-    build:
-      context: .
-      target: perl-dev
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data:/tmp/sample-data
-      - ${BABEL_HOME}/catalog:/htapps/catalog
-      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
-      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
+    extends:
+      file: common/docker/perl.yml
+      service: perl
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
-    depends_on:
-     mysql-sdr: *healthy
-     solr-lss-dev: *healthy
-     solr-sdr-catalog: *healthy
-     solr-ptsearch: *healthy
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
-
-  imgsrv:
-    build:
-      context: .
-      target: imgsrv-fcgi
-    user: ${CURRENT_USER}
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data/watermarks:/htapps/babel/watermarks
-      - ${BABEL_HOME}/sample-data:/tmp/sample-data
-      - ${BABEL_HOME}/logs:/var/log/babel
-    environment:
-      - SDRROOT=/htapps/babel
-      - SDRDATAROOT=/sdr1
-      - HT_DEV=docker
-      - REMOTE_ADDR=127.0.0.1
-      - HTTP_HOST=127.0.0.1
-      - APACHE_LOG_DIR=/tmp
-    depends_on:
-      mysql-sdr: *healthy
-      solr-sdr-catalog: *healthy
-    ports:
-      - "31028:31028"
-    command: bash -c "/htapps/babel/imgsrv/bin/startup_imgsrv"
-    healthcheck:
-          <<: *healthcheck-defaults
-          test: "cgi-fcgi -bind -connect 127.0.0.1:31028"
-
-  apache:
-    build:
-      context: .
-      target: apache
-    user: ${CURRENT_USER}
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      - ${BABEL_HOME}/apache/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
-      - ${BABEL_HOME}/apache/auth:/etc/apache2/auth
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data:/tmp/sample-data
-      - ${BABEL_HOME}/catalog:/htapps/catalog
-      - ${BABEL_HOME}/mb/lib/Config/docker-local.conf:/htapps/babel/mb/lib/Config/local.conf
-      - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
-      - ${BABEL_HOME}/logs:/var/log/babel
-    environment:
-      - SDRROOT=/htapps/babel
-      - SDRDATAROOT=/sdr1
-    depends_on:
-      mysql-sdr: *healthy
-      solr-lss-dev: *healthy
-      solr-sdr-catalog: *healthy
-      solr-ptsearch: *healthy
-      imgsrv: *healthy
-      vufind: *healthy
-    ports:
-      - "8080:8080"
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: "curl -f --retry-connrefused http://localhost:8080/"
-
-  vufind:
-    build: ./catalog
-    hostname: 'catalog-dev'
-    volumes:
-      - ${BABEL_HOME}/catalog:/app
-      - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
-    environment:
-      - FIREBIRD_HOME=/htapps/babel/firebird-common
-    depends_on:
-      mysql-sdr: *healthy
-      solr-sdr-catalog: *healthy
-    healthcheck:
-          <<: *healthcheck-defaults
-          test: "service php7.4-fpm status | grep running"
-
-  firebird:
-    <<: *node
-    working_dir: /htapps/babel/firebird-common/
-    command: ['npm', 'run', 'babel']
-
-  page-turner:
-    <<: *node
-    working_dir: /htapps/babel/pt/web/firebird
-    command: ['npm', 'run', 'babel']
-
-### DATA STORES
-
-  solr-sdr-catalog:
-    image: ghcr.io/hathitrust/catalog-solr-sample
-    ports:
-      - "9033:9033"
-    volumes:
-      - solr_sdr_catalog:/var/solr
-    healthcheck:
-          <<: *healthcheck-defaults
-          test: "curl -f --retry-connrefused http://localhost:9033"
-
-  solr-lss-dev:
-    image: solr:6.6.6-alpine
-    ports:
-      - "8983:8983"
-    user: ${CURRENT_USER}
-    volumes:
-      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-x:/opt/solr/server/solr/core-x
-      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-y:/opt/solr/server/solr/core-y
-      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone:/opt/lss_solr_configs
-      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lib:/opt/solr/server/solr/lib
-      - ${BABEL_HOME}/logs/solr:/opt/solr/server/logs
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: "ping -c 1 solr-lss-dev:8983"
-
-  solr-ptsearch:
-    build: ./ptsearch-solr
-    ports:
-      - "8984:8983"
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: "curl -f --retry-connrefused http://solr-ptsearch:8983/solr/ptsearch/admin/ping"
-
-  mysql-sdr:
-    image: ghcr.io/hathitrust/db-image:latest
-    volumes:
-      - ${BABEL_HOME}/slip/etc/sql/100_slip.sql:/docker-entrypoint-initdb.d/100_slip.sql
-      - ${BABEL_HOME}/sql/permissions.sql:/docker-entrypoint-initdb.d/201_permissions.sql
-      - ${BABEL_HOME}/mb/etc/sql/999_mb.sql:/docker-entrypoint-initdb.d/999_mb.sql
-      - ${BABEL_HOME}/sql/vufind_session.sql:/docker-entrypoint-initdb.d/888_vufind.sql
-      - mysql_sdr_data:/var/lib/mysql
-    ports:
-      - "3307:3306"
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
-
-#### INDEXING
-
-  # We add the 'indexing' profile to keep these from starting automatically
-  # when we do 'docker-compose up'
-
-  slip:
-    build: ./slip
-    image: hathitrust-slip
-    user: ${CURRENT_USER}
-    volumes:
-      - ${BABEL_HOME}:/htapps/babel
-      # this is where docs-j saves output
-      - ${BABEL_HOME}/slip/sample:/htapps/babel/logs/tmp
-      - ${BABEL_HOME}/sample-data/sdr1:/sdr1
-      - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
-      - ${BABEL_HOME}/sample-data:/tmp/sample-data
-      - ${BABEL_HOME}/logs:/var/log/babel
-    environment:
-      - SDRROOT=/htapps/babel
-      - SDRDATAROOT=/sdr1
-      - HT_DEV=docker
-    depends_on:
-      mysql-sdr: *healthy
-      solr-sdr-catalog: *healthy
-      solr-lss-dev: *healthy
-    command: bash
+    command: "sleep infinity"
     profiles:
-      - indexing
+      - backend
 
+# Indexing
   traject:
-    build: ./hathitrust_catalog_indexer
-    environment:
-      - SOLR_URL=http://solr-sdr-catalog:9033/solr/catalog
-      - redirect_file=/dev/null
-      - NO_DB=1
-      - DDIR=/app/metadata
+    extends:
+      file: common/docker/traject.yml
+      service: traject
     depends_on:
-      solr-sdr-catalog: *healthy
-    volumes:
-      - ${BABEL_HOME}/sample-data/metadata:/app/metadata
-      - ${BABEL_HOME}/hathitrust_catalog_indexer:/app
-      - gem_cache:/gems
+      solr-sdr-catalog:
+        condition: service_healthy
     profiles:
-      - indexing
+    - indexing
 
   stage-item:
-    build: ./stage-item
-    # no explicit depends-on - the stage item script will start catalog, traject, etc as needed
-    volumes:
-      - ${BABEL_HOME}:/usr/src/babel
-      - gem_cache:/gems
-      - /var/run/docker.sock:/var/run/docker.sock
+    extends:
+      file: common/docker/stage-item.yml
+      service: stage-item
     depends_on:
-      mysql-sdr: *healthy
-    environment:
-      - CATALOG_SOLR=http://solr-sdr-catalog:9033/solr/catalog
-      - LSS_SOLR=http://solr-lss-dev:8983/solr/core-x
-      - MYSQL_URL=mysql2://mdp-admin:mdp-admin@mysql-sdr:3306/ht
+      mysql-sdr:
+        condition: service_healthy
     profiles:
-      - stage_item
+    - stage_item
 
-  # todo: ingest, bound to sample-data
-
-volumes:
-  gem_cache:
-  mysql_sdr_data:
-  solr_sdr_catalog:
+  slip:
+    extends:
+      file: common/docker/slip.yml
+      service: slip
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+      solr-lss-dev:
+        condition: service_healthy
+    profiles:
+    - indexing
