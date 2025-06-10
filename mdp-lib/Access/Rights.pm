@@ -525,10 +525,8 @@ sub get_single_page_PDF_access_status {
         # you can read the book, so you can download single page PDFs
         $status = 'allow';
         my $access_type = $self->get_access_type($C);
-        if ( $access_type == $RightsGlobals::ENHANCED_TEXT_USER || 
-             $access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
-            # but ENHANCED_TEXT_USER and EMERGENCY_ACCESS_AFFILIATE 
-            # affiliations can only single-page download
+        if ( $access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
+            # but EMERGENCY_ACCESS_AFFILIATE can only single-page download
             # what ordinary users can download
             my $rights_attribute = $self->get_rights_attribute($C, $id);
             my $initial_access_status =
@@ -1142,10 +1140,6 @@ sub _determine_access_type {
         # coordinate with Auth::ACL
         $access_type = $RightsGlobals::HT_AFFILIATE;
     }
-    elsif (DEBUG('nfb', 'NFB affiliated user-type access forced') || DEBUG('enhanced', 'Enhanced book user-type access forced')) {
-        # coordinate with Auth::ACL
-        $access_type = $RightsGlobals::ENHANCED_TEXT_USER;
-    }
     elsif (DEBUG('inlib', 'In-library user-type access forced') ) {
         $access_type = $RightsGlobals::LIBRARY_IPADDR_USER;
     }
@@ -1176,9 +1170,6 @@ sub _determine_access_type {
     }
     elsif ( $auth->user_is_print_disabled($C) ) {
         $access_type = $RightsGlobals::SSD_USER;
-    }
-    elsif ($auth->affiliation_is_enhanced_text_user($C)) {
-        $access_type = $RightsGlobals::ENHANCED_TEXT_USER;
     }
     elsif ($auth->affiliation_has_emergency_access($C)) {
         $access_type = $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE;
