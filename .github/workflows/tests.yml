@@ -23,7 +23,7 @@ jobs:
         run: /bin/bash ./setup-env.sh
 
       - name: Run perl tests
-        run: docker compose -f backend.yml run perl-test
+        run: docker compose run perl-test
 
   playwright:
     runs-on: ubuntu-latest
@@ -47,13 +47,13 @@ jobs:
         run: /bin/bash ./setup-env.sh
 
       - name: Build firebird
-        run: docker compose -f frontend.yml run firebird ./bin/build.sh
+        run: docker compose run firebird ./bin/build.sh
 
       - name: Build pageturner
-        run: docker compose -f frontend.yml run page-turner /htapps/babel/pt/bin/build.sh
+        run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
       - name: Run playwright tests (PageTurner)
-        run: docker compose -f frontend.yml run playwright
+        run: docker compose run playwright
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
