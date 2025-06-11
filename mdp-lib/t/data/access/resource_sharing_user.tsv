@@ -15,8 +15,8 @@ Attribute Code	Attribute	Access Profile	Location	Held	Initial access status	Can 
 5	und	open	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 5	und	google	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
 5	und	page	*	-c	allow_resource_sharing_by_holdings	deny	deny	deny	deny
-5	und	open	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
-5	und	google	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
+5	und	open	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
+5	und	google	*	c	allow_resource_sharing_by_holdings	allow	allow	allow	allow
 5	und	page	*	c	allow_resource_sharing_by_holdings	allow	allow	deny	allow
 7	ic-world	open	*	*	allow	allow	allow	allow	allow
 7	ic-world	google	*	*	allow	allow	allow	allow	allow

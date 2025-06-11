@@ -444,7 +444,7 @@ sub get_full_PDF_access_status {
     if ($creative_commons) {
         $status = 'allow';
     }
-    else {
+    elsif ( $self->check_final_access_status($C, $id) eq 'allow' ) {
         my $access_profile = $self->get_access_profile_attribute($C, $id);
 
         # Affiliates of US institutions can download pd/pdus from
@@ -478,6 +478,14 @@ sub get_full_PDF_access_status {
                 $message = q{RESTRICTED_SOURCE};
             }
         }
+        # Jun 2025 resource sharing user can download full PDF when item is held
+        # check_final_access_status above verifies item is currently held
+        
+        # FIXME: is the intent to allow RS users to sidestep all access progile restrictions?
+        
+        if ($auth->user_is_resource_sharing_user($C)) {
+          $status = 'allow';
+        }
     }
 
     # Feb 2012 Only developers have unrestricted full PDF download.
@@ -487,18 +495,9 @@ sub get_full_PDF_access_status {
 
     # Apr 2013 ssdproxy can generate full PDF when item is held
     # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
-    # to be reverted, see code just below for resource sharing users...
+    # to be reverted, see code above for resource sharing users...
     if ($auth->user_is_print_disabled_proxy($C)) {
         $status = 'allow'; # allow for everyone
-    }
-
-    # Jun 2025 resource sharing user can download full PDF when item is held
-    if($auth->user_is_resource_sharing_user($C)) {
-        my $institution = $auth->get_institution_code($C, 'mapped');
-        my $held = Access::Holdings::id_is_currently_held($C, $id, $institution);
-        if ($held) {
-            $status = 'allow';
-        }
     }
 
     # clear the error message if $status eq 'allow'

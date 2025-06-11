@@ -240,9 +240,10 @@ foreach my $test ( @$tests ) {
           $num_tests += 1;
           my $got_download_volume = test_volume_pdf_download_status($attr, $access_profile, $test_location);
           is($got_download_volume, $expected_download_volume, "VOLUME PDF resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
+          $num_tests += 1;
         }
     }
-    # NOTE: there are no tests yet for the $expected_download_* values
+    # NOTE: there are no tests yet for the expected_download_plaintext case
 }
 
 done_testing($num_tests);
