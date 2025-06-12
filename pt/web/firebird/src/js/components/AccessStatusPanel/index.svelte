@@ -22,7 +22,6 @@
   subviews['in_library_user'] = InLibraryUser;
   subviews['emergency_access_affiliate'] = EmergencyAccessAffiliate;
   subviews['ssd_session_user'] = EnhancedTextUser;
-  subviews['enhanced_text_user'] = EnhancedTextUser;
 
   window.xzzz = subviews['total_access'];
 

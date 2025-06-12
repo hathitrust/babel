@@ -445,7 +445,7 @@ authentication, institution and holdings environment. Construction
 varies:
 
 XXX tbw WARNING!!!   This code and comments need checking against any changes in rights policies for
-SSD, SSDPROXY NFB-ENHANCED... and rules about holdings and brittle books
+SSD, SSDPROXY ... and rules about holdings and brittle books
 Is the following still true?
 Does the code do what the following says?
 
@@ -485,7 +485,7 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
     # enhanced user access rights not affected by institution or holdings
     # SSDProxy user access rights not affected by institution or holdings  (regular SSD are affected)
     my $access_type = Access::Rights::get_access_type_determination($C);
-    if ($access_type eq $RightsGlobals::ENHANCED_TEXT_USER   || $access_type eq $RightsGlobals::SSD_PROXY_USER )
+    if ($access_type eq $RightsGlobals::SSD_PROXY_USER )
     {
 	$fulltext_FQ_string = 
 	'(rights:(' . join('+OR+', @{$fulltext_attr_list_ref} ) . '))';

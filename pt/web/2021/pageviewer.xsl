@@ -245,9 +245,6 @@
       <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
         <xsl:call-template name="build-ssd-session-header" />
       </xsl:if>
-      <xsl:if test="$access-type/Name = 'enhanced_text_user'">
-        <xsl:call-template name="build-ssd-session-header" />
-      </xsl:if>
     </xsl:if>
   </xsl:template>
 

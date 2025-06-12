@@ -37,7 +37,6 @@ sub identify_user {
         $$retval{mapped_institution_name} = $mapped;
     }
     $$retval{affiliation} = ucfirst($auth->get_eduPersonUnScopedAffiliation($C));
-    # $$retval{u} = $auth->get_eduPersonEntitlement_print_disabled($C);
     $$retval{x} = $auth->affiliation_has_emergency_access($C);
 
     $$retval{r} = undef;
@@ -63,12 +62,6 @@ sub identify_user {
             $Types::Serialiser::true : 
             $Types::Serialiser::false;
     
-    $check = $auth->affiliation_is_enhanced_text_user($C);
-    if ( $check ) {
-        $$retval{r} = {} unless ( ref($$retval{r}) );
-        $$retval{r}{enhancedTextUser} = $Types::Serialiser::true;
-    }
-
     # $$retval{activated} = $auth->user_is_print_disabled_proxy($C) ? 'enhancedTextProxy' : undef;
 
     $$retval{providerName} = $auth->get_institution_name($C, undef, 1);

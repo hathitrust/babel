@@ -18,9 +18,6 @@ REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, a
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
   VALUES ('hathitrust','HathiTrust','hathitrust.org','1','1','https://idp.hathitrust.org/entity','^(member|alum|faculty|staff|student|employee)@hathitrust.org');
 
-REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
-  VALUES ('nfb','National Federation of the Blind','nfb.org','1','1','pumex-idp','^(member)@nfb.org');
-
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
 
 --- sample data for testing authenticated access
