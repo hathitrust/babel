@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+
+use Data::Dumper;
+
+print "Context-type: text/plain\n\n";
+
+print Dumper(\%ENV);

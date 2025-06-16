@@ -13,7 +13,6 @@
   <xsl:variable name="gAccessUseAuxIcon" select="/MBooksTop/MBooksGlobals/AccessUse/AuxIcon"/>
   <xsl:variable name="gHasOcr" select="/MBooksTop/MBooksGlobals/HasOcr"/>
   <xsl:variable name="gSSD_Session" select="/MBooksTop/MBooksGlobals/SSDSession"/>
-  <xsl:variable name="gPodUrl" select="/MBooksTop/MBooksGlobals/Pod/Url"/>
   <xsl:variable name="gSkin" select="/MBooksTop/MBooksGlobals/Skin"/>
   <xsl:variable name="gSdrInst" select="/MBooksTop/MBooksGlobals/EnvSDRINST"/>
   <xsl:variable name="gRightsAttribute" select="/MBooksTop/MBooksGlobals/RightsAttribute"/>
@@ -1163,7 +1162,6 @@
     <xsl:variable name="contents-tmp">
       <ul>
          <xsl:call-template name="find-in-library" />
-         <xsl:call-template name="buy-this-item" />
          <xsl:call-template name="get-service-links" />
       </ul>
     </xsl:variable>
@@ -1475,23 +1473,6 @@
         </xsl:element>
       </li>
     </xsl:for-each>
-  </xsl:template>
-
-  <xsl:template name="buy-this-item">
-    <xsl:if test="$gPodUrl != ''">
-      <li>
-        <xsl:element name="a">
-          <xsl:attribute name="data-toggle">tracking</xsl:attribute>
-          <xsl:attribute name="data-tracking-category">outLinks</xsl:attribute>
-          <xsl:attribute name="data-tracking-action">PT Buy a copy</xsl:attribute>
-          <xsl:attribute name="data-tracking-label"><xsl:value-of select="$gPodUrl" /></xsl:attribute>
-          <xsl:attribute name="href">
-            <xsl:value-of select="$gPodUrl"/>
-          </xsl:attribute>
-          <xsl:text>Buy a copy</xsl:text>
-        </xsl:element>
-      </li>
-    </xsl:if>
   </xsl:template>
 
   <xsl:template name="get-service-links">

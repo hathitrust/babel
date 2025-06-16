@@ -8,6 +8,9 @@ REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, ex
 REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
 ('ssduser@hathitrust.org','HathiTrust Ssduser','ssduser@hathitrust.org','student','ssd','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
+REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, expires, iprestrict, identity_provider, inst_id) VALUES
+('rsuser@hathitrust.org','HathiTrust Resource-Sharinguser','rsuser@hathitrust.org','external','resource_sharing','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
+
 --- inserts/updates for ht_institutions
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
   VALUES ('umich','University of Michigan','umich.edu','1','1','https://shibboleth.umich.edu/idp/shibboleth','^(member|alum|faculty|staff|student|employee)@umich.edu');
@@ -15,7 +18,9 @@ REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, a
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
   VALUES ('hathitrust','HathiTrust','hathitrust.org','1','1','https://idp.hathitrust.org/entity','^(member|alum|faculty|staff|student|employee)@hathitrust.org');
 
-REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
-  VALUES ('nfb','National Federation of the Blind','nfb.org','1','1','pumex-idp','^(member)@nfb.org');
-
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
+
+--- sample data for testing authenticated access
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_currently_held','2','1','19','1','babel','Synthetic test item');
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_not_held','2','1','19','1','babel','Synthetic test item');
+REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_not_current','2','1','19','1','babel','Synthetic test item');

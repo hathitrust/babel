@@ -11,9 +11,3 @@ APACHE_RUN_GROUP="$(id -g)"
 BABEL_HOME="$(dirname $(realpath $0))"
 
 EOT
-
-echo
-echo 🌐 Fetching geoip sample database
-echo
-
-curl -o ./geoip/GeoIP2-Country.mmdb 'https://raw.githubusercontent.com/maxmind/MaxMind-DB/main/test-data/GeoIP2-Country-Test.mmdb'

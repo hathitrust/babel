@@ -32,6 +32,17 @@ services:
     depends_on:
       apache-test: *healthy
 
+  playwright_reports:
+    image: mcr.microsoft.com/playwright:v1.50.1
+    volumes:
+      - ${BABEL_HOME}:/htapps/babel
+    working_dir: "/htapps/babel/pt/web/firebird"
+    command: "npx playwright show-report --host 0.0.0.0"
+    profiles:
+      - test
+    ports:
+      - 9323:9323
+
   apache-test:
     build:
       context: .
@@ -230,6 +241,7 @@ services:
     volumes:
       - ${BABEL_HOME}/slip/etc/sql/100_slip.sql:/docker-entrypoint-initdb.d/100_slip.sql
       - ${BABEL_HOME}/sql/permissions.sql:/docker-entrypoint-initdb.d/201_permissions.sql
+      - ${BABEL_HOME}/sql/auth.sql:/docker-entrypoint-initdb.d/202_auth.sql
       - ${BABEL_HOME}/mb/etc/sql/999_mb.sql:/docker-entrypoint-initdb.d/999_mb.sql
       - ${BABEL_HOME}/sql/vufind_session.sql:/docker-entrypoint-initdb.d/888_vufind.sql
       - mysql_sdr_data:/var/lib/mysql

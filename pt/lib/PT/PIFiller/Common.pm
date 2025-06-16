@@ -354,40 +354,6 @@ sub handle_CONTENT_PROVIDER_PI
 
 # ---------------------------------------------------------------------
 
-=item handle_POD_DATA_PI :  PI_handler(POD_DATA)
-
-Description
-
-=cut
-
-# ---------------------------------------------------------------------
-sub handle_POD_DATA_PI
-    :  PI_handler(POD_DATA)
-{
-    my ($C, $act, $piParamHashRef) = @_;
-
-    # Even HT affiliates can only see the POD link to a PDUS on US
-    # soil.
-    my $id = $C->get_object('CGI')->param('id');
-    my $allow_pod = ($C->get_object('Access::Rights')->get_POD_access_status($C, $id) eq 'allow');
-
-    my $url = '';
-
-    if ($allow_pod) {
-        my $dbh = $C->get_object('Database')->get_DBH($C);
-
-        my $statement = qq{SELECT url FROM pod WHERE id=? LIMIT 1};
-        my $sth = DbUtils::prep_n_execute($dbh, $statement, $id);
-
-        $url = $sth->fetchrow_array();
-        $url = Utils::xml_escape_url_separators($url);
-    }
-
-    return wrap_string_in_tag($url, 'Url');
-}
-
-# ---------------------------------------------------------------------
-
 =item handle_FEEDBACK_CGI_URL_PI : PI_handler(FEEDBACK_CGI_URL)
 
 Handler for FEEDBACK_CGI_URL
@@ -1036,12 +1002,8 @@ sub handle_ACCESS_TYPE_PI
     my $initial_access_type =
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
-    # if ( $access_type eq 'enhanced_text_user' ) {
-    #     $xml .= qq{<Name>$access_type</Name>};
-    # } elsif ( $access_type eq 'ssd_user' ) {
-    #     $xml .= qq{<Name>ssd_session_user</Name>};
-    # }
     $access_type = 'ssd_session_user' if ( $access_type eq 'ssd_user' );
+    $access_type = 'resource_sharing_user' if ($access_type eq 'resource_sharing' );
 
     $xml .= qq{<WTF>$access_type / $initial_access_type</WTF>};
 
@@ -1086,7 +1048,7 @@ sub handle_ACCESS_TYPE_PI
         $xml .= qq{<Name>total_access</Name>};
         $xml .= qq{<Role>$access_type</Role>};
         $xml .= qq{<Granted>TRUE</Granted>};
-    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'enhanced_text_user' ) {
+    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'resource_sharing_user' ) {
         $xml .= qq{<Name>$access_type</Name>};
         my $final_access_status =
             $rights->check_final_access_status($C, $id) eq 'allow' ? 'TRUE' : 'FALSE';

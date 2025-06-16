@@ -93,11 +93,21 @@ my $sess = Session->new($C);
 $C->set_object('Session', $sess);
 
 mock_institutions($C);
-Test::ACL::mock_acls($C, { userid => 'user@umich.edu', role => 'corrections', usertype => 'staff', access => 'total', expires => '2040-12-31 23:59:59', identity_provider => Auth::Auth::get_umich_IdP_entity_id() });
+Test::ACL::mock_acls($C,
+  {
+    userid => 'user@umich.edu',
+    role => 'corrections',
+    usertype => 'staff',
+    access => 'total',
+    expires => Test::ACL::future_date_string(),
+    identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+  }
+);
 
 local %ENV = %ENV;
 $ENV{HTTP_HOST}   = q{babel.hathitrust.org};
-$ENV{SERVER_ADDR} = q{141.213.128.185};
+# SERVER_ADDR from TEST-NET-1 block, may not be needed at all
+$ENV{SERVER_ADDR} = q{192.0.2.0};
 $ENV{SERVER_PORT} = q{443};
 $ENV{AUTH_TYPE}   = q{shibboleth};
 $ENV{affiliation} = q{member@umich.edu};
@@ -211,7 +221,7 @@ sub mock_institutions {
 
     my $inst_ref = { entityIDs => {} };
     $$inst_ref{entityIDs}{ Auth::Auth::get_umich_IdP_entity_id() } = {
-        sdrinst              => 'uom',
+        sdrinst              => 'umich',
         inst_id              => 'umich',
         entityID             => Auth::Auth::get_umich_IdP_entity_id(),
         enabled              => 1,

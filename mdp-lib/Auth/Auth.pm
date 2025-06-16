@@ -98,9 +98,6 @@ our $ENTITLEMENT_PRINT_DISABLED_PROXY_VALUE = 'http://www.hathitrust.org/access/
 
 our $ENTITLEMENT_COMMON_LIB_TERMS = 'urn:mace:dir:entitlement:common-lib-terms';
 
-my $NON_HT_AFFILIATED_ENTITY_IDS = {};
-$$NON_HT_AFFILIATED_ENTITY_IDS{'pumex-idp'} = 1;
-
 # eduPersonScopedAffiliation attribute values that can be considered
 # for print disabled status
 my $ENTITLEMENT_VALID_AFFILIATIONS_REGEXP =
@@ -1087,13 +1084,11 @@ sub user_is_print_disabled {
     # ACL test
     my $is_disabled = (
                        Auth::ACL::a_Authorized( {role => 'ssd'})
-                       ||
-                       Auth::ACL::a_Authorized( {role => 'ssdnfb'})
                       );
     # Authentication test
     unless ($is_disabled) {
         my $entitlement = $self->__get_shibboleth_print_disability_entitlement($C);
-        $is_disabled = ($entitlement eq 'ssd') || ($entitlement eq 'ssdnfb')
+        $is_disabled = ($entitlement eq 'ssd')
     }
 
     return $is_disabled;
@@ -1129,7 +1124,7 @@ sub user_has_total_access {
 This is the eduPersonEntitlement attribute value that equates to print
 disabled status. It covers all the cases of print-disability access:
 
-1) ssd/ssdnfb (a disabled user)
+1) ssd (a print-disabled user)
 2) ssdproxy (a user entitled to act on behalf of a disabled user)
 
 If it is necessary to differentiate between (1) and (2) call
@@ -1314,7 +1309,7 @@ sub affiliation_is_hathitrust {
         my $aff = lc($self->get_eduPersonScopedAffiliation($C));
         my $entity_id = lc($self->get_shibboleth_entityID($C));
         # If there's a scoped affiliation then they're hathitrust
-        $is_hathitrust = ( $has_common_entitlement || $aff ne '' ) && ( ! defined $$NON_HT_AFFILIATED_ENTITY_IDS{$entity_id} );
+        $is_hathitrust = ( $has_common_entitlement || $aff ne '' );
     }
     elsif ($self->auth_sys_is_COSIGN($C)) {
         if (! $self->login_realm_is_friend) {
@@ -1329,36 +1324,6 @@ sub affiliation_is_hathitrust {
     }
 
     return $is_hathitrust;
-}
-
-# ---------------------------------------------------------------------
-
-=item affiliation_is_enhanced_text_user
-
-This affiliation allows for greater access in reading,
-but more limited download options.
-
-=cut
-
-# ---------------------------------------------------------------------
-sub affiliation_is_enhanced_text_user {
-    my $self = shift;
-    my $C = shift;
-
-    return 1 if (DEBUG('nfb'));
-    return 1 if (DEBUG('marrakesh'));
-
-    my $is_enhanced_text_user = 0;
-
-    if ($self->auth_sys_is_SHIBBOLETH($C)) {
-        my $aff = lc($self->get_eduPersonScopedAffiliation($C));
-        $is_enhanced_text_user = ( $aff eq 'member@nfb.org' );
-    }
-    else {
-        $is_enhanced_text_user = 0;
-    }
-
-    return $is_enhanced_text_user;
 }
 
 sub affiliation_has_emergency_access {
@@ -1385,6 +1350,26 @@ sub affiliation_has_emergency_access {
     return $is_emergency_access_user;
 
 }
+
+sub user_is_resource_sharing_user {
+    my $self = shift;
+    my $C = shift;
+    my $check_possible = shift;
+
+    # ACL test
+    my $is_resource_sharing_user = Auth::ACL::a_Authorized( {role => 'resource_sharing'} );
+
+    return $is_resource_sharing_user if ( $check_possible );
+
+    if ( $is_resource_sharing_user ) {
+        # check that the user has toggled this setting
+        my $activated = $C->get_object('Session')->get_persistent('activated_role') eq 'resourceSharing';
+        unless ( $activated ) { $is_resource_sharing_user = 0; }
+    }
+
+    return $is_resource_sharing_user;
+}
+
 
 # ---------------------------------------------------------------------
 

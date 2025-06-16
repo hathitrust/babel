@@ -45,7 +45,7 @@ foreach my $app ( @apps ) {
         push @output, qq{$key = $value};
     }
     open(my $fh, ">", $local_filename) || die "could not open $local_filename - $!";
-    print $fh join("\n", @output);
+    print $fh join("\n", @output), "\n";
     close($fh);
     say "updated $app: debug=$enabled";
 }
