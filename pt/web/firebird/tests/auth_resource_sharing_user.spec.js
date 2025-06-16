@@ -78,11 +78,21 @@ test.describe('resource_sharing_user access to ic material', () => {
   test('pageturner does not load image for ic_not_current', async ({ page }) => {
     await page.goto('/cgi/pt?id=test.ic_not_current');
     await expect(page.getByRole('figure')).toHaveCount(0);
+    // Download panel has "This item cannot be downloaded."
+    const downloadAccordion = page.getByRole('heading', { name: 'Download' });
+    const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
+    await downloadAccordionButton.click();
+    await expect(page.getByText('This item cannot be downloaded')).toHaveCount(1);
   });
 
   test('pageturner does not load image for ic_not_held', async ({ page }) => {
     await page.goto('/cgi/pt?id=test.ic_not_held');
     await expect(page.getByText('not available online')).toHaveCount(1);
     await expect(page.getByRole('figure')).toHaveCount(0);
+    // Download panel has "This item cannot be downloaded."
+    const downloadAccordion = page.getByRole('heading', { name: 'Download' });
+    const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
+    await downloadAccordionButton.click();
+    await expect(page.getByText('This item cannot be downloaded')).toHaveCount(1);
   });
 });
