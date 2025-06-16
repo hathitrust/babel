@@ -480,9 +480,8 @@ sub get_full_PDF_access_status {
         }
         # Jun 2025 resource sharing user can download full PDF when item is held
         # check_final_access_status above verifies item is currently held
-        
-        # FIXME: is the intent to allow RS users to sidestep all access profile restrictions?
-        
+        # TODO: policy is expected to favor allowing download of `page` and `page+lowres`
+        # access profiles.
         if ($auth->user_is_resource_sharing_user($C)) {
           $status = 'allow';
         }
@@ -496,7 +495,7 @@ sub get_full_PDF_access_status {
     # Apr 2013 ssdproxy can generate full PDF when item is held
     # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
     # to be reverted, see code above for resource sharing users...
-    # FIXME: this allows print disabled proxy to have download options for everything, even supp/supp,
+    # TODO: this allows print disabled proxy to have download options for everything, even supp/supp,
     # even though imgsrv will not honor the request, unless check_final_access_status is called
     # as a precondition on this function. Recommend moving this check up to where the
     # resource sharing user is checked, to avoid inconsistent results.
