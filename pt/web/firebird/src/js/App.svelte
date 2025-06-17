@@ -40,7 +40,6 @@
 
   // set up context
   console.log('hi from app!')
-  console.log('HT?', HT)
   const emitter = new Emittery();
   setContext('emitter', emitter);
 
@@ -347,6 +346,7 @@
   }
 
   onMount(() => {
+    console.log('hi from on mount')
     // force this in case we're doing id=open/id=r, etc.
     updateHistory({ id: manifest.id });
     setupLoadingView();
@@ -437,7 +437,7 @@
     style="grid-area: options"
     class="btn btn-dark shadow rounded-0 w-100 d-flex justify-content-between align-items-center d-md-none"
     class:d-none={$interfaceMode == 'minimal'}
-    on:click={toggleOptions}
+    onclick={toggleOptions}
   >
     <span>Options</span>
     <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
@@ -476,7 +476,7 @@
     class="btn x-btn-lg btn-outline-dark shadow rounded-circle"
     use:tooltippy={{ content: sidebarButtonText }}
     aria-label={asideExpanded ? 'Close sidebar' : 'Open sidebar'}
-    on:click={togglePane}
+    onclick={togglePane}
   >
     <i class="fa-solid fa-arrow-right-from-bracket" class:fa-flip-horizontal={asideExpanded} aria-hidden="true"></i>
   </button>
@@ -508,7 +508,7 @@
       class="btn btn-outline-dark text-uppercase shadow"
       style="position: absolute; top: 0; right: 0"
       aria-label="Close Modal"
-      on:click={closeLightbox}>Close <i class="fa-solid fa-xmark" aria-hidden="true"></i></button
+      onclick={closeLightbox}>Close <i class="fa-solid fa-xmark" aria-hidden="true"></i></button
     >
     <img alt="" bind:this={lightboxImg} class="h-auto w-auto mw-100 mh-100 border border-dark" />
   </div>

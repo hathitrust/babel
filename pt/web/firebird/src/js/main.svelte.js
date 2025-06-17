@@ -24,28 +24,28 @@ import App from './App.svelte';
 import CookieConsentBanner from '~firebird-common/src/js/components/CookieConsentBanner';
 import { mount } from 'svelte';
 
-const toCamel = (s) => {
-  return s.replace(/([-_][a-z])/gi, ($1) => {
-    return $1.toUpperCase().replace('-', '').replace('_', '');
-  });
-};
+// const toCamel = (s) => {
+//   return s.replace(/([-_][a-z])/gi, ($1) => {
+//     return $1.toUpperCase().replace('-', '').replace('_', '');
+//   });
+// };
 
-const buildProps = (el) => {
-  let propProperty = `data-prop-`;
-  let props = {};
-  for (const attr of el.attributes) {
-    if (attr.name.startsWith(propProperty)) {
-      let value = attr.value;
-      try {
-        value = JSON.parse(value);
-      } catch (error) {}
+// const buildProps = (el) => {
+//   let propProperty = `data-prop-`;
+//   let props = {};
+//   for (const attr of el.attributes) {
+//     if (attr.name.startsWith(propProperty)) {
+//       let value = attr.value;
+//       try {
+//         value = JSON.parse(value);
+//       } catch (error) {}
 
-      props[toCamel(attr.name.replace(propProperty, ''))] = value;
-      console.log('are we building props?', value);
-    }
-  }
-  return props;
-};
+//       props[toCamel(attr.name.replace(propProperty, ''))] = value;
+//       console.log('are we building props?', value);
+//     }
+//   }
+//   return props;
+// };
 
 // configure the HT global
 setupHTEnv();
@@ -60,8 +60,8 @@ HT.loginStatus = writable(emptyLoginStatus);
 HT.login_status = emptyLoginStatus;
 
 let app;
-export const apps = {};
-apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
+// export const apps = {};
+// apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
 
 let needLoggedInStatus = true;
 
@@ -85,28 +85,30 @@ HT.postPingCallback = function (login_status) {
     return;
   }
 
-  let el = document.getElementById('root');
-  let props = buildProps(el);
-  console.log('props', props);
+  // let el = document.getElementById('root');
+  // let props = buildProps(el);
+  // console.log('props', props);
 
   app = mount(App, {
     target: document.getElementById('root'),
-    props: props,
+    // props: props,
   });
-  Object.keys(apps).forEach((slug) => {
-    document.querySelectorAll(slug).forEach((el) => {
-      console.log('hi from ', el);
-      if (el.component) {
-        return;
-      }
-      let props = buildProps(el);
-      el.component = mount(apps[slug], {
-        target: el,
-        props: props,
-      });
-    });
-  });
+  console.log('app?', app);
+  // Object.keys(apps).forEach((slug) => {
+  //   document.querySelectorAll(slug).forEach((el) => {
+  //     console.log('hi from ', el);
+  //     if (el.component) {
+  //       return;
+  //     }
+  //     let props = buildProps(el);
+  //     el.component = mount(apps[slug], {
+  //       target: el,
+  //       props: props,
+  //     });
+  //   });
+  // });
   setTimeout(() => {
+    console.log('did we make it to the first timeout?');
     document.body.dataset.initialized = true;
   });
   new AnalyticsManager(HT).configure();
@@ -121,6 +123,7 @@ let script = document.createElement('script');
 script.async = true;
 script.src = `//${HT.service_domain}/cgi/ping?callback=HT.postPingCallback&_${new Date().getTime()}`;
 script.onerror = function () {
+  console.log('we must be in dev, empty login status');
   HT.postPingCallback(emptyLoginStatus);
 };
 document.head.appendChild(script);
