@@ -1,22 +1,28 @@
 <script>
   import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
-	import PlaintextFormat from './PlaintextFormat.svelte'
+  import PlaintextFormat from './PlaintextFormat.svelte';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
 
-  export let container;
-  export let startSeq = 1;
+  /**
+   * @typedef {Object} Props
+   * @property {any} container
+   * @property {number} [startSeq]
+   */
+
+  /** @type {Props} */
+  let { container, startSeq = 1 } = $props();
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
 
-  const formats = {};
-	formats['image'] = ImageFormat;
-	formats['plaintext'] = PlaintextFormat;
+  const formats = $state({});
+  formats['image'] = ImageFormat;
+  formats['plaintext'] = PlaintextFormat;
 
-  let view;
+  let view = $state();
   let isInitialized = true;
 
   export const currentLocation = function () {
@@ -96,8 +102,9 @@
       emitter.emit('page.goto', options);
     }
   };
-</script>
 
+  const Format = $derived(formats[$currentFormat]);
+</script>
 
 <!-- <View
   {container}
@@ -111,7 +118,16 @@
   bind:this={view}
 /> -->
 
-<svelte:component this={formats[$currentFormat]} {container} {startSeq} {currentLocation} {findTarget} {findFocusItems} {handleClick} {handleKeydown} bind:this={view}></svelte:component>
+<Format
+  {container}
+  {startSeq}
+  {currentLocation}
+  {findTarget}
+  {findFocusItems}
+  {handleClick}
+  {handleKeydown}
+  bind:this={view}
+></Format>
 
 <style>
 </style>

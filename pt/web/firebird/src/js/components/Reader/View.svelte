@@ -1,7 +1,5 @@
-<svelte:options accessors={true} />
-
 <script>
-  import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
+  import { onMount, onDestroy, getContext, tick } from 'svelte';
   import { get } from 'svelte/store';
   import { createObserver } from '../../lib/observer';
   import PQueue from 'p-queue';
@@ -23,19 +21,21 @@
   const UNLOAD_PAGE_INTERVAL = 30 * 1000;
   const LOAD_PAGE_PEEK_PERCENT = '25%';
 
-  export let format = $currentFormat;
-  export let container;
-  export let startSeq = 1;
-  export let zoomScales = [0.5, 0.75, 1, 1.5, 1.75, 2, 2.5, 3.0, 3.5, 4.0];
+  console.log('hi from view!');
 
-  export let innerHeight = container.clientHeight;
-  export let innerWidth = container.clientWidth;
+  let {
+    format = $currentFormat,
+    container,
+    startSeq = 1,
+    zoomScales = [0.5, 0.75, 1, 1.5, 1.75, 2, 2.5, 3.0, 3.5, 4.0],
+    innerHeight = container.clientHeight,
+    innerWidth = container.clientWidth,
+    maxHeight = -1,
+  } = $props();
 
-  export let maxHeight = -1;
-
-  export let currentLocation = function () {};
-  export let handleClick = function () {};
-  export let handleKeydown = function () {};
+  export function currentLocation() {}
+  export function handleClick() {}
+  export function handleKeydown() {}
 
   export function item(seq) {
     return itemMap[seq];
@@ -54,8 +54,8 @@
   const currentInView = new Set();
   let unloadFromView = new Set();
 
-  let zoom = 1; // on startup
-  let zoomIndex = zoomScales.indexOf(zoom);
+  let zoom = $state(1); // on startup
+  let zoomIndex = $derived(zoomScales.indexOf(zoom));
 
   let lastFormat = format;
 
@@ -231,9 +231,9 @@
     emitter.emit('view.relocated');
   };
 
-  export let findFocusItems = function (seq) {
+  export function findFocusItems(seq) {
     return [itemMap[seq]];
-  };
+  }
 
   const focus = function (seq) {
     // console.log("view.focus", isInitialized, seq);
@@ -259,7 +259,7 @@
     });
   };
 
-  export let findTarget = function (options) {
+  export function findTarget(options) {
     let targetSeq;
     if (options.delta) {
       targetSeq = $currentSeq + options.delta;
@@ -274,7 +274,7 @@
     }
     targetSeq = Math.max(1, Math.min(targetSeq, manifest.totalSeq));
     return itemMap[targetSeq].page;
-  };
+  }
 
   const gotoPage = function (options) {
     let target = findTarget(options);
@@ -365,7 +365,7 @@
     });
   });
 
-  let debugChoke = false;
+  let debugChoke = $state(false);
   let debugLoad = false;
   unsubscribers.debugChoke = emitter.on('debug.choke', (value) => {
     debugChoke = value;
@@ -463,29 +463,43 @@
   };
   unsubscribers.viewToggle = emitter.on('view.toggle', toggleView);
 
-  $: columnWidth = zoom > 1 ? (innerWidth / 2) * zoom : null;
-  $: if (format != lastFormat) {
-    zoom = 1;
-    lastFormat = format;
-  }
-
+  let columnWidth = $derived(zoom > 1 ? (innerWidth / 2) * zoom : null);
+  $effect(() => {
+    if (format != lastFormat) {
+      zoom = 1;
+      lastFormat = format;
+    }
+  });
   let isInitialized = false;
-  afterUpdate(() => {
-    if (itemMap[manifest.totalSeq].page) {
-      // console.log("-- view.afterUpdate", $currentView, isInitialized, observer.observedIdx, manifest.totalSeq );
-      if (!isInitialized && observer.observedIdx == manifest.totalSeq) {
-        if (startSeq > 1) {
-          setTimeout(() => {
-            let target = findTarget({ seq: startSeq, force: true });
-            if (!target) {
-              return;
-            }
-            let offsetTop = typeof target.offsetTop == 'function' ? target.offsetTop() : target.offsetTop;
-            container.scroll(0, offsetTop);
+  $effect.pre(() => {
+    console.log('the component is about to update');
+    tick().then(() => {
+      console.log('the component just updated');
+      if (itemMap[manifest.totalSeq].page) {
+        // console.log("-- view.afterUpdate", $currentView, isInitialized, observer.observedIdx, manifest.totalSeq );
+        if (!isInitialized && observer.observedIdx == manifest.totalSeq) {
+          if (startSeq > 1) {
+            setTimeout(() => {
+              let target = findTarget({ seq: startSeq, force: true });
+              if (!target) {
+                return;
+              }
+              let offsetTop = typeof target.offsetTop == 'function' ? target.offsetTop() : target.offsetTop;
+              container.scroll(0, offsetTop);
 
+              isInitialized = true;
+
+              $currentSeq = startSeq;
+
+              emitter.emit('zoom.enable', {
+                out: zoomIndex > 0,
+                in: zoomIndex < zoomScales.length - 1,
+              });
+
+              emitter.emit('view.ready');
+            });
+          } else {
             isInitialized = true;
-
-            $currentSeq = startSeq;
 
             emitter.emit('zoom.enable', {
               out: zoomIndex > 0,
@@ -493,19 +507,10 @@
             });
 
             emitter.emit('view.ready');
-          });
-        } else {
-          isInitialized = true;
-
-          emitter.emit('zoom.enable', {
-            out: zoomIndex > 0,
-            in: zoomIndex < zoomScales.length - 1,
-          });
-
-          emitter.emit('view.ready');
+          }
         }
       }
-    }
+    });
   });
 
   onMount(() => {
@@ -551,7 +556,7 @@
   });
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="inner"
   class:view-2up={$currentView == '2up'}
@@ -560,8 +565,8 @@
   style:--paddingBottom={$currentView == '2up' ? 2.5 * 16 : 0}
   style:--fa-animation-duration="10s"
   bind:this={inner}
-  on:click={handleClick}
-  on:keydown={handleKeydown}
+  onclick={handleClick}
+  onkeydown={handleKeydown}
 >
   {#each spreadData as spread, spreadIdx}
     <div

@@ -1,17 +1,23 @@
 <script>
   import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
-	import PlaintextFormat from './PlaintextFormat.svelte'
+  import PlaintextFormat from './PlaintextFormat.svelte';
 
   const manifest = getContext('manifest');
-  let view;
+  let view = $state();
 
-  export let container;
-	export let startSeq = 1;
+  /**
+   * @typedef {Object} Props
+   * @property {any} container
+   * @property {number} [startSeq]
+   */
 
-  const formats = {};
-	formats['image'] = ImageFormat;
-	formats['plaintext'] = PlaintextFormat;
+  /** @type {Props} */
+  let { container, startSeq = 1 } = $props();
+
+  const formats = $state({});
+  formats['image'] = ImageFormat;
+  formats['plaintext'] = PlaintextFormat;
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
@@ -19,7 +25,8 @@
   export const currentLocation = function () {
     return { page: view.view.item($currentSeq) };
   };
+
+  const Format = $derived(formats[$currentFormat]);
 </script>
 
- <svelte:component this={formats[$currentFormat]} {startSeq} {currentLocation} {container} bind:this={view}></svelte:component>
-
+<Format {startSeq} {currentLocation} {container} bind:this={view}></Format>
