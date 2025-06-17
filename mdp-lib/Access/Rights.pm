@@ -479,28 +479,23 @@ sub get_full_PDF_access_status {
             }
         }
         # Jun 2025 resource sharing user can download full PDF when item is held
-        # check_final_access_status above verifies item is currently held
-        # TODO: policy is expected to favor allowing download of `page` and `page+lowres`
-        # access profiles.
+        # `check_final_access_status` above verifies item is currently held
+        # This allows download of all access profiles, including `google`, `page`, and `page+lowres`
         if ($auth->user_is_resource_sharing_user($C)) {
           $status = 'allow';
+        }
+
+        # Apr 2013 ssdproxy can generate full PDF when item is held
+        # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
+        # to be reverted, see code above for resource sharing users...
+        if ($auth->user_is_print_disabled_proxy($C)) {
+            $status = 'allow'; # allow for everyone
         }
     }
 
     # Feb 2012 Only developers have unrestricted full PDF download.
     if (Auth::ACL::S___superuser_using_DEBUG_super) {
         $status = 'allow';
-    }
-
-    # Apr 2013 ssdproxy can generate full PDF when item is held
-    # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
-    # to be reverted, see code above for resource sharing users...
-    # TODO: this allows print disabled proxy to have download options for everything, even supp/supp,
-    # even though imgsrv will not honor the request, unless check_final_access_status is called
-    # as a precondition on this function. Recommend moving this check up to where the
-    # resource sharing user is checked, to avoid inconsistent results.
-    if ($auth->user_is_print_disabled_proxy($C)) {
-        $status = 'allow'; # allow for everyone
     }
 
     # clear the error message if $status eq 'allow'
