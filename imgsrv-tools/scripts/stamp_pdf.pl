@@ -11,7 +11,8 @@ GetOptions($options,
 );
 
 my $cmd = [
-    "java", "-cp", "$Bin/../target/stamper-1.0-SNAPSHOT.jar",
+  #    "java", "-cp", "$Bin/../target/stamper-1.0-SNAPSHOT.jar",
+  "java", "-cp", "$Bin/../target/stamper-1.1.jar",
         "org.hathitrust.tools.Stamper",
         $$options{config_filename},
     ];
