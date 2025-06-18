@@ -74,6 +74,17 @@ sub process {
     local $ENV{__debug_coordocr} = ( $$env{DEBUG} =~ m,coordocr, );
 
     my $output_document = PDF::API2->new(-file => $self->output_fh);
+
+    # PDF::API2 2.026 (the version used here) says 'copyannots' "experimental";
+    # the current version as of 2025-06-18 says it's "deprecated". If we were
+    # to use it we could add the link directly when creating the stamp PDF and
+    # then see it get copied into the output document (this would work for the
+    # java Stamper too I think); but since we aren't using this instead we ask
+    # the stamper for the location to put the link and then add the link here
+    # after importing the cover sheet page.
+    #
+    #    $output_document->default('copyannots',1);
+
     $$output_document{forcecompress} = 0;
     $self->output_document($output_document);
 
@@ -648,6 +659,7 @@ sub insert_watermark {
     # $gfx->artifactStart('OC', $ocmd);
     $gfx->formimage($stamp, 0, 0, $s);
     # $gfx->artifactEnd;
+    my $annotation = $page->annotation();
 
 }
 
@@ -655,6 +667,11 @@ sub insert_colophon_page {
     my $self = shift;
     my $page_num = shift || 1;
     $self->output_document->import_page($self->stamper->document, 1, $page_num);
+
+    my $page = $self->output_document->openpage($page_num);
+    my $annotation = $page->annotation();
+    $annotation->rect(@{$self->stamper->{access_stmt_link_bbox}});
+    $annotation->url($self->stamper->{access_stmt_url});
 }
 
 sub insert_outline {
