@@ -112,12 +112,8 @@ sub setup_generated_message {
 
     my $message_1 = join(" ", @message);
 
-    # attach the brief access statement?
-    @message = ();
-    push @message, $self->access_stmts->{stmt_head};
-    push @message, " / ";
-    push @message, $self->access_stmts->{stmt_url};
-    my $message_2 = join(' ', @message);
+    # attach the brief access statement
+    my $message_2 = $self->access_stmts->{stmt_head};
 
     @message = ();
     my $message_3 = "";
