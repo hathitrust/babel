@@ -169,6 +169,7 @@ sub insert_generated_message {
 
     my $gfx = ref($image) ? $image : $page->gfx;
     $gfx->image($$self{message}, 2, 15, $image_w, $image_h);
+
 }
 
 sub setup_colophon_page {
@@ -261,14 +262,17 @@ sub setup_colophon_page {
 
     $gfx->textstart;
 
-    $gfx->font($bold_font, $font_size + 1);
-    $gfx->lead(( $font_size + 1 ) * 1.25);
-    $gfx->write_justified_text($$access_stmts{stmt_head}, $image_w);
+    my $stmt_head_font_size = $font_size + 1;
+    my $stmt_head_leading = $stmt_head_font_size * 1.25;
+    $gfx->font($bold_font, $stmt_head_font_size);
+    $gfx->lead($stmt_head_leading);
+    $gfx->fillcolor('#0000EE');
+    my ($textwidth, $lines) = $gfx->write_justified_text($$access_stmts{stmt_head}, $image_w, -underline => 'auto', -strokecolor => '#0000EE');
+    my $textheight = $lines * $stmt_head_leading;
+    my $ystart = $ypos - 15 + $stmt_head_font_size;
 
-    $gfx->font($mono_font, $font_size);
-    $gfx->lead($font_size * 1.25);
-    $gfx->fillcolor('#6C6C6C');
-    $gfx->write_justified_text($$access_stmts{stmt_url}, $image_w);
+    $$self{access_stmt_url} = $$access_stmts{stmt_url};
+    $$self{access_stmt_link_bbox} = [$xpos, $ystart, $xpos + $textwidth, $ystart - $textheight];
 
     $gfx->nl;
 
