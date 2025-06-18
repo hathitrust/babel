@@ -361,7 +361,7 @@ sub _fill_params {
     $self->access_stmts(SRV::Utils::get_access_statements($mdpItem));
     ## only set this if the book is in copyright
     unless ( $rights->public_domain_world_creative_commons($C, $self->id) ) {
-        $self->proxy($auth->get_PrintDisabledProxyUserSignature($C));
+        $self->proxy(SRV::Utils::Text::generated_text($self,$C));
     }
 
     $self->download_url($req->param('download_url')) if ( $req->param('download_url') );

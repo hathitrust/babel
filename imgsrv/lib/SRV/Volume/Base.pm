@@ -393,7 +393,7 @@ sub _fill_params {
 
     ## only set this if the book is in copyright
     unless ( $rights->public_domain_world_creative_commons($C, $self->id) ) {
-        $self->proxy($auth->get_PrintDisabledProxyUserSignature($C));
+        $self->proxy(SRV::Utils::Text::generated_text($self,$C));
     }
 
     my $volume_identifier = Identifier::get_pairtree_id_with_namespace($self->id);

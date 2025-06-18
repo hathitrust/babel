@@ -260,7 +260,7 @@ sub insert_colophon_page {
                 ),
                 $self->packager->additional_message($xml),
                 $xml->p(
-                    SRV::Utils::Text::generated_text($self)
+                    $self->proxy
                 ),
             )
         );

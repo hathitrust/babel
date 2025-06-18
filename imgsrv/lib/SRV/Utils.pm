@@ -866,24 +866,35 @@ package SRV::Utils::Text;
 
 use POSIX qw/strftime/;
 
-# Pass e.g. a Process::Volume subclass
+# Pass e.g. a SRV::Volume subclass and a context to get the auth from and then
+# pass back to the auth methods..
 sub generated_text {
   my $self = shift;
+  my $C = shift;
 
-  my @message = ('Generated');
-  if ( $self->display_name ) {
-      if ( $self->proxy ) {
-          push @message, 'by ' . $self->display_name;
-      }
-      if ( $self->institution ) {
-          push @message, 'at ' . $self->institution;
-      }
-      if ( $self->proxy ) {
-          push @message, qq{for a print-disabled user};
-      }
+  my $auth = $C->get_object('Auth');
+  # May be able to do away with passing self if we don't otherwise need display
+  # name & institution
+  if($auth->user_is_print_disabled_proxy($C)) {
+    return "GENERATED MESSAGE ATRS";
+  } elsif($auth->user_is_resource_sharing_user($C)) {
+    return "GENERATED MESSAGE RESOURCE SHARING";
   }
-  push @message, "on", strftime("%Y-%m-%d %H:%M GMT", gmtime());
-  return join(' ', @message);
+
+    #  my @message = ('Generated');
+    #  if ( $self->display_name ) {
+    #      if ( $self->proxy ) {
+    #          push @message, 'by ' . $self->display_name;
+    #      }
+    #      if ( $self->institution ) {
+    #          push @message, 'at ' . $self->institution;
+    #      }
+    #      if ( $self->proxy ) {
+    #          push @message, qq{for a print-disabled user};
+    #      }
+    #  }
+    #  push @message, "on", strftime("%Y-%m-%d %H:%M GMT", gmtime());
+    #  return join(' ', @message);
 }
 
 1;
