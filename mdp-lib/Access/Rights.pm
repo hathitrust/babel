@@ -485,16 +485,20 @@ sub get_full_PDF_access_status {
         $status = 'allow';
     }
 
-    # Apr 2103 ssdproxy can generate full PDF when item is held
-    # Apr 2016 ssdproxy can generate full PDF regardless -
-    # - 2013 code left here in case this decision is reversed
+    # Apr 2013 ssdproxy can generate full PDF when item is held
+    # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
+    # to be reverted, see code just below for resource sharing users...
     if ($auth->user_is_print_disabled_proxy($C)) {
-        # my $institution = $auth->get_institution_code($C, 'mapped');
-        # my $held = Access::Holdings::id_is_held($C, $id, $institution);
-        # if ($held) {
-        #     $status = 'allow';
-        # }
         $status = 'allow'; # allow for everyone
+    }
+
+    # Jun 2025 resource sharing user can download full PDF when item is held
+    if($auth->user_is_resource_sharing_user($C)) {
+        my $institution = $auth->get_institution_code($C, 'mapped');
+        my $held = Access::Holdings::id_is_currently_held($C, $id, $institution);
+        if ($held) {
+            $status = 'allow';
+        }
     }
 
     # clear the error message if $status eq 'allow'
