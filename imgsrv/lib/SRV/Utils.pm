@@ -861,4 +861,29 @@ sub _write {
     write_file(qq{$$self{filepath}/$filename.$ext}, $message);
 }
 
+# Routines for generating boilerplate text in various download formats.
+package SRV::Utils::Text;
+
+use POSIX qw/strftime/;
+
+# Pass e.g. a Process::Volume subclass
+sub generated_text {
+  my $self = shift;
+
+  my @message = ('Generated');
+  if ( $self->display_name ) {
+      if ( $self->proxy ) {
+          push @message, 'by ' . $self->display_name;
+      }
+      if ( $self->institution ) {
+          push @message, 'at ' . $self->institution;
+      }
+      if ( $self->proxy ) {
+          push @message, qq{for a print-disabled user};
+      }
+  }
+  push @message, "on", strftime("%Y-%m-%d %H:%M GMT", gmtime());
+  return join(' ', @message);
+}
+
 1;
