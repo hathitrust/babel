@@ -5,7 +5,8 @@ use warnings;
 
 use Plack::Util;
 use Plack::Util::Accessor qw( 
-    access_stmts 
+    access_stmts
+    auth
     display_name 
     institution 
     proxy 
@@ -84,7 +85,7 @@ sub process {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $auth = $C->get_object('Auth');
-
+    $self->auth($auth);
     # will need to so something different for status
     my $working_dir = tempdir(DIR => $self->cache_dir, CLEANUP => 1);
     # my $working_dir = qq{$ENV{SDRROOT}/sandbox/web/epub-dev/epub3-test/$$};
@@ -260,7 +261,7 @@ sub insert_colophon_page {
                 ),
                 $self->packager->additional_message($xml),
                 $xml->p(
-                    SRV::Utils::Text::generated_text($self)
+                    $self->generated_text($C)
                 ),
             )
         );
@@ -349,6 +350,33 @@ sub pack_zip {
     }
 
     return $epub_filename;
+}
+
+# Returns "generated at" text ONLY for RS and ATRS service types.
+# Everyone else gets an empty <p>.
+sub generated_text {
+  my $self = shift;
+  my $C    = shift;
+
+  my $auth = $C->get_object('Auth');
+  my $service;
+  if ($auth->user_is_print_disabled_proxy($C)) {
+    $service = 'Accessible Text Request Service';
+  } elsif($auth->user_is_resource_sharing_user($C)) {
+    $service = 'Resource Sharing';
+  }
+  else {
+    return '';
+  }
+
+  my @message = ('Generated');
+  my $institution = $auth->get_institution_name($C);
+  if ($institution) {
+    push @message, 'at', $institution;
+  }
+  push @message, 'through HathiTrust', $service;
+  push @message, 'on', strftime("%Y-%m-%d %H:%M GMT", gmtime());
+  return join(' ', @message);
 }
 
 1;
