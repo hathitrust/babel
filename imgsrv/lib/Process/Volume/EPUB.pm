@@ -85,7 +85,6 @@ sub process {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $auth = $C->get_object('Auth');
-    $self->auth($auth);
     # will need to so something different for status
     my $working_dir = tempdir(DIR => $self->cache_dir, CLEANUP => 1);
     # my $working_dir = qq{$ENV{SDRROOT}/sandbox/web/epub-dev/epub3-test/$$};
