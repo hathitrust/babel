@@ -31,11 +31,10 @@
     innerHeight = container.clientHeight,
     innerWidth = container.clientWidth,
     maxHeight = -1,
+    currentLocation = function () {},
+    handleClick = function () {},
+    handleKeydown = function () {},
   } = $props();
-
-  export function currentLocation() {}
-  export function handleClick() {}
-  export function handleKeydown() {}
 
   export function item(seq) {
     return itemMap[seq];

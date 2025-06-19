@@ -1,4 +1,5 @@
 <script>
+  console.log('hi from oneupview!');
   import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
   import PlaintextFormat from './PlaintextFormat.svelte';

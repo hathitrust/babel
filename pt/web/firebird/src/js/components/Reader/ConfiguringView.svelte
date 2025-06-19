@@ -1,6 +1,11 @@
 <script>
-  // do we really need this?
-  export let show = false;
+  /**
+   * @typedef {Object} Props
+   * @property {boolean} [show] - do we really need this?
+   */
+
+  /** @type {Props} */
+  let { show = false } = $props();
   let spin = true;
 </script>
 

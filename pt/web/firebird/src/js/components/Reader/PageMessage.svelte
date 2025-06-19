@@ -1,4 +1,6 @@
 <script>
+  import { stopPropagation } from 'svelte/legacy';
+
   import { getContext } from 'svelte';
 
   import Modal from '~firebird-common/src/js/components/Modal';
@@ -6,14 +8,13 @@
 
   const manifest = getContext('manifest');
 
-  export let code;
-  export let seq;
-  export let view;
+  let { code, seq, view } = $props();
 
   let show = manifest.messageList[seq] !== undefined;
-  let modal;
+  let modal = $state();
 
   const showDetail = function (e) {
+    e.stopPropagation();
     modal.show();
   };
 
@@ -22,8 +23,8 @@
     // show = false;
   };
 
-  $: message = messages[code];
-  $: guid = `div${seq}${code}`;
+  let message = $derived(messages[code]);
+  let guid = $derived(`div${seq}${code}`);
 </script>
 
 {#if show}
@@ -36,11 +37,11 @@
           class="btn btn-outline-dark btn-sm text-nowrap"
           type="button"
           aria-label={message.alert}
-          on:click|stopPropagation={showDetail}><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></button
+          onclick={showDetail}><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></button
         >
       {:else}
         <span>{@html message.alert}</span>
-        <button class="btn btn-outline-dark btn-sm text-nowrap" type="button" on:click|stopPropagation={showDetail}>
+        <button class="btn btn-outline-dark btn-sm text-nowrap" type="button" onclick={showDetail}>
           {#if view == '2up'}
             <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
           {/if}
@@ -51,9 +52,9 @@
     {#if message.detail}
       <Modal bind:this={modal} {onClose}>
         <!-- <svelte:fragment slot="title">{message.title}</svelte:fragment> -->
-        <svelte:fragment slot="body">
+        {#snippet body()}
           {@html message.detail}
-        </svelte:fragment>
+        {/snippet}
       </Modal>
     {/if}
   </div>

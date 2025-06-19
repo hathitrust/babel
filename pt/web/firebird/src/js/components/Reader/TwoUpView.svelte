@@ -23,7 +23,6 @@
   formats['plaintext'] = PlaintextFormat;
 
   let view = $state();
-  let isInitialized = true;
 
   export const currentLocation = function () {
     let location = {};

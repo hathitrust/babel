@@ -1,8 +1,8 @@
 <script>
+  console.log('hi from imageformat!');
   import View from './View.svelte';
-  let props = $props();
-  // export let view;
+  let { view, ...rest } = $props();
 </script>
 
 <!-- <View format='image' {container} {startSeq} {findTarget} {currentLocation} bind:this={view}></View> -->
-<View format="image" bind:this={view}></View>
+<View format="image" {...rest} bind:this={view}></View>

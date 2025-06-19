@@ -1,16 +1,22 @@
 <script>
-  import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
-  import ImageFormat from './ImageFormat.svelte'
+  import { getContext } from 'svelte';
+  import ImageFormat from './ImageFormat.svelte';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
 
-  export let container;
-  export let startSeq = 1;
+  /**
+   * @typedef {Object} Props
+   * @property {any} container
+   * @property {number} [startSeq]
+   */
+
+  /** @type {Props} */
+  let { container, startSeq = 1 } = $props();
 
   const currentSeq = manifest.currentSeq;
 
-  let view;
+  let view = $state();
 
   export const currentLocation = function () {
     return { page: view.view.item($currentSeq) };
@@ -58,7 +64,17 @@
   {handleClick}
   bind:this={view}
 /> -->
-<ImageFormat {container} {startSeq} {currentLocation} {handleKeydown} format="image" maxHeight={250} zoomScales={[0.5, 0.75, 1.0]} {handleClick} bind:this={view}></ImageFormat>
+<ImageFormat
+  {container}
+  {startSeq}
+  {currentLocation}
+  {handleKeydown}
+  format="image"
+  maxHeight={250}
+  zoomScales={[0.5, 0.75, 1.0]}
+  {handleClick}
+  bind:this={view}
+></ImageFormat>
 
 <style>
 </style>

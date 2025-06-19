@@ -1,51 +1,76 @@
 <script>
+  import { stopPropagation, handlers } from 'svelte/legacy';
+
   import { getContext } from 'svelte';
   import { tooltippy } from '../../lib/tippy';
 
   const emitter = getContext('emitter');
 
-  export let sticky = false;
-  export let isOpen = false;
-  export let selected = false;
-  export let focused = true;
-  export let seq;
-  export let pageNum;
-  export let allowFullDownload = false;
-  export let isUnusual = false;
-  export let side = null;
-  export let view = '1up';
-  export let format = 'image';
-  export let pageZoom = 1;
-  export let allowPageZoom = false;
-  export let allowRotate = false;
-  export let rotateButtonContent = '90';
+  let selectedButtonContent = $state();
 
-  let selectedButtonContent;
-
-
-  function scanSelected () {
+  function scanSelected(event) {
+    event.stopPropogation();
     if (selected) {
-      selectedButtonContent = `Scan #${seq} is selected`
-    } else if(!selected) {
-      selectedButtonContent = `Select scan #${seq}`
+      selectedButtonContent = `Scan #${seq} is selected`;
+    } else if (!selected) {
+      selectedButtonContent = `Select scan #${seq}`;
     }
-  };
+  }
 
-  scanSelected()
+  scanSelected();
 
   // let isOpen = true; // selected || null;
+
+  /**
+   * @typedef {Object} Props
+   * @property {boolean} [sticky]
+   * @property {boolean} [isOpen]
+   * @property {boolean} [selected]
+   * @property {boolean} [focused]
+   * @property {any} seq
+   * @property {any} pageNum
+   * @property {boolean} [allowFullDownload]
+   * @property {boolean} [isUnusual]
+   * @property {any} [side]
+   * @property {string} [view]
+   * @property {string} [format]
+   * @property {number} [pageZoom]
+   * @property {boolean} [allowPageZoom]
+   * @property {boolean} [allowRotate]
+   * @property {string} [rotateButtonContent]
+   * @property {any} [rotateScan] - let tippyDataContent = document.querySelector('[data-tippy-content]').getAttribute('data-tippy-content')
+   * @property {any} [updateZoom]
+   * @property {any} [togglePageSelection]
+   * @property {any} [openLightbox]
+   */
+
+  /** @type {Props} */
+  let {
+    sticky = false,
+    isOpen = false,
+    selected = false,
+    focused = true,
+    seq,
+    pageNum,
+    allowFullDownload = false,
+    isUnusual = false,
+    side = null,
+    view = '1up',
+    format = 'image',
+    pageZoom = 1,
+    allowPageZoom = false,
+    allowRotate = false,
+    rotateButtonContent = '90',
+    rotateScan = function () {},
+    updateZoom = function () {},
+    togglePageSelection = function () {},
+    openLightbox = function () {},
+  } = $props();
+
   let isDisabled = view == 'thumb' && !allowFullDownload;
-  // let tippyDataContent = document.querySelector('[data-tippy-content]').getAttribute('data-tippy-content')
-
-  export let rotateScan = function () {};
-  export let updateZoom = function () {};
-  export let togglePageSelection = function () {};
-  export let openLightbox = function () {};
-
-
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <details
   class="page-menu {side} view-{view}"
   class:sticky-top={sticky}
@@ -73,10 +98,12 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy={{content: `${selectedButtonContent}`}}
+        use:tooltippy={{ content: `${selectedButtonContent}` }}
         data-tippy-placement="left"
-        on:click|stopPropagation={togglePageSelection}
-        on:click|stopPropagation={scanSelected}
+        onclick={(e) => {
+          togglePageSelection(e);
+          scanSelected(e);
+        }}
         aria-label={selected ? `Scan #${seq} is selected` : `Select scan #${seq}`}
         aria-pressed={selected}
         aria-hidden={!focused}
@@ -90,7 +117,7 @@
         class="btn btn-light border border-dark"
         use:tooltippy
         data-tippy-placement="left"
-        on:click|stopPropagation={openLightbox}
+        onclick={openLightbox}
         data-bs-placement={side == 'verso' ? 'right' : 'left'}
         aria-label="Open foldout for page scan #{seq}"
         aria-hidden={!focused}
@@ -104,12 +131,12 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy={{content: `Rotate scan #${seq}, ${rotateButtonContent}°`}}
+        use:tooltippy={{ content: `Rotate scan #${seq}, ${rotateButtonContent}°` }}
         data-tippy-placement="left"
         aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
-        on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right"></i></button
+        onclick={rotateScan}><i class="fa-solid fa-rotate-right"></i></button
       >
     {/if}
     {#if allowPageZoom}
@@ -118,12 +145,12 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltippy={{content: `Zoom in scan #${seq}, ${(pageZoom + 0.5)*100}%`}}
+          use:tooltippy={{ content: `Zoom in scan #${seq}, ${(pageZoom + 0.5) * 100}%` }}
           data-tippy-placement="left"
-          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5)*100}%"
+          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5) * 100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
-          on:click|stopPropagation={() => updateZoom(0.5)}
+          onclick={updateZoom(0.5)}
         >
           <i class="fa-solid fa-plus" aria-hidden="true"></i>
         </button>
@@ -131,12 +158,12 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltippy={{content: `Zoom out scan #${seq}, ${(pageZoom - 0.5)*100}%`}}
+          use:tooltippy={{ content: `Zoom out scan #${seq}, ${(pageZoom - 0.5) * 100}%` }}
           data-tippy-placement="left"
-          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5)*100}%"
+          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5) * 100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
-          on:click|stopPropagation={() => updateZoom(-0.5)}
+          onclick={updateZoom(-0.5)}
         >
           <i class="fa-solid fa-minus" aria-hidden="true"></i>
         </button>

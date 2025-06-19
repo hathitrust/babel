@@ -1,9 +1,7 @@
-<svelte:options accessors={true} />
-
 <script>
+  import { run } from 'svelte/legacy';
+
   import { onMount, getContext, tick } from 'svelte';
-  import { afterUpdate } from 'svelte';
-  import { get } from 'svelte/store';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
@@ -21,47 +19,65 @@
   const LOAD_DELAY_TIMEOUT = 500;
   const EXAGGERATED_DEBUG_DELAY_TIMEOUT = 5000;
 
-  export let observer;
-  export let handleIntersecting;
-  export let handleUnintersecting;
-  export let format;
-  export let view;
+  /**
+   * @typedef {Object} Props
+   * @property {any} observer
+   * @property {any} handleIntersecting
+   * @property {any} handleUnintersecting
+   * @property {any} format
+   * @property {any} view
+   * @property {any} seq
+   * @property {any} canvas
+   * @property {any} zoom
+   * @property {any} [style]
+   * @property {any} [side]
+   * @property {any} innerHeight
+   * @property {any} innerWidth
+   * @property {boolean} [debugChoke]
+   * @property {boolean} [debugLoad]
+   */
 
-  export let seq;
-  export let canvas;
-  export let zoom;
-  export let style = null;
-  export let side = null;
-
-  export let innerHeight;
-  export let innerWidth;
-
-  export let debugChoke = false;
-  export let debugLoad = false;
+  /** @type {Props} */
+  let {
+    observer,
+    handleIntersecting,
+    handleUnintersecting,
+    format,
+    view,
+    seq,
+    canvas = $bindable(),
+    zoom = $bindable(),
+    style = null,
+    side = null,
+    innerHeight,
+    innerWidth,
+    debugChoke = false,
+    debugLoad = false,
+  } = $props();
 
   let includePageText = view != 'thumb';
 
-  let focused = false;
-  let invoked = false;
-  let pageDiv;
+  let focused = $state(false);
+  let invoked = $state(false);
+  let pageDiv = $state();
 
   let pageNum = manifest.pageNum(seq);
 
-  let lastZoom = zoom;
-  let pageZoom = 1;
+  let lastZoom = $state(zoom);
+  let pageZoom = $state(1);
 
   let scan;
-  let image;
-  let rotatedImage;
-  let rotateButtonContent = '90';
+  let image = $state();
+  let rotatedImage = $state();
+  let rotateButtonContent = $state('90');
   let imageSrc;
-  let matches;
-  let page_coords;
+  let matches = $state();
+  let page_coords = $state();
   let pageText;
-  let figCaption;
+  let figCaption = $state();
   let pageTextIsLoaded = false;
   let objectUrl;
-  let isLoaded = false;
+  let isLoaded = $state(false);
   let isLoading = false;
   let hasPageText = false;
 
@@ -69,14 +85,14 @@
 
   let timeout;
 
-  let requestStatus = 200;
+  let requestStatus = $state(200);
 
   // capture the x-choke-xyz headers
-  let xChokeAllowed = 1;
-  let xChokeCredit;
-  let xChokeDebt;
-  let xChokeDelta;
-  let xChokeUntil;
+  let xChokeAllowed = $state(1);
+  let xChokeCredit = $state();
+  let xChokeDebt = $state();
+  let xChokeDelta = $state();
+  let xChokeUntil = $state();
 
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
@@ -420,28 +436,29 @@
     }
   };
 
-  
   const togglePageSelection = function (event) {
-    manifest.select(seq, event)
-  }
+    event.stopPropagation();
+    manifest.select(seq, event);
+  };
 
-  const rotateScan = async function () {
+  const rotateScan = async function (event) {
+    event.stopPropogation();
     orient = (orient + 90) % 360;
     if (orient == 0) {
-      rotateButtonContent = '90'
+      rotateButtonContent = '90';
       return;
     } else if (orient == 90) {
-      rotateButtonContent = '180'
+      rotateButtonContent = '180';
     } else if (orient == 180) {
-      rotateButtonContent = '270'
-    } else if (orient = 270) {
-      rotateButtonContent = '0'
+      rotateButtonContent = '270';
+    } else if ((orient = 270)) {
+      rotateButtonContent = '0';
     }
 
     if (!rotatedImage) {
       await tick();
     }
-    console.log("-- page.rotateScan", seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
+    console.log('-- page.rotateScan', seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
     drawRotatedImage();
   };
 
@@ -472,12 +489,13 @@
     rotatedImage.dataset.ready = true;
   };
 
-  const updateZoom = function (delta) {
+  const updateZoom = function (delta, event) {
+    event.stopPropagation();
     if (zoom != 1 && pageZoom == 1) {
       pageZoom = zoom;
     }
     pageZoom += delta;
-    console.log('zoom: ', delta, pageZoom, zoom)
+    console.log('zoom: ', delta, pageZoom, zoom);
     loadImage(true);
   };
 
@@ -533,6 +551,7 @@
   }
 
   function openLightbox(event) {
+    event.stopPropagation();
     emitter.emit('lightbox.open', { src: imageSrc, alt: `Page scan #${seq}` });
   }
 
@@ -546,38 +565,6 @@
     }
     // console.log("-- page.loadImage - shouldLoadimage", seq, retval, isLoaded, isLoading);
     return retval;
-  }
-
-  $: isVisible = false;
-  $: scanZoom = calculateZoom(zoom, pageZoom);
-  $: scanRatio = calculateRatio(innerHeight, canvas);
-  $: scanHeight = calculate(innerHeight, canvas, 'height', scanZoom, orient);
-  $: scanWidth = calculate(innerHeight, canvas, 'width', scanZoom, orient);
-  $: scanUseRatio = manifest.meta(canvas.seq).ratio;
-  $: scanAdjusted = false;
-  $: orient = 0;
-  $: isUnusual = checkForFoldout(canvas);
-  $: defaultPageHeight = null; // ( view == '2up' || view == '1up' ) ? null : `${scanHeight}px`;
-  $: pageHeight = view == 'thumb' || zoom > 1 ? `${innerHeight * zoom}px` : null;
-  $: pageWidth = view == 'thumb' || zoom > 1 ? `${innerWidth * zoom}px` : null;
-
-  $: if (invoked && pageDiv) {
-    pageDiv.focus();
-  }
-  $: if (isVisible && format == 'image' && shouldLoadImage(image)) {
-    loadImage();
-  }
-  $: if (zoom != lastZoom) {
-    if (isVisible) {
-      loadImage(true);
-    }
-    lastZoom = zoom;
-  }
-  $: if (isVisible && format == 'image' && image && image.src == defaultThumbnailSrc) {
-    loadImage(true);
-  }
-  $: if (isVisible && format == 'plaintext' && (!figCaption || figCaption.dataset.loaded == 'false')) {
-    loadPageText();
   }
 
   const reloadPage = function (options) {
@@ -609,10 +596,52 @@
       emitter.off('page.reload', reloadPage);
     };
   });
+  let isVisible = $state(false);
+
+  let scanZoom = $derived(calculateZoom(zoom, pageZoom));
+  let scanRatio = $derived(calculateRatio(innerHeight, canvas));
+  let orient = $state(0);
+
+  let scanHeight = $derived(calculate(innerHeight, canvas, 'height', scanZoom, orient));
+  let scanWidth = $derived(calculate(innerHeight, canvas, 'width', scanZoom, orient));
+  let scanUseRatio = $derived(manifest.meta(canvas.seq).ratio);
+
+  let isUnusual = $derived(checkForFoldout(canvas));
+  // ( view == '2up' || view == '1up' ) ? null : `${scanHeight}px`;
+  let pageHeight = $derived(view == 'thumb' || zoom > 1 ? `${innerHeight * zoom}px` : null);
+  let pageWidth = $derived(view == 'thumb' || zoom > 1 ? `${innerWidth * zoom}px` : null);
+  $effect(() => {
+    if (invoked && pageDiv) {
+      pageDiv.focus();
+    }
+  });
+  $effect(() => {
+    if (isVisible && format == 'image' && shouldLoadImage(image)) {
+      loadImage();
+    }
+  });
+  $effect(() => {
+    if (zoom != lastZoom) {
+      if (isVisible) {
+        loadImage(true);
+      }
+      lastZoom = zoom;
+    }
+  });
+  $effect(() => {
+    if (isVisible && format == 'image' && image && image.src == defaultThumbnailSrc) {
+      loadImage(true);
+    }
+  });
+  $effect(() => {
+    if (isVisible && format == 'plaintext' && (!figCaption || figCaption.dataset.loaded == 'false')) {
+      loadPageText();
+    }
+  });
 </script>
 
 <!--   inert={!focused ? true : null} ??? -->
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
   class="page {format}"
   {style}
@@ -637,8 +666,8 @@
   role="group"
   tabindex={focused ? 0 : -1}
   use:observer
-  on:intersecting={handleIntersecting}
-  on:unintersecting={handleUnintersecting}
+  onintersecting={handleIntersecting}
+  onunintersecting={handleUnintersecting}
   bind:this={pageDiv}
 >
   {#if manifest.messageList[seq]}
@@ -711,7 +740,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             data-loaded={isLoaded}
             alt=""
             class:zoomed={pageZoom > 1}
-            on:load={() => {
+            onload={() => {
               if (orient != 0) {
                 drawRotatedImage();
               }
@@ -978,7 +1007,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       padding: 2rem 1rem;
 
       background: #fff;
-      box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+      box-shadow:
+        0px 10px 13px -7px #000000,
+        0px 6px 15px 5px rgba(0, 0, 0, 0);
       border: 1px solid #ddd;
 
       transition: height 100ms;
@@ -1000,7 +1031,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     height: auto;
 
     background: #f9f8f5;
-    box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+    box-shadow:
+      0px 10px 13px -7px #000000,
+      0px 6px 15px 5px rgba(0, 0, 0, 0);
     border: 1px solid #ddd;
   }
 
@@ -1027,14 +1060,14 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     max-height: 100%;
   }
 
-  .page:is([data-xorient='90']),
-  .page:is([data-xorient='270']) {
+  .page:is(:global([data-xorient='90'])),
+  .page:is(:global([data-xorient='270'])) {
     max-width: 100%;
     height: auto;
   }
 
-  .frame:is([data-xorient='90']),
-  .frame:is([data-xorient='270']) {
+  .frame:is(:global([data-xorient='90'])),
+  .frame:is(:global([data-xorient='270'])) {
     height: auto;
     width: 100%;
     max-width: 100%;

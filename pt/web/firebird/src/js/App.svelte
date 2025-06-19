@@ -1,4 +1,6 @@
 <script>
+  import { run } from 'svelte/legacy';
+
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
   import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
@@ -39,33 +41,39 @@
   import ConfiguringView from './components/Reader/ConfiguringView';
 
   // set up context
-  console.log('hi from app!')
+  console.log('hi from app!');
   const emitter = new Emittery();
   setContext('emitter', emitter);
 
-  const manifest = new Manifest(HT.params);
+  const manifest = $state(new Manifest(HT.params));
   setContext('manifest', manifest);
 
   setContext('HT', globalThis.HT);
 
   document.documentElement.dataset.originalTitle = document.title;
 
-  let isBuildingView = false;
-  let showLoadingView = false;
+  let isBuildingView = $state(false);
+  let showLoadingView = $state(false);
 
   // build environment
-  const views = {};
+  const views = $state({});
   views['1up'] = OneUpView;
   views['2up'] = TwoUpView;
   views['thumb'] = GridView;
   views['default'] = OneUpView;
 
   // restricted.xsl and searchresults.xsl set view from the XSLT
-  // otherwise, set it from the parameter
-  export let view = manifest.view;
-  export let format = manifest.format || 'image';
 
-  console.log('format', format)
+  /**
+   * @typedef {Object} Props
+   * @property {any} [view] - otherwise, set it from the parameter
+   * @property {any} [format]
+   */
+
+  /** @type {Props} */
+  let { view = $bindable(manifest.view), format = manifest.format || 'image' } = $props();
+
+  console.log('format', format);
 
   let isReaderView = views[view] != null;
 
@@ -119,17 +127,17 @@
   // aside
   let priority = 'min';
   let disabled = false;
-  let position = `${26 * 16}px`;
-  let container;
+  let position = $state(`${26 * 16}px`);
+  let container = $state();
   let type = 'horizontal';
-  let dragging = false;
-  let w = 0;
-  let h = 0;
+  let dragging = $state(false);
+  let w = $state(0);
+  let h = $state(0);
   let pos = `${26 * 16}px`; // '26rem';
   let min = `${10 * 16}px`; // '10rem';
   let max = '50%';
 
-  let stage;
+  let stage = $state();
 
   /**
    * @param {HTMLElement} node
@@ -188,8 +196,8 @@
   }
 
   let lastPosition;
-  let asideExpanded = true;
-  let sidebarButtonText = 'Close sidebar';
+  let asideExpanded = $state(true);
+  let sidebarButtonText = $state('Close sidebar');
   function togglePane() {
     asideExpanded = !asideExpanded;
     document.body.style.setProperty('--aside-collapsed-width', asideExpanded ? null : '16px');
@@ -200,14 +208,14 @@
     }
   }
 
-  let optionsToggled = false;
+  let optionsToggled = $state(false);
   function toggleOptions() {
     optionsToggled = !optionsToggled;
     document.body.dataset.optionsToggled = optionsToggled;
   }
 
-  let lightboxModal;
-  let lightboxImg;
+  let lightboxModal = $state();
+  let lightboxImg = $state();
   function openLightbox(options) {
     lightboxImg.style.visibility = 'hidden';
     lightboxImg.addEventListener('load', () => (lightboxImg.style.visibility = 'visible'), { once: true });
@@ -341,12 +349,15 @@
 
   // console.log("-- startup.seq", $currentSeq);
 
-  $: if (stage) {
-    stage.style.setProperty('--stage-header-height', document.querySelector('hathi-website-header').clientHeight);
-  }
+  $effect(() => {
+    if (stage) {
+      stage.style.setProperty('--stage-header-height', document.querySelector('hathi-website-header').clientHeight);
+    }
+  });
+  console.log('manifest', manifest);
 
   onMount(() => {
-    console.log('hi from on mount')
+    console.log('hi from on mount');
     // force this in case we're doing id=open/id=r, etc.
     updateHistory({ id: manifest.id });
     setupLoadingView();
@@ -392,17 +403,24 @@
     };
   });
 
-  let clampHeight = '0px';
+  let clampHeight = $state('0px');
 
-  $: position = pos;
-  $: if (container) {
-    const size = type === 'horizontal' ? w : h;
-    position = constrain(container, size, min, max, position, priority);
-  }
-  $: if (isReaderView && currentSeq) {
-    updateHistory({ seq: $currentSeq });
-  }
+  $effect(() => {
+    position = pos;
+  });
+  $effect(() => {
+    if (container) {
+      const size = type === 'horizontal' ? w : h;
+      position = constrain(container, size, min, max, position, priority);
+    }
+  });
+  $effect(() => {
+    if (isReaderView && currentSeq) {
+      updateHistory({ seq: $currentSeq });
+    }
+  });
 
+  let CurrentView = $derived(views[$currentView]);
   onMount(() => {
     let resizeObserver = new ResizeObserver((entries) => {
       const entry = entries.at(0);
@@ -428,9 +446,9 @@
 <hathi-website-header>
   <WebsiteHeader searchState="toggle" compact={true} />
 </hathi-website-header>
-<hathi-alert-banner>
+<!-- <hathi-alert-banner>
   <AlertBanner />
-</hathi-alert-banner>
+</hathi-alert-banner> -->
 <div style="grid-area: options">
   <button
     data-action="toggle-options"
@@ -443,31 +461,31 @@
     <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
   </button>
 </div>
-{#if isReaderView}
+<!-- {#if isReaderView}
   <ViewerToolbar />
-{/if}
+{/if} -->
 <aside>
   <div class="inner" class:invisible={!asideExpanded || $interfaceMode == 'minimal'}>
     <div class="accordion">
-      <SurveyPanel />
-      <AccessStatusPanel />
+      <!-- <SurveyPanel />
+      <AccessStatusPanel /> -->
     </div>
     <div class="accordion" id="controls">
-      <MetadataPanel />
+      <!-- <MetadataPanel /> -->
       {#if manifest.ui != 'crms'}
-        <DownloadPanel />
+        <!-- <DownloadPanel /> -->
       {/if}
       {#if isReaderView && manifest.finalAccessAllowed}
-        <SearchInItemPanel />
-        <JumpToSectionPanel />
+        <!-- <SearchInItemPanel />
+        <JumpToSectionPanel /> -->
       {/if}
       {#if manifest.ui != 'crms'}
-        <GetThisItemPanel />
+        <!-- <GetThisItemPanel />
         <CollectionsPanel />
-        <SharePanel />
+        <SharePanel /> -->
       {/if}
     </div>
-    <VersionPanel />
+    <!-- <VersionPanel /> -->
   </div>
 </aside>
 <div class="divider" use:drag={(e) => update(e.clientX, e.clientY, e)}>
@@ -484,12 +502,12 @@
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
   {#if stage}
     {#if view == 'search'}
-      <SearchView />
+      <!-- <SearchView /> -->
     {:else if view == 'restricted'}
-      <RestrictedView />
+      <!-- <RestrictedView /> -->
     {:else}
       <!-- <ViewerToolbar></ViewerToolbar> -->
-      <svelte:component this={views[$currentView]} {format} startSeq={$currentSeq} container={stage} />
+      <CurrentView {format} startSeq={$currentSeq} container={stage} />
     {/if}
   {/if}
 </main>

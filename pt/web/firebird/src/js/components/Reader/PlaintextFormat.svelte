@@ -1,7 +1,6 @@
-<svelte:options accessors={true}></svelte:options>
 <script>
-	import View from './View.svelte';
-	export let view;
+  import View from './View.svelte';
+  let { view, ...rest } = $props();
 </script>
 
-<View format='plaintext' {...$$props} bind:this={view}></View>
+<View format="plaintext" {...rest} bind:this={view}></View>
