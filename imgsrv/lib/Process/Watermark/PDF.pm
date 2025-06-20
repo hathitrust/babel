@@ -121,11 +121,6 @@ sub setup_generated_message {
     my $message_2 = $self->access_stmts->{stmt_head};
 
     @message = ();
-    my $message_3 = "";
-    # attach proxy signature
-    if ( $proxy ) {
-        $message_3 = qq{\nSignature [ $proxy ]};
-    }
 
     # monospace font for better URL legibility
     my $font = PDF::API2::_findFont('DejaVuSansMono.ttf');
@@ -138,7 +133,7 @@ sub setup_generated_message {
       "-font", $font,
       "-density", "144",
       "-pointsize", "14",
-      "label:$message_1\n$message_2$message_3",
+      "label:$message_1\n$message_2",
       "-gravity", "west",
       "-depth", "8",
       "-rotate", "-90",
