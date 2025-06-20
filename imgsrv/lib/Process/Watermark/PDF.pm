@@ -3,9 +3,7 @@ package Process::Watermark::PDF;
 use Plack::Util;
 use Plack::Util::Accessor qw(
   handle
-  display_name
-  institution
-  proxy
+  generated_text
   access_stmts
   target_ppi
   mdpItem
@@ -90,37 +88,14 @@ sub setup_generated_message {
     my $self = shift;
     my ( $mdpItem, $watermark_pdf ) = ( $self->mdpItem, $self->document );
 
-    my $display_name = $self->display_name;
-    my $institution = $self->institution;
-    my $proxy = $self->proxy;
-
-    my @message = ('Generated');
-    if ( $display_name ) {
-        if ( $proxy ) {
-            push @message, qq{by $display_name};
-        }
-        if ( $institution ) {
-            push @message, qq{at $institution};
-        }
-        if ( $proxy ) {
-            push @message, qq{for a print-disabled user};
-        }
+    my $message_1 = "";
+    my $generated_text = $self->generated_text;
+    if($generated_text) {
+      $message_1 = $generated_text . "\n";
     }
-    push @message, "on", strftime("%Y-%m-%d %H:%M GMT", gmtime());
 
-    # if ( $self->target_ppi > 0 ) {
-    #     push @message, " (${targetPPI}ppi)";
-    # }
-
-    push @message, " / ";
-    push @message, $self->handle;
-
-    my $message_1 = join(" ", @message);
-
-    # attach the brief access statement
-    my $message_2 = $self->access_stmts->{stmt_head};
-
-    @message = ();
+    # attach the handle & brief access statement
+    my $message_2 = $self->handle . " / " . $self->access_stmts->{stmt_head};
 
     # monospace font for better URL legibility
     my $font = PDF::API2::_findFont('DejaVuSansMono.ttf');
@@ -133,7 +108,7 @@ sub setup_generated_message {
       "-font", $font,
       "-density", "144",
       "-pointsize", "14",
-      "label:$message_1\n$message_2",
+      "label:$message_1$message_2",
       "-gravity", "west",
       "-depth", "8",
       "-rotate", "-90",

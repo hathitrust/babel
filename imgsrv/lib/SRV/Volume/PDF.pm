@@ -98,10 +98,8 @@ sub _run {
 
     my $stamper = new Process::Watermark::PDF
         mdpItem => $mdpItem,
-        display_name => $self->display_name,
-        institution => $self->institution,
         access_stmts => $self->access_stmts,
-        proxy => $self->proxy,
+        generated_text => $self->generated_text($C),
         handle => $self->handle,
         target_ppi => $self->target_ppi,
         watermark => $self->watermark,
@@ -194,6 +192,32 @@ sub _action {
 sub _ext {
     my $self = shift;
     return q{pdf};
+}
+
+# Verbatim from https://github.com/hathitrust/babel/pull/122
+sub generated_text {
+  my $self = shift;
+  my $C    = shift;
+
+  my $auth = $C->get_object('Auth');
+  my $service;
+  if ($auth->user_is_print_disabled_proxy($C)) {
+    $service = 'Accessible Text Request Service';
+  } elsif($auth->user_is_resource_sharing_user($C)) {
+    $service = 'Resource Sharing';
+  }
+  else {
+    return '';
+  }
+
+  my @message = ('Generated');
+  my $institution = $auth->get_institution_name($C);
+  if ($institution) {
+    push @message, 'at', $institution;
+  }
+  push @message, 'through HathiTrust', $service;
+  push @message, 'on', strftime("%Y-%m-%d %H:%M GMT", gmtime());
+  return join(' ', @message);
 }
 
 1;
