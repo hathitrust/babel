@@ -6,7 +6,6 @@ use warnings;
 use Plack::Util;
 use Plack::Util::Accessor qw( 
     access_stmts
-    auth
     display_name 
     institution 
     proxy 
