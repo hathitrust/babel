@@ -16,6 +16,9 @@ use Plack::Util::Accessor qw(
   output_filename
   marginalia_width
   watermark_height
+  watermark_width
+  watermark_digitized
+  watermark_original
 );
 
 use Data::Dumper;
@@ -50,6 +53,7 @@ sub new {
 sub run {
     my $self = shift;
     $self->start_initialization();
+    $self->load_watermarks();
     $self->setup_generated_message();
     $self->setup_colophon_page();
     $self->setup_stamp_page();
@@ -70,6 +74,7 @@ sub start_initialization {
 
     $self->marginalia_width(0);
     $self->watermark_height(0);
+    $self->watermark_width(0);
 
     $self->document($watermark_pdf);
 }
@@ -234,12 +239,32 @@ sub setup_colophon_page {
     my ( $image_w, $image_h ) = imgsize($coverpage_image);
     ( $image_w, $image_h ) = ( $x1 * 0.5, $x1 * 0.5 / ( $image_w / $image_h ));
 
+
     my ( $center_x, $center_y ) = ( $x1 / 2, $y1 / 2 );
     my $image_data = $watermark_pdf->image_jpeg($coverpage_image);
     my $image = $page->gfx;
     my $xpos = ( $center_x - ( $image_w / 2 ) );
     my $ypos = ( $center_y - ( $image_h / 2) );
 
+    # watermark_ypos: position watermarks 100 units down from top minus extra from extra title lines (y_drift)
+    # first title line is positioned at y1 - 50; other lines (author, pub,
+    # blank, handle) take up another 50 (12.5 each)
+    #
+    # watermark_width: greater of image width or twice the width of the larger watermark
+    # (see load watermarks above) -- this puts watermarks closer to the center than the default 
+    # centered on left half/right half of page, and ensures they don't collide
+
+    my $total_watermark_width = $image_w;
+    if(2 * $self->watermark_width > $image_w) {
+      $total_watermark_width = 2 * $self->watermark_width;
+    }
+
+    $y_drift += $self->watermark_height;
+    my $watermark_ypos = $y1 - 100 - $y_drift - $self->watermark_height;
+    $self->insert_watermarks($watermark_pdf,$page, $self->watermark_width*2, $watermark_ypos);
+
+    # move image up from center, minus amount taken up by additional lines from the title
+    # this 100 seems unrelated to the 100 units the title/etc take up
     $ypos += ( 100 - $y_drift );
 
     $image->image($image_data, $xpos, $ypos, $image_w, $image_h);
@@ -290,43 +315,85 @@ sub setup_colophon_page {
 
 sub setup_stamp_page {
     my $self = shift;
-    my ( $mdpItem, $watermark_pdf ) = ( $self->mdpItem, $self->document );
+    my $watermark_pdf = $self->document();
 
     my $page = $watermark_pdf->page();
     $page->mediabox('Letter');
-    my ( $x0, $y0, $x1, $y1 ) = $page->get_mediabox;
 
     $self->insert_generated_message($page);
+    $self->insert_watermarks($watermark_pdf,$page);
 
-    my $watermark_height = 0;
-    if ( $self->watermark ) {
+}
 
-        my ($center_x, $center_y, $wm_margin_y);
-        ($center_x, $center_y) = ($x1 / 4, $y1 / 4);
-        $wm_margin_y = 0;
+sub load_watermarks {
+  my $self = shift;
+  my $watermark_pdf = $self->document();
 
-        ( $watermark_digitized, $watermark_original ) = SRV::Utils::get_watermark_filename($mdpItem, { size => 100 });
+  my $mdpItem = $self->mdpItem; 
 
-        eval {
-            my $image = $page->gfx();
+  my ( $watermark_digitized, $watermark_original ) = SRV::Utils::get_watermark_filename($mdpItem, { size => 100 });
 
-            if (defined($watermark_digitized)) {
-                $watermark_digitized = $watermark_pdf->image_png("$watermark_digitized.flat.png");
-                $watermark_height = $watermark_digitized->height;
-                $self->draw_image($image, $watermark_digitized, $center_x, $wm_margin_y);
-            }
-
-            if (defined($watermark_original)) {
-                $watermark_original = $watermark_pdf->image_png("$watermark_original.flat.png");
-                $watermark_height = $watermark_original->height if ( $watermark_original->height > $watermark_height );
-                $self->draw_image($image, $watermark_original, ( $center_x * 2 ) + $center_x, $wm_margin_y);
-            }
-        };
-        if ( my $err = $@ ) {
-            print STDERR "!! $err\n";
-        }
+  my $watermark_height = 0;
+  my $watermark_width = 0;
+  eval {
+    if (defined($watermark_digitized)) {
+      print STDERR "$watermark_digitized.flat.png\n";
+      $watermark_digitized = $watermark_pdf->image_png("$watermark_digitized.flat.png");
+      $watermark_height = $watermark_digitized->height;
+      $watermark_width = $watermark_digitized->width;
+      $self->watermark_digitized($watermark_digitized);
     }
-    $self->watermark_height($watermark_height);
+
+    if (defined($watermark_original)) {
+      print STDERR "$watermark_original.flat.png\n";
+      $watermark_original = $watermark_pdf->image_png("$watermark_original.flat.png");
+      $watermark_height = $watermark_original->height if ( $watermark_original->height > $watermark_height );
+      $watermark_width = $watermark_original->width if ( $watermark_original->width > $watermark_width );
+      $self->watermark_original($watermark_original);
+    }
+  };
+  if ( my $err = $@ ) {
+    print STDERR "!! $err\n";
+  }
+  $self->watermark_height($watermark_height);
+  $self->watermark_width($watermark_width);
+}
+
+sub insert_watermarks {
+  my $self = shift;
+  my $watermark_pdf = shift;
+  my $page = shift;
+
+  # optional, width defaults to page width, bottom defaults to bottom of page
+  my ( $x0, $y0, $page_width, $page_height ) = $page->get_mediabox;
+  my $wm_width = shift || $page_width;
+  my $wm_bottom_y = shift || 0;
+
+  $wm_width = $page_width if(!$wm_width);
+  
+  if ( $self->watermark ) {
+    my $center_x;
+
+    my $center_left_image = $page_width/2 - $wm_width / 4;
+    my $center_right_image = $page_width/2 + $wm_width / 4;
+
+    eval {
+      my $image = $page->gfx();
+
+      if (defined($self->watermark_digitized)) {
+        print STDERR "DRAWING DIGITIZED WATERMARK AT $center_left_image, $wm_bottom_y\n";
+        $self->draw_image($image, $self->watermark_digitized, $center_left_image, $wm_bottom_y);
+      }
+
+      if (defined($self->watermark_original)) {
+        print STDERR "DRAWING ORIGINAL WATERMARK AT $center_right_image, $wm_bottom_y\n";
+        $self->draw_image($image, $self->watermark_original, $center_right_image, $wm_bottom_y);
+      }
+    };
+    if ( my $err = $@ ) {
+      print STDERR "!! $err\n";
+    }
+  }
 }
 
 sub draw_image {
