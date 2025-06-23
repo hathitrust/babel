@@ -444,11 +444,11 @@
 </script>
 
 <hathi-website-header>
-  <WebsiteHeader searchState="toggle" compact={true} />
+  <!-- <WebsiteHeader searchState="toggle" compact={true} /> -->
 </hathi-website-header>
-<!-- <hathi-alert-banner>
+<hathi-alert-banner>
   <AlertBanner />
-</hathi-alert-banner> -->
+</hathi-alert-banner>
 <div style="grid-area: options">
   <button
     data-action="toggle-options"

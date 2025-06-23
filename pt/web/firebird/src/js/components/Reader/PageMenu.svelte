@@ -8,16 +8,19 @@
 
   let selectedButtonContent = $state();
 
-  function scanSelected(event) {
-    event.stopPropogation();
-    if (selected) {
-      selectedButtonContent = `Scan #${seq} is selected`;
-    } else if (!selected) {
-      selectedButtonContent = `Select scan #${seq}`;
+  $effect(() => {
+    function scanSelected(event) {
+      //might need stop propogation? roger had stopPropogation on the click event in the markup, but we can't do that anymore
+      // event.stopPropogation();
+      if (selected) {
+        selectedButtonContent = `Scan #${seq} is selected`;
+      } else if (!selected) {
+        selectedButtonContent = `Select scan #${seq}`;
+      }
     }
-  }
 
-  scanSelected();
+    scanSelected();
+  });
 
   // let isOpen = true; // selected || null;
 
