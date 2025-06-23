@@ -9,7 +9,6 @@ services:
     - ${BABEL_HOME}/sample-data/sdr1:/sdr1
     - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
     # Allow tests to modify database
-    - ${BABEL_HOME}/mdp-lib/t/config/mdp-admin.conf:/htapps/babel/etc/mdp-admin.conf
     - ${BABEL_HOME}/logs:/var/log/babel
     environment:
     - SDRROOT=/htapps/babel
