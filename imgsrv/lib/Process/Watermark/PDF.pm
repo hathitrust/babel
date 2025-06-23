@@ -192,7 +192,9 @@ sub setup_colophon_page {
     my $publisher = $mdpItem->GetPublisher(1);
 
     my $title_font_size = 12;
+    my $title_leading = $title_font_size * 1.25;
     my $font_size = 10;
+    my $leading = $font_size * 1.25;
     my $heading_width = int($x1 * 0.7); # pixels
 
     # set up cover page fonts
@@ -201,58 +203,65 @@ sub setup_colophon_page {
     my $bold_font = $watermark_pdf->ttfont('DejaVuSans-Bold.ttf', -encode => 'utf8', -unicodemap => 1);
     my $mono_font = $watermark_pdf->ttfont('DejaVuSansMono.ttf', -encode => 'utf8', -unicodemap => 1);
 
-    my $y_drift = 0;
+    my $y_advance = 0;
 
-    if ( $title ) {
+    $gfx = $page->gfx;
+    $gfx->save;
+    $gfx->textstart;
+    $gfx->translate(50, $y1 - 50);
+    $y_advance += 50;
 
-        $gfx = $page->gfx;
-        $gfx->save;
-        $gfx->textstart;
-        $gfx->translate(50, $y1 - 50);
-        $gfx->fillcolor('#000000');
-        $gfx->font($bold_font, $title_font_size);
-        $gfx->lead($title_font_size * 1.25);
+    if($title) {
+      $gfx->fillcolor('#000000');
+      $gfx->font($bold_font, $title_font_size);
+      $gfx->lead($title_leading);
 
-        while ( $title ) {
-            ( $toprint, $title ) = $gfx->text_fill_left($title, $heading_width);
-            $gfx->nl;
-            $y_drift += $title_font_size * 1.25;
-        }
-
-        $gfx->font($plain_font, $font_size);
-        $gfx->lead($font_size *1.25);
-
-        $gfx->write_justified_text($author, $heading_width);
-        $gfx->write_justified_text($publisher, $heading_width);
-
-        $gfx->nl;
-        $gfx->fillcolor('#0000EE');
-        my ($handle_width, $handle_lines) = $gfx->write_justified_text("Find this Book Online: " . $self->handle, $heading_width, -underline => 'auto', -strokecolor => '#0000EE');
-        my $handle_height = $handle_lines * $font_size * 1.25;
-        my $ystart = $y1 - 77.5 - $y_drift;
-        $$self{find_online_bbox} = [50, $ystart - $handle_height, 50 + $handle_width, $ystart];
-        $$self{find_online_url} = $self->handle;
-
-        $gfx->textend;
-        $gfx->restore;
-
+      while ( $title ) {
+          ( $toprint, $title ) = $gfx->text_fill_left($title, $heading_width);
+          $gfx->nl;
+          $y_advance += $title_leading;
+      }
     }
+
+    $gfx->font($plain_font, $font_size);
+    $gfx->lead($leading);
+
+    if($author) {
+      my ($width, $lines) = $gfx->write_justified_text($author, $heading_width);
+      $y_advance += $leading * $lines;
+    }
+    if($publisher) {
+      my ($width, $lines) = $gfx->write_justified_text($publisher, $heading_width);
+      $y_advance += $leading * $lines;
+    }
+
+    $gfx->nl;
+    $y_advance += $leading;
+
+    $gfx->fillcolor('#0000EE');
+    my ($handle_width, $handle_lines) = $gfx->write_justified_text("Find this Book Online: " . $self->handle, $heading_width, -underline => 'auto', -strokecolor => '#0000EE');
+    my $handle_height = $handle_lines * $leading;
+    # y_advance is at the bottom of the first line of the handle; need the top
+    my $handle_top = $y1 - $y_advance + $leading;
+    $$self{find_online_bbox} = [50, $handle_top - $handle_height, 50 + $handle_width, $handle_top];
+    $$self{find_online_url} = $self->handle;
+
+    $y_advance += $handle_height;
+
+    $gfx->textend;
+      $gfx->restore;
 
     my $coverpage_image = qq{$SRV::Globals::gHtmlDir/graphics/hathitrust-logo-stacked-orange-white-rgb-coverpage.jpg};
 
     my ( $image_w, $image_h ) = imgsize($coverpage_image);
     ( $image_w, $image_h ) = ( $x1 * 0.5, $x1 * 0.5 / ( $image_w / $image_h ));
 
-
     my ( $center_x, $center_y ) = ( $x1 / 2, $y1 / 2 );
     my $image_data = $watermark_pdf->image_jpeg($coverpage_image);
     my $image = $page->gfx;
     my $xpos = ( $center_x - ( $image_w / 2 ) );
-    my $ypos = ( $center_y - ( $image_h / 2) );
 
-    # watermark_ypos: position watermarks 100 units down from top minus extra from extra title lines (y_drift)
-    # first title line is positioned at y1 - 50; other lines (author, pub,
-    # blank, handle) take up another 50 (12.5 each)
+    # watermark_bottom: position watermarks y_advance units down from top, plus two "lines"
     #
     # watermark_width: greater of image width or twice the width of the larger watermark
     # (see load watermarks above) -- this puts watermarks closer to the center than the default 
@@ -263,20 +272,19 @@ sub setup_colophon_page {
       $total_watermark_width = 2 * $self->watermark_width;
     }
 
-    $y_drift += $self->watermark_height;
-    my $watermark_ypos = $y1 - 100 - $y_drift - $self->watermark_height;
-    $self->insert_watermarks($watermark_pdf,$page, $self->watermark_width*2, $watermark_ypos);
+    $y_advance += $self->watermark_height + $leading;
+    my $watermark_bottom = $y1 - $y_advance;
+    $self->insert_watermarks($watermark_pdf,$page, $self->watermark_width*2, $watermark_bottom);
 
-    # move image up from center, minus amount taken up by additional lines from the title
-    # this 100 seems unrelated to the 100 units the title/etc take up
-    $ypos += ( 100 - $y_drift );
+    # top of image should be one "line" under the watermark
+    my $image_bottom = $watermark_bottom - $leading - $image_h;
 
-    $image->image($image_data, $xpos, $ypos, $image_w, $image_h);
+    $image->image($image_data, $xpos, $image_bottom, $image_w, $image_h);
 
     ## add the access statement
 
     $gfx = $page->gfx;
-    $gfx->transform(-translate => [$xpos, $ypos - 15]);
+    $gfx->transform(-translate => [$xpos, $image_bottom - 15]);
 
     #### TO DO: if there's a stmt_icon, pull and embed
     #### in the PDF.
@@ -294,10 +302,10 @@ sub setup_colophon_page {
     $gfx->fillcolor('#0000EE');
     my ($textwidth, $lines) = $gfx->write_justified_text($$access_stmts{stmt_head}, $image_w, -underline => 'auto', -strokecolor => '#0000EE');
     my $textheight = $lines * $stmt_head_leading;
-    my $ystart = $ypos - 15 + $stmt_head_font_size;
+    my $access_stmt_top = $image_bottom - 15 + $stmt_head_font_size;
 
     $$self{access_stmt_url} = $$access_stmts{stmt_url};
-    $$self{access_stmt_link_bbox} = [$xpos, $ystart, $xpos + $textwidth, $ystart - $textheight];
+    $$self{access_stmt_link_bbox} = [$xpos, $access_stmt_top, $xpos + $textwidth, $access_stmt_top - $textheight];
 
     $gfx->nl;
 
@@ -341,7 +349,6 @@ sub load_watermarks {
   my $watermark_width = 0;
   eval {
     if (defined($watermark_digitized)) {
-      print STDERR "$watermark_digitized.flat.png\n";
       $watermark_digitized = $watermark_pdf->image_png("$watermark_digitized.flat.png");
       $watermark_height = $watermark_digitized->height;
       $watermark_width = $watermark_digitized->width;
@@ -349,7 +356,6 @@ sub load_watermarks {
     }
 
     if (defined($watermark_original)) {
-      print STDERR "$watermark_original.flat.png\n";
       $watermark_original = $watermark_pdf->image_png("$watermark_original.flat.png");
       $watermark_height = $watermark_original->height if ( $watermark_original->height > $watermark_height );
       $watermark_width = $watermark_original->width if ( $watermark_original->width > $watermark_width );
