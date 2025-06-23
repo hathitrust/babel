@@ -669,9 +669,14 @@ sub insert_colophon_page {
     $self->output_document->import_page($self->stamper->document, 1, $page_num);
 
     my $page = $self->output_document->openpage($page_num);
-    my $annotation = $page->annotation();
-    $annotation->rect(@{$self->stamper->{access_stmt_link_bbox}});
-    $annotation->url($self->stamper->{access_stmt_url});
+    my $access_stmt_link = $page->annotation();
+    $access_stmt_link->rect(@{$self->stamper->{access_stmt_link_bbox}});
+    $access_stmt_link->url($self->stamper->{access_stmt_url});
+
+    my $find_online_link = $page->annotation();
+    $find_online_link->rect(@{$self->stamper->{find_online_bbox}});
+    $find_online_link->url($self->stamper->{find_online_url});
+
 }
 
 sub insert_outline {

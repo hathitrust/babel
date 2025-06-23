@@ -226,8 +226,12 @@ sub setup_colophon_page {
         $gfx->write_justified_text($publisher, $heading_width);
 
         $gfx->nl;
-        $gfx->font($mono_font, $font_size);
-        $gfx->write_justified_text($self->handle, $heading_width);
+        $gfx->fillcolor('#0000EE');
+        my ($handle_width, $handle_lines) = $gfx->write_justified_text("Find this Book Online: " . $self->handle, $heading_width, -underline => 'auto', -strokecolor => '#0000EE');
+        my $handle_height = $handle_lines * $font_size * 1.25;
+        my $ystart = $y1 - 77.5 - $y_drift;
+        $$self{find_online_bbox} = [50, $ystart - $handle_height, 50 + $handle_width, $ystart];
+        $$self{find_online_url} = $self->handle;
 
         $gfx->textend;
         $gfx->restore;
@@ -381,12 +385,10 @@ sub insert_watermarks {
       my $image = $page->gfx();
 
       if (defined($self->watermark_digitized)) {
-        print STDERR "DRAWING DIGITIZED WATERMARK AT $center_left_image, $wm_bottom_y\n";
         $self->draw_image($image, $self->watermark_digitized, $center_left_image, $wm_bottom_y);
       }
 
       if (defined($self->watermark_original)) {
-        print STDERR "DRAWING ORIGINAL WATERMARK AT $center_right_image, $wm_bottom_y\n";
         $self->draw_image($image, $self->watermark_original, $center_right_image, $wm_bottom_y);
       }
     };
