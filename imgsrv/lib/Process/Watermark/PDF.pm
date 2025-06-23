@@ -291,6 +291,9 @@ sub setup_colophon_page {
     $gfx->fillcolor('#6C6C6C');
     $gfx->write_justified_text($$access_stmts{stmt_text}, $image_w);
 
+    $gfx->nl;
+    $gfx->write_justified_text($self->generated_text, $image_w);
+
     $gfx->textend;
 
 }
