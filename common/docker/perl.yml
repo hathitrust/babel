@@ -13,7 +13,7 @@ services:
     environment:
     - SDRROOT=/htapps/babel
     - SDRDATAROOT=/sdr1
-    - MARIADB_USER=mdp-admin
+    - MARIADB_USER=ht_web
     - HTDEV=test
     - PERL5LIB=/htapps/babel/mdp-lib
     depends_on:
