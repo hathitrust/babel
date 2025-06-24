@@ -32,6 +32,7 @@ sub colophon_text {
 Title: $title
 Author: $author
 Publisher: $publisher
+
 Find this book online: $handle
 
 TEXT
