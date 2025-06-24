@@ -161,13 +161,6 @@ sub Run {
         SetDefaultPage( $cgi, $mdpItem );
     }
 
-    # check affiliation to modify default view
-    if ( $validityCheckStatus & PT::Prolog::ST_VIEW_NOT_SUPPLIED ) {
-        if ( $auth->affiliation_is_enhanced_text_user($C) ) {
-            $cgi->param('view', 'plaintext');
-        }
-    }
-
     # Call this before SetBackToResultsReferer because it looks like that sub
     # might mess with the cgi and referer 
     #XXX confirm the above

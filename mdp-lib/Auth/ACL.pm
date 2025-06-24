@@ -38,29 +38,9 @@ from within the Auth::ACL package.
 
 'role' is a subclass of 'usertype'
 
+See Otis for more information on current roles.
 
-
- SELECT DISTINCT usertype, role FROM ht_users;
- +----------+---------------+---------+
- | usertype | role          | access  |
- +----------+---------------+---------+
- | staff    | generalhathi  | total   | UM staff
- | staff    | cataloging    | total   | UM staff
- | external | crms          | total   | non-UM engaged in CRMS and CRMS World activities
- | staff    | crms          | total   | UM staff engaged in CRMS and CRMS World activities
- | staff    | superuser     | total   | UM staff (developers)
- | staff    | quality       | total   | UM staff engaged in the Qual project
- | external | quality       | total   | non-UM engaged in the Qual project
- | staff    | replacement   | total   | UM staff at DCU
- | staff    | inprintstatus | total   | Copyright determination UM staff
- | staff    | corrections   | total   | Hathitrust support UM staff
- |----------+---------------+---------+
- | student  | ssd           | normal  | UM student on SSD list *not locked to any IP address*
- | external | ssdproxy      | normal  | non-UM Human Proxy for print-disabled user
- | external | ssdnfb        | normal  | non-UM National Federation of the Blind Proxy for print-disabled user
- +----------+---------------+---------+
-
-'normal' access excludes attr=8 (nobody)
+'normal' access (as opposed to 'total') excludes attr=8 (nobody)
 
 Counting user in-copyright access activity
 

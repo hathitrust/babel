@@ -445,7 +445,7 @@ sub get_full_PDF_access_status {
     if ($creative_commons) {
         $status = 'allow';
     }
-    else {
+    elsif ( $self->check_final_access_status($C, $id) eq 'allow' ) {
         my $access_profile = $self->get_access_profile_attribute($C, $id);
 
         # Affiliates of US institutions can download pd/pdus from
@@ -479,23 +479,24 @@ sub get_full_PDF_access_status {
                 $message = q{RESTRICTED_SOURCE};
             }
         }
+        # Jun 2025 resource sharing user can download full PDF when item is held
+        # `check_final_access_status` above verifies item is currently held
+        # This allows download of all access profiles, including `google`, `page`, and `page+lowres`
+        if ($auth->user_is_resource_sharing_user($C)) {
+          $status = 'allow';
+        }
+
+        # Apr 2013 ssdproxy can generate full PDF when item is held
+        # Apr 2016 ssdproxy can generate full PDF regardless - if this ever needs
+        # to be reverted, see code above for resource sharing users...
+        if ($auth->user_is_print_disabled_proxy($C)) {
+            $status = 'allow'; # allow for everyone
+        }
     }
 
     # Feb 2012 Only developers have unrestricted full PDF download.
     if (Auth::ACL::S___superuser_using_DEBUG_super) {
         $status = 'allow';
-    }
-
-    # Apr 2103 ssdproxy can generate full PDF when item is held
-    # Apr 2016 ssdproxy can generate full PDF regardless -
-    # - 2013 code left here in case this decision is reversed
-    if ($auth->user_is_print_disabled_proxy($C)) {
-        # my $institution = $auth->get_institution_code($C, 'mapped');
-        # my $held = Access::Holdings::id_is_held($C, $id, $institution);
-        # if ($held) {
-        #     $status = 'allow';
-        # }
-        $status = 'allow'; # allow for everyone
     }
 
     # clear the error message if $status eq 'allow'
@@ -530,6 +531,8 @@ sub get_single_page_PDF_access_status {
              $access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
             # but ENHANCED_TEXT_USER and EMERGENCY_ACCESS_AFFILIATE
             # affiliations can only single-page download
+        if ( $access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
+            # but EMERGENCY_ACCESS_AFFILIATE can only single-page download
             # what ordinary users can download
             my $rights_attribute = $self->get_rights_attribute($C, $id);
             my $initial_access_status =
@@ -1143,10 +1146,6 @@ sub _determine_access_type {
         # coordinate with Auth::ACL
         $access_type = $RightsGlobals::HT_AFFILIATE;
     }
-    elsif (DEBUG('nfb', 'NFB affiliated user-type access forced') || DEBUG('enhanced', 'Enhanced book user-type access forced')) {
-        # coordinate with Auth::ACL
-        $access_type = $RightsGlobals::ENHANCED_TEXT_USER;
-    }
     elsif (DEBUG('inlib', 'In-library user-type access forced') ) {
         $access_type = $RightsGlobals::LIBRARY_IPADDR_USER;
     }
@@ -1177,9 +1176,6 @@ sub _determine_access_type {
     }
     elsif ( $auth->user_is_print_disabled($C) ) {
         $access_type = $RightsGlobals::SSD_USER;
-    }
-    elsif ($auth->affiliation_is_enhanced_text_user($C)) {
-        $access_type = $RightsGlobals::ENHANCED_TEXT_USER;
     }
     elsif ($auth->affiliation_has_emergency_access($C)) {
         $access_type = $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE;
