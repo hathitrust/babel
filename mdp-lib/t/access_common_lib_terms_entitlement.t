@@ -100,11 +100,7 @@ sub test_download_volume {
     }
 
     my $ar = Access::Rights->new($C, $id);
-    my $status = $ar->check_final_access_status($C, $id);
-    if ( $status eq 'allow' ) {
-        $status = $ar->get_full_PDF_access_status($C, $id);
-    }
-    return $status;
+    return $ar->get_full_PDF_access_status($C, $id);
 }
 
 my $num_tests = 0;

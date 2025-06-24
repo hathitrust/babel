@@ -735,9 +735,6 @@
         <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
           <xsl:call-template name="build-ssd-session-header" />
         </xsl:if>
-        <xsl:if test="$access-type/Name = 'enhanced_text_user'">
-          <xsl:call-template name="build-ssd-session-header" />
-        </xsl:if>
         <xsl:if test="$access-type/Name = 'total_access'">
           <xsl:call-template name="build-total-access-header" />
         </xsl:if>
@@ -772,9 +769,6 @@
                 <span class="expires-display"></span>
               </xsl:if>
               <xsl:if test="$gLoggedIn='YES' and $gSSD_Session='true'">
-                <xsl:text>In-Copyright Access</xsl:text>
-              </xsl:if>
-              <xsl:if test="$access-type/Name = 'enhanced_text_user'">
                 <xsl:text>In-Copyright Access</xsl:text>
               </xsl:if>
               <xsl:if test="$access-type/Name = 'total_access'">

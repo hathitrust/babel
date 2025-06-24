@@ -1002,11 +1002,6 @@ sub handle_ACCESS_TYPE_PI
     my $initial_access_type =
         $rights->check_initial_access_status_by_attribute($C, $rights_attribute, $id);
 
-    # if ( $access_type eq 'enhanced_text_user' ) {
-    #     $xml .= qq{<Name>$access_type</Name>};
-    # } elsif ( $access_type eq 'ssd_user' ) {
-    #     $xml .= qq{<Name>ssd_session_user</Name>};
-    # }
     $access_type = 'ssd_session_user' if ( $access_type eq 'ssd_user' );
     $access_type = 'resource_sharing_user' if ($access_type eq 'resource_sharing' );
 
@@ -1053,7 +1048,7 @@ sub handle_ACCESS_TYPE_PI
         $xml .= qq{<Name>total_access</Name>};
         $xml .= qq{<Role>$access_type</Role>};
         $xml .= qq{<Granted>TRUE</Granted>};
-    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'enhanced_text_user' || $access_type eq 'resource_sharing_user' ) {
+    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'resource_sharing_user' ) {
         $xml .= qq{<Name>$access_type</Name>};
         my $final_access_status =
             $rights->check_final_access_status($C, $id) eq 'allow' ? 'TRUE' : 'FALSE';
