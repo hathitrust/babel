@@ -66,7 +66,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
   subtest 'logged out user is not print disabled proxy' => sub {
     setup_session($C);
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled_proxy($C), 0, 'not print disabled proxy by default');
+    is($auth->user_is_print_disabled_proxy($C), 0);
   };
 
   subtest 'logged in ssdproxy user with invalid affiliation is not print disabled proxy' => sub {
@@ -74,7 +74,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
     $ENV{REMOTE_USER} = SSD_PROXY_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled_proxy($C, 1), 0, 'not print disabled even if role is ssd');
+    is($auth->user_is_print_disabled_proxy($C, 1), 0);
   };
 
   subtest 'logged-in ssdproxy user with valid affiliation is print disabled proxy' => sub {
@@ -82,7 +82,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
     $ENV{REMOTE_USER} = SSD_PROXY_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled_proxy($C, 1), 1, 'print disabled with the appropriate affiliation');
+    is($auth->user_is_print_disabled_proxy($C, 1), 1);
   };
   restore_env($save_env);
 };
@@ -92,7 +92,7 @@ subtest 'user_is_print_disabled' => sub {
   subtest 'logged out user is not print disabled' => sub {
     setup_session($C);
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled($C), 0, 'not print disabled by default');
+    is($auth->user_is_print_disabled($C), 0);
   };
 
   subtest 'logged in ssd user with invalid affiliation is not print disabled' => sub {
@@ -100,7 +100,7 @@ subtest 'user_is_print_disabled' => sub {
     $ENV{REMOTE_USER} = SSD_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled($C), 0, 'not print disabled even if role is ssd');
+    is($auth->user_is_print_disabled($C), 0);
   };
 
   subtest 'logged-in ssd user with valid affiliation is print disabled' => sub {
@@ -108,7 +108,7 @@ subtest 'user_is_print_disabled' => sub {
     $ENV{REMOTE_USER} = SSD_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled($C), 1, 'print disabled with the appropriate affiliation');
+    is($auth->user_is_print_disabled($C), 1);
   };
   restore_env($save_env);
 };
