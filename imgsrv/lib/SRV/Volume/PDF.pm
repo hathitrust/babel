@@ -7,6 +7,7 @@ use parent qw( SRV::Volume::Base );
 use Plack::Request;
 use Plack::Response;
 use Plack::Util;
+use SRV::Colophon;
 
 use Plack::Util::Accessor
     @SRV::Volume::Base::accessors,
@@ -99,7 +100,7 @@ sub _run {
     my $stamper = new Process::Watermark::PDF
         mdpItem => $mdpItem,
         access_stmts => $self->access_stmts,
-        generated_text => $self->generated_text($C),
+        generated_text => SRV::Colophon::generated_text($C),
         handle => $self->handle,
         target_ppi => $self->target_ppi,
         watermark => $self->watermark,
@@ -192,32 +193,6 @@ sub _action {
 sub _ext {
     my $self = shift;
     return q{pdf};
-}
-
-# Verbatim from https://github.com/hathitrust/babel/pull/122
-sub generated_text {
-  my $self = shift;
-  my $C    = shift;
-
-  my $auth = $C->get_object('Auth');
-  my $service;
-  if ($auth->user_is_print_disabled_proxy($C)) {
-    $service = 'Accessible Text Request Service';
-  } elsif($auth->user_is_resource_sharing_user($C)) {
-    $service = 'Resource Sharing';
-  }
-  else {
-    return '';
-  }
-
-  my @message = ('Generated');
-  my $institution = $auth->get_institution_name($C);
-  if ($institution) {
-    push @message, 'at', $institution;
-  }
-  push @message, 'through HathiTrust', $service;
-  push @message, 'on', strftime("%Y-%m-%d %H:%M GMT", gmtime());
-  return join(' ', @message);
 }
 
 1;
