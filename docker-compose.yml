@@ -36,8 +36,6 @@ services:
         condition: service_healthy
       imgsrv:
         condition: service_healthy
-    profiles:
-    - fronten
 
 # Backend Services
   apache:
@@ -67,7 +65,6 @@ services:
     command: "prove -r t/"
     profiles:
       - testing
-      - backend
 
   perl-dev:
     extends:
@@ -83,7 +80,7 @@ services:
 # Indexing
   traject:
     extends:
-      file: common/docker/traject.yml
+      file: common/docker/stage-item.yml
       service: traject
     depends_on:
       solr-sdr-catalog:
@@ -104,7 +101,7 @@ services:
 
   slip:
     extends:
-      file: common/docker/slip.yml
+      file: common/docker/stage-item.yml
       service: slip
     depends_on:
       mysql-sdr:
