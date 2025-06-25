@@ -16,6 +16,9 @@ use Plack::Util::Accessor qw(
   output_filename
   marginalia_width
   watermark_height
+  watermark_width
+  watermark_digitized
+  watermark_original
 );
 
 use Data::Dumper;
@@ -50,6 +53,7 @@ sub new {
 sub run {
     my $self = shift;
     $self->start_initialization();
+    $self->load_watermarks();
     $self->setup_generated_message();
     $self->setup_colophon_page();
     $self->setup_stamp_page();
@@ -70,6 +74,7 @@ sub start_initialization {
 
     $self->marginalia_width(0);
     $self->watermark_height(0);
+    $self->watermark_width(0);
 
     $self->document($watermark_pdf);
 }
@@ -112,12 +117,8 @@ sub setup_generated_message {
 
     my $message_1 = join(" ", @message);
 
-    # attach the brief access statement?
-    @message = ();
-    push @message, $self->access_stmts->{stmt_head};
-    push @message, " / ";
-    push @message, $self->access_stmts->{stmt_url};
-    my $message_2 = join(' ', @message);
+    # attach the brief access statement
+    my $message_2 = $self->access_stmts->{stmt_head};
 
     @message = ();
     my $message_3 = "";
@@ -169,6 +170,7 @@ sub insert_generated_message {
 
     my $gfx = ref($image) ? $image : $page->gfx;
     $gfx->image($$self{message}, 2, 15, $image_w, $image_h);
+
 }
 
 sub setup_colophon_page {
@@ -190,7 +192,9 @@ sub setup_colophon_page {
     my $publisher = $mdpItem->GetPublisher(1);
 
     my $title_font_size = 12;
+    my $title_leading = $title_font_size * 1.25;
     my $font_size = 10;
+    my $leading = $font_size * 1.25;
     my $heading_width = int($x1 * 0.7); # pixels
 
     # set up cover page fonts
@@ -199,38 +203,53 @@ sub setup_colophon_page {
     my $bold_font = $watermark_pdf->ttfont('DejaVuSans-Bold.ttf', -encode => 'utf8', -unicodemap => 1);
     my $mono_font = $watermark_pdf->ttfont('DejaVuSansMono.ttf', -encode => 'utf8', -unicodemap => 1);
 
-    my $y_drift = 0;
+    my $y_advance = 0;
 
-    if ( $title ) {
+    $gfx = $page->gfx;
+    $gfx->save;
+    $gfx->textstart;
+    $gfx->translate(50, $y1 - 50);
+    $y_advance += 50;
 
-        $gfx = $page->gfx;
-        $gfx->save;
-        $gfx->textstart;
-        $gfx->translate(50, $y1 - 50);
-        $gfx->fillcolor('#000000');
-        $gfx->font($bold_font, $title_font_size);
-        $gfx->lead($title_font_size * 1.25);
+    if($title) {
+      $gfx->fillcolor('#000000');
+      $gfx->font($bold_font, $title_font_size);
+      $gfx->lead($title_leading);
 
-        while ( $title ) {
-            ( $toprint, $title ) = $gfx->text_fill_left($title, $heading_width);
-            $gfx->nl;
-            $y_drift += $title_font_size * 1.25;
-        }
-
-        $gfx->font($plain_font, $font_size);
-        $gfx->lead($font_size *1.25);
-
-        $gfx->write_justified_text($author, $heading_width);
-        $gfx->write_justified_text($publisher, $heading_width);
-
-        $gfx->nl;
-        $gfx->font($mono_font, $font_size);
-        $gfx->write_justified_text($self->handle, $heading_width);
-
-        $gfx->textend;
-        $gfx->restore;
-
+      while ( $title ) {
+          ( $toprint, $title ) = $gfx->text_fill_left($title, $heading_width);
+          $gfx->nl;
+          $y_advance += $title_leading;
+      }
     }
+
+    $gfx->font($plain_font, $font_size);
+    $gfx->lead($leading);
+
+    if($author) {
+      my ($width, $lines) = $gfx->write_justified_text($author, $heading_width);
+      $y_advance += $leading * $lines;
+    }
+    if($publisher) {
+      my ($width, $lines) = $gfx->write_justified_text($publisher, $heading_width);
+      $y_advance += $leading * $lines;
+    }
+
+    $gfx->nl;
+    $y_advance += $leading;
+
+    $gfx->fillcolor('#0000EE');
+    my ($handle_width, $handle_lines) = $gfx->write_justified_text("Find this Book Online: " . $self->handle, $heading_width, -underline => 'auto', -strokecolor => '#0000EE');
+    my $handle_height = $handle_lines * $leading;
+    # y_advance is at the bottom of the first line of the handle; need the top
+    my $handle_top = $y1 - $y_advance + $leading;
+    $$self{find_online_bbox} = [50, $handle_top - $handle_height, 50 + $handle_width, $handle_top];
+    $$self{find_online_url} = $self->handle;
+
+    $y_advance += $handle_height;
+
+    $gfx->textend;
+      $gfx->restore;
 
     my $coverpage_image = qq{$SRV::Globals::gHtmlDir/graphics/hathitrust-logo-stacked-orange-white-rgb-coverpage.jpg};
 
@@ -241,16 +260,31 @@ sub setup_colophon_page {
     my $image_data = $watermark_pdf->image_jpeg($coverpage_image);
     my $image = $page->gfx;
     my $xpos = ( $center_x - ( $image_w / 2 ) );
-    my $ypos = ( $center_y - ( $image_h / 2) );
 
-    $ypos += ( 100 - $y_drift );
+    # watermark_bottom: position watermarks y_advance units down from top, plus two "lines"
+    #
+    # watermark_width: greater of image width or twice the width of the larger watermark
+    # (see load watermarks above) -- this puts watermarks closer to the center than the default 
+    # centered on left half/right half of page, and ensures they don't collide
 
-    $image->image($image_data, $xpos, $ypos, $image_w, $image_h);
+    my $total_watermark_width = $image_w;
+    if(2 * $self->watermark_width > $image_w) {
+      $total_watermark_width = 2 * $self->watermark_width;
+    }
+
+    $y_advance += $self->watermark_height + $leading;
+    my $watermark_bottom = $y1 - $y_advance;
+    $self->insert_watermarks($watermark_pdf,$page, $self->watermark_width*2, $watermark_bottom);
+
+    # top of image should be one "line" under the watermark
+    my $image_bottom = $watermark_bottom - $leading - $image_h;
+
+    $image->image($image_data, $xpos, $image_bottom, $image_w, $image_h);
 
     ## add the access statement
 
     $gfx = $page->gfx;
-    $gfx->transform(-translate => [$xpos, $ypos - 15]);
+    $gfx->transform(-translate => [$xpos, $image_bottom - 15]);
 
     #### TO DO: if there's a stmt_icon, pull and embed
     #### in the PDF.
@@ -261,14 +295,17 @@ sub setup_colophon_page {
 
     $gfx->textstart;
 
-    $gfx->font($bold_font, $font_size + 1);
-    $gfx->lead(( $font_size + 1 ) * 1.25);
-    $gfx->write_justified_text($$access_stmts{stmt_head}, $image_w);
+    my $stmt_head_font_size = $font_size + 1;
+    my $stmt_head_leading = $stmt_head_font_size * 1.25;
+    $gfx->font($bold_font, $stmt_head_font_size);
+    $gfx->lead($stmt_head_leading);
+    $gfx->fillcolor('#0000EE');
+    my ($textwidth, $lines) = $gfx->write_justified_text($$access_stmts{stmt_head}, $image_w, -underline => 'auto', -strokecolor => '#0000EE');
+    my $textheight = $lines * $stmt_head_leading;
+    my $access_stmt_top = $image_bottom - 15 + $stmt_head_font_size;
 
-    $gfx->font($mono_font, $font_size);
-    $gfx->lead($font_size * 1.25);
-    $gfx->fillcolor('#6C6C6C');
-    $gfx->write_justified_text($$access_stmts{stmt_url}, $image_w);
+    $$self{access_stmt_url} = $$access_stmts{stmt_url};
+    $$self{access_stmt_link_bbox} = [$xpos, $access_stmt_top, $xpos + $textwidth, $access_stmt_top - $textheight];
 
     $gfx->nl;
 
@@ -290,43 +327,81 @@ sub setup_colophon_page {
 
 sub setup_stamp_page {
     my $self = shift;
-    my ( $mdpItem, $watermark_pdf ) = ( $self->mdpItem, $self->document );
+    my $watermark_pdf = $self->document();
 
     my $page = $watermark_pdf->page();
     $page->mediabox('Letter');
-    my ( $x0, $y0, $x1, $y1 ) = $page->get_mediabox;
 
     $self->insert_generated_message($page);
+    $self->insert_watermarks($watermark_pdf,$page);
 
-    my $watermark_height = 0;
-    if ( $self->watermark ) {
+}
 
-        my ($center_x, $center_y, $wm_margin_y);
-        ($center_x, $center_y) = ($x1 / 4, $y1 / 4);
-        $wm_margin_y = 0;
+sub load_watermarks {
+  my $self = shift;
+  my $watermark_pdf = $self->document();
 
-        ( $watermark_digitized, $watermark_original ) = SRV::Utils::get_watermark_filename($mdpItem, { size => 100 });
+  my $mdpItem = $self->mdpItem; 
 
-        eval {
-            my $image = $page->gfx();
+  my ( $watermark_digitized, $watermark_original ) = SRV::Utils::get_watermark_filename($mdpItem, { size => 100 });
 
-            if (defined($watermark_digitized)) {
-                $watermark_digitized = $watermark_pdf->image_png("$watermark_digitized.flat.png");
-                $watermark_height = $watermark_digitized->height;
-                $self->draw_image($image, $watermark_digitized, $center_x, $wm_margin_y);
-            }
-
-            if (defined($watermark_original)) {
-                $watermark_original = $watermark_pdf->image_png("$watermark_original.flat.png");
-                $watermark_height = $watermark_original->height if ( $watermark_original->height > $watermark_height );
-                $self->draw_image($image, $watermark_original, ( $center_x * 2 ) + $center_x, $wm_margin_y);
-            }
-        };
-        if ( my $err = $@ ) {
-            print STDERR "!! $err\n";
-        }
+  my $watermark_height = 0;
+  my $watermark_width = 0;
+  eval {
+    if (defined($watermark_digitized)) {
+      $watermark_digitized = $watermark_pdf->image_png("$watermark_digitized.flat.png");
+      $watermark_height = $watermark_digitized->height;
+      $watermark_width = $watermark_digitized->width;
+      $self->watermark_digitized($watermark_digitized);
     }
-    $self->watermark_height($watermark_height);
+
+    if (defined($watermark_original)) {
+      $watermark_original = $watermark_pdf->image_png("$watermark_original.flat.png");
+      $watermark_height = $watermark_original->height if ( $watermark_original->height > $watermark_height );
+      $watermark_width = $watermark_original->width if ( $watermark_original->width > $watermark_width );
+      $self->watermark_original($watermark_original);
+    }
+  };
+  if ( my $err = $@ ) {
+    print STDERR "!! $err\n";
+  }
+  $self->watermark_height($watermark_height);
+  $self->watermark_width($watermark_width);
+}
+
+sub insert_watermarks {
+  my $self = shift;
+  my $watermark_pdf = shift;
+  my $page = shift;
+
+  # optional, width defaults to page width, bottom defaults to bottom of page
+  my ( $x0, $y0, $page_width, $page_height ) = $page->get_mediabox;
+  my $wm_width = shift || $page_width;
+  my $wm_bottom_y = shift || 0;
+
+  $wm_width = $page_width if(!$wm_width);
+  
+  if ( $self->watermark ) {
+    my $center_x;
+
+    my $center_left_image = $page_width/2 - $wm_width / 4;
+    my $center_right_image = $page_width/2 + $wm_width / 4;
+
+    eval {
+      my $image = $page->gfx();
+
+      if (defined($self->watermark_digitized)) {
+        $self->draw_image($image, $self->watermark_digitized, $center_left_image, $wm_bottom_y);
+      }
+
+      if (defined($self->watermark_original)) {
+        $self->draw_image($image, $self->watermark_original, $center_right_image, $wm_bottom_y);
+      }
+    };
+    if ( my $err = $@ ) {
+      print STDERR "!! $err\n";
+    }
+  }
 }
 
 sub draw_image {

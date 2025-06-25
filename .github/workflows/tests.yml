@@ -53,7 +53,7 @@ jobs:
   #       run: docker compose run page-turner /htapps/babel/pt/bin/build.sh
 
   #     - name: Run playwright tests (PageTurner)
-  #       run: ./bin/run_playwright_tests.sh resource_sharing_user
+  #       run: ./bin/run_playwright_tests.sh
 
   #     - uses: actions/upload-artifact@v4
   #       if: ${{ failure() }}

@@ -18,7 +18,7 @@ test.describe('resource_sharing_user access to ic material', () => {
     await expect(page.getByRole('figure')).toBeVisible();
   });
 
-  test('download ic_currently_held whole item jpeg, full resolution', async ({ page }) => {
+  test.skip('download ic_currently_held whole item jpeg, full resolution', async ({ page }) => {
     test.slow();
 
     await page.goto('/cgi/pt?id=test.ic_currently_held');

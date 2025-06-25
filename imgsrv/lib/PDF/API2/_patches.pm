@@ -150,20 +150,30 @@
         return $self;
     }
 
+    # returns: width actually used; number of lines written (can be used to
+    # compute overall size of text written)
     sub write_justified_text {
         my $self = shift @_;
-        my ( $text, $width ) = @_;
+        my $text = shift @_;
+        my $width = shift @_;
+        my %options = @_;
         chomp($text);
         # $self->font($font, $font_size);
         # $self->lead($font_size *1.25);
         # $self->fillcolor('#000000');
 
-        my $toprint;
+        my $linewidth;
+        my $maxwidth = 0;
 
+        my $lines = 0;
         while($text ne '') {
-            ($toprint, $text) = $self->text_fill_justified($text, $width);
+            ($linewidth, $text) = $self->text_fill_justified($text, $width, %options);
             $self->nl;
+            $lines += 1;
+            $maxwidth = $linewidth if($linewidth > $maxwidth);
         }
+
+        return ($maxwidth, $lines);
     }
 
 }
