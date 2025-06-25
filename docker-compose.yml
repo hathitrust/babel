@@ -12,21 +12,18 @@ services:
         condition: service_healthy
     profiles:
       - frontend
-      - babel
   firebird:
     extends:
-      file: common/docker/firebird.yml
+      file: common/docker/node.yml
       service: firebird
     profiles:
       - frontend
-      - babel
   page-turner:
     extends:
-      file: common/docker/pageturner.yml
+      file: common/docker/node.yml
       service: page-turner
     profiles:
       - frontend
-      - babel
 
   apache-test:
     extends:
@@ -40,8 +37,7 @@ services:
       imgsrv:
         condition: service_healthy
     profiles:
-    - frontend
-    - babel
+    - fronten
 
 # Backend Services
   apache:
@@ -63,7 +59,6 @@ services:
         condition: service_healthy
     profiles:
       - backend
-      - babel
 
   perl-test:
     extends:
@@ -73,7 +68,6 @@ services:
     profiles:
       - testing
       - backend
-      - babel
 
   perl-dev:
     extends:
@@ -85,7 +79,6 @@ services:
     command: "sleep infinity"
     profiles:
       - backend
-      - babel
 
 # Indexing
   traject:
@@ -97,7 +90,7 @@ services:
         condition: service_healthy
     profiles:
     - indexing
-    - babel
+    - stage_item
 
   stage-item:
     extends:
@@ -108,7 +101,6 @@ services:
         condition: service_healthy
     profiles:
     - stage_item
-    - babel
 
   slip:
     extends:
@@ -123,7 +115,7 @@ services:
         condition: service_healthy
     profiles:
     - indexing
-    - babel
+    - stage_item
 
 volumes:
   gem_cache:
