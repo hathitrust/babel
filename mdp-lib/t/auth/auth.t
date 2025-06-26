@@ -27,6 +27,7 @@ $ENV{Shib_Identity_Provider} = 'https://idp.hathitrust.org/entity';
 
 use constant ALUM_ENTITLEMENT => 'alum@hathitrust.org';
 use constant MEMBER_ENTITLEMENT => 'member@hathitrust.org';
+use constant STUDENT_ENTITLEMENT => 'student@hathitrust.org';
 use constant SSD_USER => 'ssduser@hathitrust.org';
 use constant SSD_PROXY_USER => 'ssdproxy@hathitrust.org';
 
@@ -103,8 +104,8 @@ subtest 'user_is_print_disabled' => sub {
     is($auth->user_is_print_disabled($C), 0);
   };
 
-  subtest 'logged-in ssd user with valid affiliation is print disabled' => sub {
-    $ENV{affiliation} = MEMBER_ENTITLEMENT;
+  subtest 'logged-in ssd user with valid (student) affiliation is print disabled' => sub {
+    $ENV{affiliation} = STUDENT_ENTITLEMENT;
     $ENV{REMOTE_USER} = SSD_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);

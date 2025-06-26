@@ -98,10 +98,9 @@ our $ENTITLEMENT_PRINT_DISABLED_PROXY_VALUE = 'http://www.hathitrust.org/access/
 
 our $ENTITLEMENT_COMMON_LIB_TERMS = 'urn:mace:dir:entitlement:common-lib-terms';
 
-# eduPersonScopedAffiliation attribute values that can be considered
-# for print disabled status
-my $ENTITLEMENT_VALID_AFFILIATIONS_REGEXP =
-  qr,^(member|faculty|staff|student)$,ios;
+# eduPersonScopedAffiliation attribute values that qualify for ssd and ssd proxy status
+my $SSD_VALID_AFFILIATIONS_REGEXP = qr,^(faculty|staff|student)$,ios;
+my $SSD_PROXY_VALID_AFFILIATIONS_REGEXP = qr,^(member|faculty|staff|employee)$,ios;
 
 our $SWITCHABLE_ROLES = Utils::Settings::load( 'mdp-lib', 'switches', 1 );
 
@@ -1003,7 +1002,7 @@ sub user_is_print_disabled_proxy {
     if ($is_proxy) {
       if ($self->auth_sys_is_SHIBBOLETH($C)) {
         my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-        if ($unscoped_aff !~ m/$ENTITLEMENT_VALID_AFFILIATIONS_REGEXP/) {
+        if ($unscoped_aff !~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/) {
           $is_proxy = 0;
         }
       }
@@ -1041,7 +1040,7 @@ sub user_is_print_disabled {
     if ($is_disabled) {
       if ($self->auth_sys_is_SHIBBOLETH($C)) {
         my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-        if ($unscoped_aff !~ m/$ENTITLEMENT_VALID_AFFILIATIONS_REGEXP/) {
+        if ($unscoped_aff !~ m/$SSD_VALID_AFFILIATIONS_REGEXP/) {
           $is_disabled = 0;
         }
       }
