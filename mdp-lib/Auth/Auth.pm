@@ -1033,9 +1033,7 @@ sub user_is_print_disabled {
     my $C = shift;
 
     # ACL test
-    my $is_disabled = (
-                       Auth::ACL::a_Authorized( {role => 'ssd'})
-                      );
+    my $is_disabled = Auth::ACL::a_Authorized( {role => 'ssd'} );
     # Make sure affiliation is valid for continuing access
     if ($is_disabled) {
       if ($self->auth_sys_is_SHIBBOLETH($C)) {
