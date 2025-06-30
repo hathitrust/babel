@@ -77,22 +77,20 @@ sub generated_text {
   my $C = shift;
 
   my $auth = $C->get_object('Auth');
-  my $service;
-  if ($auth->user_is_print_disabled_proxy($C)) {
-    $service = 'Accessible Text Request Service';
-  } elsif($auth->user_is_resource_sharing_user($C)) {
-    $service = 'Resource Sharing';
-  }
-  else {
-    return '';
-  }
 
   my @message = ('Generated');
   my $institution = $auth->get_institution_name($C);
   if ($institution) {
     push @message, 'at', $institution;
   }
-  push @message, 'through HathiTrust', $service;
+  push @message, 'through HathiTrust';
+
+  if ($auth->user_is_print_disabled_proxy($C)) {
+    push @message, 'Accessible Text Request Service';
+  } elsif($auth->user_is_resource_sharing_user($C)) {
+    push @message, 'Resource Sharing';
+  }
+
   push @message, 'on', strftime("%Y-%m-%d %H:%M GMT", gmtime());
   return join(' ', @message);
 }

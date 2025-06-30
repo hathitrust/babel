@@ -7,6 +7,7 @@ use parent qw( SRV::Volume::Base );
 use Plack::Request;
 use Plack::Response;
 use Plack::Util;
+use SRV::Colophon;
 
 use Plack::Util::Accessor
     @SRV::Volume::Base::accessors,
@@ -98,10 +99,8 @@ sub _run {
 
     my $stamper = new Process::Watermark::PDF
         mdpItem => $mdpItem,
-        display_name => $self->display_name,
-        institution => $self->institution,
         access_stmts => $self->access_stmts,
-        proxy => $self->proxy,
+        generated_text => SRV::Colophon::generated_text($C),
         handle => $self->handle,
         target_ppi => $self->target_ppi,
         watermark => $self->watermark,

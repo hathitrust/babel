@@ -350,18 +350,28 @@ sub get_access_statements
     my $attr = $ar->get_rights_attribute($C, $id);
     my $access_profile = $ar->get_access_profile_attribute($C, $id);
 
-    my $ref_to_arr_of_hashref =
-      Access::Statements::get_stmt_by_rights_values($C, undef, $attr, $access_profile,
-                                                  {
-                                                   stmt_url      => 1,
-                                                   stmt_url_aux  => 1,
-                                                   stmt_head     => 1,
-                                                   stmt_icon     => 1,
-                                                   stmt_icon_aux => 1,
-                                                   stmt_text     => 1,
-                                                  });
+    my $stmt_fields = {
+      stmt_key      => 1,
+      stmt_url      => 1,
+      stmt_url_aux  => 1,
+      stmt_head     => 1,
+      stmt_icon     => 1,
+      stmt_icon_aux => 1,
+      stmt_text     => 1,
+    };
 
-    return $ref_to_arr_of_hashref->[0];
+    my $access_stmt =
+      Access::Statements::get_stmt_by_rights_values($C, undef, $attr, $access_profile, $stmt_fields)->[0];
+
+    # If we *would* show the ic statement, show the ic-available statement
+    # instead -- if you are able to download an ic item, then it's for one of
+    # the uses spelled out in this expanded statement
+    
+    if($access_stmt->{stmt_key} eq 'ic') {
+      return Access::Statements::get_stmt_by_key($C, undef, 'ic-available', $stmt_fields)->[0];
+    } else {
+      return $access_stmt;
+    }
 
 }
 
