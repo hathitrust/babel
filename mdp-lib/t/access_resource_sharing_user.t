@@ -149,6 +149,20 @@ sub test_page_pdf_download_status {
     return $status;
 }
 
+sub test_volume_pdf_download_status {
+    my ( $attr, $access_profile, $location ) = @_;
+    my $id = "test.$attr\_$access_profile";
+    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+
+    unless ( $attr ) {
+        print STDERR caller();
+    }
+
+    my $ar = Access::Rights->new($C, $id);
+    my $status = $ar->get_full_PDF_access_status($C, $id);
+    return $status;
+}
+
 my $num_tests = 0;
 
 my $tests = Test::File::load_data("$FindBin::Bin/data/access/resource_sharing_user.tsv");
@@ -224,9 +238,12 @@ foreach my $test ( @$tests ) {
           my $got_download_page = test_page_pdf_download_status($attr, $access_profile, $test_location);
           is($got_download_page, $expected_download_page, "PAGE PDF resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
           $num_tests += 1;
+          my $got_download_volume = test_volume_pdf_download_status($attr, $access_profile, $test_location);
+          is($got_download_volume, $expected_download_volume, "VOLUME PDF resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
+          $num_tests += 1;
         }
     }
-    # NOTE: there are no tests yet for the $expected_download_* values
+    # NOTE: there are no tests yet for the expected_download_plaintext case
 }
 
 done_testing($num_tests);

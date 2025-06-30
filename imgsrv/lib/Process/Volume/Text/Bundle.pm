@@ -31,6 +31,7 @@ use Plack::Util::Accessor qw(
 
 use Builder;
 
+use SRV::Colophon qw();
 use SRV::Utils;
 use SRV::Globals;
 use Institutions;
@@ -41,7 +42,6 @@ use File::Path qw(make_path remove_tree);
 use File::Slurp;
 use Data::Dumper;
 use List::MoreUtils qw(any);
-use POSIX qw(strftime);
 use Time::HiRes;
 
 use List::Util qw(max);
@@ -50,11 +50,8 @@ use IO::File;
 
 use File::Temp qw(tempdir);
 
-use POSIX qw(strftime);
-
 use ISO639;
 
-use Text::Wrap;
 use IPC::Run;
 use File::pushd;
 
@@ -83,6 +80,7 @@ sub process {
     my $auth = $C->get_object('Auth');
 
     # will need to so something different for status
+    make_path($self->cache_dir);
     my $working_dir = tempdir(DIR => $self->cache_dir, CLEANUP => 1);
     my @tmp = make_path($working_dir);
     $self->working_dir($working_dir);
@@ -141,81 +139,9 @@ sub insert_colophon_page {
     my ( $env ) = @_;
 
     my $C = $$env{'psgix.context'};
-    my $mdpItem = $C->get_object('MdpItem');
-    my $auth = $C->get_object('Auth');
-
     my $working_dir = $self->working_dir;
-
-    my $display_name = $self->display_name;
-    my $institution = $self->institution;
-    my $access_stmts = $self->access_stmts;
-    my $proxy = $self->proxy;
-
-    my $publisher = $mdpItem->GetPublisher();
-    my $title = wrap("Title:     ", "           ", $mdpItem->GetFullTitle());
-    my $author = wrap("Author:    ", "           ", $mdpItem->GetAuthor());
-
-    my $handle = SRV::Utils::get_itemhandle($mdpItem);
-
-    my $contents = <<TEXT;
-This file was downloaded from HathiTrust Digital Library.
-Find more books at https://www.hathitrust.org.
-
-$title
-$author
-Publisher: $publisher
-
-Copyright:
-$$access_stmts{stmt_head}
-$$access_stmts{stmt_url}
-
-TEXT
-
-    $contents .= wrap("", "", $$access_stmts{stmt_text});
-
-    $contents .= <<TEXT;
-
-Find this book online: $handle
-
-TEXT
-
-    $contents .= wrap("", "", $self->packager->additional_message());
-    $contents .= "\n\n";
-
-    # watermarks!
-    my ( $digitization_source, $collection_source ) = SRV::Utils::get_sources($mdpItem);
-    my $watermark_text = "";
-    if ( $digitization_source ) {
-        my $name = Institutions::get_institution_inst_id_field_val($C, $collection_source, 'name');
-        $watermark_text .= "Original from: $name\n";
-    }
-    if ( $digitization_source ) {
-        my $name = Institutions::get_institution_inst_id_field_val($C, $digitization_source, 'name');
-        $watermark_text .= "Digitized by:  $name\n";
-    }
-
-    $contents .= $watermark_text . "\n";
-
-    # marginalia
-    my @message = ('Generated');
-    if ( $display_name ) {
-        if ( $proxy ) {
-            push @message, qq{by $display_name};
-        }
-        if ( $institution ) {
-            push @message, qq{at $institution};
-        }
-        if ( $proxy ) {
-            push @message, qq{for a print-disabled user};
-        }
-    }
-    push @message, "on", strftime("%Y-%m-%d %H:%M GMT", gmtime());
-
-    $contents .= wrap("", "", join(' ', @message)) . "\n";
-
-    write_file("$working_dir/$COLOPHON_FILENAME", {binmode => ':utf8'}, $contents);
-
-
+    my $colophon_text = SRV::Colophon::colophon_text($C, $self->packager->additional_message());
+    write_file("$working_dir/$COLOPHON_FILENAME", {binmode => ':utf8'}, $colophon_text);
 }
 
 sub pack_zip {

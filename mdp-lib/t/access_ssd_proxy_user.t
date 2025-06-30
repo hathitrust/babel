@@ -101,6 +101,20 @@ sub test_attr {
     return $status;
 }
 
+sub test_volume_pdf_download_status {
+    my ( $attr, $access_profile, $location ) = @_;
+    my $id = "test.$attr\_$access_profile";
+    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+
+    unless ( $attr ) {
+        print STDERR caller();
+    }
+
+    my $ar = Access::Rights->new($C, $id);
+    my $status = $ar->get_full_PDF_access_status($C, $id);
+    return $status;
+}
+
 my $num_tests = 0;
 
 my $tests = Test::File::load_data("$FindBin::Bin/data/access/ssd_proxy_user.tsv");
@@ -122,6 +136,9 @@ foreach my $test ( @$tests ) {
     else { setup_nonus_instition(); }
 
     is(test_attr($attr, $access_profile, $location), $expected_volume, "ssd_proxy_user + attr=$attr + location=$location + profile=$access_profile");
+    $num_tests += 1;
+    my $got_download_volume = test_volume_pdf_download_status($attr, $access_profile, $location);
+    is($got_download_volume, $expected_download_volume, "VOLUME PDF ssd_proxy_user + attr=$attr + location=$location + profile=$access_profile");
     $num_tests += 1;
 }
 

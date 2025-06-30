@@ -5,7 +5,7 @@ use warnings;
 
 use Plack::Util;
 use Plack::Util::Accessor qw( 
-    access_stmts 
+    access_stmts
     display_name 
     institution 
     proxy 
@@ -36,6 +36,7 @@ use Process::Text;
 use Process::Image;
 use Image::ExifTool;
 
+use SRV::Colophon;
 use SRV::Utils;
 use SRV::Globals;
 
@@ -84,7 +85,6 @@ sub process {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $auth = $C->get_object('Auth');
-
     # will need to so something different for status
     my $working_dir = tempdir(DIR => $self->cache_dir, CLEANUP => 1);
     # my $working_dir = qq{$ENV{SDRROOT}/sandbox/web/epub-dev/epub3-test/$$};
@@ -201,7 +201,10 @@ sub insert_colophon_page {
 
     make_path(qq{$working_dir/$package_path/hathitrust});
     my $watermarks = $self->add_watermarks($mdpItem, "$working_dir/$package_path/hathitrust");
-    copy(qq{$Process::Globals::static_path/graphics/hathi-logo-tm-600.png}, "$working_dir/$package_path/hathitrust/hathi-logo-tm.png");
+    copy(
+        qq{$Process::Globals::static_path/graphics/hathitrust-logo-stacked-orange-white-rgb-coverpage.jpg},
+        "$working_dir/$package_path/hathitrust/hathi-logo-tm.png"
+    );
     copy(qq{$Process::Globals::static_path/epub/colophon.css}, "$working_dir/$package_path/hathitrust/colophon.css");
 
     my $display_name = $self->display_name;
@@ -238,6 +241,10 @@ sub insert_colophon_page {
                     $xml->br,
                     $xml->span($publisher),
                 ),
+                $xml->p(
+                    $xml->span("Find this Book Online: "),
+                    $xml->a({ href => $handle }, $handle),
+                ),
                 $xml->p({ class => 'image' },
                     $xml->img({ src => '../hathitrust/hathi-logo-tm.png'}),
                 ),
@@ -246,17 +253,15 @@ sub insert_colophon_page {
                     $xml->img({ class => 'watermark-original', src => '../hathitrust/watermark_original.png'}),
                 ),
                 $xml->p(
-                    $xml->span("Copyright "),
                     $xml->a({ href => $$access_stmts{stmt_url} }, $$access_stmts{stmt_head})
                 ),
                 $xml->blockquote(
                     $xml->p($$access_stmts{stmt_text})
                 ),
+                $self->packager->additional_message($xml),
                 $xml->p(
-                    $xml->span("Find this Book Online: "),
-                    $xml->a({ href => $handle }, $handle),
+                    SRV::Colophon::generated_text($C)
                 ),
-                $self->packager->additional_message($xml)
             )
         );
     });
