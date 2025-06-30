@@ -36,6 +36,7 @@ use Process::Text;
 use Process::Image;
 use Image::ExifTool;
 
+use SRV::Colophon;
 use SRV::Utils;
 use SRV::Globals;
 
@@ -259,7 +260,7 @@ sub insert_colophon_page {
                 ),
                 $self->packager->additional_message($xml),
                 $xml->p(
-                    $self->generated_text($C)
+                    SRV::Colophon::generated_text($C)
                 ),
             )
         );
@@ -348,33 +349,6 @@ sub pack_zip {
     }
 
     return $epub_filename;
-}
-
-# Returns "generated at" text ONLY for RS and ATRS service types.
-# Everyone else gets an empty <p>.
-sub generated_text {
-  my $self = shift;
-  my $C    = shift;
-
-  my $auth = $C->get_object('Auth');
-  my $service;
-  if ($auth->user_is_print_disabled_proxy($C)) {
-    $service = 'Accessible Text Request Service';
-  } elsif($auth->user_is_resource_sharing_user($C)) {
-    $service = 'Resource Sharing';
-  }
-  else {
-    return '';
-  }
-
-  my @message = ('Generated');
-  my $institution = $auth->get_institution_name($C);
-  if ($institution) {
-    push @message, 'at', $institution;
-  }
-  push @message, 'through HathiTrust', $service;
-  push @message, 'on', strftime("%Y-%m-%d %H:%M GMT", gmtime());
-  return join(' ', @message);
 }
 
 1;

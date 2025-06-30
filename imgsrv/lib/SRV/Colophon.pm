@@ -72,7 +72,7 @@ TEXT
   return $contents;
 }
 
-# Appropriated from ETT-332 with which it will be merged at a later date
+# Produces the "Generated at..." statement used in all download formats.
 sub generated_text {
   my $C = shift;
 
