@@ -29,9 +29,10 @@ sub colophon_text {
   my $handle = SRV::Utils::get_itemhandle($mdpItem);
 
   my $contents = <<TEXT;
-Title: $title
-Author: $author
+$title
+$author
 Publisher: $publisher
+
 Find this book online: $handle
 
 TEXT
