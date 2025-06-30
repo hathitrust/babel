@@ -13,7 +13,7 @@ switch_auth() {
 
   echo -e "${color_cyan}Configuring mocked holdings API${color_reset}"
   for app in pt imgsrv ssd; do
-    echo "holdings_api_url = http://apache:8080/mock-holdings-api" >> $babel_home/$app/lib/Config/local.conf
+    echo "holdings_api_url = http://apache-test:8080/mock-holdings-api" >> $babel_home/$app/lib/Config/local.conf
   done
 
   echo -e "Resetting ht_sessions database table "

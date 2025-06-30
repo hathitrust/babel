@@ -369,6 +369,8 @@ sub get_access_statements
     
     if($access_stmt->{stmt_key} eq 'ic') {
       return Access::Statements::get_stmt_by_key($C, undef, 'ic-available', $stmt_fields)->[0];
+    } else {
+      return $access_stmt;
     }
 
 }

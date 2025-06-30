@@ -80,6 +80,7 @@ sub process {
     my $auth = $C->get_object('Auth');
 
     # will need to so something different for status
+    make_path($self->cache_dir);
     my $working_dir = tempdir(DIR => $self->cache_dir, CLEANUP => 1);
     my @tmp = make_path($working_dir);
     $self->working_dir($working_dir);
