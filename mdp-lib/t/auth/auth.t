@@ -25,9 +25,9 @@ local %ENV = %ENV;
 $ENV{AUTH_TYPE} = q{shibboleth};
 $ENV{Shib_Identity_Provider} = 'https://idp.hathitrust.org/entity';
 
-use constant ALUM_ENTITLEMENT => 'alum@hathitrust.org';
-use constant MEMBER_ENTITLEMENT => 'member@hathitrust.org';
-use constant STUDENT_ENTITLEMENT => 'student@hathitrust.org';
+use constant ALUM_AFFILIATION => 'alum@hathitrust.org';
+use constant MEMBER_AFFILIATION => 'member@hathitrust.org';
+use constant STUDENT_AFFILIATION => 'student@hathitrust.org';
 use constant SSD_USER => 'ssduser@hathitrust.org';
 use constant SSD_PROXY_USER => 'ssdproxy@hathitrust.org';
 
@@ -71,7 +71,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
   };
 
   subtest 'logged in ssdproxy user with invalid affiliation is not print disabled proxy' => sub {
-    $ENV{affiliation} = ALUM_ENTITLEMENT;
+    $ENV{affiliation} = ALUM_AFFILIATION;
     $ENV{REMOTE_USER} = SSD_PROXY_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
@@ -79,7 +79,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
   };
 
   subtest 'logged-in ssdproxy user with valid affiliation is print disabled proxy' => sub {
-    $ENV{affiliation} = MEMBER_ENTITLEMENT;
+    $ENV{affiliation} = MEMBER_AFFILIATION;
     $ENV{REMOTE_USER} = SSD_PROXY_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
@@ -97,7 +97,7 @@ subtest 'user_is_print_disabled' => sub {
   };
 
   subtest 'logged in ssd user with invalid affiliation is not print disabled' => sub {
-    $ENV{affiliation} = ALUM_ENTITLEMENT;
+    $ENV{affiliation} = ALUM_AFFILIATION;
     $ENV{REMOTE_USER} = SSD_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
@@ -105,7 +105,7 @@ subtest 'user_is_print_disabled' => sub {
   };
 
   subtest 'logged-in ssd user with valid (student) affiliation is print disabled' => sub {
-    $ENV{affiliation} = STUDENT_ENTITLEMENT;
+    $ENV{affiliation} = STUDENT_AFFILIATION;
     $ENV{REMOTE_USER} = SSD_USER;
     setup_session($C, 'logged_in');
     my $auth = Auth::Auth->new($C);
