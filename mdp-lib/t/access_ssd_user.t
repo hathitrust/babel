@@ -70,7 +70,8 @@ Test::ACL::mock_acls($C, [
       usertype => 'student',
       access => 'normal',
       expires => Test::ACL::future_date_string(),
-      identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+      identity_provider => Auth::Auth::get_umich_IdP_entity_id(),
+      iprestrict => '.*', #iprestrict_none
     },
     {
       userid => 'user@ox.ac.edu',
@@ -78,7 +79,8 @@ Test::ACL::mock_acls($C, [
       usertype => 'student',
       access => 'normal',
       expires => Test::ACL::future_date_string(),
-      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
+      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp},
+      iprestrict => '.*', #iprestrict_none
     }
 ]);
 
@@ -103,7 +105,6 @@ sub setup_nonus_instition {
     delete $ENV{umichCosignFactor};
     $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
     $ENV{affiliation} = q{member@ox.ac.edu};
-    $ENV{entitlement} = q{http://www.hathitrust.org/access/enhancedText};
 }
 
 sub test_attr {

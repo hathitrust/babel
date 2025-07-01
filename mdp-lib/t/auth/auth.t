@@ -67,7 +67,7 @@ subtest 'user_is_print_disabled_proxy' => sub {
   subtest 'logged out user is not print disabled proxy' => sub {
     setup_session($C);
     my $auth = Auth::Auth->new($C);
-    is($auth->user_is_print_disabled_proxy($C), 0);
+    is($auth->user_is_print_disabled_proxy($C, 1), 0);
   };
 
   subtest 'logged in ssdproxy user with invalid affiliation is not print disabled proxy' => sub {

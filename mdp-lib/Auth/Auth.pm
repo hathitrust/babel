@@ -996,17 +996,15 @@ sub user_is_print_disabled_proxy {
     my $C = shift;
     my $check_possible = shift;
 
+    # Not unless logged in
+    return 0 unless $self->auth_sys_is_SHIBBOLETH($C);
+
+    # Not without the correct affiliation
+    my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
+    return 0 unless ($unscoped_aff =~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/);
+
     # ACL test
     my $is_proxy = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
-    # Make sure affiliation is valid for continuing access
-    if ($is_proxy) {
-      if ($self->auth_sys_is_SHIBBOLETH($C)) {
-        my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-        if ($unscoped_aff !~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/) {
-          $is_proxy = 0;
-        }
-      }
-    }
 
     return $is_proxy if ( $check_possible );
 
@@ -1032,19 +1030,15 @@ sub user_is_print_disabled {
     my $self = shift;
     my $C = shift;
 
-    # ACL test
-    my $is_disabled = Auth::ACL::a_Authorized( {role => 'ssd'} );
-    # Make sure affiliation is valid for continuing access
-    if ($is_disabled) {
-      if ($self->auth_sys_is_SHIBBOLETH($C)) {
-        my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-        if ($unscoped_aff !~ m/$SSD_VALID_AFFILIATIONS_REGEXP/) {
-          $is_disabled = 0;
-        }
-      }
-    }
+    # Not unless logged in
+    return 0 unless $self->auth_sys_is_SHIBBOLETH($C);
 
-    return $is_disabled;
+    # Not without the correct affiliation
+    my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
+    return 0 unless ($unscoped_aff =~ m/$SSD_VALID_AFFILIATIONS_REGEXP/);
+
+    # ACL test
+    return Auth::ACL::a_Authorized( {role => 'ssd'} );
 }
 
 sub user_has_total_access {
