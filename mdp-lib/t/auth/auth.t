@@ -27,7 +27,7 @@ $ENV{Shib_Identity_Provider} = 'https://idp.hathitrust.org/entity';
 
 use constant ALUM_AFFILIATION => 'alum@hathitrust.org';
 use constant MEMBER_AFFILIATION => 'member@hathitrust.org';
-use constant STUDENT_AFFILIATION => 'student@hathitrust.org';
+use constant STUDENT_AFFILIATION => 'member@hathitrust.org;student@hathitrust.org';
 use constant SSD_USER => 'ssduser@hathitrust.org';
 use constant SSD_PROXY_USER => 'ssdproxy@hathitrust.org';
 
