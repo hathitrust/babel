@@ -745,7 +745,7 @@ sub __get_prioritized_scoped_affiliation {
 
     # prefer affiliations in this order. Not all of these may be
     # passed through to us via the Shib layer.
-    my @affiliation_priorities = qw(member faculty staff student alum affiliate);
+    my @affiliation_priorities = qw(member faculty staff employee student alum affiliate);
 
     my $environment = $ENV{affiliation} || '';
 
@@ -999,9 +999,17 @@ sub user_is_print_disabled_proxy {
     # Not unless logged in
     return 0 unless $self->auth_sys_is_SHIBBOLETH($C);
 
-    # Not without the correct affiliation
-    my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-    return 0 unless ($unscoped_aff =~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/);
+    # Not without the correct affiliation somewhere
+    my $allowed_affiliations = $self->get_allowed_affiliations($C);
+    my $aff_data = $self->__get_scoped_affiliations($C, $allowed_affiliations);
+    my $affiliation_matched = 0;
+    foreach my $unscoped_aff (@{$aff_data->{index}}) {
+      if ($unscoped_aff =~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/) {
+        $affiliation_matched = 1;
+        last;
+      }
+    }
+    return 0 unless $affiliation_matched;
 
     # ACL test
     my $is_proxy = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
