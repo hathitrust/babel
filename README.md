@@ -27,9 +27,10 @@ There's a lot, because we're replicating running on the dev servers with
 In your workdir:
 
 ```
-docker compose --profile babel build
+docker compose --profile frontend build
+docker compose --profile backend build
 ```
-## Ste 4: Build assets
+## Step 4: Build assets
 
 Build the CSS and JavaScript for `firebird-common` and `pt`:
 
@@ -54,13 +55,6 @@ docker compose --profile frontend up
 
 ```bash
 docker compose --profile backend up
-```
-
-
-- To stand up all services, run the following command
-
-``` bash
-docker compose --profile babel up
 ```
 
 In your browser:

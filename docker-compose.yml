@@ -10,8 +10,16 @@ services:
     depends_on:
       apache-test:
         condition: service_healthy
-    profiles:
-      - frontend
+
+  playwright_reports:
+    extends:
+      file: common/docker/playwright.yml
+      service: playwright
+    command: "npx playwright show-report --host 0.0.0.0"
+    ports:
+      - 9323:9323
+
+
   firebird:
     extends:
       file: common/docker/node.yml
