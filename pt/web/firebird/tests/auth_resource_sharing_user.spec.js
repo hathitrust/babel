@@ -5,15 +5,14 @@ test.describe('resource_sharing_user access to ic material', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
     await page.getByRole('button', { name: 'Allow all cookies' }).click();
-    await page.getByRole('button', { name: '\uf007' }).click();
+    await page.getByRole('button', { name: 'My account' }).click();
 
-    await page.getByRole('button', { name: /Switch Role: Resource Sharing/ }).click();
+    await page.getByRole('button', { name: 'Switch Role' }).click();
     await page.getByRole('radio', { name: 'Resource Sharing' }).click();
     await page.getByRole('button', { name: 'Submit' }).click();
   });
 
   test('pageturner loads image for ic_currently_held', async ({ page }) => {
-
     await page.goto('/cgi/pt?id=test.ic_currently_held');
     await expect(page.getByRole('figure')).toBeVisible();
   });
@@ -52,7 +51,6 @@ test.describe('resource_sharing_user access to ic material', () => {
     //expect file to exist before playwright deletes it
     expect(fs.existsSync(downloadPath)).toBeTruthy();
   });
-
 
   test('download single page from ic_currently_held', async ({ page }) => {
     await page.goto('/cgi/pt?id=test.ic_currently_held');
