@@ -1,0 +1,17 @@
+x-ndoe: &node
+  image: node:22-slim
+  profiles:
+  - node
+  volumes:
+  - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
+  - ${BABEL_HOME}/pt:/htapps/babel/pt
+  - ${BABEL_HOME}/.npm:/.npm
+  command: [ 'npm', 'run', 'babel' ]
+
+services:
+  page-turner:
+    <<: *node
+    working_dir: /htapps/babel/pt/web/firebird
+  firebird:
+    <<: *node
+    working_dir: /htapps/babel/firebird-common/
