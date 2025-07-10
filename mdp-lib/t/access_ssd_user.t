@@ -70,7 +70,8 @@ Test::ACL::mock_acls($C, [
       usertype => 'student',
       access => 'normal',
       expires => Test::ACL::future_date_string(),
-      identity_provider => Auth::Auth::get_umich_IdP_entity_id()
+      identity_provider => Auth::Auth::get_umich_IdP_entity_id(),
+      iprestrict => '.*', #iprestrict_none
     },
     {
       userid => 'user@ox.ac.edu',
@@ -78,7 +79,8 @@ Test::ACL::mock_acls($C, [
       usertype => 'student',
       access => 'normal',
       expires => Test::ACL::future_date_string(),
-      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
+      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp},
+      iprestrict => '.*', #iprestrict_none
     }
 ]);
 
@@ -88,7 +90,7 @@ $ENV{HTTP_HOST} = q{babel.hathitrust.org};
 $ENV{SERVER_ADDR} = q{192.0.2.0};
 $ENV{SERVER_PORT} = q{443};
 $ENV{AUTH_TYPE} = q{shibboleth};
-$ENV{affiliation} = q{member@umich.edu};
+$ENV{affiliation} = q{student@umich.edu};
 
 sub setup_us_institution {
     $ENV{REMOTE_USER} = 'user@umich.edu';
@@ -103,7 +105,6 @@ sub setup_nonus_instition {
     delete $ENV{umichCosignFactor};
     $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
     $ENV{affiliation} = q{member@ox.ac.edu};
-    $ENV{entitlement} = q{http://www.hathitrust.org/access/enhancedText};
 }
 
 sub test_attr {
@@ -167,7 +168,7 @@ sub mock_institutions {
         inst_id => 'umich',
         entityID => Auth::Auth::get_umich_IdP_entity_id(),
         enabled => 1,
-        allowed_affiliations => q{^(alum|member)@umich.edu},
+        allowed_affiliations => q{^(alum|member|student)@umich.edu},
         us => 1,
     };
     $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
@@ -175,7 +176,7 @@ sub mock_institutions {
         inst_id => 'ox',
         entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
         enabled => 1,
-        allowed_affiliations => q{^(alum|member)@ox.ac.uk},
+        allowed_affiliations => q{^(alum|member|student)@ox.ac.uk},
         us => 0,
     };
     bless $inst_ref, 'Institutions';
