@@ -341,7 +341,6 @@ sub check_final_access_status {
 
     my $rights_attribute = $self->get_rights_attribute($C, $id);
     my $access_type = _determine_access_type($C);
-
     my $initial_access_status =
         _determine_initial_access_status($rights_attribute, $access_type);
     my $final_access_status =
@@ -526,6 +525,7 @@ sub get_single_page_PDF_access_status {
         # you can read the book, so you can download single page PDFs
         $status = 'allow';
         my $access_type = $self->get_access_type($C);
+
         if ( $access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE ) {
             # but EMERGENCY_ACCESS_AFFILIATE can only single-page download
             # what ordinary users can download
@@ -1163,7 +1163,7 @@ sub _determine_access_type {
     }
     elsif ( $auth->user_has_total_access($C) ) {
         $access_type = Auth::ACL::a_GetUserAttributes('usertype') eq 'staff' ?
-            $RightsGlobals::HT_STAFF_USER : 
+            $RightsGlobals::HT_STAFF_USER :
             $RightsGlobals::HT_TOTAL_USER;
     }
     elsif ($auth->user_is_print_disabled_proxy($C)) {

@@ -98,10 +98,9 @@ our $ENTITLEMENT_PRINT_DISABLED_PROXY_VALUE = 'http://www.hathitrust.org/access/
 
 our $ENTITLEMENT_COMMON_LIB_TERMS = 'urn:mace:dir:entitlement:common-lib-terms';
 
-# eduPersonScopedAffiliation attribute values that can be considered
-# for print disabled status
-my $ENTITLEMENT_VALID_AFFILIATIONS_REGEXP =
-  qr,^(member|faculty|staff|student)$,ios;
+# eduPersonScopedAffiliation attribute values that qualify for ssd and ssd proxy status
+my $SSD_VALID_AFFILIATIONS_REGEXP = qr,^(faculty|staff|student)$,ios;
+my $SSD_PROXY_VALID_AFFILIATIONS_REGEXP = qr,^(member|faculty|staff|employee)$,ios;
 
 our $SWITCHABLE_ROLES = Utils::Settings::load( 'mdp-lib', 'switches', 1 );
 
@@ -746,7 +745,7 @@ sub __get_prioritized_scoped_affiliation {
 
     # prefer affiliations in this order. Not all of these may be
     # passed through to us via the Shib layer.
-    my @affiliation_priorities = qw(member faculty staff student alum affiliate);
+    my @affiliation_priorities = qw(member faculty staff employee student alum affiliate);
 
     my $environment = $ENV{affiliation} || '';
 
@@ -963,58 +962,6 @@ sub get_unscoped_eduPersonPrincipalName {
 
 # ---------------------------------------------------------------------
 
-=item __get_shibboleth_print_disability_entitlement
-
-http://middleware.internet2.edu/eduperson/docs/internet2-mace-dir-eduperson-200806.html#eduPersonEntitlement
-
-The Shibboleth entitlement values follow the URL-type scheme:
-
-http://www.hathitrust.org/access/standard
-http://www.hathitrust.org/access/enhancedText
-http://www.hathitrust.org/access/enhancedTextProxy
-
-standard - no special privs
-enhancedText - print disabled
-enhancedTextProxy - assist print disabled
-
-=cut
-
-# ---------------------------------------------------------------------
-sub __get_shibboleth_print_disability_entitlement {
-    my $self = shift;
-    my $C = shift;
-
-    my $entitlement = '';
-
-    if (Auth::ACL::S___superuser_role) {
-        $entitlement = 'ssd' if (DEBUG('ssd'));
-        $entitlement = 'ssdproxy' if (DEBUG('ssdproxy'));
-    }
-
-    unless ($entitlement) {
-        if ($self->auth_sys_is_SHIBBOLETH($C)) {
-            my $unscoped_aff = $self->get_eduPersonUnScopedAffiliation($C);
-            if ($unscoped_aff =~ m/$ENTITLEMENT_VALID_AFFILIATIONS_REGEXP/) {
-                my $env_entitlement = $ENV{entitlement} || '';
-                my @eduPersonEntitlement_vals = split(/;/, $env_entitlement);
-
-                if ( grep(/$ENTITLEMENT_PRINT_DISABLED_VALUE/, @eduPersonEntitlement_vals) ) {
-                    $entitlement = 'ssd';
-                }
-                elsif ( grep(/$ENTITLEMENT_PRINT_DISABLED_PROXY_VALUE/, @eduPersonEntitlement_vals) ) {
-                    $entitlement = 'ssdproxy';
-                }
-                else {
-                }
-            }
-        }
-    }
-
-    return $entitlement;
-}
-
-# ---------------------------------------------------------------------
-
 =item get_PrintDisabledProxyUserSignature
 
 Description
@@ -1049,13 +996,23 @@ sub user_is_print_disabled_proxy {
     my $C = shift;
     my $check_possible = shift;
 
+    # Not unless logged in
+    return 0 unless $self->auth_sys_is_SHIBBOLETH($C);
+
+    # Not without the correct affiliation somewhere
+    my $allowed_affiliations = $self->get_allowed_affiliations($C);
+    my $aff_data = $self->__get_scoped_affiliations($C, $allowed_affiliations);
+    my $affiliation_matched = 0;
+    foreach my $unscoped_aff (@{$aff_data->{index}}) {
+      if ($unscoped_aff =~ m/$SSD_PROXY_VALID_AFFILIATIONS_REGEXP/) {
+        $affiliation_matched = 1;
+        last;
+      }
+    }
+    return 0 unless $affiliation_matched;
+
     # ACL test
     my $is_proxy = Auth::ACL::a_Authorized( {role => 'ssdproxy'} );
-    # Authentication test
-    unless ($is_proxy) {
-        my $entitlement = $self->__get_shibboleth_print_disability_entitlement($C);
-        $is_proxy = ($entitlement eq 'ssdproxy');
-    }
 
     return $is_proxy if ( $check_possible );
 
@@ -1081,17 +1038,23 @@ sub user_is_print_disabled {
     my $self = shift;
     my $C = shift;
 
-    # ACL test
-    my $is_disabled = (
-                       Auth::ACL::a_Authorized( {role => 'ssd'})
-                      );
-    # Authentication test
-    unless ($is_disabled) {
-        my $entitlement = $self->__get_shibboleth_print_disability_entitlement($C);
-        $is_disabled = ($entitlement eq 'ssd')
-    }
+    # Not unless logged in
+    return 0 unless $self->auth_sys_is_SHIBBOLETH($C);
 
-    return $is_disabled;
+    # Not without the correct affiliation somewhere
+    my $allowed_affiliations = $self->get_allowed_affiliations($C);
+    my $aff_data = $self->__get_scoped_affiliations($C, $allowed_affiliations);
+    my $affiliation_matched = 0;
+    foreach my $unscoped_aff (@{$aff_data->{index}}) {
+      if ($unscoped_aff =~ m/$SSD_VALID_AFFILIATIONS_REGEXP/) {
+        $affiliation_matched = 1;
+        last;
+      }
+    }
+    return 0 unless $affiliation_matched;
+
+    # ACL test
+    return Auth::ACL::a_Authorized( {role => 'ssd'} );
 }
 
 sub user_has_total_access {

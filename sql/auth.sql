@@ -12,10 +12,10 @@ REPLACE INTO ht.ht_users (userid, displayname, email, usertype, role, access, ex
 ('rsuser@hathitrust.org','HathiTrust Resource-Sharinguser','rsuser@hathitrust.org','external','resource_sharing','normal',DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 YEAR),'^.*$','https://idp.hathitrust.org/entity','hathitrust');
 
 --- inserts/updates for ht_institutions
-REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
+REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations)
   VALUES ('umich','University of Michigan','umich.edu','1','1','https://shibboleth.umich.edu/idp/shibboleth','^(member|alum|faculty|staff|student|employee)@umich.edu');
 
-REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations) 
+REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations)
   VALUES ('hathitrust','HathiTrust','hathitrust.org','1','1','https://idp.hathitrust.org/entity','^(member|alum|faculty|staff|student|employee)@hathitrust.org');
 
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');

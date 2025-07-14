@@ -565,10 +565,13 @@ sub __load_access_control_list {
 
     my $C = new Context;
     my $dbh = $C->get_object('Database')->get_DBH;
+    my @userids = Utils::Get_Remote_User_Names();
 
     my ($statement, $sth, $ref_to_arr_of_hashref);
 
-    $statement = qq{SELECT ht_users.*, ht_counts.accesscount, ht_counts.last_access, ht_counts.warned, ht_counts.certified, ht_counts.auth_requested FROM ht_users LEFT OUTER JOIN ht_counts ON ht_users.userid = ht_counts.userid};
+    my $userid_clause = join(", ", map { DbUtils::quote($dbh,$_) } @userids);
+
+    $statement = qq{SELECT ht_users.*, ht_counts.accesscount, ht_counts.last_access, ht_counts.warned, ht_counts.certified, ht_counts.auth_requested FROM ht_users LEFT OUTER JOIN ht_counts ON ht_users.userid = ht_counts.userid WHERE ht_users.userid IN ($userid_clause)};
     $sth = DbUtils::prep_n_execute($dbh, $statement);
     $ref_to_arr_of_hashref = $sth->fetchall_arrayref({});
 

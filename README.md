@@ -27,15 +27,34 @@ There's a lot, because we're replicating running on the dev servers with
 In your workdir:
 
 ```
-docker compose build
+docker compose --profile frontend build
+docker compose --profile backend build
+```
+## Step 4: Build assets
+
+Build the CSS and JavaScript for `firebird-common` and `pt`:
+
+```bash
+#build firebird-common
+docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
+
+# build pt/firebird
+docker compose run page-turner /htapps/babel/pt/bin/build.sh
 ```
 
-## Step 4: run `babel-local-dev`:
+## Step 5: run `babel-local-dev`:
+Within the Babel project, we have the option to stand up the frontend, backend, or everything.
 
-In your workdir:
+- To stand up the frontend and core services for development, use the following command.
 
+```bash
+docker compose --profile frontend up
 ```
-docker compose up
+
+- To run the backend and core services for development, run the following command
+
+```bash
+docker compose --profile backend up
 ```
 
 In your browser:
@@ -68,23 +87,7 @@ Huzzah!
 * imgsrv plack/psgi process runs in its own container
 * apache proxies to imgsrv & catalog
 
-## Rebuilding Assets
 
-To rebuild the CSS and JavaScript for `firebird-common` and `pt`:
-
-```bash
-#build firebird-common
-docker compose run firebird /htapps/babel/firebird-common/bin/build.sh
-
-# build pt/firebird
-docker compose run page-turner /htapps/babel/pt/bin/build.sh
-```
-
-To stand up a development environment while working strictly on the front-end.
-
-```bash
-docker compose --profile node up
-```
 
 ## Running Tests
 

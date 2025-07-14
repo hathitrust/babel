@@ -1,0 +1,23 @@
+services:
+  perl:
+    # This is a container used to run tests by default but also used for some development. Not related to the frontend
+    build:
+      context: ../../
+      target: babel-base
+    volumes:
+    - ${BABEL_HOME}:/htapps/babel
+    - ${BABEL_HOME}/sample-data/sdr1:/sdr1
+    - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
+    # Allow tests to modify database
+    - ${BABEL_HOME}/logs:/var/log/babel
+    environment:
+    - SDRROOT=/htapps/babel
+    - SDRDATAROOT=/sdr1
+    - MARIADB_USER=ht_web
+    - HTDEV=test
+    - PERL5LIB=/htapps/babel/mdp-lib
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+    working_dir: "/htapps/babel/mdp-lib"
+    command: "prove -r t/"
