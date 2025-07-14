@@ -60,6 +60,8 @@ sub setup_session {
     $ses->set_persistent('authenticated_via', 'shibboleth');
   }
   $C->set_object('Session', $ses);
+  # Since we're hopping between user identities, null out to force a reload from ht_users
+  Auth::ACL::___set_ACL( {} );
 }
 
 subtest 'user_is_print_disabled_proxy' => sub {
