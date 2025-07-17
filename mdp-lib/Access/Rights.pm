@@ -888,7 +888,7 @@ sub _get_final_access_status_attr_list {
               my $attr_list = join(',', sort {$a <=> $b} @attr_list);
               qq{<h5>_get_final_access_status_attr_list: reqd="$final_access_status_req" list=$attr_list</h5>}
           });
-
+    @attr_list = sort {$a <=> $b} @attr_list;
     return \@attr_list;
 }
 

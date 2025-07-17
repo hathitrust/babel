@@ -7,6 +7,9 @@ use File::Spec;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
+use lib "$ENV{SDRROOT}/libtest";
+
+use TestUser;
 
 use RightsGlobals;
 
@@ -24,21 +27,21 @@ use Test::File;
 use Test::ACL;
 
 use Data::Dumper;
-use feature qw(say);
+#use feature qw(say);
 
 #---- MONEKYPATCHES
 no warnings 'redefine';
-local *Auth::Auth::affiliation_is_hathitrust = sub {
-    return 1;
-};
-
-local *Auth::Auth::auth_sys_is_SHIBBOLETH = sub {
-    return 1;
-};
-
-local *Auth::Auth::affiliation_has_emergency_access = sub {
-    return 0;
-};
+#local *Auth::Auth::affiliation_is_hathitrust = sub {
+#    return 1;
+#};
+#
+#local *Auth::Auth::auth_sys_is_SHIBBOLETH = sub {
+#    return 1;
+#};
+#
+#local *Auth::Auth::affiliation_has_emergency_access = sub {
+#    return 0;
+#};
 
 local *Access::Holdings::id_is_held = sub {
     my ( $C, $id, $inst ) = @_;
@@ -62,55 +65,58 @@ $C->set_object('Database', $db);
 my $auth = Auth::Auth->new($C);
 $C->set_object('Auth', $auth);
 
-mock_institutions($C);
-Test::ACL::mock_acls($C, [
-    {
-      userid => 'user@umich.edu',
-      role => 'ssd',
-      usertype => 'student',
-      access => 'normal',
-      expires => Test::ACL::future_date_string(),
-      identity_provider => Auth::Auth::get_umich_IdP_entity_id(),
-      iprestrict => '.*', #iprestrict_none
-    },
-    {
-      userid => 'user@ox.ac.edu',
-      role => 'ssd',
-      usertype => 'student',
-      access => 'normal',
-      expires => Test::ACL::future_date_string(),
-      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp},
-      iprestrict => '.*', #iprestrict_none
-    }
-]);
+# mock_institutions($C);
+# Test::ACL::mock_acls($C, [
+#     {
+#       userid => 'user@umich.edu',
+#       role => 'ssd',
+#       usertype => 'student',
+#       access => 'normal',
+#       expires => Test::ACL::future_date_string(),
+#       identity_provider => Auth::Auth::get_umich_IdP_entity_id(),
+#       iprestrict => '.*', #iprestrict_none
+#     },
+#     {
+#       userid => 'user@ox.ac.edu',
+#       role => 'ssd',
+#       usertype => 'student',
+#       access => 'normal',
+#       expires => Test::ACL::future_date_string(),
+#       identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp},
+#       iprestrict => '.*', #iprestrict_none
+#     }
+# ]);
 
-local %ENV = %ENV;
-$ENV{HTTP_HOST} = q{babel.hathitrust.org};
-# SERVER_ADDR from TEST-NET-1 block, may not be needed at all
-$ENV{SERVER_ADDR} = q{192.0.2.0};
-$ENV{SERVER_PORT} = q{443};
-$ENV{AUTH_TYPE} = q{shibboleth};
-$ENV{affiliation} = q{student@umich.edu};
+# local %ENV = %ENV;
+# $ENV{HTTP_HOST} = q{babel.hathitrust.org};
+# # SERVER_ADDR from TEST-NET-1 block, may not be needed at all
+# $ENV{SERVER_ADDR} = q{192.0.2.0};
+# $ENV{SERVER_PORT} = q{443};
+# $ENV{AUTH_TYPE} = q{shibboleth};
+# $ENV{affiliation} = q{student@umich.edu};
+# 
+# sub setup_us_institution {
+#     $ENV{REMOTE_USER} = 'user@umich.edu';
+#     $ENV{eppn} = q{user@umich.edu};
+#     $ENV{umichCosignFactor} = q{UMICH.EDU};
+#     $ENV{Shib_Identity_Provider} = Auth::Auth::get_umich_IdP_entity_id();    
+# }
+# 
+# sub setup_nonus_instition {
+#     $ENV{REMOTE_USER} = 'user@ox.ac.edu';
+#     $ENV{eppn} = q{user@ox.ac.edu};
+#     delete $ENV{umichCosignFactor};
+#     $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
+#     $ENV{affiliation} = q{member@ox.ac.edu};
+# }
 
-sub setup_us_institution {
-    $ENV{REMOTE_USER} = 'user@umich.edu';
-    $ENV{eppn} = q{user@umich.edu};
-    $ENV{umichCosignFactor} = q{UMICH.EDU};
-    $ENV{Shib_Identity_Provider} = Auth::Auth::get_umich_IdP_entity_id();    
-}
-
-sub setup_nonus_instition {
-    $ENV{REMOTE_USER} = 'user@ox.ac.edu';
-    $ENV{eppn} = q{user@ox.ac.edu};
-    delete $ENV{umichCosignFactor};
-    $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
-    $ENV{affiliation} = q{member@ox.ac.edu};
-}
+my $us_ssd_user = TestUser->new('type' => $RightsGlobals::SSD_USER, 'context' => $C);
+my $nonus_ssd_user = TestUser->new('type' => $RightsGlobals::SSD_USER, 'context' => $C, 'location' => 'NONUS');
 
 sub test_attr {
     my ( $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
-    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+    #$ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
 
     unless ( $attr ) {
         print STDERR caller();
@@ -137,48 +143,53 @@ foreach my $test ( @$tests ) {
         $expected_download_plaintext
     ) = @$test;
 
-    my $location = $access_type =~ m,NONUS, ? 'NONUS' : 'US';
-    if ( $location eq 'US' ) { setup_us_institution(); }
-    else { setup_nonus_instition(); }
+    my $test_location = $access_type =~ m,NONUS, ? 'NONUS' : 'US';
+    my $user = ($test_location eq 'US') ? $us_ssd_user : $nonus_ssd_user;
+    $user->begin;
+    #if ( $location eq 'US' ) { setup_us_institution(); }
+    #else { setup_nonus_instition(); }
 
     if ( $expected_volume eq 'allow_by_us_geo_ipaddr' ) {
-        $expected_volume = ( $location eq 'NONUS' ) ? 'deny' : 'allow';
+        $expected_volume = ( $test_location eq 'NONUS' ) ? 'deny' : 'allow';
     } elsif ( $expected_volume eq 'allow_nonus_aff_by_ipaddr' ) {
-        $expected_volume = ( $location eq 'NONUS' ) ? 'allow' : 'deny';
+        $expected_volume = ( $test_location eq 'NONUS' ) ? 'allow' : 'deny';
     } elsif ( $expected_volume eq 'allow_us_aff_by_ipaddr' ) {
         $expected_volume = 'allow';
     } elsif ( $expected_volume eq 'allow_ssd_by_holdings' ) {
         $expected_volume = ( $access_profile eq 'google' ) ? 'deny' : 'allow';
     } elsif ( $expected_volume eq 'allow_ssd_by_holdings_by_geo_ipaddr' ) {
-        $expected_volume = ( $location eq 'NONUS') ? 'allow' : ( ( $access_profile eq 'google' ) ? 'deny' : 'allow' );
+        $expected_volume = ( $test_location eq 'NONUS') ? 'allow' : ( ( $access_profile eq 'google' ) ? 'deny' : 'allow' );
     }
-    is(test_attr($attr, $access_profile, $location), $expected_volume, "ssd_user + attr=$attr + location=$location + profile=$access_profile");
+    my $actual_volume = test_attr($attr, $access_profile, $test_location);
+    $user->end;
+    is($actual_volume, $expected_volume, "ssd_user + attr=$attr + location=$test_location + profile=$access_profile");
     $num_tests += 1;
+    
 }
 
 done_testing($num_tests);
 
 #---- UTILITY
-sub mock_institutions {
-    my ( $C ) = @_;
-
-    my $inst_ref = { entityIDs => {} };
-    $$inst_ref{entityIDs}{Auth::Auth::get_umich_IdP_entity_id()} = {
-        sdrinst => 'umich',
-        inst_id => 'umich',
-        entityID => Auth::Auth::get_umich_IdP_entity_id(),
-        enabled => 1,
-        allowed_affiliations => q{^(alum|member|student)@umich.edu},
-        us => 1,
-    };
-    $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
-        sdrinst => 'ox',
-        inst_id => 'ox',
-        entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
-        enabled => 1,
-        allowed_affiliations => q{^(alum|member|student)@ox.ac.uk},
-        us => 0,
-    };
-    bless $inst_ref, 'Institutions';
-    $C->set_object('Institutions', $inst_ref);
-}
+# sub mock_institutions {
+#     my ( $C ) = @_;
+# 
+#     my $inst_ref = { entityIDs => {} };
+#     $$inst_ref{entityIDs}{Auth::Auth::get_umich_IdP_entity_id()} = {
+#         sdrinst => 'umich',
+#         inst_id => 'umich',
+#         entityID => Auth::Auth::get_umich_IdP_entity_id(),
+#         enabled => 1,
+#         allowed_affiliations => q{^(alum|member|student)@umich.edu},
+#         us => 1,
+#     };
+#     $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
+#         sdrinst => 'ox',
+#         inst_id => 'ox',
+#         entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
+#         enabled => 1,
+#         allowed_affiliations => q{^(alum|member|student)@ox.ac.uk},
+#         us => 0,
+#     };
+#     bless $inst_ref, 'Institutions';
+#     $C->set_object('Institutions', $inst_ref);
+# }

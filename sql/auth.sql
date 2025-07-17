@@ -18,7 +18,11 @@ REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, a
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations)
   VALUES ('hathitrust','HathiTrust','hathitrust.org','1','1','https://idp.hathitrust.org/entity','^(member|alum|faculty|staff|student|employee)@hathitrust.org');
 
-REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
+REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)
+  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
+
+REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations)
+  VALUES ('nonus','Example Non-US Institution','nonus.ac.uk','0','1','https://registry.shibboleth.nonus.ac.uk/idp','^(member|alum|faculty|staff|student|employee)@nonus.ac.uk');
 
 --- sample data for testing authenticated access
 REPLACE INTO ht.rights_current (namespace, id, attr, reason, source, access_profile, user, note) values ('test','ic_currently_held','2','1','19','1','babel','Synthetic test item');

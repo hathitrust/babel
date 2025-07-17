@@ -7,6 +7,9 @@ use File::Spec;
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
+use lib "$ENV{SDRROOT}/libtest";
+
+use TestUser;
 
 use RightsGlobals;
 
@@ -23,7 +26,7 @@ use Test::File;
 use Test::ACL;
 
 use Data::Dumper;
-use feature qw(say);
+#use feature qw(say);
 
 # Controls the behavior of the monkeypatched Access::Holdings routines.
 # The only one we care about for the Resource Sharing user type is `id_is_currently_held`
@@ -31,17 +34,17 @@ my $g_held_condition = undef;
 
 #---- MONEKYPATCHES
 no warnings 'redefine';
-local *Auth::Auth::affiliation_is_hathitrust = sub {
-    return 1;
-};
+#local *Auth::Auth::affiliation_is_hathitrust = sub {
+#    return 1;
+#};
 
-local *Auth::Auth::auth_sys_is_SHIBBOLETH = sub {
-    return 1;
-};
+#local *Auth::Auth::auth_sys_is_SHIBBOLETH = sub {
+#    return 1;
+#};
 
-local *Auth::Auth::user_is_resource_sharing_user = sub {
-    return 1;
-};
+#local *Auth::Auth::user_is_resource_sharing_user = sub {
+#    return 1;
+#};
 
 local *Access::Holdings::id_is_currently_held = sub {
     my ( $C, $id, $inst ) = @_;
@@ -65,52 +68,55 @@ $C->set_object('Database', $db);
 my $auth = Auth::Auth->new($C);
 $C->set_object('Auth', $auth);
 
-mock_institutions($C);
+#mock_institutions($C);
 
-Test::ACL::mock_acls($C, [
-    {
-      userid => 'user@iu.edu',
-      role => 'resource_sharing',
-      usertype => 'external',
-      access => 'normal',
-      expires => Test::ACL::future_date_string(),
-      identity_provider => 'https://idp.login.iu.edu/idp/shibboleth'
-    },
-    {
-      userid => 'user@ox.ac.edu',
-      role => 'resource_sharing',
-      usertype => 'external',
-      access => 'normal',
-      expires => Test::ACL::future_date_string(),
-      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
-    }
-]);
+#Test::ACL::mock_acls($C, [
+#    {
+#      userid => 'user@iu.edu',
+#      role => 'resource_sharing',
+#      usertype => 'external',
+#      access => 'normal',
+#      expires => Test::ACL::future_date_string(),
+#      identity_provider => 'https://idp.login.iu.edu/idp/shibboleth'
+#    },
+#    {
+#      userid => 'user@ox.ac.edu',
+#      role => 'resource_sharing',
+#      usertype => 'external',
+#      access => 'normal',
+#      expires => Test::ACL::future_date_string(),
+#      identity_provider => q{https://registry.shibboleth.ox.ac.uk/idp}
+#    }
+#]);
 
-local %ENV = %ENV;
-$ENV{HTTP_HOST} = q{babel.hathitrust.org};
+#local %ENV = %ENV;
+#$ENV{HTTP_HOST} = q{babel.hathitrust.org};
 # SERVER_ADDR from TEST-NET-1 block, may not be needed at all
-$ENV{SERVER_ADDR} = q{192.0.2.0};
-$ENV{SERVER_PORT} = q{443};
-$ENV{AUTH_TYPE} = q{shibboleth};
-$ENV{affiliation} = q{member@iu.edu};
+#$ENV{SERVER_ADDR} = q{192.0.2.0};
+#$ENV{SERVER_PORT} = q{443};
+#$ENV{AUTH_TYPE} = q{shibboleth};
+#$ENV{affiliation} = q{member@iu.edu};
 
-sub setup_us_institution {
-    $ENV{REMOTE_USER} = 'user@iu.edu';
-    $ENV{eppn} = q{user@iu.edu};
-    $ENV{Shib_Identity_Provider} = 'https://idp.login.iu.edu/idp/shibboleth';
-}
+#sub setup_us_institution {
+#    $ENV{REMOTE_USER} = 'user@iu.edu';
+#    $ENV{eppn} = q{user@iu.edu};
+#    $ENV{Shib_Identity_Provider} = 'https://idp.login.iu.edu/idp/shibboleth';
+#}
 
-sub setup_nonus_instition {
-    $ENV{REMOTE_USER} = 'user@ox.ac.edu';
-    $ENV{eppn} = q{user@ox.ac.edu};
-    $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
-    $ENV{affiliation} = q{member@ox.ac.edu};
-}
+#sub setup_nonus_instition {
+#    $ENV{REMOTE_USER} = 'user@ox.ac.edu';
+#    $ENV{eppn} = q{user@ox.ac.edu};
+#    $ENV{Shib_Identity_Provider} = q{https://registry.shibboleth.ox.ac.uk/idp};
+#    $ENV{affiliation} = q{member@ox.ac.edu};
+#}
+
+my $us_rs_user = TestUser->new('type' => $RightsGlobals::RESOURCE_SHARING_USER, 'context' => $C);
+my $nonus_rs_user = TestUser->new('type' => $RightsGlobals::RESOURCE_SHARING_USER, 'context' => $C, 'location' => 'NONUS');
 
 sub test_initial_access_status {
     my ( $code, $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
-    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+    #$ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
 
     unless ( $code && $attr ) {
         print STDERR caller();
@@ -124,7 +130,7 @@ sub test_initial_access_status {
 sub test_final_access_status {
     my ( $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
-    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+    #$ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
 
     unless ( $attr ) {
         print STDERR caller();
@@ -138,7 +144,7 @@ sub test_final_access_status {
 sub test_page_pdf_download_status {
     my ( $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
-    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+    #$ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
 
     unless ( $attr ) {
         print STDERR caller();
@@ -152,7 +158,7 @@ sub test_page_pdf_download_status {
 sub test_volume_pdf_download_status {
     my ( $attr, $access_profile, $location ) = @_;
     my $id = "test.$attr\_$access_profile";
-    $ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
+    #$ENV{TEST_GEO_IP_COUNTRY_CODE} = $location || 'US';
 
     unless ( $attr ) {
         print STDERR caller();
@@ -224,8 +230,10 @@ foreach my $test ( @$tests ) {
     foreach my $test_location (@test_locations) {
         # Note: FORCE_GEOIP may be a viable alternative to some of this setup.
         # (Would need to adjust its use in Access::Rights::_resolve_access_by_GeoIP)
-        if ( $test_location eq 'US' ) { setup_us_institution(); }
-        else { setup_nonus_instition(); }
+        #if ( $test_location eq 'US' ) { setup_us_institution(); }
+        #else { setup_nonus_instition(); }
+        my $user = ($test_location eq 'US') ? $us_rs_user : $nonus_rs_user;
+        $user->begin;
         my $held_conditions = translate_holdings_code($held);
         foreach my $held_condition (@$held_conditions) {
           $g_held_condition = $held_condition;
@@ -242,6 +250,7 @@ foreach my $test ( @$tests ) {
           is($got_download_volume, $expected_download_volume, "VOLUME PDF resource_sharing_user + attr=$attr + held=$held_condition + location=$test_location + profile=$access_profile");
           $num_tests += 1;
         }
+        $user->end;
     }
     # NOTE: there are no tests yet for the expected_download_plaintext case
 }
@@ -249,26 +258,26 @@ foreach my $test ( @$tests ) {
 done_testing($num_tests);
 
 #---- UTILITY
-sub mock_institutions {
-    my ( $C ) = @_;
-
-    my $inst_ref = { entityIDs => {} };
-    $$inst_ref{entityIDs}{'https://idp.login.iu.edu/idp/shibboleth'} = {
-        sdrinst => 'iu',
-        inst_id => 'iu',
-        entityID => 'https://idp.login.iu.edu/idp/shibboleth',
-        enabled => 1,
-        allowed_affiliations => '^(member|alum|faculty|staff|student|employee)@iu.edu',
-        us => 1,
-    };
-    $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
-        sdrinst => 'ox',
-        inst_id => 'ox',
-        entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
-        enabled => 1,
-        allowed_affiliations => q{^(alum|member)@ox.ac.uk},
-        us => 0,
-    };
-    bless $inst_ref, 'Institutions';
-    $C->set_object('Institutions', $inst_ref);
-}
+# sub mock_institutions {
+#     my ( $C ) = @_;
+# 
+#     my $inst_ref = { entityIDs => {} };
+#     $$inst_ref{entityIDs}{'https://idp.login.iu.edu/idp/shibboleth'} = {
+#         sdrinst => 'iu',
+#         inst_id => 'iu',
+#         entityID => 'https://idp.login.iu.edu/idp/shibboleth',
+#         enabled => 1,
+#         allowed_affiliations => '^(member|alum|faculty|staff|student|employee)@iu.edu',
+#         us => 1,
+#     };
+#     $$inst_ref{entityIDs}{q{https://registry.shibboleth.ox.ac.uk/idp}} = {
+#         sdrinst => 'ox',
+#         inst_id => 'ox',
+#         entityID => q{https://registry.shibboleth.ox.ac.uk/idp},
+#         enabled => 1,
+#         allowed_affiliations => q{^(alum|member)@ox.ac.uk},
+#         us => 0,
+#     };
+#     bless $inst_ref, 'Institutions';
+#     $C->set_object('Institutions', $inst_ref);
+# }
