@@ -48,16 +48,16 @@ echo
 echo -e "${color_cyan}Using auth file \x1B[37m$auth_file${color_reset}"
 cp -v $auth_file $auth_path/active_auth.conf
 echo -e "${color_cyan}Setting local development mode${color_reset}"
-docker compose up -d apache
-docker compose exec apache bash -c "perl mdp-lib/bin/debug.pl --enable > /dev/null"
+docker compose up -d apache-test
+docker compose exec apache-test bash -c "perl mdp-lib/bin/debug.pl --enable > /dev/null"
 echo -e "${color_cyan}Configuring mocked holdings API${color_reset}"
 for app in pt imgsrv ssd; do
-  echo "holdings_api_url = http://apache:8080/mock-holdings-api" >> $babel_home/$app/lib/Config/local.conf
+  echo "holdings_api_url = http://apache-test:8080/mock-holdings-api" >> $babel_home/$app/lib/Config/local.conf
 done
 echo -e "${color_cyan}Resetting ht_sessions database table ${color_reset}"
 docker compose exec mysql-sdr mariadb -vv -u mdp-lib -pmdp-lib -h localhost ht -e "DELETE FROM ht_sessions;"
 echo -e "${color_cyan}Reloading Apache configuration${color_reset}"
-docker compose exec apache kill -USR1 1
+docker compose exec apache-test kill -USR1 1
 
 echo -e "🎉 ${color_cyan} Done!${color_reset}"
 
