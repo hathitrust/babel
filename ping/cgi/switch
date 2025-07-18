@@ -152,65 +152,12 @@ my $app = sub {
         }
 
 
-    } else {
-        # put up a list of options. :yay:
-        my $html = Utils::read_file("../web/switch.html");
-
-        my $roles_list = [];
-
-        my $activated_role = $ses->get_persistent('activated_role') || 'default';
-        my $check = 0;
-        my $config;
-
-        my @switchable_roles = $auth->get_switchable_roles($C);
-
-        if ( scalar @switchable_roles ) {
-
-            # set up the default state
-            my $checked = ( $activated_role eq 'default' ) ? 'checked="checked"' : '';
-            push @$roles_list, <<DIV;
-<div class="control">
-    <input type="radio" name="role" value="default" id="role--default" $checked />
-    <label class="radio" for="role--default">Member</label>
-    <div class="control--help" style="marign-left: 0.25rem; font-size: 90%">
-        <p style="margin-bottom: 1rem">
-            Read and download public domain and open access books.
-        </p>
-    </div>
-</div>
-DIV
-
-            foreach my $config_ ( $auth->get_switchable_roles($C) ) {
-                $checked = ( $activated_role eq $$config_{role} ) ? 'checked="checked"' : '';
-                my $snippet = Utils::read_file("../web/_switch_$$config_{role}.html");
-                $$snippet =~ s,data-checked,$checked,;
-
-                push @$roles_list, $$snippet;
-            }
-
-        }
-
-        my $roles_list_html = join("\n", @$roles_list);
-        $$html =~ s,\<\!\-\- ROLES_LIST \-\-\>,$roles_list_html,;
-
-        my $referer = $request->param('target') || $request->referer;
-        $$html =~ s,%REFERER%,$referer,;
-
-        if ( $request->param('debug') ) {
-            $$html =~ s,\<\!\-\- DEBUG_FLAG \-\-\>,<input type="hidden" name="debug" value="ssdproxy" />,;
-        }
-
-        # $ses->set_persistent('activated_redirect', $request->referer);
-
-        $response = Plack::Response->new(200);
-        $response->content_type('text/html');
-        $response->body(Encode::encode('UTF-8', $$html));
-
+    }
+    else {
+        $response = Plack::Response->new(400);
     }
 
-
     $ses->close();
-
 
     return $response->finalize;
 };
