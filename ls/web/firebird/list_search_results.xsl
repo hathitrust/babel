@@ -372,8 +372,12 @@
                   <xsl:when test="emergency=1">
                     <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
                   </xsl:when>
-                  <xsl:when test="fulltext=1 and normalize-space(activated_role)">
-                    <i class="icomoon icomoon-unlocked" aria-hidden="true"></i>
+                  <xsl:when test="fulltext=1 and normalize-space(activated_role) = 'resourceSharing'">
+                    <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                      <xsl:text> Registered Access</xsl:text>
+                  </xsl:when>
+                   <xsl:when test="fulltext=1 and normalize-space(activated_role)">
+                    <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
                       <xsl:text> Limited (Access Permitted)</xsl:text>
                   </xsl:when>
                   <xsl:when test="fulltext=1">
