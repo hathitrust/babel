@@ -1,4 +1,4 @@
-x-ndoe: &node
+x-node: &node
   image: node:22-slim
   profiles:
   - node
