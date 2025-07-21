@@ -101,6 +101,7 @@ services:
     hostname: 'catalog-dev'
     volumes:
     - ${BABEL_HOME}/catalog:/app
+    - ${BABEL_HOME}/catalog/conf/authspecs-sample.yaml:/app/conf/authspecs.yaml
     - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
     environment:
     - FIREBIRD_HOME=/htapps/babel/firebird-common
