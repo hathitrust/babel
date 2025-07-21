@@ -150,11 +150,10 @@ my $app = sub {
 
             $response->redirect($request->param("referer"));
         }
-
-
     }
     else {
-        $response = Plack::Response->new(400);
+        $response = Plack::Response->new(302);
+        $response->redirect("https://www.hathitrust.org");
     }
 
     $ses->close();
