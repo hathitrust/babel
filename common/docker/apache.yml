@@ -19,21 +19,6 @@ services:
     environment:
     - SDRROOT=/htapps/babel
     - SDRDATAROOT=/sdr1
-    depends_on:
-      mysql-sdr:
-        condition: service_healthy
-      solr-lss-dev:
-        condition: service_healthy
-      solr-sdr-catalog:
-        condition: service_healthy
-      solr-ptsearch:
-        condition: service_healthy
-      imgsrv:
-        condition: service_healthy
-      vufind:
-        condition: service_healthy
-    ports:
-    - "8080:8080"
     healthcheck:
       interval: 5s
       timeout: 10s
