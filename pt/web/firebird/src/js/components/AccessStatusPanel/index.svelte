@@ -1,5 +1,5 @@
 <script>
-  import { getContext, onMount } from 'svelte';
+  import { getContext } from 'svelte';
   import { preferencesConsent } from '~firebird-common/src/js/lib/store';
 
   const manifest = getContext('manifest');
@@ -9,6 +9,7 @@
   const accessTypeName = accessType && accessType.name;
 
   import TotalAccessUser from './TotalAccessUser.svelte';
+  import ResourceSharingUser from './ResourceSharingUser.svelte';
   import EnhancedTextUser from './EnhancedTextUser.svelte';
   import EmergencyAccessAffiliate from './EmergencyAccessAffiliate.svelte';
   import InLibraryUser from './InLibraryUser.svelte';
@@ -19,6 +20,7 @@
 
   const subviews = {};
   subviews['total_access'] = TotalAccessUser;
+  subviews['resource_sharing_user'] = ResourceSharingUser;
   subviews['in_library_user'] = InLibraryUser;
   subviews['emergency_access_affiliate'] = EmergencyAccessAffiliate;
   subviews['ssd_session_user'] = EnhancedTextUser;
