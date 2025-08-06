@@ -4,6 +4,7 @@
 *,v
 /lib/Config/AB_test_config
 /lib/Config/local.conf
+/lib/Config/docker-local.conf
 /cgi/testUTF.pl
 /cgi/teststring
 /lib/LS/Operation/Search.backup.tom
