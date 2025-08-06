@@ -295,7 +295,7 @@
 	    <xsl:attribute name="data-logger-url">
 	        <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL" />
 	    </xsl:attribute>
-    <xsl:for-each select="//SearchResults//Item">
+    <xsl:for-each select="//SearchResults//Item[$gLimit != 'ft' or fulltext=1]">
       <xsl:variable name="titleIndex" select="position()" />
       <xsl:if test="position() mod 25 = 0">
         <div class="visually-hidden-focusable rounded m-3 border border-4 d-flex gap-4 align-items-center justify-content-center">
