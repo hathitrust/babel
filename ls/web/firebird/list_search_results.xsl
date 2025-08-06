@@ -295,7 +295,7 @@
 	    <xsl:attribute name="data-logger-url">
 	        <xsl:value-of select="/MBooksTop/SearchResults/LoggerURL" />
 	    </xsl:attribute>
-    <xsl:for-each select="//SearchResults//Item">
+    <xsl:for-each select="//SearchResults//Item[$gLimit != 'ft' or fulltext=1]">
       <xsl:variable name="titleIndex" select="position()" />
       <xsl:if test="position() mod 25 = 0">
         <div class="visually-hidden-focusable rounded m-3 border border-4 d-flex gap-4 align-items-center justify-content-center">
@@ -370,18 +370,22 @@
                 </xsl:if>
                 <xsl:choose>
                   <xsl:when test="emergency=1">
-                    <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
+                    <i class="fa-solid fa-unlock" aria-hidden="true" ></i><xsl:text>Temporary Access</xsl:text>
                   </xsl:when>
-                  <xsl:when test="fulltext=1 and normalize-space(activated_role)">
-                    <i class="icomoon icomoon-unlocked" aria-hidden="true"></i>
-                      <xsl:text> Limited (Access Permitted)</xsl:text>
+                  <xsl:when test="fulltext=1 and normalize-space(activated_role) = 'resourceSharing'">
+                    <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                      <xsl:text>Registered Access</xsl:text>
+                  </xsl:when>
+                   <xsl:when test="fulltext=1 and normalize-space(activated_role)">
+                    <i class="fa-solid fa-unlock" aria-hidden="true"></i>
+                      <xsl:text>Limited (Access Permitted)</xsl:text>
                   </xsl:when>
                   <xsl:when test="fulltext=1">
                     <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
                     <span>Full View</span>
                   </xsl:when>
                   <xsl:otherwise>
-                    <i aria-hidden="true" class="fa-solid fa-unlock"></i>
+                    <i aria-hidden="true" class="fa-solid fa-lock"></i>
                     <span>Limited (search-only)</span>
                   </xsl:otherwise>
                 </xsl:choose>
@@ -389,7 +393,7 @@
               </a>
               <xsl:if test="rights = '8'">
                 <br />
-                <xsl:text>This is item is no longer available</xsl:text>
+                <xsl:text>This item is no longer available</xsl:text>
               </xsl:if>
             </div>
           </div>
