@@ -330,9 +330,17 @@ button:hover i.border-dark {
     line-height: 1.125rem;
     letter-spacing: -0.00875rem;
   }
-  .accordion-button:after {
-    background-image: none;
-    content: '\f078';
-    font-family: 'Font Awesome 6 Free';
+  .accordion-button {
+    padding-inline-end: 1.35rem;
+    &::after {
+      background-image: none;
+      content: '\2b';
+      font-family: 'Font Awesome 6 Free';
+      transition: all 0.5s;
+    }
+    &:not(.collapsed)::after {
+      content: '\f068';
+      font-family: 'Font Awesome 6 Free';
+    }
   }
 }
