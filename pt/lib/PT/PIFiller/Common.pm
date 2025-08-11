@@ -1048,7 +1048,7 @@ sub handle_ACCESS_TYPE_PI
         $xml .= qq{<Name>total_access</Name>};
         $xml .= qq{<Role>$access_type</Role>};
         $xml .= qq{<Granted>TRUE</Granted>};
-    } elsif ( $access_type eq 'ssd_session_user' || $access_type eq 'resource_sharing_user' ) {
+    } elsif ( $rights->in_copyright($C, $id) && ($access_type eq 'ssd_session_user' || $access_type eq 'resource_sharing_user' ) ) {
         $xml .= qq{<Name>$access_type</Name>};
         my $final_access_status =
             $rights->check_final_access_status($C, $id) eq 'allow' ? 'TRUE' : 'FALSE';
