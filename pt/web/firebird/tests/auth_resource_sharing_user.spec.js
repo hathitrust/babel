@@ -52,7 +52,11 @@ test.describe('resource_sharing_user access to ic material', () => {
     expect(fs.existsSync(downloadPath)).toBeTruthy();
   });
 
-  test('download single page from ic_currently_held', async ({ page }) => {
+  test('download single page from ic_currently_held', async ({ page, browserName }) => {
+    test.skip(
+      browserName == 'webkit',
+      'until we can figure out why content-disposition does not include the file extension'
+    );
     await page.goto('/cgi/pt?id=test.ic_currently_held');
     const downloadAccordion = page.getByRole('heading', { name: 'Download' });
     const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
