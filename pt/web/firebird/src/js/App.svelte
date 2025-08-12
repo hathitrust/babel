@@ -446,7 +446,6 @@
   <div class="inner" class:invisible={!asideExpanded || $interfaceMode == 'minimal'}>
     <div class="accordion">
       <SurveyPanel />
-      <AccessStatusPanel />
     </div>
     <div class="accordion" id="controls">
       <MetadataPanel />

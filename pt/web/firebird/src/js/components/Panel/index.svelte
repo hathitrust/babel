@@ -4,6 +4,7 @@
 
   export let parent = null;
   export let expanded = false;
+  export let metadata = false;
   let className = null;
 
   export { className as class };
@@ -28,6 +29,7 @@
     <button
       class="accordion-button"
       class:collapsed={!expanded}
+      class:rounded-top-2={metadata}
       type="button"
       data-bs-toggle="collapse"
       data-bs-target="#c{id}"
@@ -36,17 +38,14 @@
     >
       <div class="d-flex gap-2 align-items-center me-1">
         <slot name="icon" />
-        <slot name="title" />
+        <div class="d-flex flex-column">
+          <slot name="title" />
+          <slot name="subtitle" />
+        </div>
       </div>
     </button>
   </h2>
-  <div
-    id="c{id}"
-    class="accordion-collapse collapse"
-    class:show={expanded}
-    aria-labelledby="h{id}"
-    data-bs-parent={bsParent}
-  >
+  <div id="c{id}" class="accordion-collapse collapse" class:show={expanded} data-bs-parent={bsParent}>
     <div class="accordion-body">
       <slot name="body" />
     </div>

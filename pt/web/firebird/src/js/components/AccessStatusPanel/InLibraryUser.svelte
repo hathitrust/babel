@@ -1,6 +1,6 @@
 <script>
   import { onMount, getContext } from 'svelte';
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
   import { time2message, ExpirationMonitor } from './utils';
 
   export let accessType;
@@ -38,7 +38,7 @@
   });
 </script>
 
-<Panel {expanded} class="dark" {onToggle}>
+<Panel {expanded} {onToggle} class="access-panel">
   <i class="fa-solid fa-unlock" slot="icon" />
   <slot:fragment slot="title">
     Checked out until <span class="expires-display">{expiresDisplay}</span>
