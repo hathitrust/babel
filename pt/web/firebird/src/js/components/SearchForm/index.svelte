@@ -45,7 +45,9 @@
   let keywords = '';
 
   if (referrer) {
+    referrer = referrer.replace(/;/g, '&');
     let params = new URL(referrer).searchParams;
+
     if (referrer.match('/Search') && !params.has('adv')) {
       //advanced search uses lookfor[] but regular catalog search does not
       keywords = params.get('lookfor');
