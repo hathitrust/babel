@@ -44,10 +44,14 @@ test.describe('sidebar actions', () => {
       await expect(downloadAccordionButton).toHaveAttribute('aria-expanded', 'true');
     });
     test('download current page as pdf', async ({ page }) => {
+      const downloadButton = page
+        .getByRole('form', { name: 'Download options' })
+        .getByRole('button', { name: 'Download' });
+
       const downloadPromise = page.waitForEvent('download');
       await page.getByLabel('Ebook (PDF)').check();
       await page.getByLabel('Current page scan (#1)').check();
-      const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
+
       await downloadButton.click();
       const download = await downloadPromise;
       const downloadPath = await download.path();
@@ -60,13 +64,17 @@ test.describe('sidebar actions', () => {
     test.skip('download whole item jpeg, full resolution', async ({ page }) => {
       test.slow();
 
+      const downloadButton = page
+        .getByRole('form', { name: 'Download options' })
+        .getByRole('button', { name: 'Download' });
+
       await page.getByRole('radio', { name: 'Image (JPEG)' }).check();
       await page.getByLabel('Full / 600 dpi').check();
       await page.getByLabel('Whole item').check();
       await expect(page.getByRole('radio', { name: 'Image (JPEG)' })).toBeChecked();
       await expect(page.getByLabel('Full / 600 dpi')).toBeChecked();
       await expect(page.getByLabel('Whole item')).toBeChecked();
-      const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
+
       await downloadButton.click();
 
       await expect(page.getByLabel('Building your Image (JPEG)')).toBeVisible();
@@ -88,14 +96,19 @@ test.describe('sidebar actions', () => {
     });
     test('download selected scans as tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
+      const downloadButton = page
+        .getByRole('form', { name: 'Download options' })
+        .getByRole('button', { name: 'Download' });
 
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
       await page.getByLabel('Image (TIFF)').check();
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
 
-      await page.getByRole('button', { name: 'Download', exact: true }).click();
-      await expect(page.getByLabel('Download', { exact: true }).getByText("You haven't selected any")).toBeVisible();
+      await downloadButton.click();
+      await expect(
+        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
+      ).toBeVisible();
 
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
@@ -105,11 +118,11 @@ test.describe('sidebar actions', () => {
       await expect(selectScan).toHaveAttribute('aria-pressed', 'false');
       await selectScan.click();
 
-      await page.getByRole('button', { name: 'Download', exact: true }).click();
+      await downloadButton.click();
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
-      //expect download to be pdf
+      //expect download to be zip
       expect(download.suggestedFilename()).toContain('zip');
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();

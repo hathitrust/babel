@@ -376,13 +376,13 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-download" slot="icon" />
+  <i class="fa-solid fa-download" slot="icon" aria-hidden="true" />
   <svelte:fragment slot="title">Download</svelte:fragment>
   <svelte:fragment slot="body">
     {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
       <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
     {:else if allowDownload}
-      <form>
+      <form aria-label="Download options">
         <fieldset class="mb-3">
           <legend class="fs-5">Format</legend>
           <div class="form-check">
