@@ -17,7 +17,7 @@
     "test-ui": "LOCAL=local playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "^1.50.1",
+    "@playwright/test": "^1.54.0",
     "@popperjs/core": "^2.11.6",
     "@sveltejs/vite-plugin-svelte": "^2.4.1",
     "@types/node": "^22.13.5",

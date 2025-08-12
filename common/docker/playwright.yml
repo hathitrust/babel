@@ -1,7 +1,7 @@
 services:
   playwright:
     # Testing the front end for pageturner (tests in the browser)
-    image: mcr.microsoft.com/playwright:v1.50.1
+    image: mcr.microsoft.com/playwright:v1.54.0
     volumes:
     - ${BABEL_HOME}:/htapps/babel
     working_dir: "/htapps/babel/pt/web/firebird"
