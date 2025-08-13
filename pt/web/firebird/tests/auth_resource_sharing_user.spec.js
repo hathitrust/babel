@@ -25,13 +25,17 @@ test.describe('resource_sharing_user access to ic material', () => {
     const downloadAccordion = page.getByRole('heading', { name: 'Download' });
     const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
     await downloadAccordionButton.click();
+    const downloadButton = page
+      .getByRole('form', { name: 'Download options' })
+      .getByRole('button', { name: 'Download' });
+
     await page.getByRole('radio', { name: 'Image (JPEG)' }).check();
     await page.getByLabel('Full / 600 dpi').check();
     await page.getByLabel('Whole item').check();
     await expect(page.getByRole('radio', { name: 'Image (JPEG)' })).toBeChecked();
     await expect(page.getByLabel('Full / 600 dpi')).toBeChecked();
     await expect(page.getByLabel('Whole item')).toBeChecked();
-    const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
+
     await downloadButton.click();
 
     await expect(page.getByLabel('Building your Image (JPEG)')).toBeVisible();
@@ -62,10 +66,13 @@ test.describe('resource_sharing_user access to ic material', () => {
     const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
     await downloadAccordionButton.click();
 
+    const downloadButton = page
+      .getByRole('form', { name: 'Download options' })
+      .getByRole('button', { name: 'Download' });
+
     const downloadPromise = page.waitForEvent('download');
     await page.getByLabel('Image (JPEG)').check();
     await page.getByLabel('Current page scan (#1)').check();
-    const downloadButton = page.getByRole('button', { name: 'Download', exact: true });
     await downloadButton.click();
     const download = await downloadPromise;
     const downloadPath = await download.path();

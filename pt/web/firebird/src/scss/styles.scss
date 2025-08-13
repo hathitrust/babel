@@ -293,3 +293,54 @@ button:hover i.border-dark {
 .tippy-box[data-theme~='pt'][data-placement^='right'] > .tippy-arrow::before {
   border-right-color: var(--color-primary-700);
 }
+
+//access status panel
+.access-panel {
+  --bs-accordion-color: var(--color-neutral-900);
+  --bs-accordion-bg: var(--color-shades-0);
+  --bs-accordion-border-color: var(--color-primary-700);
+  --bs-accordion-border-width: 0.75px;
+  --bs-accordion-btn-padding-x: 1rem;
+  --bs-accordion-btn-padding-y: 0.5rem;
+  --bs-accordion-btn-color: var(--color-primary-700);
+  --bs-accordion-btn-bg: var(--color-primary-50);
+  --bs-accordion-btn-icon-width: 1rem;
+  --bs-accordion-active-color: var(--color-primary-700);
+  --bs-accordion-active-bg: var(--color-primary-50);
+
+  [slot='title'] {
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.125rem;
+    letter-spacing: -0.00875rem;
+  }
+  [slot='subtitle'] {
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.125rem;
+    letter-spacing: -0.00875rem;
+  }
+  .accordion-body {
+    border-top: var(--bs-accordion-border-width) solid var(--bs-accordion-border-color);
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.125rem;
+    letter-spacing: -0.00875rem;
+  }
+  .accordion-button {
+    padding-inline-end: 1.35rem;
+    &::after {
+      background-image: none;
+      content: '\2b';
+      font-family: 'Font Awesome 6 Free';
+      transition: all 0.5s;
+    }
+    &:not(.collapsed)::after {
+      content: '\f068';
+      font-family: 'Font Awesome 6 Free';
+    }
+  }
+}

@@ -1,6 +1,6 @@
 <script>
   import { getContext } from 'svelte';
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
 
   const HT = getContext('HT');
 
@@ -9,7 +9,7 @@
   export let expanded;
 </script>
 
-<Panel {expanded} class="dark" {onToggle}>
+<Panel {expanded} {onToggle} class="access-panel">
   <i class="fa-solid fa-unlock" slot="icon" />
   <slot:fragment slot="title">
     {#if accessType.role == 'ht_staff_user' || accessType.role == 'ht_total_user'}

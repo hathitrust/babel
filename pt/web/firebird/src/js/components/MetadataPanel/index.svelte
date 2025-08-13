@@ -1,8 +1,9 @@
 <script>
   import { getContext } from 'svelte';
+  import AccessStatusPanel from '../AccessStatusPanel/index.svelte';
 
-  import Panel from '../Panel';
-  import BibData from './BibData';
+  import Panel from '../Panel/index.svelte';
+  import BibData from './BibData.svelte';
 
   const manifest = getContext('manifest');
   const currentSeq = manifest.currentSeq;
@@ -35,14 +36,12 @@
 </script>
 
 {#if referrerLabel}
-  <div class="px-3">
-    <a href={referrer} referrerpolicy="unsafe-url" class="btn btn-secondary">
-      <i class="fa-solid fa-arrow-left-long" aria-hidden="true" />
-      {referrerLabel}
-    </a>
-  </div>
+  <a href={referrer} referrerpolicy="unsafe-url" class="back-to">
+    <i class="fa-solid fa-arrow-left-long" aria-hidden="true" />
+    <span>{referrerLabel}</span>
+  </a>
 {/if}
-<h1 class="p-3" style="font-size: 1.2rem">
+<h1 class="mb-0 pb-3 pt-2" style="font-size: 1.2rem">
   <span
     about="[_:{manifest.id}]"
     property="dc:title"
@@ -51,7 +50,10 @@
     content={title}>{title}</span
   >
 </h1>
-<Panel parent="#controls" expanded={true} class="border-top rounded-1">
+<div class="accordion mb-3">
+  <AccessStatusPanel />
+</div>
+<Panel parent="#controls" expanded={true} metadata={true} class="border-top rounded-top-2">
   <i class="fa-solid fa-book" slot="icon" />
   <slot:fragment slot="title">About This Item</slot:fragment>
   <slot:fragment slot="body">
@@ -93,3 +95,23 @@
     </div> -->
   </slot:fragment>
 </Panel>
+
+<style lang="scss">
+  a.back-to {
+    display: inline-flex;
+    gap: 0.75rem;
+    padding-block: 0.5rem;
+    color: var(--color-neutral-900);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.125rem;
+    letter-spacing: -0.00875rem;
+
+    span {
+      text-decoration: none;
+    }
+    &:hover span {
+      text-decoration: underline;
+    }
+  }
+</style>
