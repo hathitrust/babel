@@ -21,7 +21,7 @@ my $db_user = $ENV{'MARIADB_USER'} || 'ht_testing';
 my $db = new Database($db_user);
 $C->set_object('Database', $db);
 
-local %ENV = %ENV;
+#local %ENV = %ENV;
 $ENV{AUTH_TYPE} = q{shibboleth};
 $ENV{Shib_Identity_Provider} = 'https://idp.hathitrust.org/entity';
 
