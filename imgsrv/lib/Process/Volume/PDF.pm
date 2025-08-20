@@ -659,7 +659,6 @@ sub insert_watermark {
     # $gfx->artifactStart('OC', $ocmd);
     $gfx->formimage($stamp, 0, 0, $s);
     # $gfx->artifactEnd;
-    my $annotation = $page->annotation();
 
 }
 
