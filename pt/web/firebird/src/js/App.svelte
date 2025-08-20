@@ -444,7 +444,7 @@
 </script>
 
 <hathi-website-header>
-  <!-- <WebsiteHeader searchState="toggle" compact={true} /> -->
+  <WebsiteHeader searchState="toggle" compact={true} />
 </hathi-website-header>
 <hathi-alert-banner>
   <AlertBanner />

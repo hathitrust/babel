@@ -11,8 +11,6 @@ import { HotjarManager } from '~firebird-common/src/js/lib/hotjar.svelte.js';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
-import { writable } from 'svelte/store';
-
 // -- favor lib/tooltip.js action because the native bootstrap
 // tooltip remains on when buttons are clicked and stay in focus
 // new bootstrap.Tooltip('body', {
@@ -24,28 +22,28 @@ import App from './App.svelte';
 import CookieConsentBanner from '~firebird-common/src/js/components/CookieConsentBanner';
 import { mount } from 'svelte';
 
-// const toCamel = (s) => {
-//   return s.replace(/([-_][a-z])/gi, ($1) => {
-//     return $1.toUpperCase().replace('-', '').replace('_', '');
-//   });
-// };
+const toCamel = (s) => {
+  return s.replace(/([-_][a-z])/gi, ($1) => {
+    return $1.toUpperCase().replace('-', '').replace('_', '');
+  });
+};
 
-// const buildProps = (el) => {
-//   let propProperty = `data-prop-`;
-//   let props = {};
-//   for (const attr of el.attributes) {
-//     if (attr.name.startsWith(propProperty)) {
-//       let value = attr.value;
-//       try {
-//         value = JSON.parse(value);
-//       } catch (error) {}
+const buildProps = (el) => {
+  let propProperty = `data-prop-`;
+  let props = {};
+  for (const attr of el.attributes) {
+    if (attr.name.startsWith(propProperty)) {
+      let value = attr.value;
+      try {
+        value = JSON.parse(value);
+      } catch (error) {}
 
-//       props[toCamel(attr.name.replace(propProperty, ''))] = value;
-//       console.log('are we building props?', value);
-//     }
-//   }
-//   return props;
-// };
+      props[toCamel(attr.name.replace(propProperty, ''))] = value;
+      console.log('are we building props?', value);
+    }
+  }
+  return props;
+};
 
 // configure the HT global
 setupHTEnv();
@@ -56,17 +54,27 @@ let emptyLoginStatus = {
   idp_list: [],
 };
 
-HT.loginStatus = writable(emptyLoginStatus);
+// Create the reactive state
+let loginStatusState = $state(emptyLoginStatus);
+
+Object.defineProperty(HT, 'loginStatus', {
+  get() {
+    return loginStatusState;
+  },
+  set(value) {
+    Object.assign(loginStatusState, value);
+  },
+});
+
 HT.login_status = emptyLoginStatus;
 
 let app;
-// export const apps = {};
-// apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
+export const apps = {};
+apps['hathi-cookie-consent-banner'] = CookieConsentBanner;
 
 let needLoggedInStatus = true;
 
 HT.postPingCallback = function (login_status) {
-  console.log('AHOY from pingCallback');
   if (!needLoggedInStatus) {
     return;
   }
@@ -77,38 +85,35 @@ HT.postPingCallback = function (login_status) {
   // the loginStatus won't get overwritten with the empty response
   needLoggedInStatus = login_status.authType === undefined;
 
-  HT.loginStatus.set(login_status);
+  // HT.loginStatus.set(login_status);
+  HT.loginStatus = login_status;
+  console.log($state.snapshot(HT.loginStatus));
 
   // if the app was already initialized, punt
   if (app) {
-    console.log('app already initialized');
     return;
   }
 
-  // let el = document.getElementById('root');
-  // let props = buildProps(el);
-  // console.log('props', props);
+  let el = document.getElementById('root');
+  let props = buildProps(el);
 
   app = mount(App, {
     target: document.getElementById('root'),
-    // props: props,
+    props: props,
   });
-  console.log('app?', app);
-  // Object.keys(apps).forEach((slug) => {
-  //   document.querySelectorAll(slug).forEach((el) => {
-  //     console.log('hi from ', el);
-  //     if (el.component) {
-  //       return;
-  //     }
-  //     let props = buildProps(el);
-  //     el.component = mount(apps[slug], {
-  //       target: el,
-  //       props: props,
-  //     });
-  //   });
-  // });
+  Object.keys(apps).forEach((slug) => {
+    document.querySelectorAll(slug).forEach((el) => {
+      if (el.component) {
+        return;
+      }
+      let props = buildProps(el);
+      el.component = mount(apps[slug], {
+        target: el,
+        props: props,
+      });
+    });
+  });
   setTimeout(() => {
-    console.log('did we make it to the first timeout?');
     document.body.dataset.initialized = true;
   });
   new AnalyticsManager(HT).configure();
@@ -123,7 +128,6 @@ let script = document.createElement('script');
 script.async = true;
 script.src = `//${HT.service_domain}/cgi/ping?callback=HT.postPingCallback&_${new Date().getTime()}`;
 script.onerror = function () {
-  console.log('we must be in dev, empty login status');
   HT.postPingCallback(emptyLoginStatus);
 };
 document.head.appendChild(script);
