@@ -1,5 +1,5 @@
 <script>
-  export let link;
+  let { link } = $props();
 </script>
 
 <h2 class="visually-hidden">No Access</h2>

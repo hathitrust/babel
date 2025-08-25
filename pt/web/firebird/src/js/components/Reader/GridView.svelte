@@ -17,9 +17,10 @@
   const currentSeq = manifest.currentSeq;
 
   let view = $state();
+  //view.item() passed up from View.svelte through the format wrappers
 
   export const currentLocation = function () {
-    return { page: view.view.item($currentSeq) };
+    return { page: view.item($currentSeq) };
   };
 
   const handleClick = function (event) {

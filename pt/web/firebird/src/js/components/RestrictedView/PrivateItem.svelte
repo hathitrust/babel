@@ -3,7 +3,7 @@
 
   const HT = getContext('HT');
 
-  export let link;
+  let { link } = $props();
 </script>
 
 <h2 class="visually-hidden">Private Item</h2>

@@ -8,18 +8,19 @@
 
   let selectedButtonContent = $state();
 
-  $effect(() => {
-    function scanSelected(event) {
+   function scanSelected(event) {
       //might need stop propogation? roger had stopPropogation on the click event in the markup, but we can't do that anymore
-      // event.stopPropogation();
+      // event.stopPropagation();
       if (selected) {
         selectedButtonContent = `Scan #${seq} is selected`;
       } else if (!selected) {
         selectedButtonContent = `Select scan #${seq}`;
       }
     }
+    
 
-    scanSelected();
+  $effect(() => {
+   scanSelected();
   });
 
   // let isOpen = true; // selected || null;
@@ -103,9 +104,9 @@
         class="btn btn-light border border-dark"
         use:tooltippy={{ content: `${selectedButtonContent}` }}
         data-tippy-placement="left"
-        onclick={(e) => {
-          togglePageSelection(e);
-          scanSelected(e);
+        onclick={() => {
+          togglePageSelection();
+          scanSelected();
         }}
         aria-label={selected ? `Scan #${seq} is selected` : `Select scan #${seq}`}
         aria-pressed={selected}

@@ -1,4 +1,3 @@
-<!-- svelte-ignore unused-export-let -->
 <script>
   import { getContext } from 'svelte';
 
@@ -6,7 +5,7 @@
   const HT = getContext('HT');
 
   let accessType = manifest.accessType;
-  export let link;
+  let { link } = $props();
 </script>
 
 <h2 class="visually-hidden">Brittle Item</h2>

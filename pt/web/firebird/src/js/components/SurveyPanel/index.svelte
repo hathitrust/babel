@@ -10,7 +10,7 @@
   prefs.pt = prefs.pt || {};
   prefs.pt.alerts = prefs.pt.alerts || {};
 
-  let hasSurveys = false;
+  let hasSurveys = $state(false);
   let notificationsModal;
   let notificationsManager = new NotificationsManager({
     cookieJar: HT.cookieJar,
@@ -43,18 +43,24 @@
   <!-- <div class="accordion"> -->
   {#each notificationsManager.surveyData as survey}
     <Panel expanded={isExpanded(survey)} class="dark" id={survey.id} onToggle={onToggle.bind(survey)}>
-      <i class="fa-solid fa-square-poll-vertical" slot="icon"></i>
-      <slot:fragment slot="title">{survey.title}</slot:fragment>
-      <slot:fragment slot="body">
-        {#if survey.message.indexOf('<p>') > -1}
-          {@html survey.message}
-        {:else}
-          <p>{survey.message}</p>
-        {/if}
-        <p>
-          <a href={survey.read_more_link} target="_blank">{survey.read_more_label}</a>
-        </p>
-      </slot:fragment>
+      {#snippet icon()}
+            <i class="fa-solid fa-square-poll-vertical" ></i>
+          {/snippet}
+      {#snippet title()}
+            <slot:fragment >{survey.title}</slot:fragment>
+          {/snippet}
+      {#snippet body()}
+            <slot:fragment >
+          {#if survey.message.indexOf('<p>') > -1}
+            {@html survey.message}
+          {:else}
+            <p>{survey.message}</p>
+          {/if}
+          <p>
+            <a href={survey.read_more_link} target="_blank">{survey.read_more_label}</a>
+          </p>
+        </slot:fragment>
+          {/snippet}
     </Panel>
   {/each}
   <!-- </div> -->

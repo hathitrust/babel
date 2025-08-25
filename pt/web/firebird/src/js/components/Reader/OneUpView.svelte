@@ -6,6 +6,7 @@
 
   const manifest = getContext('manifest');
   let view = $state();
+  //view.item() passed up from View.svelte through the format wrappers
 
   /**
    * @typedef {Object} Props
@@ -24,10 +25,12 @@
   const currentFormat = manifest.currentFormat;
 
   export const currentLocation = function () {
-    return { page: view.view.item($currentSeq) };
+    return { page: view.item($currentSeq) };
   };
 
   const Format = $derived(formats[$currentFormat]);
+  $inspect(view)
+  
 </script>
 
 <Format {startSeq} {currentLocation} {container} bind:this={view}></Format>

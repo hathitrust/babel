@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store';
   import { tooltippy } from '../../lib/tippy';
 
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
   import Modal from '~firebird-common/src/js/components/Modal';
 
   const manifest = getContext('manifest');
@@ -376,9 +376,13 @@
 </script>
 
 <Panel parent="#controls">
+  {#snippet icon()}
   <i class="fa-solid fa-download" slot="icon"></i>
-  <svelte:fragment slot="title">Download</svelte:fragment>
-  <svelte:fragment slot="body">
+  {/snippet}
+ {#snippet title()} 
+  Download
+  {/snippet}
+  {#snippet body()} 
     {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
       <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
     {:else if allowDownload}
@@ -649,9 +653,6 @@
         <input type="hidden" name="id" value={manifest.id} />
         <input type="hidden" name="attachment" value="1" />
         <input type="hidden" name="tracker" value="" bind:this={tunnelFormTracker} />
-        <!-- {#each selection.seq as seq}
-      <input type="hidden" name="seq" value={seq} />
-      {/each} -->
         {#if format == 'image-tiff' || format == 'image-jpeg'}
           <input type="hidden" name="format" value="image/{format.split('-')[1]}" />
           <input type="hidden" name={sizeAttr} value={sizeValue} />
@@ -671,16 +672,16 @@
     {:else}
       <p>This item cannot be downloaded.</p>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 </Panel>
 <Modal bind:this={modal} onClose={closeDownload}>
-  <svelte:fragment slot="title">
+  {#snippet title()}
     Building your {formatTitle[format]}
     {#if $selected.size > 0}
       ({$selected.size} page{$selected.size > 1 ? 's' : ''})
     {/if}
-  </svelte:fragment>
-  <svelte:fragment slot="body">
+  {/snippet}
+  {#snippet body()}
     <div xxstyle="width: 30rem">
       <div>
         {#if status.percent < 100}
@@ -706,8 +707,8 @@
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
+    {/snippet}
+  {#snippet footer()}
     <div class="d-flex gap-1 align-items-center justify-content-end">
       <button
         type="button"
@@ -716,11 +717,6 @@
         aria-disabled={status.done}
         class:disabled={status.done}>Cancel</button
       >
-      <!-- <button 
-        type="button" 
-        class="btn btn-primary"
-        disabled={downloadInProgress}
-        on:click={finalizeDownload}>Download</button> -->
       <a
         class="btn btn-primary"
         aria-hidden={downloadInProgress}
@@ -731,7 +727,7 @@
         href={downloadUrl}>Download</a
       >
     </div>
-  </svelte:fragment>
+    {/snippet}
 </Modal>
 
 <style lang="scss">

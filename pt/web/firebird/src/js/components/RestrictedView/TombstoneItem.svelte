@@ -1,9 +1,8 @@
-<!-- svelte-ignore unused-export-let -->
 <script>
   import { getContext } from 'svelte';
 
   const HT = getContext('HT');
-  export let link;
+  let { link } = $props();
 </script>
 
 <div class="alert alert-warning">

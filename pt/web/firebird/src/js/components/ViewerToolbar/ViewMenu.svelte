@@ -61,7 +61,7 @@
           data-role="format"
           data-value="plaintext"
           disabled={!manifest.hasOcr}
-          on:click={switchFormat}
+          onclick={switchFormat}
         >
           <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
           <span>Plain Text</span>
@@ -75,7 +75,7 @@
           aria-pressed={$format == 'image'}
           data-role="format"
           data-value="image"
-          on:click={switchFormat}
+          onclick={switchFormat}
         >
           <i class="fa-regular fa-file-image" aria-hidden="true"></i>
           <span>Image</span>
@@ -98,7 +98,7 @@
           aria-pressed={$view == '1up'}
           data-role="view"
           data-value="1up"
-          on:click={switchView}
+          onclick={switchView}
         >
           <i class="fa-solid fa-up-down" aria-hidden="true"></i>
           <span>Scroll</span>
@@ -113,7 +113,7 @@
           data-role="view"
           data-value="2up"
           disabled={manifest.totalSeq == 1}
-          on:click={switchView}
+          onclick={switchView}
         >
           <i class="fa-solid fa-book-open" aria-hidden="true"></i>
           <span>Flip</span>
@@ -129,7 +129,7 @@
         aria-pressed={$view == 'thumb'}
         data-role="view"
         data-value="thumb"
-        on:click={switchView}
+        onclick={switchView}
       >
         <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
         <span>Thumbnails</span>

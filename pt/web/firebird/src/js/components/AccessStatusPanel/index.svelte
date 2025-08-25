@@ -17,7 +17,7 @@
   prefs.pt = prefs.pt || {};
   prefs.pt.alerts = prefs.pt.alerts || {};
 
-  const subviews = {};
+  const subviews = $state({});
   subviews['total_access'] = TotalAccessUser;
   subviews['in_library_user'] = InLibraryUser;
   subviews['emergency_access_affiliate'] = EmergencyAccessAffiliate;
@@ -37,12 +37,14 @@
     }
     console.log('-- access.panel.toggle', key, open);
   }
+  console.log('hi from access status panel')
 </script>
 
-{#if manifest.accessType && manifest.accessType.granted}
-  <svelte:component
-    this={subviews[accessTypeName]}
-    {accessType}
+<!-- {#if manifest.accessType && manifest.accessType.granted} -->
+{#if manifest.accessType}
+  {@const SvelteComponent = subviews[accessTypeName]}
+  <SvelteComponent
+    accessType = 'resource_sharing_user' 
     onToggle={onToggle.bind(accessType)}
     expanded={isExpanded(accessType)}
   />

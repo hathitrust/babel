@@ -1,20 +1,17 @@
-<!-- TODO: fix ETAS link: https://www.hathitrust.org/ETAS-User-Information -->
 <script>
   import { onMount, getContext } from 'svelte';
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
   import { time2message, ExpirationMonitor } from './utils';
 
-  export let accessType;
-  export let onToggle;
-  export let expanded;
+  let { accessType, onToggle, expanded } = $props();
 
   const HT = getContext('HT');
   const manifest = getContext('manifest');
 
-  let isExpired = false;
+  let isExpired = $state(false);
   let lastSeconds = -1;
   let expirationInterval;
-  let expiresDisplay = time2message(accessType.expires);
+  let expiresDisplay = $state(time2message(accessType.expires));
 
   let monitor;
 
@@ -40,30 +37,32 @@
 </script>
 
 <Panel {expanded} class="dark" {onToggle}>
-  <i class="fa-solid fa-unlock" slot="icon"></i>
-  <slot:fragment slot="title">
+  {#snippet icon()}
+    <i class="fa-solid fa-unlock" ></i>
+  {/snippet}
+  {#snippet title()}
     Checked out until <span class="expires-display">{expiresDisplay}</span>
-  </slot:fragment>
-  <slot:fragment slot="body">
-    {#if isExpired}
-      <p class="fs-7">
-        Your access has expired and cannot be renewed. Reload the page or try again later. Access to this work is
-        provided through the
-        <a href="//{HT.www_domain}/member-libraries/services-programs/etas/">Emergency Temporary Access Service</a>
-      </p>
-      <div>
-        <a class="btn btn-primary text-nowrap" href={location.href}>Reload</a>
-      </div>
-    {:else}
-      <p class="fs-7">
-        This work is checked out to you until
-        <span class="expires-display">{expiresDisplay}</span>. and may automatically renew. Access to this work is
-        provided through the
-        <a href="//{HT.www_domain}/member-libraries/services-programs/etas/">Emergency Temporary Access Service</a>
-      </p>
-      <div>
-        <a class="btn btn-primary text-nowrap" href={accessType.action}>Return Early</a>
-      </div>
-    {/if}
-  </slot:fragment>
+  {/snippet}
+  {#snippet body()}
+      {#if isExpired}
+        <p class="fs-7">
+          Your access has expired and cannot be renewed. Reload the page or try again later. Access to this work is
+          provided through the
+          <a href="//{HT.www_domain}/member-libraries/services-programs/etas/">Emergency Temporary Access Service</a>
+        </p>
+        <div>
+          <a class="btn btn-primary text-nowrap" href={location.href}>Reload</a>
+        </div>
+      {:else}
+        <p class="fs-7">
+          This work is checked out to you until
+          <span class="expires-display">{expiresDisplay}</span>. and may automatically renew. Access to this work is
+          provided through the
+          <a href="//{HT.www_domain}/member-libraries/services-programs/etas/">Emergency Temporary Access Service</a>
+        </p>
+        <div>
+          <a class="btn btn-primary text-nowrap" href={accessType.action}>Return Early</a>
+        </div>
+      {/if}
+  {/snippet}
 </Panel>

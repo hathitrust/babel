@@ -1,26 +1,28 @@
 <script>
+  import { run } from 'svelte/legacy';
+
   import { onMount, getContext, tick } from 'svelte';
 
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
   import CollectionEditModal from '~firebird-common/src/js/components/CollectionEditModal';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
   const HT = getContext('HT');
 
-  let inCollectionsList = [];
-  let featuredCollectionsList = [];
-  let collectionsList = [];
+  let inCollectionsList = $state([]);
+  let featuredCollectionsList = $state([]);
+  let collectionsList = $state([]);
 
   let action = 'addits';
-  let modal;
-  let c;
-  let cn;
-  let desc;
-  let contributorName;
-  let shared;
-  let status = { result: null };
-  let statusEl;
+  let modal = $state();
+  let c = $state();
+  let cn = $state();
+  let desc = $state();
+  let contributorName = $state();
+  let shared = $state();
+  let status = $state({ result: null });
+  let statusEl = $state();
 
   function parseResponse(line) {
     var kv;
@@ -108,12 +110,14 @@
     HT.live.announce(statusEl.innerText);
   }
 
-  $: if (status.class) {
-    announceStatus();
-  }
-  $: loginStatus = HT.loginStatus;
-  $: loggedIn = $loginStatus.logged_in;
-  $: userIsAnonymous = loggedIn === false;
+  $effect(() => {
+    if (status.class) {
+      announceStatus();
+    }
+  });
+  // let loginStatus = $derived(HT.loginStatus);
+  let loggedIn = $derived(HT.loginStatus.logged_in);
+  let userIsAnonymous = $derived(loggedIn === false);
 
   onMount(() => {
     let rootEl = document.querySelector('#root');
@@ -144,62 +148,66 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bookmark" slot="icon"></i>
-  <slot:fragment slot="title">Collections</slot:fragment>
-  <slot:fragment slot="body">
-    {#if userIsAnonymous}
-      <div class="alert alert-warning">Log in to make your personal collections permanent.</div>
-    {/if}
-    {#if featuredCollectionsList.length}
+  {#snippet icon()}
+    <i class="fa-solid fa-bookmark" ></i>
+  {/snippet}
+  {#snippet title()}
+    Collections
+  {/snippet}
+  {#snippet body()}
+      {#if userIsAnonymous}
+        <div class="alert alert-warning">Log in to make your personal collections permanent.</div>
+      {/if}
+      {#if featuredCollectionsList.length}
+        <div class="mb-3">
+          <p>In these featured collections:</p>
+          <ul>
+            {#each featuredCollectionsList as item}
+              <li><a href={item.value}>{item.label}</a></li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
       <div class="mb-3">
-        <p>In these featured collections:</p>
-        <ul>
-          {#each featuredCollectionsList as item}
-            <li><a href={item.value}>{item.label}</a></li>
-          {/each}
+        <label for="select-collid" class="form-label">Add this item to a collection:</label>
+        <div class="d-flex gap-2 align-items-center">
+          <select class="form-select" id="select-collid" bind:value={c}>
+            <option value="__NEW__">New collection...</option>
+            {#each collectionsList as item}
+              <option value={item.value}>{item.label}</option>
+            {/each}
+          </select>
+          <button type="button" class="btn btn-outline-dark" onclick={addItem}>Add</button>
+        </div>
+      </div>
+      {#if status.class}
+        <div class="alert mt-1 {status.class} d-flex align-items-center gap-3" bind:this={statusEl}>
+          {#if status.class == 'alert-danger'}
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          {:else}
+            <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
+          {/if}
+          <span>{@html status.message}</span>
+        </div>
+      {/if}
+      {#if inCollectionsList.length}
+        <div class="mb-3">
+          <p>In your collections:</p>
+          <ul>
+            {#each inCollectionsList as item}
+              <li><a href={item.value}>{item.label}</a></li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+      <div class="mb-3">
+        <ul class="list-unstyled">
+          {#if collectionsList.length > 0 || inCollectionsList.length > 0}
+            <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=my-collections">My Collections</a></li>
+          {/if}
+          <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=all">Shared Collections</a></li>
         </ul>
       </div>
-    {/if}
-    <div class="mb-3">
-      <label for="select-collid" class="form-label">Add this item to a collection:</label>
-      <div class="d-flex gap-2 align-items-center">
-        <select class="form-select" id="select-collid" bind:value={c}>
-          <option value="__NEW__">New collection...</option>
-          {#each collectionsList as item}
-            <option value={item.value}>{item.label}</option>
-          {/each}
-        </select>
-        <button type="button" class="btn btn-outline-dark" on:click={addItem}>Add</button>
-      </div>
-    </div>
-    {#if status.class}
-      <div class="alert mt-1 {status.class} d-flex align-items-center gap-3" bind:this={statusEl}>
-        {#if status.class == 'alert-danger'}
-          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-        {:else}
-          <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
-        {/if}
-        <span>{@html status.message}</span>
-      </div>
-    {/if}
-    {#if inCollectionsList.length}
-      <div class="mb-3">
-        <p>In your collections:</p>
-        <ul>
-          {#each inCollectionsList as item}
-            <li><a href={item.value}>{item.label}</a></li>
-          {/each}
-        </ul>
-      </div>
-    {/if}
-    <div class="mb-3">
-      <ul class="list-unstyled">
-        {#if collectionsList.length > 0 || inCollectionsList.length > 0}
-          <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=my-collections">My Collections</a></li>
-        {/if}
-        <li><a href="//{HT.service_domain}/cgi/mb?a=listcs&colltype=all">Shared Collections</a></li>
-      </ul>
-    </div>
-  </slot:fragment>
+  {/snippet}
 </Panel>
 <CollectionEditModal bind:this={modal} {userIsAnonymous} {c} {cn} {desc} {contributorName} {shared} {submitAction} />

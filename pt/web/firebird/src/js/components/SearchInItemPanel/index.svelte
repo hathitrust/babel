@@ -1,15 +1,15 @@
 <script>
-  import { onMount, getContext, tick } from 'svelte';
+  import { getContext, tick } from 'svelte';
 
-  import Panel from '../Panel';
-  import SearchForm from '../SearchForm';
+  import Panel from '../Panel/index.svelte';
+  import SearchForm from '../SearchForm/index.svelte';
 
   const emitter = getContext('emitter');
 
   let start = 1;
   let sort = 'seq';
   let showHightlights = true;
-  let expanded = false;
+  let expanded = $state(false);
 
   function onClick(event) {
     let seq = event.target.dataset.seq;
@@ -24,12 +24,14 @@
 </script>
 
 <Panel parent="#controls" {expanded}>
-  <i class="fa-solid fa-magnifying-glass" aria-hidden="true" slot="icon"></i>
-  <svelte:fragment slot="title">Search in This Text</svelte:fragment>
-  <svelte:fragment slot="body">
-    <SearchForm inPanel={true} {onClick} />
-  </svelte:fragment>
+  {#snippet icon()}
+    <i class="fa-solid fa-magnifying-glass" aria-hidden="true" ></i>
+  {/snippet}
+  {#snippet title()}
+    Search in This Text
+  {/snippet}
+  {#snippet body()}
+      <!-- <SearchForm inPanel={true} {onClick} /> -->
+      <SearchForm inPanel={true} />
+  {/snippet}
 </Panel>
-
-<style>
-</style>

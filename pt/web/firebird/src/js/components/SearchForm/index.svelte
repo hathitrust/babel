@@ -1,48 +1,51 @@
 <script>
-  import { onMount, beforeUpdate, tick, getContext } from 'svelte';
+  import { tick, getContext } from 'svelte';
   import { get } from 'svelte/store';
   import { tooltippy } from '../../lib/tippy';
   import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
+  import { preventOverflow } from '@popperjs/core';
 
   const manifest = getContext('manifest');
   const emitter = getContext('emitter');
   const HT = getContext('HT');
 
-  export let inPanel = true;
+  let { inPanel = true } = $props();
   let hTag = inPanel ? 'h4' : 'h3';
-  export let onClick = function (seq) {
+  
+  export function onClick(seq, event) {
+    event.preventDefault();
     alert(seq);
   };
 
-  let start = 1;
+  let start = $state(1);
   let sz = 25;
-  let sort = 'seq';
-  let showHighlights = true;
+  let sort = $state('seq');
+  let showHighlights = $state(true);
   document.documentElement.dataset.showHighlights = showHighlights;
-  let highlightButtonContent = 'Hide';
+  let highlightButtonContent = $state('Hide');
 
   let searchUrl = new URL(location.href);
   let searchParams = searchUrl.searchParams;
 
   let q1 = get(manifest.q1);
   let btnSubmit;
-  let alert;
+  let alert = $state();
   let inFetch = false;
-  let targetNewTab = inPanel ? HT.prefs.get()?.pt?.submitTarget || false : false;
-  let blankTabForm;
+  let targetNewTab = $state(inPanel ? HT.prefs.get()?.pt?.submitTarget || false : false);
+  let blankTabForm = $state();
   let input;
 
-  let payload = manifest.payload;
-  let hasPreviousItem = false;
-  let hasNextItem = false;
-  let hasRange = false;
-  let nextHref;
-  let prevHref;
-  let pageGroup;
-  let status = { class: null };
+  let payload = $state(manifest.payload);
+  let hasPreviousItem = $state(false);
+  let hasNextItem = $state(false);
+  let hasRange = $state(false);
+  let nextHref = $state();
+  let prevHref = $state();
+  let pageGroup = $state();
+  let status = $state({ class: null });
 
   let referrer = document.referrer;
-  let keywords = '';
+  let keywords = $state('');
 
   if (referrer) {
     let params = new URL(referrer).searchParams;
@@ -144,7 +147,8 @@
     emitter.emit('update.history', params);
   }
 
-  function onSubmit(event, args) {
+  function onSubmit(args, event) {
+    event.preventDefault();
     const params = Object.assign({}, args);
     let searchUrl = new URL(`${location.protocol}//${HT.service_domain}/cgi/pt/search`);
     let searchParams = new URLSearchParams();
@@ -207,12 +211,14 @@
     updateHistory();
   }
 
-  function jumpToPage(paginationPage) {
+  function jumpToPage(paginationPage, event) {
+    event.preventDefault();
     start = (paginationPage - 1) * 25 + 1;
     onSubmit();
   }
 
-  function gotoPage(page) {
+  function gotoPage(page, event) {
+    event.preventDefault();
     start = page;
     onSubmit();
   }
@@ -222,20 +228,24 @@
     input.focus();
   });
 
-  $: if (q1) {
-    start = 1;
-  }
+  $effect(() => {
+    if (q1) {
+      start = 1;
+    }
+  }) 
 
-  beforeUpdate(async () => {
+  // during migration, removed an async/await situation here
+  // will need to test if this still works correctly
+  $effect.pre(() => {
     if (inFetch) {
-      await tick();
+      tick();
       alert.focus();
       inFetch = false;
     }
   });
 </script>
 
-<form on:submit|preventDefault={onSubmit}>
+<form onsubmit={onSubmit}>
   {#if !inPanel}
     <div class="mb-1">
       <label class="form-label" for="input-search-text">Search in this text:</label>
@@ -260,7 +270,7 @@
           data-bs-placement="right"
           disabled={payload == null}
           use:tooltippy
-          on:click={clearSearchForm}
+          onclick={clearSearchForm}
         >
           <i class="fa-regular fa-circle-xmark"></i>
         </button>
@@ -274,7 +284,7 @@
           class="form-check-input"
           type="checkbox"
           bind:checked={targetNewTab}
-          on:change={setTabPrefs}
+          onchange={setTabPrefs}
           id="search-form-target"
         />
         <label class="form-check-label" for="search-form-target"> Open results in a new tab </label>
@@ -301,7 +311,7 @@
         class:active={sort == 'score'}
         use:tooltippy
         aria-label="Sort by relevance"
-        on:click={(event) => {
+        onclick={(event) => {
           sort = 'score';
           start = 1;
           onSubmit();
@@ -315,7 +325,7 @@
         class:active={sort == 'seq'}
         use:tooltippy
         aria-label="Sort by page scan"
-        on:click={(event) => {
+        onclick={(event) => {
           sort = 'seq';
           start = 1;
           onSubmit();
@@ -329,7 +339,7 @@
         type="button"
         class="btn btn-outline-secondary"
         class:active={showHighlights}
-        on:click={toggleHighlights}
+        onclick={toggleHighlights}
         use:tooltippy={{ content: `${highlightButtonContent} highlights` }}
         aria-label={showHighlights ? 'Hide Highlights' : 'Show Highlights'}
       >
@@ -346,7 +356,7 @@
               href="/cgi/pt?id={manifest.id}&seq={item.seq}&q1={q1}&start={payload.range.value}"
               class="btn btn-link fw-bold p-0"
               data-seq={item.seq}
-              on:click|preventDefault={onClick}
+              onclick={onClick}
             >
               #{item.seq}
               {#if item.pageNum}
@@ -388,7 +398,7 @@
               class:disabled={!hasPreviousItem}
               href={hasPreviousItem ? prevHref : undefined}
               data-start={payload.prev}
-              on:click|preventDefault={() => gotoPage(payload.prev)}
+              onclick={() => gotoPage(payload.prev)}
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
               <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
@@ -404,7 +414,7 @@
               class:disabled={!hasNextItem}
               href={hasNextItem ? nextHref : undefined}
               data-start={payload.next}
-              on:click|preventDefault={() => gotoPage(payload.next)}
+              onclick={() => gotoPage(payload.next)}
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
               <span class:visually-hidden={inPanel}>Next</span>
@@ -413,7 +423,7 @@
           </li>
         </ul>
       </div>
-      <form on:submit|preventDefault={jumpToPage(pageGroup)}>
+      <form onsubmit={jumpToPage(pageGroup)}>
         <div class="d-flex gap-1 w-xxsm-50 align-items-center justify-content-end">
           <label for="results-pagination" class="form-label text-nowrap fw-normal m-0 visually-hidden">Go to:</label>
           <input

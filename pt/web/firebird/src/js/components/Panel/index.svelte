@@ -1,19 +1,32 @@
 <script>
   import { getContext, onMount } from 'svelte';
   const manifest = getContext('manifest');
+  /**
+   * @typedef {Object} Props
+   * @property {any} [parent]
+   * @property {boolean} [expanded]
+   * @property {any} [class]
+   * @property {any} [onToggle]
+   * @property {any} [id]
+   * @property {import('svelte').Snippet} [icon]
+   * @property {import('svelte').Snippet} [title]
+   * @property {import('svelte').Snippet} [body]
+   */
 
-  export let parent = null;
-  export let expanded = false;
-  let className = null;
-
-  export { className as class };
-
-  export let onToggle = null;
+  /** @type {Props} */
+  let {
+    parent = null,
+    expanded = false,
+    class: className = null,
+    onToggle = null,
+    id = `${new Date().getTime()}-${Math.ceil(Math.random() * 1000)}`,
+    icon,
+    title,
+    body
+  } = $props();
 
   let bsParent = manifest.ui == 'crms' ? null : parent;
-  let accordionEl;
-
-  export let id = `${new Date().getTime()}-${Math.ceil(Math.random() * 1000)}`;
+  let accordionEl = $state();
 
   onMount(() => {
     if (onToggle) {
@@ -35,8 +48,8 @@
       aria-controls="c{id}"
     >
       <div class="d-flex gap-2 align-items-center me-1">
-        <slot name="icon" />
-        <slot name="title" />
+        {@render icon?.()}
+        {@render title?.()}
       </div>
     </button>
   </h2>
@@ -48,7 +61,7 @@
     data-bs-parent={bsParent}
   >
     <div class="accordion-body">
-      <slot name="body" />
+      {@render body?.()}
     </div>
   </div>
 </div>
@@ -61,10 +74,5 @@
   .accordion-item.dark {
     background-color: var(--color-neutral-200);
     color: var(--color-neutral-900);
-
-    // .accordion-button {
-    //   background-color: inherit;
-    //   color: white;
-    // }
   }
 </style>

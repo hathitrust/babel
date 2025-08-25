@@ -44,7 +44,8 @@
     "tippy.js": "^6.3.7"
   },
   "optionalDependencies": {
-    "@esbuild/linux-x64": "0.17.15"
+    "@esbuild/linux-x64": "0.17.15",
+    "@rollup/rollup-darwin-arm64": "^4.41.1"
   },
   "//": [
     "if you have issues with esbuild not installing the correct package for a platform, try updating this to match the version of esbuild that vite installs, npm list --all will help!",

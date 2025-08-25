@@ -7,7 +7,7 @@
   const currentSeq = manifest.currentSeq;
 
 
-  $: ownerid = manifest.ownerid($currentSeq);
+  let ownerid = $derived(manifest.ownerid($currentSeq));
 
 </script>
 

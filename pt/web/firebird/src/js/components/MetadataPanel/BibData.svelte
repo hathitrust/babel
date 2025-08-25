@@ -1,7 +1,7 @@
 <script>
   import { getContext } from 'svelte';
 
-  export let title;
+  let { title } = $props();
 
   const manifest = getContext('manifest');
   const metadata = manifest.metadata;

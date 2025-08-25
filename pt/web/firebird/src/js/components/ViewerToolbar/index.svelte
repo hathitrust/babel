@@ -1,4 +1,6 @@
 <script>
+  import { preventDefault } from 'svelte/legacy';
+
   import { onMount, getContext } from 'svelte';
   import screenfull from 'screenfull';
 
@@ -10,13 +12,13 @@
   const manifest = getContext('manifest');
 
   const currentSeq = manifest.currentSeq;
-  $: seq = $currentSeq;
+  let seq = $derived($currentSeq);
 
   const interfaceMode = manifest.interfaceMode;
   const isFullscreen = manifest.isFullscreen;
 
-  let enableZoomIn = true;
-  let enableZoomOut = true;
+  let enableZoomIn = $state(true);
+  let enableZoomOut = $state(true);
 
   const enableZoomOptions = function (args) {
     enableZoomIn = args.in;
@@ -35,7 +37,7 @@
 
   emitter.on('zoom.enable', enableZoomOptions);
 
-  let controlsText = 'Hide Controls';
+  let controlsText = $state('Hide Controls');
   const toggleInterface = function (event, mode) {
     if (mode) {
       $interfaceMode = mode;
@@ -52,7 +54,7 @@
     }
   };
 
-  let fullscreenButtonContent;
+  let fullscreenButtonContent = $state();
   const toggleFullscreen = function (event) {
     toggleInterface(event, screenfull.isFullscreen ? 'default' : 'minimal');
     screenfull.toggle(document.querySelector('#root')).then(() => {
@@ -79,6 +81,7 @@
   });
 
   const handleValue = function (event) {
+    event.preventDefault();
     let value = event.target.value;
     if (value.substr(0, 1) == '+' || value.substr(0, 1) == '-') {
       let delta = value.substr(0, 1) == '+' ? +1 : -1;
@@ -113,7 +116,7 @@
     }
   };
 
-  let isFullscreenEnabled = false;
+  let isFullscreenEnabled = $state(false);
   let isRTL = manifest.direction() == 'rtl';
 
   // $: console.log("-- view.toolbar interfaceMode", $interfaceMode);
@@ -137,7 +140,7 @@
       class:active={$interfaceMode == 'minimal'}
       aria-label={controlsText}
       use:tooltippy={{ content: controlsText }}
-      on:click={toggleInterface}
+      onclick={toggleInterface}
     >
       <i
         class:fa-solid={$interfaceMode == 'default'}
@@ -154,7 +157,7 @@
 
   {#if $interfaceMode == 'default'}
     <!-- navigation form -->
-    <form class="d-none d-sm-block" on:submit={(event) => event.preventDefault()}>
+    <form class="d-none d-sm-block" onsubmit={(event) => event.preventDefault()}>
       <div class="d-flex align-items-center gap-1 bg-dark text-light p-1 px-2 rounded">
         <label for="toolbar-seq">
           <span>#</span>
@@ -166,9 +169,9 @@
           bind:value={seq}
           type="text"
           class="form-control text-center"
-          on:change|preventDefault={handleValue}
-          on:blur|preventDefault={handleValue}
-          on:keydown={handleKeydown}
+          onchange={handleValue}
+          onblur={handleValue}
+          onkeydown={handleKeydown}
         />
         <span>/</span>
         <span>{manifest.totalSeq}</span>
@@ -184,7 +187,7 @@
         aria-label="Zoom In"
         disabled={!enableZoomIn}
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
-        on:click={() => zoom(1)}
+        onclick={() => zoom(1)}
       >
         <i class="fa-solid fa-plus"></i>
       </button>
@@ -194,7 +197,7 @@
         aria-label="Zoom Out"
         disabled={!enableZoomOut}
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
-        on:click={() => zoom(-1)}
+        onclick={() => zoom(-1)}
       >
         <i class="fa-solid fa-minus"></i>
       </button>
@@ -209,7 +212,7 @@
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
+        onclick={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
         <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
@@ -219,7 +222,7 @@
         class="btn btn-outline-dark"
         aria-label="Next Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.next', delta: 1 })}
+        onclick={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
         <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
@@ -229,7 +232,7 @@
         class="btn btn-outline-dark"
         aria-label="Previous Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.prev', delta: -1 })}
+        onclick={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
         <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
@@ -239,7 +242,7 @@
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.first', seq: 1 })}
+        onclick={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
         <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
@@ -252,7 +255,7 @@
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="First Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.first', seq: 1 })}
+        onclick={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
         <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
@@ -262,7 +265,7 @@
         class="btn btn-outline-dark"
         aria-label="Previous Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.prev', delta: -1 })}
+        onclick={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
         <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
@@ -272,7 +275,7 @@
         class="btn btn-outline-dark"
         aria-label="Next Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.next', delta: 1 })}
+        onclick={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
         <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
@@ -282,7 +285,7 @@
         class="btn btn-outline-dark d-none d-md-block"
         aria-label="Last Page"
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Pagination']")}}
-        on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
+        onclick={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
         <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
@@ -296,7 +299,7 @@
       class="btn btn-outline-dark"
       aria-label={`${fullscreenButtonContent}`}
       use:tooltippy={{content: `${fullscreenButtonContent}`}}
-      on:click={toggleFullscreen}
+      onclick={toggleFullscreen}
     >
       <i class="fa-solid fa-maximize"></i>
     </button>

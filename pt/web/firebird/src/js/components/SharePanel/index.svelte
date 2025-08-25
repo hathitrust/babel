@@ -1,28 +1,28 @@
 <script>
-  import { onMount, getContext } from 'svelte';
+  import { getContext } from 'svelte';
   import { tooltippy } from '../../lib/tippy';
 
-  import Panel from '../Panel';
+  import Panel from '../Panel/index.svelte';
   import Modal from '~firebird-common/src/js/components/Modal';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
   const HT = getContext('HT');
 
-  let shareHandle;
-  let btnShareHandle;
-  let shareHandleLink;
-  let btnShareHandleLink;
-  let btnCodeBlock;
-  let modal;
-  let modalBody;
+  let shareHandle = $state();
+  let btnShareHandle = $state();
+  let shareHandleLink = $state();
+  let btnShareHandleLink = $state();
+  let btnCodeBlock = $state();
+  let modal = $state();
+  let modalBody = $state();
 
   // initial seq
   let currentSeq = manifest.currentSeq;
 
-  let codeBlock;
-  let view = '1up';
-  let codeBlockText = {};
+  let codeBlock = $state();
+  let view = $state('1up');
+  let codeBlockText = $state({});
   codeBlockText[
     '1up'
   ] = `<iframe width="450" height="700" src="https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bui=embed"></iframe>`;
@@ -58,7 +58,7 @@
     HT.live.announce('Copied');
   }
 
-  $: {
+  $effect(() => {
     [btnShareHandle, btnShareHandleLink, btnCodeBlock].forEach((el) => {
       if (!el) {
         return;
@@ -72,122 +72,128 @@
         tooltip.setContent({ '.tooltip-inner': el.getAttribute('aria-label') });
       });
     });
-  }
+  });
 
-  $: ownerid = manifest.ownerid($currentSeq);
-  $: pageUrl = `https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bseq=${$currentSeq}${
+  let ownerid = $derived(manifest.ownerid($currentSeq));
+  let pageUrl = $derived(`https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bseq=${$currentSeq}${
     ownerid ? '%3Bownerid=' + ownerid : ''
-  }`;
+  }`);
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-share-nodes" slot="icon"></i>
-  <slot:fragment slot="title">Share</slot:fragment>
-  <slot:fragment slot="body">
-    <div class="mb-3">
-      <label for="share-handle" class="form-label">Permanent link to this item</label>
-      <div class="d-flex align-items-center gap-1">
-        <input
-          id="share-handle"
-          type="text"
-          class="form-control"
-          readonly
-          value="https://hdl.handle.net/2027/{manifest.id}"
-          bind:this={shareHandle}
-          on:blur={selectInnerText}
-          on:click={selectInnerText}
-        />
-        <button
-          class="btn btn-outline-dark"
-          aria-label="Copy permanent link"
-          data-bs-placement="right"
-          use:tooltippy={{placement: 'right'}}
-          bind:this={btnShareHandle}
-          on:click={() => copySelection(btnShareHandle, shareHandle)}
-        >
-          <i class="fa-solid fa-copy" aria-hidden="true"></i>
-        </button>
+  {#snippet icon()}
+    <i class="fa-solid fa-share-nodes" ></i>
+  {/snippet}
+  {#snippet title()}
+    Share
+  {/snippet}
+  {#snippet body()}
+      <div class="mb-3">
+        <label for="share-handle" class="form-label">Permanent link to this item</label>
+        <div class="d-flex align-items-center gap-1">
+          <input
+            id="share-handle"
+            type="text"
+            class="form-control"
+            readonly
+            value="https://hdl.handle.net/2027/{manifest.id}"
+            bind:this={shareHandle}
+            onblur={selectInnerText}
+            onclick={selectInnerText}
+          />
+          <button
+            class="btn btn-outline-dark"
+            aria-label="Copy permanent link"
+            data-bs-placement="right"
+            use:tooltippy={{placement: 'right'}}
+            bind:this={btnShareHandle}
+            onclick={() => copySelection(btnShareHandle, shareHandle)}
+          >
+            <i class="fa-solid fa-copy" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
-    </div>
-    <div class="mb-3">
-      <label for="share-handle-seq" class="form-label">Link to this page scan</label>
-      <div class="d-flex align-items-center gap-1">
-        <input
-          id="share-handle-seq"
-          type="text"
-          class="form-control"
-          readonly
-          value={pageUrl}
-          bind:this={shareHandleLink}
-          on:blur={selectInnerText}
-          on:click={selectInnerText}
-        />
-        <button
-          class="btn btn-outline-dark"
-          aria-label="Copy link to this page scan"
-          data-bs-placement="right"
-          use:tooltippy={{placement: 'right'}}
-          bind:this={btnShareHandleLink}
-          on:click={() => copySelection(btnShareHandleLink, shareHandleLink)}
-        >
-          <i class="fa-solid fa-copy" aria-hidden="true"></i>
-        </button>
+      <div class="mb-3">
+        <label for="share-handle-seq" class="form-label">Link to this page scan</label>
+        <div class="d-flex align-items-center gap-1">
+          <input
+            id="share-handle-seq"
+            type="text"
+            class="form-control"
+            readonly
+            value={pageUrl}
+            bind:this={shareHandleLink}
+            onblur={selectInnerText}
+            onclick={selectInnerText}
+          />
+          <button
+            class="btn btn-outline-dark"
+            aria-label="Copy link to this page scan"
+            data-bs-placement="right"
+            use:tooltippy={{placement: 'right'}}
+            bind:this={btnShareHandleLink}
+            onclick={() => copySelection(btnShareHandleLink, shareHandleLink)}
+          >
+            <i class="fa-solid fa-copy" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
-    </div>
-    <div>
-      <button type="button" class="btn btn-outline-dark" on:click={() => modal.show()}>Embed this item</button>
-    </div>
-  </slot:fragment>
+      <div>
+        <button type="button" class="btn btn-outline-dark" onclick={() => modal.show()}>Embed this item</button>
+      </div>
+  {/snippet}
 </Panel>
 <Modal bind:this={modal}>
-  <svelte:fragment slot="title">Embed this item</svelte:fragment>
-  <svelte:fragment slot="body">
-    <div class="mb-3 share-modal-body" bind:this={modalBody}>
-      <p id="embed-help-info">Copy the code below and paste it into the HTML of any website or blog.</p>
-      <label for="embed-codeblock" class="visually-hidden">Code Block</label>
-      <div class="d-flex align-items-start gap-2">
-        <textarea
-          class="form-control"
-          id="embed-codeblock"
-          aria-describedby="embed-help-info"
-          rows="3"
-          bind:this={codeBlock}
-          bind:value={codeBlockText[view]}
-          on:blur={selectInnerText}
-          on:click={selectInnerText}
-       ></textarea>
-        <button
-          class="btn btn-outline-dark"
-          aria-label="Copy iframe code"
-          data-bs-container=".share-modal-body"
-          use:tooltippy={{ appendTo: 'parent' }}
-          bind:this={btnCodeBlock}
-          on:click={() => copySelection(codeBlock)}
+  {#snippet title()}
+    Embed this item
+  {/snippet}
+  {#snippet body()}
+        <div class="mb-3 share-modal-body" bind:this={modalBody}>
+        <p id="embed-help-info">Copy the code below and paste it into the HTML of any website or blog.</p>
+        <label for="embed-codeblock" class="visually-hidden">Code Block</label>
+        <div class="d-flex align-items-start gap-2">
+          <textarea
+            class="form-control"
+            id="embed-codeblock"
+            aria-describedby="embed-help-info"
+            rows="3"
+            bind:this={codeBlock}
+            bind:value={codeBlockText[view]}
+            onblur={selectInnerText}
+            onclick={selectInnerText}
+         ></textarea>
+          <button
+            class="btn btn-outline-dark"
+            aria-label="Copy iframe code"
+            data-bs-container=".share-modal-body"
+            use:tooltippy={{ appendTo: 'parent' }}
+            bind:this={btnCodeBlock}
+            onclick={() => copySelection(codeBlock)}
+          >
+            <i class="fa-solid fa-copy" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input id="embed-view-1up" class="form-check-input" type="radio" value="1up" bind:group={view} />
+          <label class="form-check-label" for="embed-view-1up">
+            <i class="fa-solid fa-up-down" aria-hidden="true"></i>
+            Scroll View
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input id="embed-view-2up" class="form-check-input" type="radio" value="2up" bind:group={view} />
+          <label class="form-check-label" for="embed-view-2up">
+            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+            Flip View
+          </label>
+        </div>
+      </div>
+      <p>
+        <a href="//{HT.www_domain}/member-libraries/resources-for-librarians/improve-discovery/embed-hathitrust-books/"
+          >More information</a
         >
-          <i class="fa-solid fa-copy" aria-hidden="true"></i>
-        </button>
-      </div>
-    </div>
-    <div class="mb-3">
-      <div class="form-check form-check-inline">
-        <input id="embed-view-1up" class="form-check-input" type="radio" value="1up" bind:group={view} />
-        <label class="form-check-label" for="embed-view-1up">
-          <i class="fa-solid fa-up-down" aria-hidden="true"></i>
-          Scroll View
-        </label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input id="embed-view-2up" class="form-check-input" type="radio" value="2up" bind:group={view} />
-        <label class="form-check-label" for="embed-view-2up">
-          <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-          Flip View
-        </label>
-      </div>
-    </div>
-    <p>
-      <a href="//{HT.www_domain}/member-libraries/resources-for-librarians/improve-discovery/embed-hathitrust-books/"
-        >More information</a
-      >
-    </p>
-  </svelte:fragment>
+      </p>
+  {/snippet}
 </Modal>

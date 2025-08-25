@@ -1,6 +1,4 @@
 <script>
-  import { run } from 'svelte/legacy';
-
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
   import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
@@ -461,31 +459,31 @@
     <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
   </button>
 </div>
-<!-- {#if isReaderView}
+{#if isReaderView}
   <ViewerToolbar />
-{/if} -->
+{/if}
 <aside>
   <div class="inner" class:invisible={!asideExpanded || $interfaceMode == 'minimal'}>
     <div class="accordion">
-      <!-- <SurveyPanel />
-      <AccessStatusPanel /> -->
+      <SurveyPanel />
+      <AccessStatusPanel />
     </div>
     <div class="accordion" id="controls">
-      <!-- <MetadataPanel /> -->
+      <MetadataPanel />
       {#if manifest.ui != 'crms'}
-        <!-- <DownloadPanel /> -->
+        <DownloadPanel />
       {/if}
       {#if isReaderView && manifest.finalAccessAllowed}
-        <!-- <SearchInItemPanel />
-        <JumpToSectionPanel /> -->
+        <SearchInItemPanel />
+        <JumpToSectionPanel />
       {/if}
       {#if manifest.ui != 'crms'}
-        <!-- <GetThisItemPanel />
+        <GetThisItemPanel />
         <CollectionsPanel />
-        <SharePanel /> -->
+        <SharePanel />
       {/if}
     </div>
-    <!-- <VersionPanel /> -->
+    <VersionPanel />
   </div>
 </aside>
 <div class="divider" use:drag={(e) => update(e.clientX, e.clientY, e)}>
@@ -502,11 +500,11 @@
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
   {#if stage}
     {#if view == 'search'}
-      <!-- <SearchView /> -->
+      <SearchView />
     {:else if view == 'restricted'}
-      <!-- <RestrictedView /> -->
+      <RestrictedView />
     {:else}
-      <!-- <ViewerToolbar></ViewerToolbar> -->
+      <ViewerToolbar></ViewerToolbar>
       <CurrentView {format} startSeq={$currentSeq} container={stage} />
     {/if}
   {/if}

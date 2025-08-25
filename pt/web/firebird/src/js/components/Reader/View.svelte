@@ -8,7 +8,7 @@
 
   import { DetailsStateManager } from './utils';
 
-  import Page from './Page';
+  import Page from './Page.svelte';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
@@ -20,8 +20,6 @@
   const LOAD_PAGE_DELAY_TIMEOUT = 150;
   const UNLOAD_PAGE_INTERVAL = 30 * 1000;
   const LOAD_PAGE_PEEK_PERCENT = '25%';
-
-  console.log('hi from view!');
 
   let {
     format = $currentFormat,
@@ -37,6 +35,7 @@
   } = $props();
 
   export function item(seq) {
+    console.log(itemMap[seq])
     return itemMap[seq];
   }
 
@@ -384,7 +383,7 @@
     const tmp = [...currentInView].sort((a, b) => {
       return a - b;
     });
-    // console.log("-- view.unload seq", tmp, currentInView);
+    console.log("-- view.unload seq", tmp, currentInView);
     const seq1 = itemData[tmp[0]].seq;
     const seq2 = itemData[tmp.at(-1)].seq;
 

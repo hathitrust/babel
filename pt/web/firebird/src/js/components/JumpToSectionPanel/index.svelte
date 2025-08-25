@@ -1,8 +1,10 @@
 <script>
+  import { stopPropagation, preventDefault } from 'svelte/legacy';
+
   import { getContext } from 'svelte';
 
-  import Panel from '../Panel';
-  import Modal from '~firebird-common/src/js/components/Modal';
+  import Panel from '../Panel/index.svelte';
+  import Modal from '~firebird-common/src/js/components/Modal/index.svelte';
 
   const manifest = getContext('manifest');
   const emitter = getContext('emitter');
@@ -11,11 +13,16 @@
   let pageNumRange = manifest.pageNumRange();
   let hasPageNum = pageNumRange != null;
 
-  let modal;
-  let value;
-  let showError = false;
+  let modal = $state();
+  let value = $state();
+  let showError = $state(false);
 
   // calculate pagenumrange
+
+  function showModal(event) {
+    event.stopPropagation();
+    modal.show();
+  }
 
   function handleValue() {
     let seq;
@@ -50,7 +57,9 @@
     }
   }
 
-  function goto(seq) {
+  function goto(seq, event) {
+    event.stopPropagation();
+    event.preventDefault();
     emitter.emit('page.goto', { seq: seq });
   }
 
@@ -69,87 +78,97 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bars" aria-hidden="true" slot="icon"></i>
-  <slot:fragment slot="title">Jump to Section</slot:fragment>
-  <slot:fragment slot="body">
+  {#snippet icon()}
+    <i class="fa-solid fa-bars" aria-hidden="true" ></i>
+  {/snippet}
+  {#snippet title()}
+    Jump to Section
+  {/snippet}
+  {#snippet body()}
     <div class="mb-3">
-      <button type="button" class="btn btn-outline-dark" on:click|stopPropagation={() => modal.show()}
+      <button type="button" class="btn btn-outline-dark" onclick={showModal}
         >Jump to page...</button
       >
     </div>
     <ul class="list-unstyled">
       {#each sectionList as section}
         <li>
-          <a href={section.url} on:click|preventDefault|stopPropagation={() => goto(section.seq)}
+          <a href={section.url} onclick={goto(section.seq)}
             >{section.label}&nbsp;({#if section.page}p. {section.page},&nbsp;{/if}{#if section.seq}scan #{section.seq}{/if})</a
           >
         </li>
       {/each}
     </ul>
-  </slot:fragment>
+  {/snippet}
 </Panel>
 <Modal bind:this={modal}>
-  <svelte:fragment slot="title">Jump to page scan</svelte:fragment>
-  <svelte:fragment slot="body">
-    <div class="mb-3">
-      <p class="fs-7 mb-2">
-        Jump to a page scan by
-        {#if hasPageNum}
-          <strong>page number</strong> or
-        {/if}
-        <strong>page scan sequence</strong>.
-      </p>
-      <div class="alert alert-warning alert-block" role="alert" aria-atomic="true">
-        {#if showError}
-          <p class="m-0">
-            Could not find a page scan that matched {getValue()}; enter
-            {#if hasPageNum}
-              a page number between {pageNumRange} or
-            {/if}
-            a sequence between #1-#{manifest.totalSeq}.
-          </p>
-        {/if}
+  {#snippet title()}
+    Jump to page scan
+  {/snippet}
+  {#snippet body()}
+  
+      <div class="mb-3">
+        <p class="fs-7 mb-2">
+          Jump to a page scan by
+          {#if hasPageNum}
+            <strong>page number</strong> or
+          {/if}
+          <strong>page scan sequence</strong>.
+        </p>
+        <div class="alert alert-warning alert-block" role="alert" aria-atomic="true">
+          {#if showError}
+            <p class="m-0">
+              Could not find a page scan that matched {getValue()}; enter
+              {#if hasPageNum}
+                a page number between {pageNumRange} or
+              {/if}
+              a sequence between #1-#{manifest.totalSeq}.
+            </p>
+          {/if}
+        </div>
+        <label for="jump-input" class="visually-hidden">
+          {#if hasPageNum}
+            Page number or sequence
+          {:else}
+            Page sequence
+          {/if}
+        </label>
+        <input
+          id="jump-input"
+          type="text"
+          class="form-control"
+          aria-describedby="jump-hint-info"
+          onkeydown={handleKeydown}
+          bind:value
+        />
+        <p class="visually-hidden" id="jump-hint-info">Hints follow.</p>
       </div>
-      <label for="jump-input" class="visually-hidden">
+      <h2 class="h3">Hints</h2>
+      <ul class="bullets">
         {#if hasPageNum}
-          Page number or sequence
-        {:else}
-          Page sequence
+          <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
         {/if}
-      </label>
-      <input
-        id="jump-input"
-        type="text"
-        class="form-control"
-        aria-describedby="jump-hint-info"
-        on:keydown={handleKeydown}
-        bind:value
-      />
-      <p class="visually-hidden" id="jump-hint-info">Hints follow.</p>
-    </div>
-    <h2 class="h3">Hints</h2>
-    <ul class="bullets">
-      {#if hasPageNum}
-        <li>Page numbers are entered as <tt><em>number</em></tt>, e.g. <strong><tt>10</tt></strong></li>
-      {/if}
-      <li>
-        Page scan sequences are entered as
-        <tt><em><span aria-hidden="true">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong>
-      </li>
-      <li>Use a page scan sequence between #1-#{manifest.totalSeq}</li>
-      {#if hasPageNum}
-        <li>Use a page number between {pageNumRange}</li>
-      {/if}
-      <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
-      <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
-    </ul>
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
-    <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button type="button" class="btn btn-secondary" on:click={modal.hide()}>Cancel</button>
-      <button type="button" class="btn btn-primary" on:click={jump}>Jump</button>
-    </div>
-  </svelte:fragment>
+        <li>
+          Page scan sequences are entered as
+          <tt><em><span aria-hidden="true">#</span>number</em></tt>, e.g. <strong><tt>#10</tt></strong>
+        </li>
+        <li>Use a page scan sequence between #1-#{manifest.totalSeq}</li>
+        {#if hasPageNum}
+          <li>Use a page number between {pageNumRange}</li>
+        {/if}
+        <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
+        <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
+      </ul>
+    
+  {/snippet}
+  {#snippet footer()}
+  
+      <div class="d-flex gap-1 align-items-center justify-content-end">
+        <button type="button" class="btn btn-secondary" onclick={modal.hide()}>Cancel</button>
+        <button type="button" class="btn btn-primary" onclick={jump}>Jump</button>
+      </div>
+    
+  {/snippet}
 </Modal>
 
 <style>

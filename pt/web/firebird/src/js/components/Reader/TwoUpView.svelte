@@ -23,15 +23,17 @@
   formats['plaintext'] = PlaintextFormat;
 
   let view = $state();
+  //view.item() passed up from View.svelte through the format wrappers
+
 
   export const currentLocation = function () {
     let location = {};
-    if (view.view.item($currentSeq)) {
-      let item = view.view.item($currentSeq);
+    if (view.item($currentSeq)) {
+      let item = view.item($currentSeq);
       location[item.side] = item;
 
       if (view.view.item($currentSeq).side == 'verso') {
-        let item = view.view.item($currentSeq + 1);
+        let item = view.item($currentSeq + 1);
         if (item) {
           location[item.side] = item;
         }
@@ -42,12 +44,12 @@
 
   const findTarget = function (options) {
     let targetIdx;
-    let item = view.view.item($currentSeq);
+    let item = view.item($currentSeq);
     let currentSpread = item.spreadIndex;
     if (options.delta !== undefined) {
       targetIdx = currentSpread + options.delta;
     } else if (options.seq && !isNaN(options.seq)) {
-      targetIdx = view.view.item(options.seq).spreadIndex;
+      targetIdx = view.item(options.seq).spreadIndex;
     } else {
       // invalid option;
       return;
@@ -58,8 +60,8 @@
 
   const findFocusItems = function (seq) {
     let pages = [];
-    let item = view.view.item($currentSeq);
-    const spread = view.view.spread(item.spreadIndex);
+    let item = view.item($currentSeq);
+    const spread = view.spread(item.spreadIndex);
     pages = Array.from(spread.items);
     return pages;
   };

@@ -1,7 +1,7 @@
 <script>
-  import { onMount, beforeUpdate, tick, getContext } from 'svelte';
+  import { getContext } from 'svelte';
 
-  import SearchForm from '../SearchForm';
+  import SearchForm from '../SearchForm/index.svelte';
 
   import NoAccessItem from './NoAccessItem.svelte';
   import TombstoneItem from './TombstoneItem.svelte';
@@ -10,7 +10,7 @@
   import BrittleHeldItem from './BrittleHeldItem.svelte';
 
   const manifest = getContext('manifest');
-  const subviews = {};
+  const subviews = $state({});
 
   subviews['no-access-item'] = NoAccessItem;
   subviews['tombstone-item'] = TombstoneItem;
@@ -21,7 +21,7 @@
   let externalLinks = manifest.externalLinks;
   let links = externalLinks.filter((link) => link.type == 'oclc');
 
-  let searchAvailable = true;
+  let searchAvailable = $state(true);
   let rightsAttribute = manifest.accessRestriction.rightsAttribute;
   let message = manifest.accessRestriction.message;
   if (rightsAttribute == 8) {
@@ -31,13 +31,16 @@
   let onClick = function (event) {
     location.assign(event.target.href);
   };
+
+  const SvelteComponent = $derived(subviews[message]);
 </script>
 
 <div class="p-3 m-3 overflow-auto">
-  <svelte:component this={subviews[message]} link={links[0]} />
+  <SvelteComponent link={links[0]} />
 
   {#if searchAvailable}
-    <SearchForm inPanel={false} {onClick} />
+    <!-- <SearchForm inPanel={false} {onClick} /> -->
+    <SearchForm inPanel={false} />
   {/if}
 </div>
 
