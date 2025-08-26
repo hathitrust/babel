@@ -12,7 +12,9 @@
   let expanded = $state(false);
 
   function onClick(event) {
+    event.preventDefault();
     let seq = event.target.dataset.seq;
+    console.log('should emit seq:seq', {seq: seq})
     emitter.emit('page.goto', { seq: seq });
   }
 
@@ -31,7 +33,6 @@
     Search in This Text
   {/snippet}
   {#snippet body()}
-      <!-- <SearchForm inPanel={true} {onClick} /> -->
-      <SearchForm inPanel={true} />
+      <SearchForm inPanel={true} {onClick} />
   {/snippet}
 </Panel>

@@ -1,6 +1,6 @@
 <script>
+  console.log('hi from download panel')
   import { onMount, getContext } from 'svelte';
-  import { writable } from 'svelte/store';
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel/index.svelte';
@@ -10,7 +10,7 @@
   const emitter = getContext('emitter');
   const HT = getContext('HT');
 
-  const formatTitle = {};
+  const formatTitle = $state({});
   formatTitle['pdf'] = 'PDF';
   formatTitle['epub'] = 'EPUB';
   formatTitle['plaintext'] = 'Text (.txt)';
@@ -22,337 +22,335 @@
   let currentSeq = manifest.currentSeq;
   let currentLocation = manifest.currentLocation;
   let selected = manifest.selected;
-  let format = 'pdf';
-  let range = manifest.allowFullDownload ? 'volume' : 'current-page';
+  let format = $state('pdf');
+  let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
   let totalSeq = manifest.totalSeq;
 
-  let modal;
-  let tunnelFrame;
+  let modal = $state();
+  let tunnelFrame = $state();
   let tunnelWindow;
-  let tunnelForm;
-  let tunnelFormTracker;
+  let tunnelForm = $state();
+  let tunnelFormTracker = $state();
   let tunnelFormAttempt = 0;
-  let downloadInProgress = false;
+  let downloadInProgress = $state(false);
   let trackerInterval;
-  let progressUrl, downloadUrl, totalPages;
+  let progressUrl, downloadUrl = $state(), totalPages;
   let lastPercent;
-  let status = { done: false, percent: -1 };
+  let status = $state({ done: false, percent: -1 });
   let numAttempts = 0;
   let numProcessed = 0;
   let selection = { pages: [], seq: [] };
 
-  let targetPPI = '300';
-  let sizeValue = '';
-  let sizeAttr;
+  let targetPPI = $state('300');
+  let sizeValue = $state('');
+  let sizeAttr = $state();
 
-  let errorMessage;
+  let errorMessage = $state();
 
   let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
 
-  function callback(argv) {
-    console.log('-- callback', downloadInProgress, argv);
-    if (downloadInProgress) {
-      [progressUrl, downloadUrl, totalPages] = argv;
-      if (trackerInterval) {
-        console.log('download: already polling');
-        return;
-      }
+  // function callback(argv) {
+  //   console.log('-- callback', downloadInProgress, argv);
+  //   if (downloadInProgress) {
+  //     [progressUrl, downloadUrl, totalPages] = argv;
+  //     if (trackerInterval) {
+  //       console.log('download: already polling');
+  //       return;
+  //     }
 
-      trackerInterval = setInterval(checkStatusInterval, 2500);
-      checkStatusInterval();
-      modal.show();
-    } else {
-      console.log('-- download.callback cancel download');
-      clearInterval(trackerInterval);
-      trackerInterval = null;
-      modal.hide();
-    }
-  }
+  //     trackerInterval = setInterval(checkStatusInterval, 2500);
+  //     checkStatusInterval();
+  //     modal.show();
+  //   } else {
+  //     console.log('-- download.callback cancel download');
+  //     clearInterval(trackerInterval);
+  //     trackerInterval = null;
+  //     modal.hide();
+  //   }
+  // }
 
-  function checkStatusInterval() {
-    fetch(progressUrl, { include: 'credentials' })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        numProcessed += 1;
-        updateProgress(data);
-        if (status.done) {
-          clearInterval(trackerInterval);
-          trackerInterval = null;
-        }
-        // error handling
-      });
-  }
+  // function checkStatusInterval() {
+  //   fetch(progressUrl, { credentials: 'include' })
+  //     .then((response) => {
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       numProcessed += 1;
+  //       updateProgress(data);
+  //       if (status.done) {
+  //         clearInterval(trackerInterval);
+  //         trackerInterval = null;
+  //       }
+  //       // error handling
+  //     });
+  // }
 
-  function updateProgress(data) {
-    let percent;
-    let current = data.status;
-    if (current == 'EOT' || current == 'DONE') {
-      status.done = true;
-      percent = 100;
-      downloadInProgress = false;
-      HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`);
-    } else {
-      status.done = false;
-      current = data.current_page;
-      percent = 100 * (current / totalPages);
-      console.log('totalPages', totalPages);
-    }
+  // function updateProgress(data) {
+  //   let percent;
+  //   let current = data.status;
+  //   if (current == 'EOT' || current == 'DONE') {
+  //     status.done = true;
+  //     percent = 100;
+  //     downloadInProgress = false;
+  //     HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`);
+  //   } else {
+  //     status.done = false;
+  //     current = data.current_page;
+  //     percent = 100 * (current / totalPages);
+  //     console.log('totalPages', totalPages);
+  //   }
 
-    if (lastPercent != percent) {
-      lastPercent = percent;
-      numAttempts = 0;
-    } else {
-      numAttempts += 1;
-    }
+  //   if (lastPercent != percent) {
+  //     lastPercent = percent;
+  //     numAttempts = 0;
+  //   } else {
+  //     numAttempts += 1;
+  //   }
 
-    if (numAttempts > 100) {
-      status.error = true;
-    }
+  //   if (numAttempts > 100) {
+  //     status.error = true;
+  //   }
 
-    status.percent = percent;
-    console.log('-- updateStatus', status);
-    status = status;
-  }
+  //   status.percent = percent;
+  //   console.log('-- updateStatus', status);
+  //   status = status;
+  // }
 
-  function trackInterval() {
-    let tracker = `D${tunnelFormAttempt}`;
-    let value = HT.cookieJar.getItem('tracker');
-    if (value && value.indexOf(tracker) > -1) {
-      HT.cookieJar.removeItem('tracker', { path: '/' });
-      downloadInProgress = false;
-      clearInterval(trackerInterval);
-      trackerInterval = null;
-    }
-  }
+  // function trackInterval() {
+  //   let tracker = `D${tunnelFormAttempt}`;
+  //   let value = HT.cookieJar.getItem('tracker');
+  //   if (value && value.indexOf(tracker) > -1) {
+  //     HT.cookieJar.removeItem('tracker', { path: '/' });
+  //     downloadInProgress = false;
+  //     clearInterval(trackerInterval);
+  //     trackerInterval = null;
+  //   }
+  // }
 
-  function finalizeDownload() {
-    location.href = downloadUrl;
-    setTimeout(() => {
-      modal.hide();
-    }, 1500);
-  }
+  // function finalizeDownload() {
+  //   location.href = downloadUrl;
+  //   setTimeout(() => {
+  //     modal.hide();
+  //   }, 1500);
+  // }
 
-  function closeDownload() {
-    downloadInProgress = false;
-    if (trackerInterval) {
-      clearInterval(trackerInterval);
-      trackerInterval = null;
-    }
-    // but we are not exiting!!
-  }
+  // function closeDownload() {
+  //   downloadInProgress = false;
+  //   if (trackerInterval) {
+  //     clearInterval(trackerInterval);
+  //     trackerInterval = null;
+  //   }
+  //   // but we are not exiting!!
+  // }
 
-  function cancelDownload() {
-    if (!downloadInProgress) {
-      console.log('-- download.cancelDownload EXITING');
-      return;
-    }
+  // function cancelDownload() {
+  //   if (!downloadInProgress) {
+  //     console.log('-- download.cancelDownload EXITING');
+  //     return;
+  //   }
 
-    let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
-    let params = new URLSearchParams();
-    params.set('id', manifest.id);
-    params.set('callback', 'tunnelCallback');
-    params.set('stop', '1');
-    params.set('_', new Date().getTime());
-    cancelUrl.search = params.toString();
+  //   let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
+  //   let params = new URLSearchParams();
+  //   params.set('id', manifest.id);
+  //   params.set('callback', 'tunnelCallback');
+  //   params.set('stop', '1');
+  //   params.set('_', `${new Date().getTime()}`);
+  //   cancelUrl.search = params.toString();
 
-    let scriptEl = tunnelWindow.document.createElement('script');
-    scriptEl.type = 'module';
-    scriptEl.src = cancelUrl.toString();
-    downloadInProgress = false;
-    tunnelWindow.document.body.appendChild(scriptEl);
+  //   let scriptEl = tunnelWindow.document.createElement('script');
+  //   scriptEl.type = 'module';
+  //   scriptEl.src = cancelUrl.toString();
+  //   downloadInProgress = false;
+  //   tunnelWindow.document.body.appendChild(scriptEl);
 
-    console.log('-- download.cancelDownload');
-  }
+  //   console.log('-- download.cancelDownload');
+  // }
 
-  function submitDownload() {
-    console.log('-- download.submitDownload');
-    // blah blah is this a short form or not
-    errorMessage = '';
-    numAttempts = 0;
-    numProcessed = 0;
+  // function submitDownload(event) {
+  //   event.preventDefault();
+  //   console.log('-- download.submitDownload');
+  //   // blah blah is this a short form or not
+  //   errorMessage = '';
+  //   numAttempts = 0;
+  //   numProcessed = 0;
 
-    selection.pages.length = 0;
-    if (range == 'selected-pages') {
-      selection.pages = Array.from($selected);
-      selection.isSelection = true;
-      console.log('-- selection', selection);
-      if (selection.pages.length == 0) {
-        errorMessage = `You haven't selected any pages to download.
-        To select pages, use the selection checkbox in the page toolbar.`;
-        HT.live.announce(errorMessage);
-        return;
-      } else if (format == 'image-tiff' && selection.pages.length > 10) {
-        errorMessage = `You have selected ${
-          Array.from($selected).length
-        } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
-        HT.live.announce(errorMessage);
-        return;
-      }
-    } else if (format == 'image-tiff' && range == 'volume' && totalSeq > 10) {
-      errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`;
-      HT.live.announce(errorMessage);
-      return;
-    } else if (range.startsWith('current-page')) {
-      let page;
-      switch (range) {
-        case 'current-page':
-          page = $currentSeq;
-          break;
-        case 'current-page-verso':
-          page = $currentLocation.verso.seq;
-          break;
-        case 'current-page-recto':
-          page = $currentLocation.recto.seq;
-          break;
-      }
-      if (!page) {
-        // possibly impossible
-      }
-      selection.pages = [page];
-    }
+  //   selection.pages.length = 0;
+  //   if (range == 'selected-pages') {
+  //     selection.pages = Array.from($selected);
+  //     selection.isSelection = true;
+  //     console.log('-- selection', selection);
+  //     if (selection.pages.length == 0) {
+  //       errorMessage = `You haven't selected any pages to download.
+  //       To select pages, use the selection checkbox in the page toolbar.`;
+  //       HT.live.announce(errorMessage);
+  //       return;
+  //     } else if (format == 'image-tiff' && selection.pages.length > 10) {
+  //       errorMessage = `You have selected ${
+  //         Array.from($selected).length
+  //       } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
+  //       HT.live.announce(errorMessage);
+  //       return;
+  //     }
+  //   } else if (format == 'image-tiff' && range == 'volume' && totalSeq > 10) {
+  //     errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`;
+  //     HT.live.announce(errorMessage);
+  //     return;
+  //   } else if (range.startsWith('current-page')) {
+  //     let page;
+  //     switch (range) {
+  //       case 'current-page':
+  //         page = $currentSeq;
+  //         break;
+  //       case 'current-page-verso':
+  //         page = $currentLocation.verso.seq;
+  //         break;
+  //       case 'current-page-recto':
+  //         page = $currentLocation.recto.seq;
+  //         break;
+  //     }
+  //     if (!page) {
+  //       // possibly impossible
+  //     }
+  //     selection.pages = [page];
+  //   }
 
-    if (selection.pages.length > 0) {
-      selection.seq = selection.pages;
-    }
-    selection = selection;
-    console.log('-- download selection', selection);
+  //   if (selection.pages.length > 0) {
+  //     selection.seq = selection.pages;
+  //   }
+  //   selection = selection;
+  //   console.log('-- download selection', selection);
 
-    let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
-    if (isPartialDownload() && selection.pages.length <= partialUpperLimit) {
-      // use the tunnel
-      tunnelFormAttempt = tunnelFormAttempt + 1;
-      downloadInProgress = true;
+  //   let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
+  //   if (isPartialDownload() && selection.pages.length <= partialUpperLimit) {
+  //     // use the tunnel
+  //     tunnelFormAttempt = tunnelFormAttempt + 1;
+  //     downloadInProgress = true;
 
-      tunnelFormTracker.value = `D${tunnelFormAttempt}`;
+  //     tunnelFormTracker.value = `D${tunnelFormAttempt}`;
 
-      tunnelForm.querySelectorAll('input[name="seq"]').forEach((inputEl) => {
-        inputEl.remove();
-      });
+  //     tunnelForm.querySelectorAll('input[name="seq"]').forEach((inputEl) => {
+  //       inputEl.remove();
+  //     });
 
-      selection.seq.forEach((seq) => {
-        let inputEl = document.createElement('input');
-        inputEl.type = 'hidden';
-        inputEl.name = 'seq';
-        inputEl.value = seq;
-        tunnelForm.appendChild(inputEl);
-      });
+  //     selection.seq.forEach((seq) => {
+  //       let inputEl = document.createElement('input');
+  //       inputEl.type = 'hidden';
+  //       inputEl.name = 'seq';
+  //       inputEl.value = seq;
+  //       tunnelForm.appendChild(inputEl);
+  //     });
 
-      trackerInterval = setInterval(trackInterval, 100);
-      tunnelForm.submit();
-    } else {
-      // start the download in the iframe
-      let scriptEl = tunnelWindow.document.createElement('script');
-      scriptEl.type = 'module';
+  //     trackerInterval = setInterval(trackInterval, 100);
+  //     tunnelForm.submit();
+  //   } else {
+  //     // start the download in the iframe
+  //     let scriptEl = tunnelWindow.document.createElement('script');
+  //     scriptEl.type = 'module';
 
-      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
-      let params = new URLSearchParams();
-      params.set('id', manifest.id);
+  //     let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
+  //     let params = new URLSearchParams();
+  //     params.set('id', manifest.id);
 
-      if (selection.seq) {
-        selection.seq.forEach((_seq) => {
-          params.append('seq', _seq);
-        });
-      }
-      switch (format) {
-        case 'image-jpeg':
-        case 'image-tiff':
-          params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
-          params.set('target_ppi', targetPPI);
-          params.set('bundle_format', 'zip');
-          break;
-        case 'plaintext-zip':
-          params.set('bundle_format', 'zip');
-          break;
-        case 'plaintext':
-          params.set('bundle_format', 'text');
-          break;
-      }
-      params.set('callback', 'tunnelCallback');
-      params.set('_', new Date().getTime());
+  //     if (selection.seq) {
+  //       selection.seq.forEach((_seq) => {
+  //         params.append('seq', _seq);
+  //       });
+  //     }
+  //     switch (format) {
+  //       case 'image-jpeg':
+  //       case 'image-tiff':
+  //         params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
+  //         params.set('target_ppi', targetPPI);
+  //         params.set('bundle_format', 'zip');
+  //         break;
+  //       case 'plaintext-zip':
+  //         params.set('bundle_format', 'zip');
+  //         break;
+  //       case 'plaintext':
+  //         params.set('bundle_format', 'text');
+  //         break;
+  //     }
+  //     params.set('callback', 'tunnelCallback');
+  //     params.set('_', `${new Date().getTime()}`);
 
-      requestUrl.search = params.toString();
-      scriptEl.src = requestUrl.toString();
+  //     requestUrl.search = params.toString();
+  //     scriptEl.src = requestUrl.toString();
 
-      downloadInProgress = true;
-      tunnelWindow.document.body.appendChild(scriptEl);
-    }
-  }
+  //     downloadInProgress = true;
+  //     tunnelWindow.document.body.appendChild(scriptEl);
+  //   }
+  // }
 
-  function buildAction(format) {
-    let action = '/cgi/imgsrv/';
-    if (format.startsWith('image-') && range.startsWith('current-page')) {
-      action += 'image';
-      sizeAttr = 'size';
-      sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
-    } else {
-      sizeAttr = 'target_ppi';
-      sizeValue = targetPPI;
-      action += 'download/' + format.split('-')[0];
-    }
-    return action;
-  }
+  // function buildAction(format) {
+  //   let action = '/cgi/imgsrv/';
+  //   if (format.startsWith('image-') && range.startsWith('current-page')) {
+  //     action += 'image';
+  //     sizeAttr = 'size';
+  //     sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
+  //   } else {
+  //     sizeAttr = 'target_ppi';
+  //     sizeValue = targetPPI;
+  //     action += 'download/' + format.split('-')[0];
+  //   }
+  //   return action;
+  // }
 
-  function isPartialDownload() {
-    return range == 'selected-pages' || range.startsWith('current-page');
-  }
+  // function isPartialDownload() {
+  //   return range == 'selected-pages' || range.startsWith('current-page');
+  // }
 
-  function flattenSelection(selected) {
-    const list = [];
-    Array.from(selected)
-      .sort(function (a, b) {
-        return a - b;
-      })
-      .forEach(function (val) {
-        if (list.length == 0) {
-          list.push([val, -1]);
-        } else {
-          const last = list[list.length - 1];
-          if (last[1] < 0 && val - last[0] == 1) {
-            last[1] = val;
-          } else if (val - last[1] == 1) {
-            last[1] = val;
-          } else {
-            list.push([val, -1]);
-          }
-        }
-      });
+  // function flattenSelection(selected) {
+  //   const list = [];
+  //   Array.from(selected)
+  //     .sort(function (a, b) {
+  //       return a - b;
+  //     })
+  //     .forEach(function (val) {
+  //       if (list.length == 0) {
+  //         list.push([val, -1]);
+  //       } else {
+  //         const last = list[list.length - 1];
+  //         if (last[1] < 0 && val - last[0] == 1) {
+  //           last[1] = val;
+  //         } else if (val - last[1] == 1) {
+  //           last[1] = val;
+  //         } else {
+  //           list.push([val, -1]);
+  //         }
+  //       }
+  //     });
 
-    for (var i = 0; i < list.length; i++) {
-      const tmp = list[i];
-      if (tmp[1] < 0) {
-        list[i] = tmp[0];
-      } else {
-        list[i] = tmp[0] + '-' + tmp[1];
-      }
-    }
-    // return list;
-    if (JSON.stringify(list) != JSON.stringify(flattenedSelection)) {
-      flattenedSelection = list;
-      return true;
-    }
-    return false;
-  }
+  //   for (var i = 0; i < list.length; i++) {
+  //     const tmp = list[i];
+  //     if (tmp[1] < 0) {
+  //       list[i] = tmp[0];
+  //     } else {
+  //       list[i] = tmp[0] + '-' + tmp[1];
+  //     }
+  //   }
+  //   // return list;
+  //   if (JSON.stringify(list) != JSON.stringify(flattenedSelection)) {
+  //     flattenedSelection = list;
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
-  function gotoSelection(sel) {
-    let tmp = new String(sel).split('-');
-    emitter.emit('page.goto', { seq: tmp[0] });
-  }
+  // function gotoSelection(sel) {
+  //   let tmp = new String(sel).split('-');
+  //   emitter.emit('page.goto', { seq: tmp[0] });
+  // }
 
-  let flattenedSelection = [];
+  // let flattenedSelection = $state([]);
 
-  $: action = buildAction(format, range);
-  $: iframeName = `download-module-xxx`; // ${tunnelFormAttempt}`;
-  $: if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
-    range = 'volume';
-  }
-  $: if (flattenSelection($selected)) {
-    range = 'selected-pages';
-  }
-  $: meta = manifest.meta($currentSeq);
+  // let action = $derived(buildAction(format));
+  // let iframeName = $derived(`download-module-xxx`); // ${tunnelFormAttempt}`;
+  
+  let meta = $derived(manifest.meta($currentSeq));
+  $inspect(tunnelFrame);
 
   onMount(() => {
+    console.log('hi from DP onmount')
     if (!allowDownload) {
       return;
     }
@@ -373,6 +371,16 @@
     //   emitter.off('location.updated', updateSeq);
     // }
   });
+  $effect(() => {
+    if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
+      range = 'volume';
+    }
+  });
+  // $effect(() => {
+  //   if (flattenSelection($selected)) {
+  //     range = 'selected-pages';
+  //   }
+  // });
 </script>
 
 <Panel parent="#controls">
@@ -499,7 +507,7 @@
           </fieldset>
         {/if}
 
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <fieldset class="mb-3" id="download-range">
           <legend class="fs-5">Range</legend>
           <div aria-live="polite" aria-atomic="true">
@@ -584,20 +592,21 @@
               <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
             </div>
 
-            <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
-              <ul class="list-unstyled mx-4 mb-1">
+            <!-- <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}> -->
+            <div class="d-flex justify-content-between" >
+              <!-- <ul class="list-unstyled mx-4 mb-1">
                 {#each flattenedSelection as sel}
                   <li>
-                    <button type="button" class="btn btn-link py-0" on:click={() => gotoSelection(sel)}>{sel}</button>
+                    <button type="button" class="btn btn-link py-0" onclick={() => gotoSelection(sel)}>{sel}</button>
                   </li>
                 {/each}
-              </ul>
+              </ul> -->
               <button
                 class="btn btn-outline-dark align-self-start"
                 type="button"
                 aria-label="Clear selection"
                 use:tooltippy
-                on:click={() => manifest.clearSelection()}
+                onclick={() => manifest.clearSelection()}
               >
                 <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
               </button>
@@ -606,11 +615,16 @@
         </fieldset>
 
         <p class="mb-3">
+          <!-- <button
+            type="button"
+            class="btn btn-outline-dark"
+            disabled={downloadInProgress}
+            onclick={submitDownload}
+          > -->
           <button
             type="button"
             class="btn btn-outline-dark"
             disabled={downloadInProgress}
-            on:click|preventDefault={submitDownload}
           >
             Download
             {#if downloadInProgress}
@@ -649,7 +663,8 @@
           </p>
         {/if}
       </form>
-      <form class="d-none" bind:this={tunnelForm} method="GET" {action} target="download-module-xxx">
+      <!-- <form class="d-none" bind:this={tunnelForm} method="GET" {action} target="download-module-xxx"> -->
+      <form class="d-none" bind:this={tunnelForm} method="GET" target="download-module-xxx">
         <input type="hidden" name="id" value={manifest.id} />
         <input type="hidden" name="attachment" value="1" />
         <input type="hidden" name="tracker" value="" bind:this={tunnelFormTracker} />
@@ -674,11 +689,12 @@
     {/if}
   {/snippet}
 </Panel>
-<Modal bind:this={modal} onClose={closeDownload}>
+<!-- <Modal bind:this={modal} onClose={closeDownload}> -->
+<Modal bind:this={modal}>
   {#snippet title()}
     Building your {formatTitle[format]}
-    {#if $selected.size > 0}
-      ({$selected.size} page{$selected.size > 1 ? 's' : ''})
+    {#if selected.size > 0}
+      ({selected.size} page{selected.size > 1 ? 's' : ''})
     {/if}
   {/snippet}
   {#snippet body()}
@@ -710,22 +726,30 @@
     {/snippet}
   {#snippet footer()}
     <div class="d-flex gap-1 align-items-center justify-content-end">
+      <!-- <button
+        type="button"
+        class="btn btn-secondary"
+        onclick={cancelDownload}
+        aria-disabled={status.done}
+        class:disabled={status.done}>Cancel</button
+      > -->
       <button
         type="button"
         class="btn btn-secondary"
-        on:click={cancelDownload}
         aria-disabled={status.done}
         class:disabled={status.done}>Cancel</button
       >
+      {#if downloadInProgress}
+      <span class="btn btn-primary disabled">
+        Download
+      </span>
+      {:else}
       <a
         class="btn btn-primary"
-        aria-hidden={downloadInProgress}
-        aria-disabled={downloadInProgress}
-        class:disabled={downloadInProgress}
-        role={downloadInProgress ? 'link' : undefined}
-        on:click={() => modal.hide()}
+        onclick={() => modal.hide()}
         href={downloadUrl}>Download</a
       >
+      {/if}
     </div>
     {/snippet}
 </Modal>

@@ -6,22 +6,7 @@
 
   const emitter = getContext('emitter');
 
-  let selectedButtonContent = $state();
-
-   function scanSelected(event) {
-      //might need stop propogation? roger had stopPropogation on the click event in the markup, but we can't do that anymore
-      // event.stopPropagation();
-      if (selected) {
-        selectedButtonContent = `Scan #${seq} is selected`;
-      } else if (!selected) {
-        selectedButtonContent = `Select scan #${seq}`;
-      }
-    }
-    
-
-  $effect(() => {
-   scanSelected();
-  });
+  
 
   // let isOpen = true; // selected || null;
 
@@ -71,7 +56,22 @@
     openLightbox = function () {},
   } = $props();
 
+  let selectedButtonContent = $state();
   let isDisabled = view == 'thumb' && !allowFullDownload;
+
+   function scanSelected(event) {
+      //might need stop propogation? roger had stopPropogation on the click event in the markup, but we can't do that anymore
+      event && event.stopPropagation();
+      if (selected) {
+        selectedButtonContent = `Scan #${seq} is selected`;
+      } else if (!selected) {
+        selectedButtonContent = `Select scan #${seq}`;
+      }
+    }
+    
+  scanSelected();
+
+    // (console.log('seq selected?', $state.snapshot(seq), $state.snapshot(selected)));
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -104,9 +104,11 @@
         class="btn btn-light border border-dark"
         use:tooltippy={{ content: `${selectedButtonContent}` }}
         data-tippy-placement="left"
-        onclick={() => {
-          togglePageSelection();
-          scanSelected();
+        onclick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          togglePageSelection(e);
+          scanSelected(e);
         }}
         aria-label={selected ? `Scan #${seq} is selected` : `Select scan #${seq}`}
         aria-pressed={selected}
@@ -140,7 +142,11 @@
         aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
-        onclick={rotateScan}><i class="fa-solid fa-rotate-right"></i></button
+        onclick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          rotateScan();
+          }}><i class="fa-solid fa-rotate-right"></i></button
       >
     {/if}
     {#if allowPageZoom}

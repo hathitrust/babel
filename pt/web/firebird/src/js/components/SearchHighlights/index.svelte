@@ -1,17 +1,27 @@
 <script>
-  import { onMount } from 'svelte';
+  /**
+   * @typedef {Object} Props
+   * @property {any} [page_coords]
+   * @property {any} [matches]
+   * @property {any} [image]
+   * @property {any} format
+   * @property {number} [orient]
+   * @property {number} seq
+   * @property {any} canvas
+   */
 
-  export let page_coords = [];
-  export let matches = [];
-  export let image = null;
-  export let format;
-  export let orient = 0;
-  export let seq;
-  export let canvas;
+  /** @type {Props} */
+  let {
+    page_coords = [],
+    matches = [],
+    image = null,
+    format,
+    orient = 0,
+    seq = 0,
+    canvas = null
+  } = $props();
 
-  let highlights = [];
-
-  const buildTextHighlights = function () {};
+  let highlights = $state([]);
 
   const buildHighlights = function () {
     function parseCoords(value) {
@@ -36,7 +46,8 @@
       scaling.width = canvas.width; // image.offsetWidth;
       scaling.height = canvas.height; // image.offsetHeight;
 
-      console.log('-- search.highlights scaling', scaling.width, scaling.height, canvas);
+      //these console logs are sending the console into an infinte loop, maybe use inspect/snapshot?
+      //console.log('-- search.highlights scaling', scaling.width, scaling.height, canvas);
 
       if (orient == 90 || orient == 270) {
         scaling.width = canvas.height; // image.offsetHeight;
@@ -185,12 +196,16 @@
     highlights = highlights;
   };
 
-  $: if (format == 'image' && image && matches && matches.length && orient >= 0) {
-    buildHighlights();
-  }
-  $: if (format == 'plaintext' && matches && matches.length) {
-    buildHighlights();
-  }
+  $effect(() => {
+    if (format == 'image' && image && matches && matches.length && orient >= 0) {
+      buildHighlights();
+    }
+  });
+  $effect(() => {
+    if (format == 'plaintext' && matches && matches.length) {
+      buildHighlights();
+    }
+  });
 </script>
 
 {#if format == 'image'}
@@ -214,7 +229,6 @@
 
   :global(mark.highlight) {
     background: #ffff00;
-    /* background: darkorange; */
   }
 
   :global(html[data-show-highlights='false'] mark.image.highlight) {

@@ -442,7 +442,7 @@
   };
 
   const rotateScan = async function (event) {
-    event.stopPropogation();
+    event.stopPropagation();
     orient = (orient + 90) % 360;
     if (orient == 0) {
       rotateButtonContent = '90';
@@ -691,7 +691,7 @@
     allowRotate={view == '1up'}
     allowPageZoom={view != 'thumb'}
     allowFullDownload={manifest.allowFullDownload}
-    selected={$selected.has(seq)}
+    selected={selected.has(seq)}
     isOpen={manifest.initialDetailsOpenState}
     {togglePageSelection}
   />
@@ -750,7 +750,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             <canvas data-ready="false" bind:this={rotatedImage}></canvas>
           {/if}
           {#if side != 'thumb' && page_coords}
-            <SearchHighlights {canvas} {seq} {orient} {image} {page_coords} {matches} format="image" />
+            <!-- <SearchHighlights {canvas} {seq} {orient} {image} {page_coords} {matches} format="image" /> -->
           {/if}
         {/if}
       </div>
@@ -764,7 +764,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         </div>
       {/if}
       {#if isVisible}
-        <SearchHighlights {page_coords} {matches} format="plaintext" />
+        <!-- <SearchHighlights {page_coords} {matches} format="plaintext" /> -->
         <figcaption data-loaded="false" class="plaintext" bind:this={figCaption}></figcaption>
       {/if}
     {/if}

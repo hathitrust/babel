@@ -29,6 +29,7 @@
   }
 
   let onClick = function (event) {
+    event.preventDefault();
     location.assign(event.target.href);
   };
 
@@ -39,8 +40,7 @@
   <SvelteComponent link={links[0]} />
 
   {#if searchAvailable}
-    <!-- <SearchForm inPanel={false} {onClick} /> -->
-    <SearchForm inPanel={false} />
+    <SearchForm inPanel={false} {onClick} />
   {/if}
 </div>
 

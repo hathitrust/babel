@@ -35,7 +35,7 @@
   } = $props();
 
   export function item(seq) {
-    console.log(itemMap[seq])
+    // console.log(itemMap[seq])
     return itemMap[seq];
   }
 
@@ -470,9 +470,9 @@
   });
   let isInitialized = false;
   $effect.pre(() => {
-    console.log('the component is about to update');
+    // console.log('the component is about to update');
     tick().then(() => {
-      console.log('the component just updated');
+      // console.log('the component just updated');
       if (itemMap[manifest.totalSeq].page) {
         // console.log("-- view.afterUpdate", $currentView, isInitialized, observer.observedIdx, manifest.totalSeq );
         if (!isInitialized && observer.observedIdx == manifest.totalSeq) {

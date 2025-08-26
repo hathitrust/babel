@@ -9,13 +9,13 @@
   const emitter = getContext('emitter');
   const HT = getContext('HT');
 
-  let { inPanel = true } = $props();
+  let { inPanel = true, onClick = function () {} } = $props();
   let hTag = inPanel ? 'h4' : 'h3';
   
-  export function onClick(seq, event) {
-    event.preventDefault();
-    alert(seq);
-  };
+  // export function onClick(seq, event) {
+  //   event.preventDefault();
+  //   alert(seq);
+  // };
 
   let start = $state(1);
   let sz = 25;
@@ -147,7 +147,7 @@
     emitter.emit('update.history', params);
   }
 
-  function onSubmit(args, event) {
+  function onSubmit(event, args) {
     event.preventDefault();
     const params = Object.assign({}, args);
     let searchUrl = new URL(`${location.protocol}//${HT.service_domain}/cgi/pt/search`);
@@ -214,13 +214,13 @@
   function jumpToPage(paginationPage, event) {
     event.preventDefault();
     start = (paginationPage - 1) * 25 + 1;
-    onSubmit();
+    onSubmit(event);
   }
 
   function gotoPage(page, event) {
     event.preventDefault();
     start = page;
-    onSubmit();
+    onSubmit(event);
   }
 
   emitter.on('search-form.focus.input', async () => {
@@ -314,7 +314,7 @@
         onclick={(event) => {
           sort = 'score';
           start = 1;
-          onSubmit();
+          onSubmit(event);
         }}
       >
         <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
@@ -328,7 +328,7 @@
         onclick={(event) => {
           sort = 'seq';
           start = 1;
-          onSubmit();
+          onSubmit(event);
         }}
       >
         <i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i>
@@ -389,41 +389,45 @@
     >
       <div>
         <ul class="list-unstyled d-flex gap-1 m-0">
-          <li>
+          <li> 
+            {#if !hasPreviousItem}
+            <span class="btn btn-outline-seconday d-inline-flex align-items-center gap-1 text-decoration-none disabled">
+              <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
+              <span class:visually-hidden={inPanel}>Previous</span>
+            </span>
+            {:else}
             <a
-              aria-hidden={!hasPreviousItem}
-              aria-disabled={!hasPreviousItem}
-              role={!hasPreviousItem ? 'link' : undefined}
-              disabled={!hasPreviousItem}
-              class:disabled={!hasPreviousItem}
-              href={hasPreviousItem ? prevHref : undefined}
+              href={prevHref}
               data-start={payload.prev}
-              onclick={() => gotoPage(payload.prev)}
+              onclick={(event) => gotoPage(payload.prev, event)}
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
               <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
               <span class:visually-hidden={inPanel}>Previous</span>
             </a>
+            {/if}
           </li>
           <li>
+            {#if !hasNextItem}
+            <span class="btn btn-outline-seconday d-inline-flex align-items-center gap-1 text-decoration-none disabled">
+              <span class:visually-hidden={inPanel}>Next</span>
+              <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
+            </span>
+            {:else} 
             <a
-              aria-hidden={!hasNextItem}
-              aria-disabled={!hasNextItem}
-              role={!hasNextItem ? 'link' : undefined}
-              disabled={!hasNextItem}
-              class:disabled={!hasNextItem}
-              href={hasNextItem ? nextHref : undefined}
+              href={nextHref}
               data-start={payload.next}
-              onclick={() => gotoPage(payload.next)}
+              onclick={(event) => gotoPage(payload.next, event)}
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
               <span class:visually-hidden={inPanel}>Next</span>
               <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
             </a>
+            {/if}
           </li>
         </ul>
       </div>
-      <form onsubmit={jumpToPage(pageGroup)}>
+      <form onsubmit={(event) => jumpToPage(pageGroup, event)}>
         <div class="d-flex gap-1 w-xxsm-50 align-items-center justify-content-end">
           <label for="results-pagination" class="form-label text-nowrap fw-normal m-0 visually-hidden">Go to:</label>
           <input

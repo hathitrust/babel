@@ -117,7 +117,18 @@
   }
 
   const storedSelected = JSON.parse(sessionStorage.getItem(manifest.selectedKey) || '[]');
-  manifest.selected = writable(new Set(storedSelected));
+  //create reactive state
+  let selectedState = $state(new Set(storedSelected));
+
+  Object.defineProperty(manifest, 'selected', {
+    get() {
+      return selectedState;
+    },
+    set(value) {
+      Object.assign(selectedState, value);
+    },
+  });
+  // manifest.selected = $state(new Set(storedSelected));
 
   window.manifest = manifest;
   window.emitter = emitter;
