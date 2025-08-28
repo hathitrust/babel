@@ -1,7 +1,7 @@
 <script>
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
-  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
+  import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
 
   import dialogPolyfill from 'dialog-polyfill';
 
@@ -254,7 +254,7 @@
       $currentView = targetView;
       updateHistory({ view: targetView, seq: $currentSeq });
       HT.live.announce(`Viewing item in ${viewDisplayLabel(targetView)} view.`);
-      if ($preferencesConsent === 'true') {
+      if (consent.preferencesConsent === 'true') {
         HT.prefs.set({ pt: { view: targetView } });
       }
     }, 0);
@@ -266,7 +266,7 @@
       $currentFormat = options.format;
       updateHistory({ format: options.format });
       HT.live.announce(`Viewing item in ${options.format} format.`);
-      if ($preferencesConsent === 'true') {
+      if (consent.preferencesConsent === 'true') {
         HT.prefs.set({ pt: { format: options.format } });
       }
     }

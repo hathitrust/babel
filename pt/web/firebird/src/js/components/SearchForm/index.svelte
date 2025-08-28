@@ -2,7 +2,7 @@
   import { onMount, beforeUpdate, tick, getContext } from 'svelte';
   import { get } from 'svelte/store';
   import { tooltippy } from '../../lib/tippy';
-  import { preferencesConsent } from '~firebird-common/src/js/lib/store';
+  import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
 
   const manifest = getContext('manifest');
   const emitter = getContext('emitter');
@@ -195,7 +195,7 @@
   }
 
   function setTabPrefs() {
-    if ($preferencesConsent === 'true') {
+    if (consent.preferencesConsent === 'true') {
       HT.prefs.set({ pt: { submitTarget: targetNewTab } });
     }
   }

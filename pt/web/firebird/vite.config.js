@@ -42,7 +42,7 @@ export default defineConfig({
   ],
   root: path.resolve(__dirname, 'src'),
   build: {
-    manifest: true,
+    manifest: 'manifest.json',
     minify: false,
     outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,
