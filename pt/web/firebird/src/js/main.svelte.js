@@ -10,7 +10,7 @@ import { HotjarManager } from '~firebird-common/src/js/lib/hotjar.svelte.js';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
-import { writable } from 'svelte/store';
+// import { writable } from 'svelte/store';
 
 // -- favor lib/tooltip.js action because the native bootstrap
 // tooltip remains on when buttons are clicked and stay in focus
@@ -54,7 +54,18 @@ let emptyLoginStatus = {
   idp_list: [],
 };
 
-HT.loginStatus = writable(emptyLoginStatus);
+// Create the reactive state
+let loginStatusState = $state(emptyLoginStatus);
+
+Object.defineProperty(HT, 'loginStatus', {
+  get() {
+    return loginStatusState;
+  },
+  set(value) {
+    Object.assign(loginStatusState, value);
+  },
+});
+
 HT.login_status = emptyLoginStatus;
 
 let app;
@@ -74,7 +85,7 @@ HT.postPingCallback = function (login_status) {
   // the loginStatus won't get overwritten with the empty response
   needLoggedInStatus = login_status.authType === undefined;
 
-  HT.loginStatus.set(login_status);
+  HT.loginStatus = login_status;
 
   // if the app was already initialized, punt
   if (app) {

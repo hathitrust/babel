@@ -111,8 +111,8 @@
   $: if (status.class) {
     announceStatus();
   }
-  $: loginStatus = HT.loginStatus;
-  $: loggedIn = $loginStatus.logged_in;
+  // $: loginStatus = HT.loginStatus;
+  $: loggedIn = HT.loginStatus.logged_in;
   $: userIsAnonymous = loggedIn === false;
 
   onMount(() => {
