@@ -436,7 +436,7 @@
     on:click={toggleOptions}
   >
     <span>Options</span>
-    <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true" />
+    <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
   </button>
 </div>
 {#if isReaderView}
@@ -473,7 +473,7 @@
     aria-label={asideExpanded ? 'Close sidebar' : 'Open sidebar'}
     on:click={togglePane}
   >
-    <i class="fa-solid fa-arrow-right-from-bracket" class:fa-flip-horizontal={asideExpanded} aria-hidden="true" />
+    <i class="fa-solid fa-arrow-right-from-bracket" class:fa-flip-horizontal={asideExpanded} aria-hidden="true"></i>
   </button>
 </div>
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
@@ -493,7 +493,7 @@
 {/if}
 
 {#if dragging}
-  <div class="mousecatcher" />
+  <div class="mousecatcher"></div>
 {/if}
 
 <dialog bind:this={lightboxModal} class="lightbox border-0 rounded">
@@ -503,7 +503,7 @@
       class="btn btn-outline-dark text-uppercase shadow"
       style="position: absolute; top: 0; right: 0"
       aria-label="Close Modal"
-      on:click={closeLightbox}>Close <i class="fa-solid fa-xmark" aria-hidden="true" /></button
+      on:click={closeLightbox}>Close <i class="fa-solid fa-xmark" aria-hidden="true"></i></button
     >
     <img alt="" bind:this={lightboxImg} class="h-auto w-auto mw-100 mh-100 border border-dark" />
   </div>

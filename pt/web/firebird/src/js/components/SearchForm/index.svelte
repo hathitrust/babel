@@ -250,7 +250,7 @@
       {/if}
       <input name="q1" id="input-search-text" type="text" class="form-control" bind:value={q1} bind:this={input} />
       <button type="submit" class="btn btn-outline-secondary" aria-label="Submit search" bind:this={btnSubmit}>
-        <i class="fa-solid fa-magnifying-glass" />
+        <i class="fa-solid fa-magnifying-glass"></i>
       </button>
     </div>
     {#if true || inPanel}
@@ -264,7 +264,7 @@
           use:tooltippy
           on:click={clearSearchForm}
         >
-          <i class="fa-regular fa-circle-xmark" />
+          <i class="fa-regular fa-circle-xmark"></i>
         </button>
       </div>
     {/if}
@@ -309,7 +309,7 @@
           onSubmit();
         }}
       >
-        <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true" />
+        <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -323,7 +323,7 @@
           onSubmit();
         }}
       >
-        <i class="fa-solid fa-arrow-up-1-9" aria-hidden="true" />
+        <i class="fa-solid fa-arrow-up-1-9" aria-hidden="true"></i>
       </button>
     </div>
     {#if payload.finalAccessStatus == 'allow'}
@@ -335,7 +335,7 @@
         use:tooltippy={{ content: `${highlightButtonContent} highlights` }}
         aria-label={showHighlights ? 'Hide Highlights' : 'Show Highlights'}
       >
-        <i class="fa-solid fa-sun" aria-hidden="true" />
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
       </button>
     {/if}
   </div>
@@ -393,7 +393,7 @@
               on:click|preventDefault={() => gotoPage(payload.prev)}
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
-              <i aria-hidden="true" class="fa-solid fa-chevron-left" />
+              <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
               <span class:visually-hidden={inPanel}>Previous</span>
             </a>
           </li>
@@ -410,7 +410,7 @@
               class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
             >
               <span class:visually-hidden={inPanel}>Next</span>
-              <i aria-hidden="true" class="fa-solid fa-chevron-right" />
+              <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
             </a>
           </li>
         </ul>

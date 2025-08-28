@@ -376,7 +376,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-download" slot="icon" aria-hidden="true" />
+  <i class="fa-solid fa-download" slot="icon" aria-hidden="true"></i>
   <svelte:fragment slot="title">Download</svelte:fragment>
   <svelte:fragment slot="body">
     {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
@@ -595,7 +595,7 @@
                 use:tooltippy
                 on:click={() => manifest.clearSelection()}
               >
-                <i class="fa-regular fa-circle-xmark" aria-hidden="true" />
+                <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
               </button>
             </div>
           {/if}
@@ -610,14 +610,14 @@
           >
             Download
             {#if downloadInProgress}
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span class="visually-hidden">Loading...</span>
             {/if}
           </button>
         </p>
         {#if errorMessage}
           <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
-            <i class="alert-icon fa-solid fa-triangle-exclamation" />
+            <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
             <p class="py-3">{errorMessage}</p>
           </div>
         {/if}
@@ -667,7 +667,7 @@
         title="Tunnel Download Tracker"
         name="download-module-xxx"
         tabindex="-1"
-      />
+     ></iframe>
     {:else}
       <p>This item cannot be downloaded.</p>
     {/if}
@@ -693,7 +693,7 @@
             aria-valuemin="0"
             aria-valuemax="100"
           >
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style:width={`${status.percent}%`} />
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style:width={`${status.percent}%`}></div>
           </div>
           <p class="fs-7 text-body-secondary">
             <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"

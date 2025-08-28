@@ -690,7 +690,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       <div class="image">
         {#if !isLoaded && requestStatus == 200}
           <div class="page-loader">
-            <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true" />
+            <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true"></i>
           </div>
         {/if}
         {#if isVisible && requestStatus == 429}
@@ -718,7 +718,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             }}
           />
           {#if orient != 0}
-            <canvas data-ready="false" bind:this={rotatedImage} />
+            <canvas data-ready="false" bind:this={rotatedImage}></canvas>
           {/if}
           {#if side != 'thumb' && page_coords}
             <SearchHighlights {canvas} {seq} {orient} {image} {page_coords} {matches} format="image" />
@@ -726,17 +726,17 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         {/if}
       </div>
       {#if side != 'thumb'}
-        <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption} />
+        <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption}></figcaption>
       {/if}
     {:else if format == 'plaintext'}
       {#if !isLoaded}
         <div class="page-loader">
-          <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true" />
+          <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true"></i>
         </div>
       {/if}
       {#if isVisible}
         <SearchHighlights {page_coords} {matches} format="plaintext" />
-        <figcaption data-loaded="false" class="plaintext" bind:this={figCaption} />
+        <figcaption data-loaded="false" class="plaintext" bind:this={figCaption}></figcaption>
       {/if}
     {/if}
   </figure>

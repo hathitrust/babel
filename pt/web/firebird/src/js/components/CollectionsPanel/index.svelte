@@ -144,7 +144,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bookmark" slot="icon" />
+  <i class="fa-solid fa-bookmark" slot="icon"></i>
   <slot:fragment slot="title">Collections</slot:fragment>
   <slot:fragment slot="body">
     {#if userIsAnonymous}
@@ -175,9 +175,9 @@
     {#if status.class}
       <div class="alert mt-1 {status.class} d-flex align-items-center gap-3" bind:this={statusEl}>
         {#if status.class == 'alert-danger'}
-          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true" />
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         {:else}
-          <i class="fa-regular fa-circle-check" aria-hidden="true" />
+          <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
         {/if}
         <span>{@html status.message}</span>
       </div>

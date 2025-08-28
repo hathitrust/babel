@@ -69,7 +69,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bars" aria-hidden="true" slot="icon" />
+  <i class="fa-solid fa-bars" aria-hidden="true" slot="icon"></i>
   <slot:fragment slot="title">Jump to Section</slot:fragment>
   <slot:fragment slot="body">
     <div class="mb-3">

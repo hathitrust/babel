@@ -42,7 +42,7 @@
       class:fa-book-open={$view == '2up'|| manifest.ui == 'embed'}
       class:fa-table-cells={$view == 'thumb'}
       aria-hidden="true"
-    />
+   ></i>
     <span class="d-none d-md-inline">View</span>
   </button>
   <ul class="dropdown-menu">
@@ -63,7 +63,7 @@
           disabled={!manifest.hasOcr}
           on:click={switchFormat}
         >
-          <i class="fa-regular fa-file-lines" aria-hidden="true" />
+          <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
           <span>Plain Text</span>
         </button>
       </li>
@@ -77,7 +77,7 @@
           data-value="image"
           on:click={switchFormat}
         >
-          <i class="fa-regular fa-file-image" aria-hidden="true" />
+          <i class="fa-regular fa-file-image" aria-hidden="true"></i>
           <span>Image</span>
         </button>
       </li>
@@ -100,7 +100,7 @@
           data-value="1up"
           on:click={switchView}
         >
-          <i class="fa-solid fa-up-down" aria-hidden="true" />
+          <i class="fa-solid fa-up-down" aria-hidden="true"></i>
           <span>Scroll</span>
         </button>
       </li>
@@ -115,7 +115,7 @@
           disabled={manifest.totalSeq == 1}
           on:click={switchView}
         >
-          <i class="fa-solid fa-book-open" aria-hidden="true" />
+          <i class="fa-solid fa-book-open" aria-hidden="true"></i>
           <span>Flip</span>
         </button>
       </li>
@@ -131,7 +131,7 @@
         data-value="thumb"
         on:click={switchView}
       >
-        <i class="fa-solid fa-table-cells" aria-hidden="true" />
+        <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
         <span>Thumbnails</span>
       </button>
     </li>
