@@ -382,12 +382,13 @@
       <div>
         <ul class="list-unstyled d-flex gap-1 m-0">
           <li>
+            {#if !hasPreviousItem}
+            <span class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled">
+              <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
+              <span class:visually-hidden={inPanel}>Previous</span>
+            </span>
+            {:else}
             <a
-              aria-hidden={!hasPreviousItem}
-              aria-disabled={!hasPreviousItem}
-              role={!hasPreviousItem ? 'link' : undefined}
-              disabled={!hasPreviousItem}
-              class:disabled={!hasPreviousItem}
               href={hasPreviousItem ? prevHref : undefined}
               data-start={payload.prev}
               on:click|preventDefault={() => gotoPage(payload.prev)}
@@ -396,14 +397,16 @@
               <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
               <span class:visually-hidden={inPanel}>Previous</span>
             </a>
+            {/if}
           </li>
           <li>
+            {#if !hasNextItem}
+            <span class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled">
+              <span class:visually-hidden={inPanel}>Next</span>
+              <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
+            </span>
+            {:else}
             <a
-              aria-hidden={!hasNextItem}
-              aria-disabled={!hasNextItem}
-              role={!hasNextItem ? 'link' : undefined}
-              disabled={!hasNextItem}
-              class:disabled={!hasNextItem}
               href={hasNextItem ? nextHref : undefined}
               data-start={payload.next}
               on:click|preventDefault={() => gotoPage(payload.next)}
@@ -412,6 +415,7 @@
               <span class:visually-hidden={inPanel}>Next</span>
               <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
             </a>
+            {/if}
           </li>
         </ul>
       </div>

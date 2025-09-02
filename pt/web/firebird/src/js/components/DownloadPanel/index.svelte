@@ -721,15 +721,17 @@
         class="btn btn-primary"
         disabled={downloadInProgress}
         on:click={finalizeDownload}>Download</button> -->
+      {#if downloadInProgress}
+      <span class="btn btn-primary disabled">
+        Download
+      </span>
+      {:else}
       <a
         class="btn btn-primary"
-        aria-hidden={downloadInProgress}
-        aria-disabled={downloadInProgress}
-        class:disabled={downloadInProgress}
-        role={downloadInProgress ? 'link' : undefined}
         on:click={() => modal.hide()}
         href={downloadUrl}>Download</a
       >
+      {/if}
     </div>
   </svelte:fragment>
 </Modal>
