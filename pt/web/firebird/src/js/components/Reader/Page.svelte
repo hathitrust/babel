@@ -770,7 +770,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     // // -- debug border
     // border: 4px solid darkkhaki;
 
-    &.view-2up {
+    &.view-2up :global {
       margin-bottom: calc(var(--paddingBottom) * 1px);
       height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--zoom, 1));
 
@@ -796,7 +796,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       }
     }
 
-    &.view-2up.verso {
+    &.view-2up.verso :global {
       grid-area: verso;
       z-index: 1;
 
@@ -828,7 +828,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       }
     }
 
-    &.view-2up.recto {
+    &.view-2up.recto :global {
       grid-area: recto;
 
       &.direction-rtl {
