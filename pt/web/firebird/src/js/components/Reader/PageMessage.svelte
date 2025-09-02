@@ -51,9 +51,9 @@
     {#if message.detail}
       <Modal bind:this={modal} {onClose}>
         <!-- <svelte:fragment slot="title">{message.title}</svelte:fragment> -->
-        <svelte:fragment slot="body">
+        {#snippet body()}
           {@html message.detail}
-        </svelte:fragment>
+        {/snippet}
       </Modal>
     {/if}
   </div>

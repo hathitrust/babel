@@ -674,13 +674,13 @@
   </svelte:fragment>
 </Panel>
 <Modal bind:this={modal} onClose={closeDownload}>
-  <svelte:fragment slot="title">
+  {#snippet title()}
     Building your {formatTitle[format]}
     {#if $selected.size > 0}
       ({$selected.size} page{$selected.size > 1 ? 's' : ''})
     {/if}
-  </svelte:fragment>
-  <svelte:fragment slot="body">
+  {/snippet}
+  {#snippet body()}
     <div xxstyle="width: 30rem">
       <div>
         {#if status.percent < 100}
@@ -706,8 +706,8 @@
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
+  {/snippet}
+  {#snippet footer()}
     <div class="d-flex gap-1 align-items-center justify-content-end">
       <button
         type="button"
@@ -733,7 +733,7 @@
       >
       {/if}
     </div>
-  </svelte:fragment>
+    {/snippet}
 </Modal>
 
 <style lang="scss">

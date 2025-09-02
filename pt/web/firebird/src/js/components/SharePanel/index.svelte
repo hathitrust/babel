@@ -140,8 +140,10 @@
   </slot:fragment>
 </Panel>
 <Modal bind:this={modal}>
-  <svelte:fragment slot="title">Embed this item</svelte:fragment>
-  <svelte:fragment slot="body">
+  {#snippet title()}
+    Embed this item
+  {/snippet}
+  {#snippet body()}
     <div class="mb-3 share-modal-body" bind:this={modalBody}>
       <p id="embed-help-info">Copy the code below and paste it into the HTML of any website or blog.</p>
       <label for="embed-codeblock" class="visually-hidden">Code Block</label>
@@ -189,5 +191,5 @@
         >More information</a
       >
     </p>
-  </svelte:fragment>
+  {/snippet}
 </Modal>
