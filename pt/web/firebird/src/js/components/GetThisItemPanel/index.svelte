@@ -10,7 +10,7 @@
 
 {#if externalLinks.length}
   <Panel parent="#controls">
-    <i class="fa-solid fa-book" slot="icon" />
+    <i class="fa-solid fa-book" slot="icon"></i>
     <slot:fragment slot="title">Get This Item</slot:fragment>
     <slot:fragment slot="body">
       <ul class="list-unstyled">

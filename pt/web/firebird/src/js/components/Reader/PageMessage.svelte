@@ -36,13 +36,13 @@
           class="btn btn-outline-dark btn-sm text-nowrap"
           type="button"
           aria-label={message.alert}
-          on:click|stopPropagation={showDetail}><i class="fa-solid fa-circle-exclamation" aria-hidden="true" /></button
+          on:click|stopPropagation={showDetail}><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></button
         >
       {:else}
         <span>{@html message.alert}</span>
         <button class="btn btn-outline-dark btn-sm text-nowrap" type="button" on:click|stopPropagation={showDetail}>
           {#if view == '2up'}
-            <i class="fa-solid fa-circle-exclamation" aria-hidden="true" />
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
           {/if}
           <span class:visually-hidden={view == '2up'}>More Information</span>
         </button>
@@ -51,9 +51,9 @@
     {#if message.detail}
       <Modal bind:this={modal} {onClose}>
         <!-- <svelte:fragment slot="title">{message.title}</svelte:fragment> -->
-        <svelte:fragment slot="body">
+        {#snippet body()}
           {@html message.detail}
-        </svelte:fragment>
+        {/snippet}
       </Modal>
     {/if}
   </div>

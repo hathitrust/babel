@@ -2,15 +2,15 @@
 import '../scss/styles.scss';
 
 import { setupHTEnv } from '~firebird-common/src/js/lib/utils';
-import { AnalyticsManager } from '~firebird-common/src/js/lib/analytics';
-import { HotjarManager } from '~firebird-common/src/js/lib/hotjar';
+import { AnalyticsManager } from '~firebird-common/src/js/lib/analytics.svelte.js';
+import { HotjarManager } from '~firebird-common/src/js/lib/hotjar.svelte.js';
 
 // Import all of Bootstrap's JS
 // these are made available globally
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
-import { writable } from 'svelte/store';
+// import { writable } from 'svelte/store';
 
 // -- favor lib/tooltip.js action because the native bootstrap
 // tooltip remains on when buttons are clicked and stay in focus
@@ -21,6 +21,7 @@ import { writable } from 'svelte/store';
 
 import App from './App.svelte';
 import CookieConsentBanner from '~firebird-common/src/js/components/CookieConsentBanner';
+import { mount } from 'svelte';
 
 const toCamel = (s) => {
   return s.replace(/([-_][a-z])/gi, ($1) => {
@@ -53,7 +54,18 @@ let emptyLoginStatus = {
   idp_list: [],
 };
 
-HT.loginStatus = writable(emptyLoginStatus);
+// Create the reactive state
+let loginStatusState = $state(emptyLoginStatus);
+
+Object.defineProperty(HT, 'loginStatus', {
+  get() {
+    return loginStatusState;
+  },
+  set(value) {
+    Object.assign(loginStatusState, value);
+  },
+});
+
 HT.login_status = emptyLoginStatus;
 
 let app;
@@ -73,7 +85,7 @@ HT.postPingCallback = function (login_status) {
   // the loginStatus won't get overwritten with the empty response
   needLoggedInStatus = login_status.authType === undefined;
 
-  HT.loginStatus.set(login_status);
+  HT.loginStatus = login_status;
 
   // if the app was already initialized, punt
   if (app) {
@@ -83,7 +95,7 @@ HT.postPingCallback = function (login_status) {
   let el = document.getElementById('root');
   let props = buildProps(el);
 
-  app = new App({
+  app = mount(App, {
     target: document.getElementById('root'),
     props: props,
   });
@@ -93,7 +105,7 @@ HT.postPingCallback = function (login_status) {
         return;
       }
       let props = buildProps(el);
-      el.component = new apps[slug]({
+      el.component = mount(apps[slug], {
         target: el,
         props: props,
       });

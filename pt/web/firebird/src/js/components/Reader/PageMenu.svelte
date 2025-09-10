@@ -64,7 +64,7 @@
         {/if}
       </span>
       <span class="arrow">
-        <i class="fa-solid fa-chevron-down" aria-hidden="true" />
+        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
       </span>
     </div>
   </summary>
@@ -81,7 +81,7 @@
         aria-pressed={selected}
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
-        ><i class="fa-regular" class:fa-square={!selected} class:fa-square-check={selected} />
+        ><i class="fa-regular" class:fa-square={!selected} class:fa-square-check={selected}></i>
       </button>
     {/if}
     {#if isUnusual}
@@ -95,7 +95,7 @@
         aria-label="Open foldout for page scan #{seq}"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
-        ><i aria-hidden="true" class="fa-solid fa-up-right-from-square fa-flip-horizontal" />
+        ><i aria-hidden="true" class="fa-solid fa-up-right-from-square fa-flip-horizontal"></i>
       </button>
     {/if}
     <!-- if we disable the button then we have to disable pageZoom if rotated and bleh-->
@@ -109,7 +109,7 @@
         aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
         tabindex={focused ? 0 : -1}
-        on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right" /></button
+        on:click|stopPropagation={rotateScan}><i class="fa-solid fa-rotate-right"></i></button
       >
     {/if}
     {#if allowPageZoom}
@@ -125,7 +125,7 @@
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(0.5)}
         >
-          <i class="fa-solid fa-plus" aria-hidden="true" />
+          <i class="fa-solid fa-plus" aria-hidden="true"></i>
         </button>
         <button
           type="button"
@@ -138,7 +138,7 @@
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(-0.5)}
         >
-          <i class="fa-solid fa-minus" aria-hidden="true" />
+          <i class="fa-solid fa-minus" aria-hidden="true"></i>
         </button>
       </div>
     {/if}

@@ -24,7 +24,7 @@
 </script>
 
 <Panel parent="#controls" {expanded}>
-  <i class="fa-solid fa-magnifying-glass" aria-hidden="true" slot="icon" />
+  <i class="fa-solid fa-magnifying-glass" aria-hidden="true" slot="icon"></i>
   <svelte:fragment slot="title">Search in This Text</svelte:fragment>
   <svelte:fragment slot="body">
     <SearchForm inPanel={true} {onClick} />
