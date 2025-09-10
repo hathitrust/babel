@@ -69,7 +69,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bars" aria-hidden="true" slot="icon" />
+  <i class="fa-solid fa-bars" aria-hidden="true" slot="icon"></i>
   <slot:fragment slot="title">Jump to Section</slot:fragment>
   <slot:fragment slot="body">
     <div class="mb-3">
@@ -89,8 +89,10 @@
   </slot:fragment>
 </Panel>
 <Modal bind:this={modal}>
-  <svelte:fragment slot="title">Jump to page scan</svelte:fragment>
-  <svelte:fragment slot="body">
+  {#snippet title()}
+    Jump to page scan
+  {/snippet}  
+  {#snippet body()}
     <div class="mb-3">
       <p class="fs-7 mb-2">
         Jump to a page scan by
@@ -143,13 +145,13 @@
       <li>Use <tt>+</tt> to jump ahead by a number of pages, e.g. <strong><tt>+10</tt></strong></li>
       <li>Use <tt>-</tt> to jump back by a number of pages, e.g. <strong><tt>-10</tt></strong></li>
     </ul>
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
+  {/snippet}
+  {#snippet footer()}
     <div class="d-flex gap-1 align-items-center justify-content-end">
       <button type="button" class="btn btn-secondary" on:click={modal.hide()}>Cancel</button>
       <button type="button" class="btn btn-primary" on:click={jump}>Jump</button>
     </div>
-  </svelte:fragment>
+  {/snippet}
 </Modal>
 
 <style>

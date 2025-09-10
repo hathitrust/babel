@@ -144,7 +144,7 @@
         class:fa-eye={$interfaceMode == 'default'}
         class:fa-regular={$interfaceMode == 'minimal'}
         class:fa-eye-slash={$interfaceMode == 'minimal'}
-      />
+     ></i>
     </button>
   </span>
 
@@ -186,7 +186,7 @@
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
         on:click={() => zoom(1)}
       >
-        <i class="fa-solid fa-plus" />
+        <i class="fa-solid fa-plus"></i>
       </button>
       <button
         type="button"
@@ -196,7 +196,7 @@
         use:tooltippy={{appendTo: document.querySelector("[aria-label='Zoom']")}}
         on:click={() => zoom(-1)}
       >
-        <i class="fa-solid fa-minus" />
+        <i class="fa-solid fa-minus"></i>
       </button>
     </div>
   {/if}
@@ -212,7 +212,7 @@
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
-        <i class="fa-solid fa-angles-left" aria-hidden="true" />
+        <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -222,7 +222,7 @@
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
-        <i class="fa-solid fa-angle-left" aria-hidden="true" />
+        <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -232,7 +232,7 @@
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
-        <i class="fa-solid fa-angle-right" aria-hidden="true" />
+        <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -242,7 +242,7 @@
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
-        <i class="fa-solid fa-angles-right" aria-hidden="true" />
+        <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
       </button>
     </div>
   {:else}
@@ -255,7 +255,7 @@
         on:click={() => goto({ action: 'goto.first', seq: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left border-start border-3 border-dark"></i> -->
-        <i class="fa-solid fa-angles-left" aria-hidden="true" />
+        <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -265,7 +265,7 @@
         on:click={() => goto({ action: 'goto.prev', delta: -1 })}
       >
         <!-- <i class="fa-solid fa-chevron-left"></i> -->
-        <i class="fa-solid fa-angle-left" aria-hidden="true" />
+        <i class="fa-solid fa-angle-left" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -275,7 +275,7 @@
         on:click={() => goto({ action: 'goto.next', delta: 1 })}
       >
         <!-- <i class="fa-solid fa-chevron-right"></i> -->
-        <i class="fa-solid fa-angle-right" aria-hidden="true" />
+        <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -285,7 +285,7 @@
         on:click={() => goto({ action: 'goto.last', seq: manifest.totalSeq })}
       >
         <!-- <i class="fa-solid fa-chevron-right border-end border-3 border-dark"></i> -->
-        <i class="fa-solid fa-angles-right" aria-hidden="true" />
+        <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
       </button>
     </div>
   {/if}
@@ -298,7 +298,7 @@
       use:tooltippy={{content: `${fullscreenButtonContent}`}}
       on:click={toggleFullscreen}
     >
-      <i class="fa-solid fa-maximize" />
+      <i class="fa-solid fa-maximize"></i>
     </button>
   {/if}
 </div>

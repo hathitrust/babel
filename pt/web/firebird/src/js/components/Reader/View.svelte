@@ -596,7 +596,7 @@
             class:recto={canvasIdx == 1}
             style:--width={innerWidth * 0.125}
           >
-            <i class="text-black-50 fa-solid fa-diamond fa-2xl opacity-25" aria-hidden="true" />
+            <i class="text-black-50 fa-solid fa-diamond fa-2xl opacity-25" aria-hidden="true"></i>
           </div>
         {/if}
       {/each}

@@ -39,13 +39,13 @@
       >
     {/if}
     {#if metadata.author}
-      <span property="dc:creator" content={metadata.author} />
+      <span property="dc:creator" content={metadata.author}></span>
     {/if}
     {#if metadata.publisher}
-      <span property="dc:publisher" content={metadata.publisher} />
+      <span property="dc:publisher" content={metadata.publisher}></span>
     {/if}
     {#if metadata.description}
-      <span property="dc:description" content={metadata.description} />
+      <span property="dc:description" content={metadata.description}></span>
     {/if}
   </p>
 {/if}
