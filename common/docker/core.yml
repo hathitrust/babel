@@ -102,6 +102,7 @@ services:
     volumes:
     - ${BABEL_HOME}/catalog:/app
     - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
+    - ${BABEL_HOME}/catalog/conf/authspecs-sample.yaml:/app/conf/authspecs.yaml
     environment:
     - FIREBIRD_HOME=/htapps/babel/firebird-common
     depends_on:
