@@ -31,6 +31,8 @@ use Process::Globals;
 
 use Image::ExifTool;
 
+use utf8;
+
 use constant LEFT_ALIGNED => 1;
 use constant RIGHT_ALIGNED => 1;
 
@@ -172,6 +174,12 @@ sub setup_colophon_page {
     my $plain_font = $watermark_pdf->ttfont('DejaVuSans.ttf', -encode => 'utf8', -unicodemap => 1);
     my $bold_font = $watermark_pdf->ttfont('DejaVuSans-Bold.ttf', -encode => 'utf8', -unicodemap => 1);
     my $mono_font = $watermark_pdf->ttfont('DejaVuSansMono.ttf', -encode => 'utf8', -unicodemap => 1);
+    # Plain Unicode for the Author and Publisher at $font_size (10)
+    my $plain_unicode_font = $watermark_pdf->ttfont('unifont-6.3.20131020.ttf', -encode => 'utf8', -unicodemap => 1);
+    # Bold Unicode for Title at $title_font_size (12)
+    # Note: the bold font isn't bold -- I tried the synfont method to make a variation but it doesn't
+    # render any text so we're stuck with just using a larger size for now.
+    my $bold_unicode_font = $watermark_pdf->ttfont('unifont-6.3.20131020.ttf', -encode => 'utf8', -unicodemap => 1);
 
     my $y_advance = 0;
 
@@ -183,7 +191,7 @@ sub setup_colophon_page {
 
     if($title) {
       $gfx->fillcolor('#000000');
-      $gfx->font($bold_font, $title_font_size);
+      $gfx->font($bold_unicode_font, $title_font_size);
       $gfx->lead($title_leading);
 
       while ( $title ) {
@@ -193,7 +201,7 @@ sub setup_colophon_page {
       }
     }
 
-    $gfx->font($plain_font, $font_size);
+    $gfx->font($plain_unicode_font, $font_size);
     $gfx->lead($leading);
 
     if($author) {
@@ -205,6 +213,8 @@ sub setup_colophon_page {
       $y_advance += $leading * $lines;
     }
 
+    # Should be done with the Unicode fonts at this point
+    $gfx->font($plain_font, $font_size);
     $gfx->nl;
     $y_advance += $leading;
 
