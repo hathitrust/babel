@@ -171,7 +171,6 @@ sub setup_colophon_page {
 
     my $plain_font = $watermark_pdf->ttfont('DejaVuSans.ttf', -encode => 'utf8', -unicodemap => 1);
     my $bold_font = $watermark_pdf->ttfont('DejaVuSans-Bold.ttf', -encode => 'utf8', -unicodemap => 1);
-    my $mono_font = $watermark_pdf->ttfont('DejaVuSansMono.ttf', -encode => 'utf8', -unicodemap => 1);
     # Plain Unicode for the Author and Publisher at $font_size (10)
     my $plain_unicode_font = $watermark_pdf->ttfont('unifont-6.3.20131020.ttf', -encode => 'utf8', -unicodemap => 1);
     # Bold Unicode for Title at $title_font_size (12)
