@@ -137,7 +137,7 @@ $field_2_display={
                   'publisher'=>'Publisher',
                   'series'=>'Series Title',
                   'year'=>'Year of Publication',
-                  'isn'=>'ISBN/ISSN',
+                  'isn'=>'ISBN, ISSN, OCLC, etc.',
                  };
 
 $field_order=['ocronly',
