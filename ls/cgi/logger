@@ -105,7 +105,7 @@ sub __Log_string {
 
     if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
         LOG->autoflush(1);
-        print LOG qq{$s\n};
+        syswrite LOG, qq{$s\n};
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }
@@ -134,7 +134,7 @@ sub __Log_simple {
     my $logfile_path = Utils::get_tmp_logdir() . "/$logfile";
     if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
         LOG->autoflush(1);
-        print LOG qq{$time: $s\n};
+        syswrite LOG, qq{$time: $s\n};
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }

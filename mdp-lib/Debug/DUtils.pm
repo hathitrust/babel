@@ -331,7 +331,7 @@ sub __debug_Log {
     my $debug_log_file = "$logdir/$logfile";
     open(DBG, ">>encoding(utf8)", $debug_log_file);
     my $m = ((ref($msg) eq 'CODE') ? &$msg : $msg);
-    print DBG qq{$time: $m\n};
+    syswrite DBG, qq{$time: $m\n};
     close (DBG);
     chmod(0666, $debug_log_file) if (-o $debug_log_file);
 }

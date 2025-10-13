@@ -126,7 +126,7 @@ sub buffer_debug_email {
         }
 
         if (open(OUTFILE, ">>:utf8", $g_email_file)) {
-            print OUTFILE $e;
+            syswrite OUTFILE, $e;
             close(OUTFILE);
         }
     }

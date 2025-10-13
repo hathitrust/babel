@@ -198,7 +198,7 @@ sub log_message
     return if $ENV{HEALTHCHECK};
     my $logfile = get_logfile();
     open(LOG, ">>", $logfile);
-    print LOG @_, "\n";
+    syswrite LOG, join('',@_, "\n");
     close(LOG);
 }
 

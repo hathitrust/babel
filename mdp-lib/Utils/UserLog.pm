@@ -59,7 +59,7 @@ sub __ul_log_event {
     
     open(my $fh, '>>', $log_filename);
     chmod 0666, $log_filename;
-    print $fh "$s\n";
+    syswrite $fh, "$s\n";
     close $fh;
 }
 

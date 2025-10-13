@@ -490,7 +490,7 @@ sub Log_print {
 
     if (open(LOG, ">>$LOGFILE")) {
         my $logtime = Utils::Time::iso_Time('time');
-        print LOG qq{$logtime: $s};
+        syswrite LOG, qq{$logtime: $s};
         close(LOG);
         chmod(0666, $LOGFILE) if (-o $LOGFILE);
     }
