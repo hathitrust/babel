@@ -25,6 +25,7 @@ various
 
 use strict;
 
+use Encode;
 use File::Basename qw(basename);
 use Utils;
 use Utils::Time;
@@ -103,9 +104,9 @@ sub __Log_string {
 
         # if on a local filesystem, writes in "append mode" should be atomic, so 
         # multiple processes' log output shouldn't stomp on each other
-        if (open(LOG, ">>:encoding(UTF-8)", "$local_log/$logfile")) {
+        if (open(LOG, ">>", "$local_log/$logfile")) {
             LOG->autoflush(1);
-            syswrite LOG, qq{$s\n};
+            syswrite LOG, Encode::encode('UTF-8',qq{$s\n});
             close(LOG);
         } else {
           print STDERR "Can't open $local_log/$logfile: $!\n";
@@ -175,7 +176,7 @@ sub __Log_simple {
     my $logfile_path = Utils::get_tmp_logdir() . "/$logfile";
     if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
         LOG->autoflush(1);
-        syswrite LOG, qq{$time: $s\n};
+        syswrite LOG, Encode::encode('UTF-8',qq{$time: $s\n});
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }

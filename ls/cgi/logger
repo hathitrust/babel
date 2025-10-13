@@ -31,6 +31,7 @@ BEGIN {
 
 
 use CGI;
+use Encode;
 use Semaphore;
 use Utils;
 use Utils::Time;
@@ -103,9 +104,9 @@ sub __Log_string {
         sleep 1;
     }
 
-    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
+    if (open(LOG, ">>", $logfile_path)) {
         LOG->autoflush(1);
-        syswrite LOG, qq{$s\n};
+        syswrite LOG, Encode::encode('UTF_8',qq{$s\n});
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }
@@ -132,9 +133,9 @@ sub __Log_simple {
     my $logfile = qq{MDP-generic-$date.log};
 
     my $logfile_path = Utils::get_tmp_logdir() . "/$logfile";
-    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
+    if (open(LOG, ">>", $logfile_path)) {
         LOG->autoflush(1);
-        syswrite LOG, qq{$time: $s\n};
+        syswrite LOG, Encode::encode('UTF-8',qq{$time: $s\n});
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }

@@ -23,6 +23,7 @@ send_debug_email();
 use Utils::Time;
 use Mail::Mailer;
 use Debug::DUtils;
+use Encode;
 
 #
 # Addresses NOTE: Must coordinate with mdp-misc/scripts/email-monitor.pl
@@ -125,8 +126,8 @@ sub buffer_debug_email {
             File::Path::mkpath( $g_email_archive_dir );
         }
 
-        if (open(OUTFILE, ">>:utf8", $g_email_file)) {
-            syswrite OUTFILE, $e;
+        if (open(OUTFILE, ">>", $g_email_file)) {
+            syswrite OUTFILE, Encode::encode('UTF-8',$e);
             close(OUTFILE);
         }
     }
