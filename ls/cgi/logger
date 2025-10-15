@@ -106,7 +106,7 @@ sub __Log_string {
 
     if (open(LOG, ">>", $logfile_path)) {
         LOG->autoflush(1);
-        syswrite LOG, Encode::encode('UTF_8',qq{$s\n});
+        syswrite LOG, Encode::encode('UTF-8',qq{$s\n});
         close(LOG);
         chmod(0666, $logfile_path) if (-o $logfile_path);
     }
