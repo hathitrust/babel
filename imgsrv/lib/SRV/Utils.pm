@@ -1,6 +1,7 @@
 package SRV::Utils;
 
 use Context;
+use Encode;
 use Utils::Extract;
 use Utils;
 use Identifier;
@@ -198,7 +199,7 @@ sub log_message
     return if $ENV{HEALTHCHECK};
     my $logfile = get_logfile();
     open(LOG, ">>", $logfile);
-    print LOG @_, "\n";
+    syswrite LOG, Encode::encode('UTF-8',join('',@_, "\n"));
     close(LOG);
 }
 

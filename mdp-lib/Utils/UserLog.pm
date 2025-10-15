@@ -26,6 +26,7 @@ use warnings;
 use Exporter;
 use base qw(Exporter);
 
+use Encode;
 use Utils;
 use Utils::Time;
 
@@ -59,7 +60,7 @@ sub __ul_log_event {
     
     open(my $fh, '>>', $log_filename);
     chmod 0666, $log_filename;
-    print $fh "$s\n";
+    syswrite $fh, Encode::encode('UTF-8',"$s\n");
     close $fh;
 }
 
