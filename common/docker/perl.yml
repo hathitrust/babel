@@ -19,5 +19,5 @@ services:
     depends_on:
       mysql-sdr:
         condition: service_healthy
-    working_dir: "/htapps/babel/mdp-lib"
-    command: "prove -r t/"
+    working_dir: "/htapps/babel"
+    command: "prove -r imgsrv/t mdp-lib/t"
