@@ -15,7 +15,6 @@ test.describe('imgsrv download', () => {
       'http://apache-test:8080/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
     );
     const initialBody = await initialResponse.text();
-    //    console.log(body.toString());
 
     // should get a result like:
     // tunnelCallback('/cgi/imgsrv/download-status?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0', '/cgi/imgsrv/download/pdf?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0;attachment=1', 2, '1');
@@ -30,18 +29,13 @@ test.describe('imgsrv download', () => {
     const callbackUrl = callbackParams[0];
     const downloadUrl = callbackParams[1];
 
-    //    console.log(callbackParams)
-
     // wait until status is done
     let done = false;
 
     while (done == false) {
-      console.log('Trying to get ' + callbackUrl);
-
       const callbackResponse = await request.get('http://apache-test:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
-      console.log(callbackJson);
       if (callbackJson.status == 'DONE') {
         done = true;
       } else {
@@ -85,8 +79,6 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      console.log('Trying to get ' + callbackUrl);
-
       const callbackResponse = await request.get('http://apache-test:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
