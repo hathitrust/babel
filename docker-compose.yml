@@ -76,7 +76,7 @@ services:
     extends:
       file: common/docker/perl.yml
       service: perl
-    command: "prove -r t/"
+    command: "prove -r imgsrv/t mdp-lib/t"
     profiles:
       - testing
 
@@ -84,10 +84,11 @@ services:
     extends:
       file: common/docker/perl.yml
       service: perl
+    # This environment is provided by perl.yml so should not be needed here
     environment:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
-    command: "sleep infinity"
+    command: "/bin/bash"
     profiles:
       - backend
 
