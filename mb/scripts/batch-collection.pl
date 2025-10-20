@@ -72,6 +72,7 @@ use CGI;
 use Utils;
 use Utils::Time;
 use Context;
+use Encode;
 use Identifier;
 use MdpConfig;
 use Collection;
@@ -490,7 +491,7 @@ sub Log_print {
 
     if (open(LOG, ">>$LOGFILE")) {
         my $logtime = Utils::Time::iso_Time('time');
-        print LOG qq{$logtime: $s};
+        syswrite LOG, Encode::encode('UTF-8',qq{$logtime: $s});
         close(LOG);
         chmod(0666, $LOGFILE) if (-o $LOGFILE);
     }

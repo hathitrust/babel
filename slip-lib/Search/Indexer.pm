@@ -239,7 +239,7 @@ sub __get_request_object {
 
     $req->header('Content-type' => 'text/xml; charset=utf-8');
     # Prevent "wide character in syswrite" error in LWP.
-    $$content_ref = Encode::encode_utf8($$content_ref);
+    $$content_ref = Encode::encode('UTF-8',$$content_ref);
 
     $req->content_ref($content_ref);
 

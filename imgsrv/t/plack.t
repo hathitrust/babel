@@ -5,12 +5,15 @@ use warnings;
 
 use Data::Dumper;
 use FindBin;
-
 use HTTP::Request::Common qw(GET);
 use JSON::XS;
 use Plack::Test;
 use Test::More;
 
+use lib File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 't');
+use TestHelper;
+
+$ENV{HT_DEV} = 'placeholder_ht_dev';
 
 subtest "imgsrv.psgi" => sub {
   my $app = do "$FindBin::Bin/../apps/imgsrv.psgi";
@@ -35,7 +38,7 @@ subtest "imgsrv.psgi" => sub {
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'image/jpeg';
   };
-
+  
   subtest "imgsrv/info" => sub {
     my $res = $test->request(GET "/info?id=test.pd_open&seq=1");
     is $res->code, 200;
