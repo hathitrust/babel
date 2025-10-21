@@ -677,11 +677,15 @@
                 </xsl:if>
                 <xsl:choose>
                   <xsl:when test="emergency=1">
-                    <i class="icomoon icomoon-document-2" aria-hidden="true"></i><xsl:text> Temporary Access</xsl:text>
+                    <i class="fa-solid fa-unlock" aria-hidden="true"></i><xsl:text>Temporary Access</xsl:text>
+                  </xsl:when>
+                  <xsl:when test="fulltext=1 and normalize-space(activated_role) = 'resourceSharing'">
+                    <i class="fa-solid fa-lock-open" aria-hidden="true"></i>
+                      <xsl:text>Registered Access</xsl:text>
                   </xsl:when>
                   <xsl:when test="fulltext=1 and normalize-space(activated_role)">
-                    <i class="icomoon icomoon-unlocked" aria-hidden="true"></i>
-                      <xsl:text> Limited (Access Permitted)</xsl:text>
+                    <i class="fa-solid fa-unlock" aria-hidden="true"></i>
+                      <xsl:text>Limited (Access Permitted)</xsl:text>
                   </xsl:when>
                   <xsl:when test="fulltext=1">
                     <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
@@ -696,7 +700,7 @@
               </a>
               <xsl:if test="rights = '8'">
                 <br />
-                <xsl:text>This is item is no longer available</xsl:text>
+                <xsl:text>This item is no longer available</xsl:text>
               </xsl:if>
             </div>
           </div>
