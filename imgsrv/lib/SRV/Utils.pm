@@ -455,7 +455,7 @@ sub get_feature_map
 sub parse_env {
     my ( $params, $path_info_segments, $req, $args )  = @_;
     if ( Scalar::Util::blessed($req) ) {
-
+        
         # foreach my $key ( keys %{ $req->env } ) {
         #     print STDERR "ENV : $key : " . $req->env->{$key} . "\n";
         # }
@@ -504,7 +504,7 @@ sub parse_env {
                 $value = join(',', @values);
             }
             if ( ( $param eq 'seq' || $param eq 'seq[]' ) && ( $values[0] =~ m,^\d+$, || $values[0] =~ m{^\d+,\d+} || $values[0] =~ m{^\d+\-\d+} ) ) {
-                $value = "seq:" . $value;
+              $value = "seq:" . join(',', sort { int($a) <=> int($b) } @values);
                 $key = 'file';
             }
             $$params{$key} = $value;
