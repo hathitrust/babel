@@ -174,7 +174,7 @@ sub __Log_simple {
     my $logfile = qq{MDP-generic-$date.log.$ENV{SERVER_ADDR}};
 
     my $logfile_path = Utils::get_tmp_logdir() . "/$logfile";
-    if (open(LOG, ">>:encoding(UTF-8)", $logfile_path)) {
+    if (open(LOG, ">>", $logfile_path)) {
         LOG->autoflush(1);
         syswrite LOG, Encode::encode('UTF-8',qq{$time: $s\n});
         close(LOG);
