@@ -667,6 +667,7 @@
         title="Tunnel Download Tracker"
         name="download-module-xxx"
         tabindex="-1"
+        sandbox="allow-scripts allow-same-origin allow-downloads"
      ></iframe>
     {:else}
       <p>This item cannot be downloaded.</p>
