@@ -10,6 +10,7 @@ use File::stat;
 use File::Copy;
 
 use Image::Utils;
+use SRV::Utils qw();
 
 use Data::Dumper;
 
@@ -492,9 +493,17 @@ sub _process_output {
                 push @args, '-color';
                 push @args, '-truecolor';
             }
+            # Deprecated option:
+            # "Warning, Creating TIFF with legacy Deflate codec identifier, COMPRESSION_ADOBE_DEFLATE is more widely supported."
+            # Should replace with -adobeflate ?
             push @args, '-flate';
         }
-
+        if ( $xres && $yres ) {
+          # Multiply by 1 in case xres and/or yres is Image::TIFF::Rational
+          push @args, '-xresolution=' . ($xres * 1);
+          push @args, '-yresolution=' . ($yres * 1);
+          push @args, '-resolutionunit=inch';
+        }
         $self->_add_step([$Process::Globals::pamtotiff, @args])
     } elsif ( $mimetype eq 'image/png' ) {
         if ( $self->_is_grayscale($self->source->{metadata}) || $self->quality =~ m,gray|bitonal, ) {
