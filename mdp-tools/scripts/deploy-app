@@ -91,7 +91,7 @@ use ToolLib;
 sub deploy_app_usage {
     my $s = qq{Usage: deploy-app [options] [<app> [<app>]+]
       where <app> is the application to tag and deploy or re-deploy from an existing tag
-         -m ictc|macc|preview deploy just to ictc, macc, or preview (rsync target) - default: macc + ictc
+         -m ictc|ictc_truenas|macc|macc_truenas|preview deploy just to one site/storage - default: macc + macc_truenas + ictc + ictc_truenas
          -v verbose
          -n dry run
          -S <service>, babel (default), www, catalog
@@ -229,7 +229,9 @@ sub __handle_SITE {
 
     my %sites = (
       macc => 'nas-macc.umdl.umich.edu:/htapps/',
+      macc_truenas => 'macc-ht-web-139.umdl.umich.edu:/htapps/',
       ictc => 'nas-ictc.umdl.umich.edu:/htapps/',
+      ictc_truenas => 'ictc-ht-web-208.umdl.umich.edu:/htapps/',
       preview => 'ht-web-preview.umdl.umich.edu:/htapps/preview.'
     );
 
@@ -242,7 +244,7 @@ sub __handle_SITE {
 
       return ($sites{$opt})
     } else {
-      return ($sites{'macc'},$sites{'ictc'})
+      return ($sites{'macc'},$sites{'ictc'},$sites{'macc_truenas'},$sites{'ictc_truenas'})
     }
 }
 
