@@ -280,16 +280,16 @@
     }
   }
 
-  function buildAction(format) {
+  function buildAction(format, range, targetPPI) {
     let action = '/cgi/imgsrv/';
     if (format.startsWith('image-') && range.startsWith('current-page')) {
       action += 'image';
       sizeAttr = 'size';
       sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
     } else {
+      action += 'download/' + format.split('-')[0];
       sizeAttr = 'target_ppi';
       sizeValue = targetPPI;
-      action += 'download/' + format.split('-')[0];
     }
     return action;
   }
@@ -342,8 +342,7 @@
 
   let flattenedSelection = [];
 
-  $: action = buildAction(format, range);
-  $: iframeName = `download-module-xxx`; // ${tunnelFormAttempt}`;
+  $: action = buildAction(format, range, targetPPI);
   $: if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
     range = 'volume';
   }
