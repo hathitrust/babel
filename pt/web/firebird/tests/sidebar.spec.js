@@ -127,6 +127,47 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
+    test('download selected scan as full resolution tiff', async ({ page }) => {
+      const downloadPromise = page.waitForEvent('download');
+      const downloadButton = page
+        .getByRole('form', { name: 'Download options' })
+        .getByRole('button', { name: 'Download' });
+
+      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
+      await page.getByLabel('Image (TIFF)').check();
+      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
+      await page.getByLabel('Selected page scans').check();
+
+      await downloadButton.click();
+      await expect(
+        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
+      ).toBeVisible();
+
+      await page.getByRole('button', { name: 'View' }).click();
+      await page.getByRole('button', { name: 'Thumbnails' }).click();
+      await expect(page).toHaveURL('/cgi/pt?id=test.pd_open&seq=1&view=thumb');
+
+      const selectScan = page.locator('button[aria-label="Select scan #2"]');
+      await expect(selectScan).toHaveAttribute('aria-pressed', 'false');
+      await selectScan.click();
+
+      const fullResolution = page.getByRole('radio', { name: 'Full / 600 dpi' });
+      await fullResolution.click();
+      await expect(fullResolution).toBeChecked();
+
+      // check hidden download form for the correct input value for 'selected scan' full resolution image
+      const hiddenTagetPpiInput = page.locator('input[name="target_ppi"]');
+      await expect(hiddenTagetPpiInput).toHaveAttribute('value', '0');
+
+      await downloadButton.click();
+      const download = await downloadPromise;
+      const downloadPath = await download.path();
+
+      //expect download to be zip
+      expect(download.suggestedFilename()).toContain('zip');
+      //expect file to exist before playwright deletes it
+      expect(fs.existsSync(downloadPath)).toBeTruthy();
+    });
   });
 
   // search in this text

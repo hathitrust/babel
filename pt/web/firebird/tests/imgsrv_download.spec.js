@@ -103,11 +103,11 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(0);
   });
 
-  test('download single tiff, full resolution', async ({ request, page }) => {
+  test('download single tiff current page, full resolution', async ({ request, page }) => {
     // no callback tunnel on single tiff
 
     const downloadResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=ppi:300&seq=1'
+      'http://apache-test:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1'
     );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
