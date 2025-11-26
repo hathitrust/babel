@@ -79,7 +79,6 @@ sub get_ua_for_error {
   return $ua;
 }
 
-#my $held_response_json = $jsonxs->encode($held_response);
 my $institutions_response_json = $jsonxs->encode($institutions_response);
 my $item_access_endpoint = qr{$Access::Holdings::ITEM_ACCESS_ENDPOINT};
 my $item_held_by_endpoint = qr{$Access::Holdings::ITEM_HELD_BY_ENDPOINT};
