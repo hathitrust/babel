@@ -121,8 +121,7 @@ sub _query_item_access_api {
       $holdings_data->{n_enum},
       @{$holdings_data->{ocns}}
     );
-    $held = $holdings_data->{copy_count};
-    $held = $holdings_data->{$field};
+    $held = _extract_held_by_field($holdings_data, $field);
   };
   if (my $err = $@) {
     log_error($err);
@@ -152,6 +151,31 @@ sub _query_item_held_by_api {
     return [];
   }
   return $institutions;
+}
+
+# ---------------------------------------------------------------------
+
+=item _extract_held_by_field
+
+Uses the named field to distill Holdings API return structure into a
+`held` value. Plain vanilla `copy_count` and `brlm_count` just extract
+the field of the same name. `currently_held_count` consults the
+`currently_held_count` and the `deposited` value.
+
+=cut
+
+# ---------------------------------------------------------------------
+sub _extract_held_by_field {
+  my $holdings_data = shift;
+  my $field         = shift;
+
+  if ($field eq 'currently_held_count') {
+    if ($holdings_data->{currently_held_count} > 0) {
+      return $holdings_data->{currently_held_count};
+    }
+    return $holdings_data->{deposited} || 0;
+  }
+  return $holdings_data->{$field};
 }
 
 # ---------------------------------------------------------------------
