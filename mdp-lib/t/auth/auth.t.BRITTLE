@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# THIS TEST IS DISABLED BECAUSE IT IS SUBJECT TO RANDOM SEGFAULTS
+# SEE ETT-743
+
 use strict;
 use warnings;
 
