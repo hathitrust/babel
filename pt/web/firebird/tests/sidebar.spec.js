@@ -259,7 +259,7 @@ test.describe('sidebar actions', () => {
       await page.getByLabel('Collection Name').fill('The best collection ever');
       await page.getByRole('textbox', { name: 'Description' }).fill('Will it blend?');
       await page.getByLabel('Contributor Name').fill('Me');
-      await page.getByLabel('Private').check();
+      await page.getByRole('group', { name: 'Is this collection visible to others?' }).getByLabel('Private').check();
 
       await page.getByRole('button', { name: 'Save Changes' }).click();
     });
