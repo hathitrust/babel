@@ -493,10 +493,7 @@ sub _process_output {
                 push @args, '-color';
                 push @args, '-truecolor';
             }
-            # Deprecated option:
-            # "Warning, Creating TIFF with legacy Deflate codec identifier, COMPRESSION_ADOBE_DEFLATE is more widely supported."
-            # Should replace with -adobeflate ?
-            push @args, '-flate';
+            push @args, '-adobeflate';
         }
         if ( $xres && $yres ) {
           # Multiply by 1 in case xres and/or yres is Image::TIFF::Rational
