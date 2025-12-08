@@ -58,6 +58,7 @@ my $held_response = {
   'copy_count' => 555,
   'brlm_count' => 222,
   'currently_held_count' => 111,
+  'deposited' => 1,
   'format' => 'spm',
   'n_enum' => 'v.1-5 (1901-1905)',
   'ocns' => ['001', '002', '003']
@@ -78,7 +79,6 @@ sub get_ua_for_error {
   return $ua;
 }
 
-my $held_response_json = $jsonxs->encode($held_response);
 my $institutions_response_json = $jsonxs->encode($institutions_response);
 my $item_access_endpoint = qr{$Access::Holdings::ITEM_ACCESS_ENDPOINT};
 my $item_held_by_endpoint = qr{$Access::Holdings::ITEM_HELD_BY_ENDPOINT};
@@ -94,8 +94,13 @@ sub get_ua {
   return $ua;
 }
 
+# Can use predefined $held_response above, or pass a custom structure.
 sub get_ua_for_held {
-  return get_ua($item_access_endpoint, $held_response_json);
+  my $response = shift || $held_response;
+  return get_ua(
+    $item_access_endpoint,
+    $jsonxs->encode($response)
+  );
 }
 
 sub get_ua_for_institutions {
@@ -289,6 +294,16 @@ subtest "id_is_currently_held" => sub {
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
     };
+
+    subtest "currently_held_count and deposited both 0" => sub {
+      # Copy the default response so we can fiddle with it
+      my $response = { %$held_response };
+      $response->{currently_held_count} = 0;
+      $response->{deposited} = 0;
+      my $ua = get_ua_for_held($response);
+      my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+      is($held, 0);
+    };
   };
 
   subtest "currently held according to API" => sub {
@@ -306,6 +321,19 @@ subtest "id_is_currently_held" => sub {
       is($held, 0);
       expect_params($ua);
       $ENV{DEBUG} = $save_debug;
+    };
+
+    subtest "currently held if currently_held_count or deposited" => sub {
+      my $currently_held_deposited_combinations = [[0, 1], [1, 0], [1, 1]];
+      foreach my $combo (@$currently_held_deposited_combinations) {
+        # Copy the default response so we can fiddle with it
+        my $response = { %$held_response };
+        $response->{currently_held_count} = $combo->[0];
+        $response->{deposited} = $combo->[1];
+        my $ua = get_ua_for_held($response);
+        my ($lock_id, $held) = Access::Holdings::id_is_currently_held($C, $htid, 'umich', $ua);
+        is($held, 1, "currently_held=$combo->[0], deposited=$combo->[1]");
+      };
     };
   };
 
