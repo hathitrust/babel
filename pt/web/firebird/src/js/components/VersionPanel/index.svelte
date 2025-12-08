@@ -6,13 +6,11 @@
 
   const currentSeq = manifest.currentSeq;
 
-
   $: ownerid = manifest.ownerid($currentSeq);
-
 </script>
 
 {#if manifest.versionLabel}
-  <div class="alert alert-light mt-4" role="alert">
+  <div class="alert alert-light mt-4">
     <h2 class="fs-7">Version</h2>
     <p class="fs-8">
       <span>{manifest.versionLabel}</span>
