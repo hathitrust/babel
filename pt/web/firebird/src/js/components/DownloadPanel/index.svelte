@@ -66,6 +66,7 @@
       clearInterval(trackerInterval);
       trackerInterval = null;
       modal.hide();
+      document.getElementById('submit-download').focus();
     }
   }
 
@@ -140,6 +141,7 @@
       clearInterval(trackerInterval);
       trackerInterval = null;
     }
+    document.getElementById('submit-download').focus();
     // but we are not exiting!!
   }
 
@@ -606,6 +608,7 @@
             class="btn btn-outline-dark"
             disabled={downloadInProgress}
             on:click|preventDefault={submitDownload}
+            id="submit-download"
           >
             Download
             {#if downloadInProgress}
@@ -673,7 +676,7 @@
     {/if}
   </svelte:fragment>
 </Panel>
-<Modal bind:this={modal} onClose={closeDownload}>
+<Modal bind:this={modal} onClose={closeDownload} focusDownloadOnClose>
   {#snippet title()}
     Building your {formatTitle[format]}
     {#if $selected.size > 0}
@@ -727,7 +730,12 @@
       {#if downloadInProgress}
         <span class="btn btn-primary disabled"> Download </span>
       {:else}
-        <a class="btn btn-primary" on:click={() => modal.hide()} href={downloadUrl}>Download</a>
+        <a
+          class="btn btn-primary"
+          on:click={() => modal.hide()}
+          on:click={() => document.getElementById('submit-download').focus()}
+          href={downloadUrl}>Download</a
+        >
       {/if}
     </div>
   {/snippet}
