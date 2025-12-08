@@ -667,7 +667,7 @@
         name="download-module-xxx"
         tabindex="-1"
         sandbox="allow-scripts allow-same-origin allow-downloads"
-     ></iframe>
+      ></iframe>
     {:else}
       <p>This item cannot be downloaded.</p>
     {/if}
@@ -693,7 +693,10 @@
             aria-valuemin="0"
             aria-valuemax="100"
           >
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style:width={`${status.percent}%`}></div>
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              style:width={`${status.percent}%`}
+            ></div>
           </div>
           <p class="fs-7 text-body-secondary">
             <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
@@ -713,7 +716,7 @@
         type="button"
         class="btn btn-secondary"
         on:click={cancelDownload}
-        aria-disabled={status.done}
+        disabled={status.done}
         class:disabled={status.done}>Cancel</button
       >
       <!-- <button 
@@ -722,18 +725,12 @@
         disabled={downloadInProgress}
         on:click={finalizeDownload}>Download</button> -->
       {#if downloadInProgress}
-      <span class="btn btn-primary disabled">
-        Download
-      </span>
+        <span class="btn btn-primary disabled"> Download </span>
       {:else}
-      <a
-        class="btn btn-primary"
-        on:click={() => modal.hide()}
-        href={downloadUrl}>Download</a
-      >
+        <a class="btn btn-primary" on:click={() => modal.hide()} href={downloadUrl}>Download</a>
       {/if}
     </div>
-    {/snippet}
+  {/snippet}
 </Modal>
 
 <style lang="scss">
