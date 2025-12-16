@@ -343,12 +343,13 @@
   }
 
   let flattenedSelection = [];
-
+  $: clearSelectionLabel = 'Clear selection';
   $: action = buildAction(format, range, targetPPI);
   $: if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
     range = 'volume';
   }
   $: if (flattenSelection($selected)) {
+    clearSelectionLabel = `Clear selected scans: ${flattenedSelection.join(', ')}`;
     range = 'selected-pages';
   }
   $: meta = manifest.meta($currentSeq);
@@ -592,8 +593,8 @@
               <button
                 class="btn btn-outline-dark align-self-start"
                 type="button"
-                aria-label="Clear selection"
-                use:tooltippy
+                aria-label={clearSelectionLabel}
+                use:tooltippy={{ content: 'Clear selection' }}
                 on:click={() => manifest.clearSelection()}
               >
                 <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
