@@ -54,7 +54,7 @@
   <AccessStatusPanel />
 </div>
 <Panel parent="#controls" expanded={true} metadata={true} class="border-top rounded-top-2">
-  <i class="fa-solid fa-book" slot="icon"></i>
+  <i class="fa-solid fa-book" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title">About This Item</slot:fragment>
   <slot:fragment slot="body">
     <BibData {title} />
