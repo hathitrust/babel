@@ -33,6 +33,7 @@
   let tunnelFormTracker;
   let tunnelFormAttempt = 0;
   let downloadInProgress = false;
+  let cancellingDownload = false;
   let trackerInterval;
   let progressUrl, downloadUrl, totalPages;
   let lastPercent;
@@ -151,6 +152,8 @@
       return;
     }
 
+    cancellingDownload = true;
+
     let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
     let params = new URLSearchParams();
     params.set('id', manifest.id);
@@ -166,6 +169,9 @@
     tunnelWindow.document.body.appendChild(scriptEl);
 
     console.log('-- download.cancelDownload');
+    setTimeout(() => {
+      cancellingDownload = false;
+    }, 1000);
   }
 
   function submitDownload() {
@@ -715,28 +721,33 @@
     </div>
   {/snippet}
   {#snippet footer()}
-    <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        on:click={cancelDownload}
-        disabled={status.done}
-        class:disabled={status.done}>Cancel</button
-      >
-      <!-- <button 
+    <div role="status">
+      <div class="d-flex gap-1 align-items-center justify-content-end">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          on:click={cancelDownload}
+          disabled={status.done}
+          class:disabled={status.done}>Cancel</button
+        >
+        <!-- <button 
         type="button" 
         class="btn btn-primary"
         disabled={downloadInProgress}
         on:click={finalizeDownload}>Download</button> -->
-      {#if downloadInProgress}
-        <span class="btn btn-primary disabled"> Download </span>
-      {:else}
-        <a
-          class="btn btn-primary"
-          on:click={() => modal.hide()}
-          on:click={() => document.getElementById('submit-download').focus()}
-          href={downloadUrl}>Download</a
-        >
+        {#if downloadInProgress}
+          <span class="btn btn-primary disabled"> Download </span>
+        {:else}
+          <a
+            class="btn btn-primary"
+            on:click={() => modal.hide()}
+            on:click={() => document.getElementById('submit-download').focus()}
+            href={downloadUrl}>Download</a
+          >
+        {/if}
+      </div>
+      {#if cancellingDownload}
+        <span class="visually-hidden">Download cancelled</span>
       {/if}
     </div>
   {/snippet}
