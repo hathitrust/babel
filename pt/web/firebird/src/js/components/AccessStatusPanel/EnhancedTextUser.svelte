@@ -11,7 +11,7 @@
 </script>
 
 <Panel {expanded} {onToggle} class="access-panel">
-  <i class="fa-solid fa-unlock" slot="icon"></i>
+  <i class="fa-solid fa-unlock" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title"> In-Copyright Access </slot:fragment>
   <slot:fragment slot="body">
     <p class="fs-7">

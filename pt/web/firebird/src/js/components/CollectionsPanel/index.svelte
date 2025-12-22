@@ -144,7 +144,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-bookmark" slot="icon"></i>
+  <i class="fa-solid fa-bookmark" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title">Collections</slot:fragment>
   <slot:fragment slot="body">
     {#if userIsAnonymous}
