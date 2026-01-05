@@ -23,12 +23,10 @@
   let codeBlock;
   let view = '1up';
   let codeBlockText = {};
-  codeBlockText[
-    '1up'
-  ] = `<iframe width="450" height="700" src="https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bui=embed"></iframe>`;
-  codeBlockText[
-    '2up'
-  ] = `<iframe width="700" height="450" src="https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bui=embed"></iframe>`;
+  codeBlockText['1up'] =
+    `<iframe width="450" height="700" src="https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bui=embed"></iframe>`;
+  codeBlockText['2up'] =
+    `<iframe width="700" height="450" src="https://hdl.handle.net/2027/${manifest.id}?urlappend=%3Bui=embed"></iframe>`;
 
   function getLabel(el) {
     return this.getAttribute('aria-label');
@@ -81,7 +79,7 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-share-nodes" slot="icon"></i>
+  <i class="fa-solid fa-share-nodes" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title">Share</slot:fragment>
   <slot:fragment slot="body">
     <div class="mb-3">
@@ -101,7 +99,7 @@
           class="btn btn-outline-dark"
           aria-label="Copy permanent link"
           data-bs-placement="right"
-          use:tooltippy={{placement: 'right'}}
+          use:tooltippy={{ placement: 'right' }}
           bind:this={btnShareHandle}
           on:click={() => copySelection(btnShareHandle, shareHandle)}
         >
@@ -126,7 +124,7 @@
           class="btn btn-outline-dark"
           aria-label="Copy link to this page scan"
           data-bs-placement="right"
-          use:tooltippy={{placement: 'right'}}
+          use:tooltippy={{ placement: 'right' }}
           bind:this={btnShareHandleLink}
           on:click={() => copySelection(btnShareHandleLink, shareHandleLink)}
         >
@@ -157,7 +155,7 @@
           bind:value={codeBlockText[view]}
           on:blur={selectInnerText}
           on:click={selectInnerText}
-       ></textarea>
+        ></textarea>
         <button
           class="btn btn-outline-dark"
           aria-label="Copy iframe code"
@@ -193,3 +191,4 @@
     </p>
   {/snippet}
 </Modal>
+

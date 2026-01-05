@@ -33,6 +33,7 @@
   let tunnelFormTracker;
   let tunnelFormAttempt = 0;
   let downloadInProgress = false;
+  let cancellingDownload = false;
   let trackerInterval;
   let progressUrl, downloadUrl, totalPages;
   let lastPercent;
@@ -66,6 +67,7 @@
       clearInterval(trackerInterval);
       trackerInterval = null;
       modal.hide();
+      document.getElementById('submit-download').focus();
     }
   }
 
@@ -140,6 +142,7 @@
       clearInterval(trackerInterval);
       trackerInterval = null;
     }
+    document.getElementById('submit-download').focus();
     // but we are not exiting!!
   }
 
@@ -148,6 +151,8 @@
       console.log('-- download.cancelDownload EXITING');
       return;
     }
+
+    cancellingDownload = true;
 
     let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
     let params = new URLSearchParams();
@@ -164,6 +169,9 @@
     tunnelWindow.document.body.appendChild(scriptEl);
 
     console.log('-- download.cancelDownload');
+    setTimeout(() => {
+      cancellingDownload = false;
+    }, 1000);
   }
 
   function submitDownload() {
@@ -341,12 +349,13 @@
   }
 
   let flattenedSelection = [];
-
+  $: clearSelectionLabel = 'Clear selection';
   $: action = buildAction(format, range, targetPPI);
   $: if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
     range = 'volume';
   }
   $: if (flattenSelection($selected)) {
+    clearSelectionLabel = `Clear selected scans: ${flattenedSelection.join(', ')}`;
     range = 'selected-pages';
   }
   $: meta = manifest.meta($currentSeq);
@@ -590,8 +599,8 @@
               <button
                 class="btn btn-outline-dark align-self-start"
                 type="button"
-                aria-label="Clear selection"
-                use:tooltippy
+                aria-label={clearSelectionLabel}
+                use:tooltippy={{ content: 'Clear selection' }}
                 on:click={() => manifest.clearSelection()}
               >
                 <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
@@ -606,6 +615,7 @@
             class="btn btn-outline-dark"
             disabled={downloadInProgress}
             on:click|preventDefault={submitDownload}
+            id="submit-download"
           >
             Download
             {#if downloadInProgress}
@@ -667,13 +677,13 @@
         name="download-module-xxx"
         tabindex="-1"
         sandbox="allow-scripts allow-same-origin allow-downloads"
-     ></iframe>
+      ></iframe>
     {:else}
       <p>This item cannot be downloaded.</p>
     {/if}
   </svelte:fragment>
 </Panel>
-<Modal bind:this={modal} onClose={closeDownload}>
+<Modal bind:this={modal} onClose={closeDownload} focusDownloadOnClose>
   {#snippet title()}
     Building your {formatTitle[format]}
     {#if $selected.size > 0}
@@ -693,7 +703,10 @@
             aria-valuemin="0"
             aria-valuemax="100"
           >
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style:width={`${status.percent}%`}></div>
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              style:width={`${status.percent}%`}
+            ></div>
           </div>
           <p class="fs-7 text-body-secondary">
             <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
@@ -708,32 +721,36 @@
     </div>
   {/snippet}
   {#snippet footer()}
-    <div class="d-flex gap-1 align-items-center justify-content-end">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        on:click={cancelDownload}
-        aria-disabled={status.done}
-        class:disabled={status.done}>Cancel</button
-      >
-      <!-- <button 
+    <div role="status">
+      <div class="d-flex gap-1 align-items-center justify-content-end">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          on:click={cancelDownload}
+          disabled={status.done}
+          class:disabled={status.done}>Cancel</button
+        >
+        <!-- <button 
         type="button" 
         class="btn btn-primary"
         disabled={downloadInProgress}
         on:click={finalizeDownload}>Download</button> -->
-      {#if downloadInProgress}
-      <span class="btn btn-primary disabled">
-        Download
-      </span>
-      {:else}
-      <a
-        class="btn btn-primary"
-        on:click={() => modal.hide()}
-        href={downloadUrl}>Download</a
-      >
+        {#if downloadInProgress}
+          <span class="btn btn-primary disabled"> Download </span>
+        {:else}
+          <a
+            class="btn btn-primary"
+            on:click={() => modal.hide()}
+            on:click={() => document.getElementById('submit-download').focus()}
+            href={downloadUrl}>Download</a
+          >
+        {/if}
+      </div>
+      {#if cancellingDownload}
+        <span class="visually-hidden">Download cancelled</span>
       {/if}
     </div>
-    {/snippet}
+  {/snippet}
 </Modal>
 
 <style lang="scss">

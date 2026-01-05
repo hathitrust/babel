@@ -6,7 +6,7 @@
 </script>
 
 <Panel {expanded} {onToggle} class="access-panel">
-  <i class="fa-solid fa-lock-open" slot="icon"></i>
+  <i class="fa-solid fa-lock-open" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title"> Registered Access </slot:fragment>
   <slot:fragment slot="subtitle">via Resource Sharing</slot:fragment>
   <slot:fragment slot="body">
