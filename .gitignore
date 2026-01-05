@@ -30,3 +30,7 @@ etc/
 # perl language server
 .vscode/perl-lang
 **/*.sw?
+
+# actual geoip data
+geoip/GeoIP*
+geoip/GeoLite*
