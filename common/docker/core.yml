@@ -116,7 +116,7 @@ services:
       timeout: 10s
       start_period: 10s
       retries: 5
-      test: "service php7.4-fpm status | grep running"
+      test: "service php8.4-fpm status | grep running"
 
 volumes:
   mysql_sdr_data:
