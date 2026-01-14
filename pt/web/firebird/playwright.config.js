@@ -5,7 +5,7 @@ let testUrl;
 if (process.env.LOCAL == 'local') {
   testUrl = 'http://localhost:8080';
 } else {
-  testUrl = 'http://apache-test:8080';
+  testUrl = 'http://apache:8080';
 }
 
 /**

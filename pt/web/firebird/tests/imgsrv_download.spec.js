@@ -12,7 +12,7 @@ test.describe('imgsrv download', () => {
     var currentTime = new Date().getTime();
 
     const initialResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
+      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
     );
     const initialBody = await initialResponse.text();
 
@@ -33,7 +33,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await request.get('http://apache-test:8080' + callbackUrl);
+      const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -47,7 +47,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await request.get('http://apache-test:8080' + downloadUrl);
+    const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -61,7 +61,7 @@ test.describe('imgsrv download', () => {
     var currentTime = new Date().getTime();
 
     const initialResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/download/epub?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
+      'http://apache:8080/cgi/imgsrv/download/epub?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
     );
     const initialBody = await initialResponse.text();
 
@@ -79,7 +79,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await request.get('http://apache-test:8080' + callbackUrl);
+      const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -93,7 +93,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await request.get('http://apache-test:8080' + downloadUrl);
+    const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -107,7 +107,7 @@ test.describe('imgsrv download', () => {
     // no callback tunnel on single tiff
 
     const downloadResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1'
+      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1'
     );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
@@ -122,7 +122,7 @@ test.describe('imgsrv download', () => {
     //no callback tunnel on single pages
 
     const downloadResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2'
+      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2'
     );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
@@ -136,7 +136,7 @@ test.describe('imgsrv download', () => {
     //no callback tunnel on non-tiff selections <11 pages
 
     const downloadResponse = await request.get(
-      'http://apache-test:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
+      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
     );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();

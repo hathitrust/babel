@@ -1,0 +1,30 @@
+# Optional service (not required for core functionality testing)
+# As we want to test these via playwright, they could move into core.yml
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 5s
+  timeout: 10s
+  start_period: 10s
+  retries: 5
+
+services:
+  vufind:
+    build: ../../catalog #TODO: Use the built unstable container
+    hostname: 'catalog-dev'
+    volumes:
+    - ${BABEL_HOME}/catalog:/app
+    - ${BABEL_HOME}/firebird-common:/htapps/babel/firebird-common
+    - ${BABEL_HOME}/catalog/conf/authspecs-sample.yaml:/app/conf/authspecs.yaml
+    environment:
+    - FIREBIRD_HOME=/htapps/babel/firebird-common
+    depends_on:
+      mysql-sdr:
+        condition: service_healthy
+      solr-sdr-catalog:
+        condition: service_healthy
+    healthcheck:
+      interval: 5s
+      timeout: 10s
+      start_period: 10s
+      retries: 5
+      test: "service php8.4-fpm status | grep running"
