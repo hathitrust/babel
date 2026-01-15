@@ -16,10 +16,11 @@ switch_auth() {
     echo "holdings_api_url = http://apache:8080/mock-holdings-api" >> $babel_home/$app/lib/Config/local.conf
   done
 
-  echo -e "Resetting ht_sessions database table "
-  docker compose exec mysql-sdr mariadb -u mdp-lib -pmdp-lib -h localhost ht -e "DELETE FROM ht_sessions;"
+  echo -e "Resetting ht_sessions & pt_exclusivity_ng database tables"
+  docker compose exec mysql-sdr mariadb -u mdp-lib -pmdp-lib -h localhost ht -e "DELETE FROM ht_sessions; DELETE FROM pt_exclusivity_ng;"
   echo -e "Reloading Apache configuration"
-  docker compose exec apache kill -USR1 1
+  docker compose exec apache kill -HUP 1
+  sleep 1;
 }
 
 run_or_exit() {
@@ -43,7 +44,7 @@ run_test() {
   else
     # Run tests for the given kind of authenticated user
     switch_auth $usertype
-    run_or_exit docker compose run --rm playwright npx playwright test $usertype --trace on
+    run_or_exit docker compose run --rm playwright npx playwright test $usertype --trace on --config playwright_auth.config.js
   fi
 
 }
@@ -52,6 +53,8 @@ if [ "$testset" == "all" ]; then
   run_test unauthed
   run_test ssd_user
   run_test resource_sharing_user
+  run_test emergency_access_affiliate
+  run_test library_ipaddr_user
 else
   run_test $testset
 fi

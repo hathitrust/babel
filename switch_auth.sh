@@ -57,7 +57,7 @@ done
 echo -e "${color_cyan}Resetting ht_sessions database table ${color_reset}"
 docker compose exec mysql-sdr mariadb -vv -u mdp-lib -pmdp-lib -h localhost ht -e "DELETE FROM ht_sessions;"
 echo -e "${color_cyan}Reloading Apache configuration${color_reset}"
-docker compose exec apache kill -USR1 1
+docker compose exec apache kill -HUP 1
 
 echo -e "🎉 ${color_cyan} Done!${color_reset}"
 

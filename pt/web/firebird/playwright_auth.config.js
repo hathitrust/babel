@@ -1,0 +1,60 @@
+// @ts-check
+import { defineConfig, devices } from '@playwright/test';
+
+let testUrl;
+if (process.env.LOCAL == 'local') {
+  testUrl = 'http://localhost:8080';
+} else {
+  testUrl = 'http://apache:8080';
+}
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// import dotenv from 'dotenv';
+// import path from 'path';
+// dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+/**
+ * @see https://playwright.dev/docs/test-configuration
+ */
+export default defineConfig({
+  testDir: './tests',
+  testMatch: /(.+\.)?(test|spec)\.[jt]s/,
+  /* Run tests in files in parallel */
+  fullyParallel: true,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  forbidOnly: !!process.env.CI,
+  /* Retry authed tests -- there may be occasional race conditions with apache reloading its config */
+  retries: 2,
+  /* Don't run authed tests in parallel -- sessions may interfere with each other, esp. for ETAS / section 108 */
+  workers: 1,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  // reporter: process.env.CI ? '["list", "html"]' : 'list',
+  reporter: [['list'], ['html', { open: 'never' }]],
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    baseURL: testUrl,
+
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    trace: 'retain-on-failure',
+    // trace: 'on',
+  },
+
+  /* Configure projects for major browsers */
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+
+  /* Run your local dev server before starting the tests */
+  // webServer: {
+  // command: 'npm run babel',
+  // url: 'http://127.0.0.1:3000',
+  // reuseExistingServer: !process.env.CI,
+  // },
+});
