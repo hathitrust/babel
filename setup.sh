@@ -41,7 +41,7 @@ APACHE_RUN_GROUP="$(id -g)"
 BABEL_HOME="$(dirname $(realpath $0))"
 EOT
 
-ln -rsv geoip/always_us.mmdb geoip/GeoIP2-Country.mmdb
+ln -sfv always_us.mmdb geoip/GeoIP2-Country.mmdb
 
 
 echo
