@@ -121,8 +121,10 @@
   function trackInterval() {
     let tracker = `D${tunnelFormAttempt}`;
     let value = HT.cookieJar.getItem('tracker');
+    console.log('trackInterval', tracker, value)
     if (value && value.indexOf(tracker) > -1) {
-      HT.cookieJar.removeItem('tracker', { path: '/' });
+      console.log('tracker reached a non-null value, removing cookie, setting inProgress to false')
+      HT.cookieJar.removeItem('tracker');
       downloadInProgress = false;
       clearInterval(trackerInterval);
       trackerInterval = null;
@@ -227,8 +229,10 @@
     selection = selection;
     console.log('-- download selection', selection);
 
-    let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
-    if (isPartialDownload() && selection.pages.length <= partialUpperLimit) {
+    let partialUpperLimit = format == 'image-tiff' ? 1 : 10; //If format is TIFF, upper limit is 1, otherwise it's 10
+    console.log('partialUpperLimit', partialUpperLimit)
+    if (isPartialDownload() && selection.pages.length <= partialUpperLimit) { 
+      console.log('hi from the tunnel! selection.pages.length: ', selection.pages.length)
       // use the tunnel
       tunnelFormAttempt = tunnelFormAttempt + 1;
       downloadInProgress = true;
@@ -236,10 +240,12 @@
       tunnelFormTracker.value = `D${tunnelFormAttempt}`;
 
       tunnelForm.querySelectorAll('input[name="seq"]').forEach((inputEl) => {
+        console.log('goodbye seq input', inputEl)
         inputEl.remove();
       });
 
       selection.seq.forEach((seq) => {
+        console.log("appending seq", seq)
         let inputEl = document.createElement('input');
         inputEl.type = 'hidden';
         inputEl.name = 'seq';
@@ -248,6 +254,9 @@
       });
 
       trackerInterval = setInterval(trackInterval, 100);
+      tunnelForm.querySelectorAll('input').forEach((inputEl) => {
+        console.log('tunnel form input', inputEl)
+      })
       tunnelForm.submit();
     } else {
       // start the download in the iframe
@@ -281,6 +290,7 @@
       params.set('_', new Date().getTime());
 
       requestUrl.search = params.toString();
+      console.log('search params', params.toString())
       scriptEl.src = requestUrl.toString();
 
       downloadInProgress = true;

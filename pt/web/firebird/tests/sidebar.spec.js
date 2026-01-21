@@ -127,8 +127,7 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download selected scan as full resolution tiff', async ({ page }) => {
-      const downloadPromise = page.waitForEvent('download');
+    test('error for no selection when attempting selection download', async ({ page }) => {
       const downloadButton = page
         .getByRole('form', { name: 'Download options' })
         .getByRole('button', { name: 'Download' });
@@ -142,6 +141,16 @@ test.describe('sidebar actions', () => {
       await expect(
         page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
       ).toBeVisible();
+    });
+    test('download selected scan as full resolution tiff', async ({ page }) => {
+      const downloadPromise = page.waitForEvent('download');
+      const downloadButton = page
+        .getByRole('form', { name: 'Download options' })
+        .getByRole('button', { name: 'Download' });
+
+      await page.getByLabel('Image (TIFF)').check();
+      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
+      await page.getByLabel('Selected page scans').check();
 
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
