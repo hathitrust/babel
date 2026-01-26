@@ -282,7 +282,7 @@ sub handle_ACCESS_HOLDINGS_PI
           }
           $s .= wrap_string_in_tag($held, 'Held');
         }
-        elsif ($user_access_type eq 'in_library_user') {
+        elsif ($access_type eq 'in_library_user') {
           my $brittle_held = 'NO';
           if (Access::Holdings::id_is_held_and_BRLM($C, $id, $inst)) {
               $brittle_held = 'YES';
