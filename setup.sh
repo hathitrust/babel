@@ -39,10 +39,10 @@ CURRENT_USER="$(id -u):$(id -g)"
 APACHE_RUN_USER="$(id -u)"
 APACHE_RUN_GROUP="$(id -g)"
 BABEL_HOME="$(dirname $(realpath $0))"
-
-ln -rsv geoip/always_us.mmdb geoip/GeoIP2-Country.mmdb
-
 EOT
+
+ln -sfv always_us.mmdb geoip/GeoIP2-Country.mmdb
+
 
 echo
 echo 💎 Setting up stage_item...

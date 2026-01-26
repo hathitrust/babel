@@ -8,7 +8,7 @@ services:
       file: common/docker/playwright.yml
       service: playwright
     depends_on:
-      apache-test:
+      apache:
         condition: service_healthy
     profiles:
       - playwright_testing
@@ -23,7 +23,6 @@ services:
     profiles:
       - playwright_testing
 
-
   firebird:
     extends:
       file: common/docker/node.yml
@@ -37,18 +36,6 @@ services:
     profiles:
       - frontend
 
-  apache-test:
-    extends:
-      file: common/docker/apache.yml
-      service: apache
-    depends_on:
-      mysql-sdr:
-        condition: service_healthy
-      solr-sdr-catalog:
-        condition: service_healthy
-      imgsrv:
-        condition: service_healthy
-
 # Backend Services
   apache:
     extends:
@@ -57,20 +44,15 @@ services:
     depends_on:
       mysql-sdr:
         condition: service_healthy
-      solr-lss-dev:
-        condition: service_healthy
       solr-sdr-catalog:
         condition: service_healthy
-      solr-ptsearch:
-        condition: service_healthy
       imgsrv:
-        condition: service_healthy
-      vufind:
         condition: service_healthy
     ports:
       - "8080:8080"
     profiles:
       - backend
+      - playwright_testing
 
   perl-test:
     extends:
@@ -89,6 +71,28 @@ services:
       - SDRROOT=/htapps/babel
       - SDRDATAROOT=/sdr1
     command: "/bin/bash"
+    profiles:
+      - backend
+
+# Optional dependencies; not included in current playwright testing
+  vufind:
+    extends:
+      file: common/docker/catalog.yml
+      service: vufind
+    profiles:
+      - backend
+
+  solr-lss-dev:
+    extends:
+      file: common/docker/solr.yml
+      service: solr-lss-dev
+    profiles:
+      - backend
+
+  solr-ptsearch:
+    extends:
+      file: common/docker/solr.yml
+      service: solr-ptsearch
     profiles:
       - backend
 
