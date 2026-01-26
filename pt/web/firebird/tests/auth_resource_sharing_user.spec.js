@@ -4,6 +4,11 @@ import fs from 'fs';
 test.describe('resource_sharing_user access to ic material', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
+    await page
+      .getByRole('dialog')
+      .filter({ has: page.getByRole('heading', { name: 'CHOOSE A ROLE' }) })
+      .getByRole('button', { name: 'Close modal' })
+      .click();
     await page.getByRole('button', { name: 'Allow all cookies' }).click();
     await page.getByRole('button', { name: 'My account' }).click();
 
