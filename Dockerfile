@@ -35,10 +35,12 @@ RUN apt-get update && apt-get install -y \
   libtest-class-perl \
   libtest-lwp-useragent-perl \
   libtry-tiny-perl \
+  liburi-perl \
   libuuid-perl \
   libuuid-tiny-perl \
   libxml-libxml-perl \
   libxml-libxslt-perl \
+  libyaml-perl \
   libyaml-libyaml-perl \
   netpbm \
   perl \
@@ -57,9 +59,7 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/mlibrary-archive-keyring.gpg] https:/
 RUN apt-get update && apt-get install grokj2k
 
 RUN cpanm --notest \
-  File::Pairtree \
-  URI::Escape \
-  YAML::Any
+  File::Pairtree
 
 WORKDIR /htapps/babel/geoip
 ADD --chmod=644 https://github.com/maxmind/MaxMind-DB/blob/main/test-data/GeoIP2-Country-Test.mmdb?raw=true GeoIP2-Country.mmdb
