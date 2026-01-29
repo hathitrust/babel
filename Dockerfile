@@ -56,7 +56,7 @@ RUN curl -fsSL https://apt.lib.umich.edu/mlibrary-archive-keyring.gpg -o /etc/ap
 
 RUN echo "deb [signed-by=/etc/apt/keyrings/mlibrary-archive-keyring.gpg] https://apt.lib.umich.edu trixie main" > /etc/apt/sources.list.d/mlibrary.list
 
-RUN apt-get update && apt-get install grokj2k
+RUN apt-get update && apt-get install -y --no-install-recommends grokj2k
 
 RUN cpanm --notest \
   File::Pairtree
