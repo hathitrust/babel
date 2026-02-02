@@ -31,12 +31,7 @@ sub new
     $self->{' streamfile'} = $file;
     # Colorspace (lowercase "s") == JPEG2000 tag
     # ColorSpace (uppercaes "s") == XMP tag
-    my $colorspace = __extract_usable_colorspace($info);
-    #my $colorspace = $$info{Colorspace} || $$info{ColorSpace};
-    #if ( $ENV{__debug_jpeg2000_exif} ) {
-    #    $colorspace = $$info{ColorSpace} || $$info{Colorspace};
-    #}
-
+    my $colorspace = extract_usable_colorspace($info);
     if ( $colorspace eq 'sRGB' ) {
         $self->colorspace('DeviceRGB')
     } elsif ( $colorspace eq 'Grayscale' ) {
@@ -72,18 +67,46 @@ sub new_api {
     return($obj);
 }
 
-sub __extract_usable_colorspace {
+
+# Image::ExifTool::ImageInfo can return a hashref with keys looking like this:
+# {
+#    'ColorSpace (1)' => 'Grayscale',
+#    'ColorSpace' => 'Uncalibrated',
+#    ...
+# };
+# but the naive implementation can produce corrupt PDFs if 'Uncalibrated' is used
+# and the caller defaults to 'DeviceRGB'.
+#
+# This routine selects the first usable value from the following in descending order of preference:
+#  'Colorspace'
+#  'Colorspace ...'
+#  'ColorSpace'
+#  'ColorSpace ...'
+#
+# hence the `reverse sort` below.
+
+# The original code had this:
+#    my $colorspace = $$info{Colorspace} || $$info{ColorSpace};
+#    if ( $ENV{__debug_jpeg2000_exif} ) {
+#        $colorspace = $$info{ColorSpace} || $$info{Colorspace};
+#    }
+# Accordingly, we should prefer the value of `Colorspace` over `ColorSpace`
+# provided we get a useful value for the former.
+#
+sub extract_usable_colorspace {
   my $image_info = shift; # ImageInfo output
 
-  foreach my $key (keys %$image_info) {
+  # Default return value used only if there are no /Color[Ss]pace/ keys at all
+  my $value = 'Uncalibrated';
+  foreach my $key (reverse sort keys %$image_info) {
     if ($key =~ m/^Color[Ss]pace/) {
-      my $value = $image_info->{$key};
+      $value = $image_info->{$key};
       if ($value eq 'sRGB' || $value eq 'Grayscale') {
-        return $value;
+        last;
       }
     }
   }
-  return;
+  return $value;
 }
 
 1;
