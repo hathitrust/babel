@@ -31,10 +31,11 @@ sub new
     $self->{' streamfile'} = $file;
     # Colorspace (lowercase "s") == JPEG2000 tag
     # ColorSpace (uppercaes "s") == XMP tag
-    my $colorspace = $$info{Colorspace} || $$info{ColorSpace};
-    if ( $ENV{__debug_jpeg2000_exif} ) {
-        $colorspace = $$info{ColorSpace} || $$info{Colorspace};
-    }
+    my $colorspace = __extract_usable_colorspace($info);
+    #my $colorspace = $$info{Colorspace} || $$info{ColorSpace};
+    #if ( $ENV{__debug_jpeg2000_exif} ) {
+    #    $colorspace = $$info{ColorSpace} || $$info{Colorspace};
+    #}
 
     if ( $colorspace eq 'sRGB' ) {
         $self->colorspace('DeviceRGB')
@@ -69,6 +70,20 @@ sub new_api {
     $obj->{' api'}=$api;
 
     return($obj);
+}
+
+sub __extract_usable_colorspace {
+  my $image_info = shift; # ImageInfo output
+
+  foreach my $key (keys %$image_info) {
+    if ($key =~ m/^Color[Ss]pace/) {
+      my $value = $image_info->{$key};
+      if ($value eq 'sRGB' || $value eq 'Grayscale') {
+        return $value;
+      }
+    }
+  }
+  return;
 }
 
 1;
