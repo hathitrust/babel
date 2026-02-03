@@ -141,7 +141,7 @@ test.describe('imgsrv download', () => {
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
-    console.log('headers', downloadHeaders, 'status', downloadResponse.status());
+    // console.log('headers', downloadHeaders, 'status', downloadResponse.status());
 
     expect(downloadResponse.status()).toEqual(200);
     expect(downloadHeaders['content-disposition']).toMatch('attachment; filename=test.pd_open-seq_1_2.jpg');
@@ -167,7 +167,7 @@ test('download single selected page tiff, high resolution', async ({ request, pa
   const downloadHeaders = downloadResponse.headers();
   const downloadBody = await downloadResponse.text();
 
-  console.log('headers', downloadHeaders, 'body', downloadBody);
+  // console.log('headers', downloadHeaders, 'body', downloadBody);
 
   expect(downloadResponse.status()).toEqual(200);
   expect(downloadHeaders['content-disposition']).toContain('attachment; filename=test.pd_open-2');
@@ -184,7 +184,7 @@ test('download single selected page txt', async ({ request, page }) => {
   const downloadHeaders = downloadResponse.headers();
   const downloadBody = await downloadResponse.text();
 
-  console.log('headers', downloadHeaders, 'body', downloadBody);
+  // console.log('headers', downloadHeaders, 'body', downloadBody);
 
   expect(downloadResponse.status()).toEqual(200);
   expect(downloadHeaders['content-disposition']).toContain('attachment; filename=test-pd_open-2');
@@ -193,7 +193,7 @@ test('download single selected page txt', async ({ request, page }) => {
 });
 
 //more TIFF tests, because I can't figure this out
-test.only('download whole item tiff, full resolution', async ({ request, page }) => {
+test('download whole item tiff, full resolution', async ({ request, page }) => {
   //this fails at the callback
   //initialResponse returns <html><body>Restricted</body></html> instead of JSON
 
@@ -205,7 +205,7 @@ test.only('download whole item tiff, full resolution', async ({ request, page })
   );
   const initialBody = await initialResponse.text();
 
-  console.log(initialBody);
+  // console.log(initialBody);
 
   // should get a result like:
   // tunnelCallback('/cgi/imgsrv/download-status?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0', '/cgi/imgsrv/download/pdf?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0;attachment=1', 2, '1');
@@ -248,7 +248,7 @@ test.only('download whole item tiff, full resolution', async ({ request, page })
   // expect(downloadBody.length).toBeGreaterThan(512 * 1024);
 });
 //maybe a whole item jpeg will work??
-test.only('download whole item jpeg, high resolution', async ({ request, page }) => {
+test('download whole item jpeg, high resolution', async ({ request, page }) => {
   //nope, this fails, too
   //Restricted
   var currentTime = new Date().getTime();
@@ -259,7 +259,7 @@ test.only('download whole item jpeg, high resolution', async ({ request, page })
   );
   const initialBody = await initialResponse.text();
 
-  console.log(initialBody);
+  // console.log(initialBody);
 
   // should get a result like:
   // tunnelCallback('/cgi/imgsrv/download-status?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0', '/cgi/imgsrv/download/pdf?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0;attachment=1', 2, '1');

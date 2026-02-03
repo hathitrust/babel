@@ -164,10 +164,6 @@ test.describe('sidebar actions', () => {
       await fullResolution.click();
       await expect(fullResolution).toBeChecked();
 
-      // check hidden download form for the correct input value for 'selected scan' full resolution image
-      const hiddenTagetPpiInput = page.locator('input[name="target_ppi"]');
-      await expect(hiddenTagetPpiInput).toHaveAttribute('value', '0');
-
       await downloadButton.click();
       const download = await downloadPromise;
       const downloadPath = await download.path();

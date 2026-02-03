@@ -1,6 +1,5 @@
 <script>
   import { onMount, getContext } from 'svelte';
-  import { writable } from 'svelte/store';
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel';
@@ -27,8 +26,6 @@
   let totalSeq = manifest.totalSeq;
 
   let modal;
-  let tunnelFrame;
-  let tunnelWindow;
   let downloadAttempt = 0;
   let downloadInProgress = false;
   let cancellingDownload = false;
