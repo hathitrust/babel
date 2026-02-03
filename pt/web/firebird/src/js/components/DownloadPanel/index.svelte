@@ -29,9 +29,7 @@
   let modal;
   let tunnelFrame;
   let tunnelWindow;
-  let tunnelForm;
-  let tunnelFormTracker;
-  let tunnelFormAttempt = 0;
+  let downloadAttempt = 0;
   let downloadInProgress = false;
   let cancellingDownload = false;
   let trackerInterval;
@@ -77,6 +75,7 @@
         return response.json();
       })
       .then((data) => {
+        console.log(data)
         numProcessed += 1;
         updateProgress(data);
         if (status.done) {
@@ -99,7 +98,6 @@
       status.done = false;
       current = data.current_page;
       percent = 100 * (current / totalPages);
-      console.log('totalPages', totalPages);
     }
 
     if (lastPercent != percent) {
@@ -119,23 +117,14 @@
   }
 
   function trackInterval() {
-    let tracker = `D${tunnelFormAttempt}`;
+    let tracker = `D${downloadAttempt}`;
     let value = HT.cookieJar.getItem('tracker');
-    console.log('trackInterval', tracker, value)
     if (value && value.indexOf(tracker) > -1) {
-      console.log('tracker reached a non-null value, removing cookie, setting inProgress to false')
       HT.cookieJar.removeItem('tracker');
       downloadInProgress = false;
       clearInterval(trackerInterval);
       trackerInterval = null;
     }
-  }
-
-  function finalizeDownload() {
-    location.href = downloadUrl;
-    setTimeout(() => {
-      modal.hide();
-    }, 1500);
   }
 
   function closeDownload() {
@@ -164,11 +153,16 @@
     params.set('_', new Date().getTime());
     cancelUrl.search = params.toString();
 
-    let scriptEl = tunnelWindow.document.createElement('script');
-    scriptEl.type = 'module';
+    let scriptEl = document.createElement('script');
+    scriptEl.type = 'text/javascript';
     scriptEl.src = cancelUrl.toString();
+
     downloadInProgress = false;
-    tunnelWindow.document.body.appendChild(scriptEl);
+    document.body.appendChild(scriptEl);
+
+    scriptEl.onload = () => {
+      document.body.removeChild(scriptEl);
+    };
 
     console.log('-- download.cancelDownload');
     setTimeout(() => {
@@ -176,9 +170,28 @@
     }, 1000);
   }
 
-  function submitDownload() {
-    console.log('-- download.submitDownload');
-    // blah blah is this a short form or not
+  function buildAction(format, range, targetPPI) {
+    let action = '/cgi/imgsrv/';
+    if (format.startsWith('image-') && range.startsWith('current-page')) {
+      action += 'image';
+      sizeAttr = 'size';
+      sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
+    } else {
+      action += 'download/' + format.split('-')[0];
+      sizeAttr = 'target_ppi';
+      sizeValue = targetPPI;
+    }
+    return action;
+  }
+
+  function isPartialDownload() {
+    return range == 'selected-pages' || range.startsWith('current-page');
+  }
+
+  function submitDownload(e) {
+    e.preventDefault();
+    console.log('-- download.fetchDownload')
+        
     errorMessage = '';
     numAttempts = 0;
     numProcessed = 0;
@@ -230,38 +243,85 @@
     console.log('-- download selection', selection);
 
     let partialUpperLimit = format == 'image-tiff' ? 1 : 10; //If format is TIFF, upper limit is 1, otherwise it's 10
-    console.log('partialUpperLimit', partialUpperLimit)
     if (isPartialDownload() && selection.pages.length <= partialUpperLimit) { 
-      console.log('hi from the tunnel! selection.pages.length: ', selection.pages.length)
-      // use the tunnel
-      tunnelFormAttempt = tunnelFormAttempt + 1;
+
+      downloadAttempt = downloadAttempt + 1;
       downloadInProgress = true;
 
-      tunnelFormTracker.value = `D${tunnelFormAttempt}`;
+      const tracker = `D${downloadAttempt}`
 
-      tunnelForm.querySelectorAll('input[name="seq"]').forEach((inputEl) => {
-        console.log('goodbye seq input', inputEl)
-        inputEl.remove();
-      });
-
+      // build URL with query parameters
+      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
+      let params = new URLSearchParams();
+      params.set('id', manifest.id);
+      params.set('attachment', '1');
+      params.set('tracker', tracker);
+      
+      // add seq parameters
       selection.seq.forEach((seq) => {
-        console.log("appending seq", seq)
-        let inputEl = document.createElement('input');
-        inputEl.type = 'hidden';
-        inputEl.name = 'seq';
-        inputEl.value = seq;
-        tunnelForm.appendChild(inputEl);
+        params.append('seq', seq);
       });
+      
+      // these were in the hidden form that was removed
+      if (format == 'image-tiff' || format == 'image-jpeg') {
+        params.set('format', `image/${format.split('-')[1]}`);
+        params.set(sizeAttr, sizeValue);
+      }
+      
+      requestUrl.search = params.toString();
 
       trackerInterval = setInterval(trackInterval, 100);
-      tunnelForm.querySelectorAll('input').forEach((inputEl) => {
-        console.log('tunnel form input', inputEl)
+
+      let filename;
+    
+      fetch(requestUrl.toString(), { 
+        credentials: 'include',
+        method: 'GET'
       })
-      tunnelForm.submit();
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Download failed: ${response.statusText}`);
+          }
+
+          const disposition = response.headers.get("Content-Disposition");
+          filename = "download";
+
+          if (disposition && disposition.includes("filename=")) {
+            filename = disposition
+              .split("filename=")[1]
+              .replace(/"/g, "");
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          // create temporary, hidden download link to click
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = filename;
+          
+          document.body.appendChild(a);
+          a.click();
+          
+          // remove hidden link
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          downloadInProgress = false;
+        })
+        .catch(error => {
+          console.error('Download error:', error);
+          errorMessage = 'Download failed. Please try again.';
+          downloadInProgress = false;
+          if (trackerInterval) {
+            clearInterval(trackerInterval);
+            trackerInterval = null;
+          }
+        });
     } else {
-      // start the download in the iframe
-      let scriptEl = tunnelWindow.document.createElement('script');
-      scriptEl.type = 'module';
+      let scriptEl = document.createElement('script');
+      scriptEl.type = 'text/javascript';
 
       let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
       let params = new URLSearchParams();
@@ -290,30 +350,25 @@
       params.set('_', new Date().getTime());
 
       requestUrl.search = params.toString();
-      console.log('search params', params.toString())
       scriptEl.src = requestUrl.toString();
 
       downloadInProgress = true;
-      tunnelWindow.document.body.appendChild(scriptEl);
+    
+      // inject script
+      document.body.appendChild(scriptEl);
+      
+      // remove script after it loads
+      scriptEl.onload = () => {
+        document.body.removeChild(scriptEl);
+      };
+      //handle error if something goes wrong
+      scriptEl.onerror = () => {
+        document.body.removeChild(scriptEl);
+        errorMessage = 'Failed to start download. Please try again.';
+        downloadInProgress = false;
+      };
     }
-  }
-
-  function buildAction(format, range, targetPPI) {
-    let action = '/cgi/imgsrv/';
-    if (format.startsWith('image-') && range.startsWith('current-page')) {
-      action += 'image';
-      sizeAttr = 'size';
-      sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
-    } else {
-      action += 'download/' + format.split('-')[0];
-      sizeAttr = 'target_ppi';
-      sizeValue = targetPPI;
-    }
-    return action;
-  }
-
-  function isPartialDownload() {
-    return range == 'selected-pages' || range.startsWith('current-page');
+     
   }
 
   function flattenSelection(selected) {
@@ -375,21 +430,11 @@
       return;
     }
 
-    if (!tunnelFrame) {
-      return;
-    }
-
-    // this will be the log tracking
-    tunnelWindow = tunnelFrame.contentWindow;
-
     // assign global callback
-    tunnelWindow.tunnelCallback = function () {
+     window.tunnelCallback = function () {
       callback(arguments);
     };
 
-    // return () => {
-    //   emitter.off('location.updated', updateSeq);
-    // }
   });
 </script>
 
@@ -624,7 +669,7 @@
             type="button"
             class="btn btn-outline-dark"
             disabled={downloadInProgress}
-            on:click|preventDefault={submitDownload}
+            on:click={submitDownload}
             id="submit-download"
           >
             Download
@@ -664,30 +709,6 @@
           </p>
         {/if}
       </form>
-      <form class="d-none" bind:this={tunnelForm} method="GET" {action} target="download-module-xxx">
-        <input type="hidden" name="id" value={manifest.id} />
-        <input type="hidden" name="attachment" value="1" />
-        <input type="hidden" name="tracker" value="" bind:this={tunnelFormTracker} />
-        <!-- {#each selection.seq as seq}
-      <input type="hidden" name="seq" value={seq} />
-      {/each} -->
-        {#if format == 'image-tiff' || format == 'image-jpeg'}
-          <input type="hidden" name="format" value="image/{format.split('-')[1]}" />
-          <input type="hidden" name={sizeAttr} value={sizeValue} />
-        {:else if format == 'plaintext-zip'}
-          <!-- do something else -->
-        {/if}
-      </form>
-      <iframe
-        bind:this={tunnelFrame}
-        class="visually-hidden"
-        style:opacity={0}
-        aria-hidden="true"
-        title="Tunnel Download Tracker"
-        name="download-module-xxx"
-        tabindex="-1"
-        sandbox="allow-scripts allow-same-origin allow-downloads"
-      ></iframe>
     {:else}
       <p>This item cannot be downloaded.</p>
     {/if}
