@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   imagemagick \
   libapache-session-perl \
+  libcgi-compile-perl \
+  libcgi-emulate-psgi-perl \
   libcgi-psgi-perl \
   libconfig-tiny-perl \
   libdata-page-perl \
@@ -19,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libdevel-cover-perl \
   libfcgi-perl \
   libfcgi-procmanager-perl \
+  libfile-slurp-perl \
   libimage-exiftool-perl \
   libimage-info-perl \
   libimage-size-perl \
@@ -86,7 +89,8 @@ WORKDIR /htapps/babel
 FROM babel-base AS imgsrv-fcgi
 
 # Util used for testing and connecting to fast-cgi
-RUN apt-get -y install libfcgi0ldbl
+RUN apt-get -y install --no-install-recommends libfcgi0ldbl libfcgi-bin
+
 
 WORKDIR /htapps/babel/imgsrv
 CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
