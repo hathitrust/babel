@@ -1,9 +1,6 @@
-FROM debian:bookworm AS babel-base
+FROM debian:trixie AS babel-base
 
-# # does not work bookworm - evaluate if it's needed
-# RUN sed -i 's/main.*/main contrib non-free/' /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   autoconf \
   bison \
   build-essential \
@@ -11,9 +8,11 @@ RUN apt-get update && apt-get install -y \
   curl \
   file \
   git \
-  grokj2k-tools \
   imagemagick \
   libapache-session-perl \
+  libcgi-compile-perl \
+  libcgi-emulate-psgi-perl \
+  libcgi-psgi-perl \
   libconfig-tiny-perl \
   libdata-page-perl \
   libdate-calc-perl \
@@ -22,22 +21,29 @@ RUN apt-get update && apt-get install -y \
   libdevel-cover-perl \
   libfcgi-perl \
   libfcgi-procmanager-perl \
+  libfile-slurp-perl \
   libimage-exiftool-perl \
   libimage-info-perl \
   libimage-size-perl \
   libio-string-perl \
   libipc-run-perl \
+  libip-geolocation-mmdb-perl \
   libjson-xs-perl \
   liblist-moreutils-perl \
   libmailtools-perl \
   libmime-types-perl \
   libnet-dns-perl \
   libplack-perl \
+  libprometheus-tiny-shared-perl \
   libtest-class-perl \
   libtest-lwp-useragent-perl \
   libtry-tiny-perl \
+  liburi-perl \
+  libuuid-perl \
+  libuuid-tiny-perl \
   libxml-libxml-perl \
   libxml-libxslt-perl \
+  libyaml-perl \
   libyaml-libyaml-perl \
   netpbm \
   perl \
@@ -48,15 +54,15 @@ RUN apt-get update && apt-get install -y \
   zip \
   zlib1g-dev
 
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://apt.lib.umich.edu/mlibrary-archive-keyring.gpg -o /etc/apt/keyrings/mlibrary-archive-keyring.gpg
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/mlibrary-archive-keyring.gpg] https://apt.lib.umich.edu trixie main" > /etc/apt/sources.list.d/mlibrary.list
+
+RUN apt-get update && apt-get install -y --no-install-recommends grokj2k
+
 RUN cpanm --notest \
-  File::Pairtree \
-  URI::Escape \
-  CGI::PSGI \
-  IP::Geolocation::MMDB \
-  Prometheus::Tiny::Shared \
-  UUID \
-  UUID::Tiny \
-  YAML::Any
+  File::Pairtree
 
 WORKDIR /htapps/babel/geoip
 ADD --chmod=644 https://github.com/maxmind/MaxMind-DB/blob/main/test-data/GeoIP2-Country-Test.mmdb?raw=true GeoIP2-Country.mmdb
@@ -83,7 +89,8 @@ WORKDIR /htapps/babel
 FROM babel-base AS imgsrv-fcgi
 
 # Util used for testing and connecting to fast-cgi
-RUN apt-get -y install libfcgi0ldbl
+RUN apt-get -y install --no-install-recommends libfcgi0ldbl libfcgi-bin
+
 
 WORKDIR /htapps/babel/imgsrv
 CMD ["/htapps/babel/imgsrv/bin/startup_imgsrv"]
