@@ -447,7 +447,7 @@ sub _process_source {
                 "-i", $filename,
                 "-o", "$Process::Globals::stdout.bmp",
                 "-r", $self->output->{metadata}->{r},
-                "-num_threads", "0",
+                "-H", "0",
             );
         } else {
             $cmd = $Process::Globals::kdu_expand;

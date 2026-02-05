@@ -1,6 +1,6 @@
 # FROM hathitrust/feed_base:bullseye
 
-FROM debian:bookworm
+FROM debian:trixie
 
 RUN apt-get update && apt-get install -y \
   build-essential \
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
   libipc-run-perl \
   libjson-xs-perl \
   libmailtools-perl \
+  libprometheus-tiny-shared \
   libtest-class-perl \
   libwww-perl \
   libxml-libxml-perl \
@@ -27,8 +28,7 @@ RUN apt-get update && apt-get install -y \
   zip
 
 RUN cpanm --notest \
-  File::Pairtree \
-  Prometheus::Tiny::Shared
+  File::Pairtree
 
 RUN ln -s /tmp /ram
 
