@@ -45,6 +45,8 @@
 
   let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
 
+  const _mtm = (window._mtm = window._mtm || []);
+
   function callback(argv) {
     console.log('-- callback', downloadInProgress, argv);
     if (downloadInProgress) {
@@ -311,6 +313,7 @@
           console.error('Download error:', error);
           errorMessage = 'Download failed. Please try again.';
           downloadInProgress = false;
+          _mtm.push({'event': 'pt-small-download-error', 'downloadUrl': `${requestUrl.toString()}`});
           if (trackerInterval) {
             clearInterval(trackerInterval);
             trackerInterval = null;
@@ -363,6 +366,7 @@
         document.body.removeChild(scriptEl);
         errorMessage = 'Failed to start download. Please try again.';
         downloadInProgress = false;
+        _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
       };
     }
      
