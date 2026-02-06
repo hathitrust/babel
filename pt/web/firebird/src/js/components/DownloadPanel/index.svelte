@@ -1,5 +1,6 @@
 <script>
   import { onMount, getContext } from 'svelte';
+  import {SvelteURL, SvelteURLSearchParams} from 'svelte/reactivity'
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel';
@@ -9,7 +10,7 @@
   const emitter = getContext('emitter');
   const HT = getContext('HT');
 
-  const formatTitle = {};
+  const formatTitle = $state({});
   formatTitle['pdf'] = 'PDF';
   formatTitle['epub'] = 'EPUB';
   formatTitle['plaintext'] = 'Text (.txt)';
@@ -20,32 +21,73 @@
   let currentView = manifest.currentView;
   let currentSeq = manifest.currentSeq;
   let currentLocation = manifest.currentLocation;
+  
   let selected = manifest.selected;
-  let format = 'pdf';
-  let range = manifest.allowFullDownload ? 'volume' : 'current-page';
+  let format = $state('pdf');
+  let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
   let totalSeq = manifest.totalSeq;
 
-  let modal;
+  let modal = $state();
   let downloadAttempt = 0;
-  let downloadInProgress = false;
-  let cancellingDownload = false;
+  let request = new SvelteURL(`${location.protocol}//${HT.service_domain}`)
+  let downloadInProgress = $state(false);
+  let cancellingDownload = $state(false);
   let trackerInterval;
-  let progressUrl, downloadUrl, totalPages;
+  let progressUrl, downloadUrl = $state(), totalPages;
   let lastPercent;
-  let status = { done: false, percent: -1 };
+  let status = $state({ done: false, percent: -1 });
   let numAttempts = 0;
   let numProcessed = 0;
-  let selection = { pages: [], seq: [] };
-
-  let targetPPI = '300';
+  let selection = $state({ pages: [] });
+  let simpleDownload = $derived(isSimpleDownload());
+  let targetPPI = $state('300');
   let sizeValue = '';
   let sizeAttr;
+  let action = $derived(buildAction());
 
-  let errorMessage;
+  let flattenedSelection = $state([]);
+  let clearSelectionLabel = $state('Clear selection');
+
+  let emptySelection = $derived(range == 'selected-pages' && selection.pages.length == 0);
+  let tooManyTiffs = $derived(range == 'selected-pages' && format == 'image-tiff' && selection.pages.length > 10);
+  let largeTiffVolume = $derived(range == 'volume' && format == 'image-tiff' && totalSeq > 10);
+
+  let buttonDisabled = $derived(emptySelection || tooManyTiffs || largeTiffVolume);
+  let errorMessage = $derived(
+    emptySelection ? `You haven't selected any pages to download.
+        To select pages, use the selection checkbox in the page toolbar.` :
+    tooManyTiffs ? `You have selected ${
+          selection.pages.length
+        } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.` :
+    largeTiffVolume ? `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.` :
+    null
+  );
 
   let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
 
   const _mtm = (window._mtm = window._mtm || []);
+
+  let simpleUrl = $derived.by(() => {
+    let newAction = buildAction();
+		let params = new SvelteURLSearchParams()
+		if (downloadAttempt == 0) {
+      downloadAttempt = 1;
+    }
+    params.set('id', manifest.id);
+    params.set('attachment', '1');
+    params.set('tracker', downloadAttempt.toString());
+		
+		if (format == 'image-tiff' || format == 'image-jpeg') {
+      params.set('format', `image/${format.split('-')[1]}`);
+      params.set(sizeAttr, sizeValue);
+    }
+	
+			selection.pages.forEach((seq) => {
+	      params.append('seq', seq);
+	    });
+		
+		return `${request}${newAction}?${params.toString()}`
+	})
 
   function callback(argv) {
     console.log('-- callback', downloadInProgress, argv);
@@ -55,7 +97,6 @@
         console.log('download: already polling');
         return;
       }
-
       trackerInterval = setInterval(checkStatusInterval, 2500);
       checkStatusInterval();
       modal.show();
@@ -86,6 +127,7 @@
   }
 
   function updateProgress(data) {
+    console.log(data)
     let percent;
     let current = data.status;
     if (current == 'EOT' || current == 'DONE') {
@@ -98,32 +140,19 @@
       current = data.current_page;
       percent = 100 * (current / totalPages);
     }
-
     if (lastPercent != percent) {
       lastPercent = percent;
       numAttempts = 0;
     } else {
       numAttempts += 1;
     }
-
     if (numAttempts > 100) {
       status.error = true;
     }
 
     status.percent = percent;
-    console.log('-- updateStatus', status);
+    console.log('-- updateStatus', $state.snapshot(status));
     status = status;
-  }
-
-  function trackInterval() {
-    let tracker = `D${downloadAttempt}`;
-    let value = HT.cookieJar.getItem('tracker');
-    if (value && value.indexOf(tracker) > -1) {
-      HT.cookieJar.removeItem('tracker');
-      downloadInProgress = false;
-      clearInterval(trackerInterval);
-      trackerInterval = null;
-    }
   }
 
   function closeDownload() {
@@ -144,12 +173,12 @@
 
     cancellingDownload = true;
 
-    let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
+    let cancelUrl = new URL(`${location.protocol}//${HT.service_domain}/${action}`);
     let params = new URLSearchParams();
     params.set('id', manifest.id);
     params.set('callback', 'tunnelCallback');
     params.set('stop', '1');
-    params.set('_', new Date().getTime());
+    params.set('_', new Date().getTime().toString());
     cancelUrl.search = params.toString();
 
     let scriptEl = document.createElement('script');
@@ -169,9 +198,20 @@
     }, 1000);
   }
 
-  function buildAction(format, range, targetPPI) {
-    let action = '/cgi/imgsrv/';
-    if (format.startsWith('image-') && range.startsWith('current-page')) {
+  function isSimpleDownload() {
+		let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
+		if((range !== 'volume') && (selection.pages.length <= partialUpperLimit)) {		
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+  function buildAction() {
+    $inspect.trace()
+    let action = 'cgi/imgsrv/';
+    if (format.startsWith('image-') && (range == $currentSeq)) {
+      console.log('image that is current page')
       action += 'image';
       sizeAttr = 'size';
       sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
@@ -183,158 +223,23 @@
     return action;
   }
 
-  function isPartialDownload() {
-    return range == 'selected-pages' || range.startsWith('current-page');
-  }
+  function buildCallbackDownloadUrl() {
+    let scriptEl = document.createElement('script');
+    scriptEl.type = 'text/javascript';
 
-  function submitDownload(e) {
-    e.preventDefault();
-    console.log('-- download.fetchDownload')
-        
-    errorMessage = '';
-    numAttempts = 0;
-    numProcessed = 0;
-
-    selection.pages.length = 0;
-    if (range == 'selected-pages') {
-      selection.pages = Array.from($selected);
-      selection.isSelection = true;
-      console.log('-- selection', selection);
-      if (selection.pages.length == 0) {
-        errorMessage = `You haven't selected any pages to download.
-        To select pages, use the selection checkbox in the page toolbar.`;
-        HT.live.announce(errorMessage);
-        return;
-      } else if (format == 'image-tiff' && selection.pages.length > 10) {
-        errorMessage = `You have selected ${
-          Array.from($selected).length
-        } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.`;
-        HT.live.announce(errorMessage);
-        return;
-      }
-    } else if (format == 'image-tiff' && range == 'volume' && totalSeq > 10) {
-      errorMessage = `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.`;
-      HT.live.announce(errorMessage);
-      return;
-    } else if (range.startsWith('current-page')) {
-      let page;
-      switch (range) {
-        case 'current-page':
-          page = $currentSeq;
-          break;
-        case 'current-page-verso':
-          page = $currentLocation.verso.seq;
-          break;
-        case 'current-page-recto':
-          page = $currentLocation.recto.seq;
-          break;
-      }
-      if (!page) {
-        // possibly impossible
-      }
-      selection.pages = [page];
-    }
-
-    if (selection.pages.length > 0) {
-      selection.seq = selection.pages;
-    }
-    selection = selection;
-    console.log('-- download selection', selection);
-
-    let partialUpperLimit = format == 'image-tiff' ? 1 : 10; //If format is TIFF, upper limit is 1, otherwise it's 10
-    if (isPartialDownload() && selection.pages.length <= partialUpperLimit) { 
-
-      downloadAttempt = downloadAttempt + 1;
-      downloadInProgress = true;
-
-      const tracker = `D${downloadAttempt}`
-
-      // build URL with query parameters
-      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
-      let params = new URLSearchParams();
-      params.set('id', manifest.id);
-      params.set('attachment', '1');
-      params.set('tracker', tracker);
-      
-      // add seq parameters
-      selection.seq.forEach((seq) => {
-        params.append('seq', seq);
-      });
-      
-      // these were in the hidden form that was removed
-      if (format == 'image-tiff' || format == 'image-jpeg') {
-        params.set('format', `image/${format.split('-')[1]}`);
-        params.set(sizeAttr, sizeValue);
-      }
-      
-      requestUrl.search = params.toString();
-
-      trackerInterval = setInterval(trackInterval, 100);
-
-      let filename;
-    
-      fetch(requestUrl.toString(), { 
-        credentials: 'include',
-        method: 'GET'
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Download failed: ${response.statusText}`);
-          }
-
-          const disposition = response.headers.get("Content-Disposition");
-          filename = "download";
-
-          if (disposition && disposition.includes("filename=")) {
-            filename = disposition
-              .split("filename=")[1]
-              .replace(/"/g, "");
-          }
-          return response.blob();
-        })
-        .then(blob => {
-          // create temporary, hidden download link to click
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = filename;
-          
-          document.body.appendChild(a);
-          a.click();
-          
-          // remove hidden link
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-          
-          downloadInProgress = false;
-        })
-        .catch(error => {
-          console.error('Download error:', error);
-          errorMessage = 'Download failed. Please try again.';
-          downloadInProgress = false;
-          _mtm.push({'event': 'pt-small-download-error', 'downloadUrl': `${requestUrl.toString()}`});
-          if (trackerInterval) {
-            clearInterval(trackerInterval);
-            trackerInterval = null;
-          }
-        });
-    } else {
-      let scriptEl = document.createElement('script');
-      scriptEl.type = 'text/javascript';
-
-      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}${action}`);
+      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}/${action}`);
       let params = new URLSearchParams();
       params.set('id', manifest.id);
 
-      if (selection.seq) {
-        selection.seq.forEach((_seq) => {
-          params.append('seq', _seq);
+      if (selection.pages) {
+        selection.pages.forEach((seq) => {
+          params.append('seq', seq);
         });
       }
       switch (format) {
         case 'image-jpeg':
         case 'image-tiff':
+          console.log('made it to format switch')
           params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
           params.set('target_ppi', targetPPI);
           params.set('bundle_format', 'zip');
@@ -347,7 +252,7 @@
           break;
       }
       params.set('callback', 'tunnelCallback');
-      params.set('_', new Date().getTime());
+      params.set('_', new Date().getTime().toString());
 
       requestUrl.search = params.toString();
       scriptEl.src = requestUrl.toString();
@@ -365,11 +270,44 @@
       scriptEl.onerror = () => {
         document.body.removeChild(scriptEl);
         errorMessage = 'Failed to start download. Please try again.';
+        HT.live.announce(errorMessage);
         downloadInProgress = false;
         _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
       };
     }
-     
+
+  function calculateSelection() {
+    $inspect.trace()
+    if (range == 'selected-pages') {
+      selection.pages = Array.from($selected)
+    } else if (range == 'volume') {
+      selection.pages = []
+    } else {
+      let page;
+      switch (range) {
+        case 'current-page':
+          page = $currentSeq;
+          break;
+        case 'current-page-verso':
+          page = $currentLocation.verso.seq;
+          break;
+        case 'current-page-recto':
+          page = $currentLocation.recto.seq;
+          break;
+      }
+      selection.pages = [page]
+    }
+    console.log('view', $state.snapshot($currentView))
+  }
+
+  function submitDownload(e) {
+    e.preventDefault();
+    console.log('-- download.fetchDownload')
+        
+    numAttempts = 0;
+    numProcessed = 0;
+
+    buildCallbackDownloadUrl(); 
   }
 
   function flattenSelection(selected) {
@@ -414,23 +352,46 @@
     emitter.emit('page.goto', { seq: tmp[0] });
   }
 
-  let flattenedSelection = [];
-  $: clearSelectionLabel = 'Clear selection';
-  $: action = buildAction(format, range, targetPPI);
-  $: if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
-    range = 'volume';
-  }
-  $: if (flattenSelection($selected)) {
-    clearSelectionLabel = `Clear selected scans: ${flattenedSelection.join(', ')}`;
-    range = 'selected-pages';
-  }
-  $: meta = manifest.meta($currentSeq);
+
+  $effect(() => {
+    if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
+      range = 'volume';
+    }
+  });
+
+  $effect(() => {
+    if (flattenSelection($selected)) {
+      clearSelectionLabel = `Clear selected scans: ${flattenedSelection.join(', ')}`;
+      range = 'selected-pages';
+    }
+  });
+  $effect(() => {
+		calculateSelection()
+	})
+  $effect(() => {
+    if ((range !== 'volume' && range !== 'selected-pages')||(totalSeq > 10 && format == 'image-tiff' && range == 'volume')) {
+      if ($currentView == '1up') {
+        range = 'current-page'
+      } else if ($currentView == '2up') {
+       const viewWithCurrentSeq = Object.keys($currentLocation)
+        .find(key => $currentLocation[key].seq === $currentSeq); 
+      range = `current-page-${viewWithCurrentSeq}` 
+      } else if ($currentView == 'thumb') {
+        range = ''
+      }
+    }
+  })
+  let meta = $derived(manifest.meta($currentSeq));
+  $effect(() => {
+    if (errorMessage) {
+      HT.live.announce(errorMessage);
+    }
+  });
 
   onMount(() => {
     if (!allowDownload) {
       return;
     }
-
     // assign global callback
      window.tunnelCallback = function () {
       callback(arguments);
@@ -440,280 +401,293 @@
 </script>
 
 <Panel parent="#controls">
-  <i class="fa-solid fa-download" slot="icon" aria-hidden="true"></i>
-  <svelte:fragment slot="title">Download</svelte:fragment>
-  <svelte:fragment slot="body">
-    {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
-      <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
-    {:else if allowDownload}
-      <form aria-label="Download options">
-        <fieldset class="mb-3">
-          <legend class="fs-5">Format</legend>
-          <div class="form-check">
-            <input
-              name="format"
-              class="form-check-input"
-              type="radio"
-              value="pdf"
-              id="format-pdf"
-              bind:group={format}
-            />
-            <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
-          </div>
-          {#if manifest.allowFullDownload}
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="epub"
-                id="format-epub"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
-            </div>
-          {/if}
-          <div class="form-check">
-            <input
-              name="format"
-              class="form-check-input"
-              type="radio"
-              value="plaintext"
-              id="format-plaintext"
-              bind:group={format}
-            />
-            <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
-          </div>
-          {#if manifest.allowFullDownload}
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="plaintext-zip"
-                id="format-archive"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-archive"> Text (.zip) </label>
-            </div>
-          {/if}
-          <div class="form-check">
-            <input
-              name="format"
-              class="form-check-input"
-              type="radio"
-              value="image-jpeg"
-              id="format-image-jpeg"
-              bind:group={format}
-            />
-            <label class="form-check-label" for="format-image-jpeg"> Image (JPEG) </label>
-          </div>
-          <div class="form-check">
-            <input
-              name="format"
-              class="form-check-input"
-              type="radio"
-              value="image-tiff"
-              id="format-image-tiff"
-              bind:group={format}
-            />
-            <label class="form-check-label" for="format-image-tiff"> Image (TIFF) </label>
-          </div>
-        </fieldset>
-
-        {#if format.startsWith('image-')}
+  {#snippet icon()}
+    <i class="fa-solid fa-download"  aria-hidden="true"></i>
+  {/snippet}
+  {#snippet title()}
+    Download
+  {/snippet}
+  {#snippet body()}
+      {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
+        <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
+      {:else if allowDownload}
+        <form aria-label="Download options">
           <fieldset class="mb-3">
-            <legend class="fs-5">Image Resolution</legend>
+            <legend class="fs-5">Format</legend>
             <div class="form-check">
               <input
-                name="target-ppi"
+                name="format"
                 class="form-check-input"
                 type="radio"
-                value="300"
-                id="image-target-ppi-300"
-                bind:group={targetPPI}
+                value="pdf"
+                id="format-pdf"
+                bind:group={format}
               />
-              <label class="form-check-label" for="image-target-ppi-300">
-                High / 300 dpi
-                {#if meta.resolution}
-                  ({meta.screenResolution})
-                {/if}
-              </label>
+              <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
+            </div>
+            {#if manifest.allowFullDownload}
+              <div class="form-check">
+                <input
+                  name="format"
+                  class="form-check-input"
+                  type="radio"
+                  value="epub"
+                  id="format-epub"
+                  bind:group={format}
+                />
+                <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
+              </div>
+            {/if}
+            <div class="form-check">
+              <input
+                name="format"
+                class="form-check-input"
+                type="radio"
+                value="plaintext"
+                id="format-plaintext"
+                bind:group={format}
+              />
+              <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
+            </div>
+            {#if manifest.allowFullDownload}
+              <div class="form-check">
+                <input
+                  name="format"
+                  class="form-check-input"
+                  type="radio"
+                  value="plaintext-zip"
+                  id="format-archive"
+                  bind:group={format}
+                />
+                <label class="form-check-label" for="format-archive"> Text (.zip) </label>
+              </div>
+            {/if}
+            <div class="form-check">
+              <input
+                name="format"
+                class="form-check-input"
+                type="radio"
+                value="image-jpeg"
+                id="format-image-jpeg"
+                bind:group={format}
+              />
+              <label class="form-check-label" for="format-image-jpeg"> Image (JPEG) </label>
             </div>
             <div class="form-check">
               <input
-                name="target-ppi"
+                name="format"
                 class="form-check-input"
                 type="radio"
-                value="0"
-                id="image-target-ppi-full"
-                bind:group={targetPPI}
+                value="image-tiff"
+                id="format-image-tiff"
+                bind:group={format}
               />
-              <label class="form-check-label" for="image-target-ppi-full">
-                Full / 600 dpi
-                {#if meta.resolution}
-                  ({meta.size.width}x{meta.size.height})
-                {/if}
-              </label>
+              <label class="form-check-label" for="format-image-tiff"> Image (TIFF) </label>
             </div>
           </fieldset>
-        {/if}
 
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <fieldset class="mb-3" id="download-range">
-          <legend class="fs-5">Range</legend>
-          <div aria-live="polite" aria-atomic="true">
-            {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume')}
-              <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">
-                Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.
-              </p>
-            {/if}
-          </div>
+          {#if format.startsWith('image-')}
+            <fieldset class="mb-3">
+              <legend class="fs-5">Image Resolution</legend>
+              <div class="form-check">
+                <input
+                  name="target-ppi"
+                  class="form-check-input"
+                  type="radio"
+                  value="300"
+                  id="image-target-ppi-300"
+                  bind:group={targetPPI}
+                />
+                <label class="form-check-label" for="image-target-ppi-300">
+                  High / 300 dpi
+                  {#if meta.resolution}
+                    ({meta.screenResolution})
+                  {/if}
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  name="target-ppi"
+                  class="form-check-input"
+                  type="radio"
+                  value="0"
+                  id="image-target-ppi-full"
+                  bind:group={targetPPI}
+                />
+                <label class="form-check-label" for="image-target-ppi-full">
+                  Full / 600 dpi
+                  {#if meta.resolution}
+                    ({meta.size.width}x{meta.size.height})
+                  {/if}
+                </label>
+              </div>
+            </fieldset>
+          {/if}
 
-          {#if $currentView == '1up'}
-            <div class="form-check">
-              <input
-                name="range"
-                class="form-check-input"
-                type="radio"
-                value="current-page"
-                id="range-current-page"
-                disabled={format == 'epub' || format == 'plaintext-zip'}
-                bind:group={range}
-              />
-              <label class="form-check-label" for="range-current-page">
-                Current page scan (#{$currentSeq})
-              </label>
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <fieldset class="mb-3" id="download-range">
+            <legend class="fs-5">Range</legend>
+            <div aria-live="polite" aria-atomic="true">
+              {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume')}
+                <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">
+                  Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.
+                </p>
+              {/if}
             </div>
-          {:else if $currentView == '2up'}
-            {#if $currentLocation.verso}
+
+            {#if $currentView == '1up'}
               <div class="form-check">
                 <input
                   name="range"
                   class="form-check-input"
                   type="radio"
-                  value="current-page-verso"
-                  id="range-current-verso-page"
+                  value='current-page'
+                  id="range-current-page"
                   disabled={format == 'epub' || format == 'plaintext-zip'}
                   bind:group={range}
                 />
-                <label class="form-check-label" for="range-current-verso-page">
-                  Current verso page scan (#{$currentLocation.verso.seq})
+                <label class="form-check-label" for="range-current-page">
+                  Current page scan (#{$currentSeq})
                 </label>
               </div>
+            {:else if $currentView == '2up'}
+              {#if $currentLocation.verso}
+                <div class="form-check">
+                  <input
+                    name="range"
+                    class="form-check-input"
+                    type="radio"
+                    value='current-page-verso'
+                    id="range-current-verso-page"
+                    disabled={format == 'epub' || format == 'plaintext-zip'}
+                    bind:group={range}
+                  />
+                  <label class="form-check-label" for="range-current-verso-page">
+                    Current verso page scan (#{$currentLocation.verso.seq})
+                  </label>
+                </div>
+              {/if}
+              {#if $currentLocation.recto}
+                <div class="form-check">
+                  <input
+                    name="range"
+                    class="form-check-input"
+                    type="radio"
+                    value='current-page-recto'
+                    id="range-current-recto-page"
+                    disabled={format == 'epub' || format == 'plaintext-zip'}
+                    bind:group={range}
+                  />
+                  <label class="form-check-label" for="range-current-recto-page">
+                    Current right page scan (#{$currentLocation.recto.seq})
+                  </label>
+                </div>
+              {/if}
             {/if}
-            {#if $currentLocation.recto}
+            {#if manifest.allowFullDownload}
               <div class="form-check">
                 <input
                   name="range"
                   class="form-check-input"
                   type="radio"
-                  value="current-page-recto"
-                  id="range-current-recto-page"
+                  value="volume"
+                  id="range-download-volume"
+                  disabled={totalSeq > 10 && format == 'image-tiff'}
+                  bind:group={range}
+                />
+                <label class="form-check-label" for="range-download-volume"> Whole item </label>
+              </div>
+              <div class="form-check">
+                <input
+                  name="range"
+                  class="form-check-input"
+                  type="radio"
+                  value="selected-pages"
+                  id="range-selected-pages"
                   disabled={format == 'epub' || format == 'plaintext-zip'}
                   bind:group={range}
                 />
-                <label class="form-check-label" for="range-current-recto-page">
-                  Current right page scan (#{$currentLocation.recto.seq})
-                </label>
+                <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
+              </div>
+
+              <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
+                <ul class="list-unstyled mx-4 mb-1">
+                  {#each flattenedSelection as sel}
+                    <li>
+                      <button type="button" class="btn btn-link py-0" onclick={() => gotoSelection(sel)}>{sel}</button>
+                    </li>
+                  {/each}
+                </ul>
+                <button
+                  class="btn btn-outline-dark align-self-start"
+                  type="button"
+                  aria-label={clearSelectionLabel}
+                  use:tooltippy={{ content: 'Clear selection' }}
+                  onclick={() => manifest.clearSelection()}
+                >
+                  <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
+                </button>
               </div>
             {/if}
-          {/if}
-          {#if manifest.allowFullDownload}
-            <div class="form-check">
-              <input
-                name="range"
-                class="form-check-input"
-                type="radio"
-                value="volume"
-                id="range-download-volume"
-                bind:group={range}
-              />
-              <label class="form-check-label" for="range-download-volume"> Whole item </label>
-            </div>
-            <div class="form-check">
-              <input
-                name="range"
-                class="form-check-input"
-                type="radio"
-                value="selected-pages"
-                id="range-selected-pages"
-                disabled={format == 'epub' || format == 'plaintext-zip'}
-                bind:group={range}
-              />
-              <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
-            </div>
-
-            <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
-              <ul class="list-unstyled mx-4 mb-1">
-                {#each flattenedSelection as sel}
-                  <li>
-                    <button type="button" class="btn btn-link py-0" on:click={() => gotoSelection(sel)}>{sel}</button>
-                  </li>
-                {/each}
-              </ul>
-              <button
-                class="btn btn-outline-dark align-self-start"
-                type="button"
-                aria-label={clearSelectionLabel}
-                use:tooltippy={{ content: 'Clear selection' }}
-                on:click={() => manifest.clearSelection()}
-              >
-                <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
-              </button>
-            </div>
-          {/if}
-        </fieldset>
-
-        <p class="mb-3">
-          <button
-            type="button"
-            class="btn btn-outline-dark"
-            disabled={downloadInProgress}
-            on:click={submitDownload}
-            id="submit-download"
-          >
-            Download
-            {#if downloadInProgress}
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span class="visually-hidden">Loading...</span>
+          </fieldset>
+          <p class="mb-3">
+          {#if simpleDownload}
+            {#if buttonDisabled}
+              <span class="btn btn-outline-dark disabled">Just use a link!</span>
+            {:else}
+              <a id="simple-download" class="btn btn-outline-dark" href={simpleUrl} onclick={() => {downloadAttempt = downloadAttempt + 1}}>Just use a link!</a>
             {/if}
-          </button>
-        </p>
-        {#if errorMessage}
-          <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
-            <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
-            <p class="py-3">{errorMessage}</p>
-          </div>
-        {/if}
-
-        <p class="fs-7 mb-1">
-          <a
-            class="fs-7"
-            target="_blank"
-            href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Download Help</a
-          >
-        </p>
-        {#if !manifest.allowFullDownload && !HT.login_status.logged_in}
-          <p class="fs-7 mt-1 mb-1">
-            <strong><a href="/cgi/wayf?target={encodeURIComponent(location.href)}">Log in</a></strong> to your library to
-            download this item.
+          {/if}
+          {#if !simpleDownload}
+            <button
+              type="button"
+              class="btn btn-outline-dark"
+              disabled={downloadInProgress||buttonDisabled}
+              onclick={submitDownload}
+              id="submit-download"
+            >
+              Download
+              {#if downloadInProgress}
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="visually-hidden">Loading...</span>
+              {/if}
+            </button>
+          {/if}      
           </p>
-          <p class="fs-7 mt-1 fst-italic">
-            If you are not affiliated with a <a
+          {#if errorMessage}
+            <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
+              <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
+              <p class="py-3">{errorMessage}</p>
+            </div>
+          {/if}
+          <p class="fs-7 mb-1">
+            <a
+              class="fs-7"
               target="_blank"
-              href="https://www.hathitrust.org/member-libraries/member-list/">member institution</a
-            >, whole book download is not available. (<a
-              target="_blank"
-              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Why not?</a
-            >)
+              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Download Help</a
+            >
           </p>
-        {/if}
-      </form>
-    {:else}
-      <p>This item cannot be downloaded.</p>
-    {/if}
-  </svelte:fragment>
+          {#if !manifest.allowFullDownload && !HT.login_status.logged_in}
+            <p class="fs-7 mt-1 mb-1">
+              <strong><a href="/cgi/wayf?target={encodeURIComponent(location.href)}">Log in</a></strong> to your library to
+              download this item.
+            </p>
+            <p class="fs-7 mt-1 fst-italic">
+              If you are not affiliated with a <a
+                target="_blank"
+                href="https://www.hathitrust.org/member-libraries/member-list/">member institution</a
+              >, whole book download is not available. (<a
+                target="_blank"
+                href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Why not?</a
+              >)
+            </p>
+          {/if}
+        </form>
+      {:else}
+        <p>This item cannot be downloaded.</p>
+      {/if}
+    
+  {/snippet}
 </Panel>
 <Modal bind:this={modal} onClose={closeDownload} focusDownloadOnClose>
   {#snippet title()}
@@ -758,22 +732,16 @@
         <button
           type="button"
           class="btn btn-secondary"
-          on:click={cancelDownload}
+          onclick={cancelDownload}
           disabled={status.done}
           class:disabled={status.done}>Cancel</button
         >
-        <!-- <button 
-        type="button" 
-        class="btn btn-primary"
-        disabled={downloadInProgress}
-        on:click={finalizeDownload}>Download</button> -->
         {#if downloadInProgress}
           <span class="btn btn-primary disabled"> Download </span>
         {:else}
           <a
             class="btn btn-primary"
-            on:click={() => modal.hide()}
-            on:click={() => document.getElementById('submit-download').focus()}
+            onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
             href={downloadUrl}>Download</a
           >
         {/if}
