@@ -1,12 +1,6 @@
 # Optional service (not required for core functionality testing)
 # As we want to test these via playwright, they could move into core.yml
 
-x-healthcheck-defaults: &healthcheck-defaults
-  interval: 5s
-  timeout: 10s
-  start_period: 10s
-  retries: 5
-
 services:
   vufind:
     build: ../../catalog #TODO: Use the built unstable container
@@ -22,6 +16,8 @@ services:
         condition: service_healthy
       solr-sdr-catalog:
         condition: service_healthy
+      composer:
+        condition: service_completed_successfully
     healthcheck:
       interval: 5s
       timeout: 10s
