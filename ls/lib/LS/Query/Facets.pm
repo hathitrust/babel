@@ -466,71 +466,63 @@ fq=((rights:1+OR+rights:7+OR+...)+OR+(ht_heldby_brlm:inst+AND+attr:3)+OR+(ht_hel
 
 # ---------------------------------------------------------------------
 sub __HELPER_get_Solr_fulltext_filter_query_arg {
+  my $self = shift;
+  my $C = shift;
 
-    my $self = shift;
-    my $C = shift;
+  my $fulltext_FQ_string;
 
-    my $fulltext_FQ_string;
+  #XXX TODO  check that the statement below and the code comply with current rights rules
+  # These are the attrs, for this users authorization type
+  # (e.g. SSD, HT affiliate, in-library), geo location and
+  # institution that equate to the 'allow' status, i.e. fulltext.
+  # This code takes into account whether the attr requires
+  # institution to hold the volumes, whether the holding have to be
+  # brittle, and qualifies accordingly.
 
-    #XXX TODO  check that the statement below and the code comply with current rights rules
-    # These are the attrs, for this users authorization type
-    # (e.g. SSD, HT affiliate, in-library), geo location and
-    # institution that equate to the 'allow' status, i.e. fulltext.
-    # This code takes into account whether the attr requires
-    # institution to hold the volumes, whether the holding have to be
-    # brittle, and qualifies accordingly.
+  my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
+  # enhanced user access rights not affected by institution or holdings
+  # SSDProxy user access rights not affected by institution or holdings  (regular SSD are affected)
+  my $access_type = Access::Rights::get_access_type_determination($C);
+  if (
+    $access_type eq $RightsGlobals::SSD_PROXY_USER
+    ||
+    $access_type eq $RightsGlobals::HT_TOTAL_USER
+    ||
+    $access_type eq $RightsGlobals::HT_STAFF_USER) {
+    $fulltext_FQ_string = '(rights:(' . join('+OR+', @{$fulltext_attr_list_ref} ) . '))';
+  } else {
+    #split rights attributes into those not needing holdings information = unqualified_string
+    # and holdings_qualified_string which specified combinations of rights and holdings
 
-    my $fulltext_attr_list_ref = Access::Rights::get_fulltext_attr_list($C);
-        
-    # enhanced user access rights not affected by institution or holdings
-    # SSDProxy user access rights not affected by institution or holdings  (regular SSD are affected)
-    my $access_type = Access::Rights::get_access_type_determination($C);
-    if ($access_type eq $RightsGlobals::SSD_PROXY_USER || $access_type eq $RightsGlobals::HT_TOTAL_USER)
-    {
-	$fulltext_FQ_string = 
-	'(rights:(' . join('+OR+', @{$fulltext_attr_list_ref} ) . '))';
+    # unqualified string = OR query clause for rights attributes that don't need to be combined with holdings
+    # holdings_qualified_attr_list = list of rights attr for this user/ip or other conditions that must be qualified by holdings
+    my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
+
+    # Now qualify by holdings.  If there is no institution, there
+    # cannot be a clause qualified by institution holdings at all.
+    my $holdings_qualified_string;
+    my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    if ($inst) {
+      $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
     }
-    else
-    {
-	#split rights attributes into those not needing holdings information = unqualified_string
-	# and holdings_qualified_string which specified combinations of rights and holdings
-	
-	# unqualified string = OR query clause for rights attributes that don't need to be combined with holdings
-	# holdings_qualified_attr_list = list of rights attr for this user/ip or other conditions that must be qualified by holdings
-    
-	my ($holdings_qualified_attr_list,  $unqualified_string) = $self->__get_holdings_qualified_attr_list_and_unqualified_string($fulltext_attr_list_ref);
 
-    	# Now qualify by holdings.  If there is no institution, there
-	# cannot be a clause qualified by institution holdings at all.
-	my $holdings_qualified_string;
-	my $inst = $C->get_object('Auth')->get_institution_code($C, 'mapped');
+    if ($holdings_qualified_string) {
+      $fulltext_FQ_string = '(' . $unqualified_string . '+OR+' . $holdings_qualified_string . ')';
+    } else {
+      $fulltext_FQ_string = '(' . $unqualified_string . ')';
+    }
+  }
 
-	if ($inst)
-	{
-	    $holdings_qualified_string = $self->__get_holdings_qualified_string($C, $holdings_qualified_attr_list, $inst);
-	}
-	
-	if ($holdings_qualified_string)
-	{
-	    $fulltext_FQ_string = '(' . $unqualified_string . '+OR+' . $holdings_qualified_string . ')';
-	}
-	else
-	{
-	    $fulltext_FQ_string = '(' . $unqualified_string . ')';
-	}
-    }
-    
-        #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
-    if ($self-> __now_in_date_range_new_years($C))
-    {
-    	my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
-	# remove closing paren from  $fulltext_FQ_string
-	$fulltext_FQ_string =~s/\)$//;
-	$fulltext_FQ_string = $fulltext_FQ_string . '+OR+'. $new_years_pd_Q_string . ')';
-    }
-    
-    return $fulltext_FQ_string;
+  #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
+  if ($self-> __now_in_date_range_new_years($C)) {
+    my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
+    # remove closing paren from  $fulltext_FQ_string
+    $fulltext_FQ_string =~s/\)$//;
+    $fulltext_FQ_string = $fulltext_FQ_string . '+OR+'. $new_years_pd_Q_string . ')';
+  }
+  return $fulltext_FQ_string;
 }
+
 #----------------------------------------------------------------------
 sub __get_holdings_qualified_attr_list_and_unqualified_string
 {
