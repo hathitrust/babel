@@ -225,7 +225,7 @@ subtest '__get_Solr_fulltext_filter_query' => sub {
         (
           (ht_heldby:etas+AND+rights:2)
           +OR+
-          (ht_heldby_brlm:etas+AND+rights:3)
+          (ht_heldby:etas+AND+rights:3)
           +OR+
           (ht_heldby:etas+AND+rights:4)
           +OR+
@@ -251,7 +251,7 @@ subtest '__get_Solr_fulltext_filter_query' => sub {
         (
           (ht_heldby:hathitrust+AND+rights:2)
           +OR+
-          (ht_heldby_brlm:hathitrust+AND+rights:3)
+          (ht_heldby:hathitrust+AND+rights:3)
           +OR+
           (ht_heldby:hathitrust+AND+rights:4)
           +OR+
@@ -277,7 +277,7 @@ subtest '__get_Solr_fulltext_filter_query' => sub {
         (
           (ht_heldby:hathitrust+AND+rights:2)
           +OR+
-          (ht_heldby_brlm:hathitrust+AND+rights:3)
+          (ht_heldby:hathitrust+AND+rights:3)
           +OR+
           (ht_heldby:hathitrust+AND+rights:4)
           +OR+

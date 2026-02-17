@@ -553,6 +553,7 @@ sub __get_holdings_qualified_attr_list_and_unqualified_string
         $unqualified_string = 
 	'(rights:(' . join('+OR+', @unqualified_attr_list) . '))';
     }
+
     return( \@holdings_qualified_attr_list,  $unqualified_string)
 }
 
@@ -568,27 +569,27 @@ sub __get_holdings_qualified_string
 
     my @qualified_OR_clauses = ();
     my $access_type = Access::Rights::get_access_type_determination($C);
-	
+
     foreach my $attr (@{$holdings_qualified_attr_list}) {
-	if (($access_type != $RightsGlobals::SSD_USER)
-	    &&
-	    ($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
-	    push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
-	}
-	else {
-	    push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
-	}
+      # Section 108 in-library access requiring BRLM holdings only applies in-library
+      if (($access_type == $RightsGlobals::LIBRARY_IPADDR_USER)
+          &&
+          ($attr eq $RightsGlobals::g_access_requires_brittle_holdings_attribute_value)) {
+        push(@qualified_OR_clauses, qq{(ht_heldby_brlm:$inst+AND+rights:$attr)});
+      } else {
+        push(@qualified_OR_clauses, qq{(ht_heldby:$inst+AND+rights:$attr)});
+      }
     }
 
     # etas
     if ($access_type == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE && $self->is_california($inst)) {
-	push(@qualified_OR_clauses, $self->etas_CA_holdings_filter());
+      push(@qualified_OR_clauses, $self->etas_CA_holdings_filter());
     }
 
     my $holdings_qualified_string = '';
     if (scalar @qualified_OR_clauses > 0)
     {
-	$holdings_qualified_string = '(' . join('+OR+', @qualified_OR_clauses) . ')';
+      $holdings_qualified_string = '(' . join('+OR+', @qualified_OR_clauses) . ')';
     }
 
 
