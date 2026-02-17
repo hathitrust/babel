@@ -512,14 +512,6 @@ sub __HELPER_get_Solr_fulltext_filter_query_arg {
       $fulltext_FQ_string = '(' . $unqualified_string . ')';
     }
   }
-
-  #tbw code to get items that will go from IC to PD on New Years day see:https://tools.lib.umich.edu/jira/browse/HT-769
-  if ($self-> __now_in_date_range_new_years($C)) {
-    my $new_years_pd_Q_string =$self->__get_new_years_pd_Q_string($C);
-    # remove closing paren from  $fulltext_FQ_string
-    $fulltext_FQ_string =~s/\)$//;
-    $fulltext_FQ_string = $fulltext_FQ_string . '+OR+'. $new_years_pd_Q_string . ')';
-  }
   return $fulltext_FQ_string;
 }
 
