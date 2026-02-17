@@ -1,22 +1,24 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
 use Encode;
 use Test::More;
 
 use lib "$ENV{SDRROOT}/ls/lib";
 use lib "$ENV{SDRROOT}/slip-lib";
 use lib "$ENV{SDRROOT}/mdp-lib";
+use lib "$ENV{SDRROOT}/mdp-lib/t/lib";
 
 use Auth::Auth;
 use Context;
+use Data::Dumper;
 use Database;
 use LS::PIFiller::Advanced;
 use LS::FacetConfig;
 use LS::Query::Facets;
+use RightsGlobals;
+use Test::User;
 use Utils;
-
 
 ### THE MINDLESS SETUP BOILERPLATE
 # copied from cgi/ls
@@ -96,4 +98,200 @@ subtest 'get_Solr_query_string' => sub {
   };
 };
 
-done_testing;
+# Swap in user, and make sure the auth system thinks this is actually a user of this type.
+# When we have more confidence in Test::User.pm we can probably get rid of this.
+sub begin_and_check_user {
+  my $user = shift;
+
+  $user->begin;
+  my $access_type = Access::Rights::get_access_type_determination(new Context);
+  is($access_type, $user->{type});
+}
+
+my $facets = LS::Query::Facets->new($C, '');
+
+subtest '__get_Solr_fulltext_filter_query' => sub {
+  subtest 'with CAA user (HT_TOTAL_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::HT_TOTAL_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with ordinary user (ORDINARY_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::ORDINARY_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with SSD user (SSD_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::SSD_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        +OR+
+        (
+          (ht_heldby:hathitrust+AND+rights:2)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:3)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:4)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:5)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:16)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with ATRS Provider user (SSD_PROXY_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::SSD_PROXY_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with in-library user (LIBRARY_IPADDR_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::LIBRARY_IPADDR_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+        )
+        +OR+
+        (
+          (ht_heldby_brlm:hathitrust+AND+rights:3)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with affiliate (HT_AFFILIATE)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::HT_AFFILIATE);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with ETAS user' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        +OR+
+        (
+          (ht_heldby:etas+AND+rights:2)
+          +OR+
+          (ht_heldby_brlm:etas+AND+rights:3)
+          +OR+
+          (ht_heldby:etas+AND+rights:4)
+          +OR+
+          (ht_heldby:etas+AND+rights:5)
+          +OR+
+          (ht_heldby:etas+AND+rights:16)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with HT_STAFF user' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::HT_STAFF_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+8+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25+OR+26+OR+27))
+        +OR+
+        (
+          (ht_heldby:hathitrust+AND+rights:2)
+          +OR+
+          (ht_heldby_brlm:hathitrust+AND+rights:3)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:4)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:5)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:16)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+
+  subtest 'with RS user' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::RESOURCE_SHARING_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        +OR+
+        (
+          (ht_heldby:hathitrust+AND+rights:2)
+          +OR+
+          (ht_heldby_brlm:hathitrust+AND+rights:3)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:4)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:5)
+          +OR+
+          (ht_heldby:hathitrust+AND+rights:16)
+        )
+      )
+    FQ
+    is($result, $expected);
+    $test_user->end;
+  };
+};
+
+
+done_testing();
+
