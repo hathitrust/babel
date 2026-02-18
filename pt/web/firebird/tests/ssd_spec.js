@@ -11,5 +11,3 @@ test.describe('ssd', () => {
     expect(response.status()).toBe(200);
   });
 });
-
-  
