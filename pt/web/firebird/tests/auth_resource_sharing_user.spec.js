@@ -79,6 +79,14 @@ test.describe('resource_sharing_user access to ic material', () => {
     await page.getByLabel('Image (JPEG)').check();
     await page.getByLabel('Current page scan (#1)').check();
     await downloadButton.click();
+
+    const modalHeading = page.getByRole('heading', { name: 'Download your Image (JPEG)' });
+    await expect(modalHeading).toBeVisible();
+    const downloadLink = page
+      .getByRole('dialog', { name: 'Download your Image (JPEG)' })
+      .getByRole('link', { name: 'Download' });
+    await downloadLink.click();
+
     const download = await downloadPromise;
     const downloadPath = await download.path();
 

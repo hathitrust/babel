@@ -53,6 +53,14 @@ test.describe('sidebar actions', () => {
       await page.getByLabel('Current page scan (#1)').check();
 
       await downloadButton.click();
+
+      const modalHeading = page.getByRole('heading', { name: 'Download your PDF' });
+      await expect(modalHeading).toBeVisible();
+      const downloadLink = page
+        .getByRole('dialog', { name: 'Download your PDF' })
+        .getByRole('link', { name: 'Download' });
+      await downloadLink.click();
+
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
@@ -105,11 +113,6 @@ test.describe('sidebar actions', () => {
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
 
-      await downloadButton.click();
-      await expect(
-        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
-      ).toBeVisible();
-
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
       await expect(page).toHaveURL('/cgi/pt?id=test.pd_open&seq=1&view=thumb');
@@ -119,6 +122,14 @@ test.describe('sidebar actions', () => {
       await selectScan.click();
 
       await downloadButton.click();
+
+      const modalHeading = page.getByRole('heading', { name: 'Download your Image (TIFF)' });
+      await expect(modalHeading).toBeVisible();
+      const downloadLink = page
+        .getByRole('dialog', { name: 'Download your Image (TIFF)' })
+        .getByRole('link', { name: 'Download' });
+      await downloadLink.click();
+
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
@@ -137,10 +148,11 @@ test.describe('sidebar actions', () => {
       await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
 
-      await downloadButton.click();
       await expect(
         page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
       ).toBeVisible();
+
+      await expect(downloadButton).toBeDisabled();
     });
     test('download selected scan as full resolution tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
@@ -165,6 +177,14 @@ test.describe('sidebar actions', () => {
       await expect(fullResolution).toBeChecked();
 
       await downloadButton.click();
+
+      const modalHeading = page.getByRole('heading', { name: 'Download your Image (TIFF)' });
+      await expect(modalHeading).toBeVisible();
+      const downloadLink = page
+        .getByRole('dialog', { name: 'Download your Image (TIFF)' })
+        .getByRole('link', { name: 'Download' });
+      await downloadLink.click();
+
       const download = await downloadPromise;
       const downloadPath = await download.path();
 

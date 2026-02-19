@@ -3,8 +3,8 @@
   import {SvelteURL, SvelteURLSearchParams} from 'svelte/reactivity'
   import { tooltippy } from '../../lib/tippy';
 
-  import Panel from '../Panel';
-  import Modal from '~firebird-common/src/js/components/Modal';
+  import Panel from '../Panel/index.svelte';
+  import Modal from '~firebird-common/src/js/components/Modal/index.svelte';
 
   const manifest = getContext('manifest');
   const emitter = getContext('emitter');
@@ -21,14 +21,15 @@
   let currentView = manifest.currentView;
   let currentSeq = manifest.currentSeq;
   let currentLocation = manifest.currentLocation;
+  let totalSeq = manifest.totalSeq;
+  let meta = $derived(manifest.meta($currentSeq));
   
   let selected = manifest.selected;
-  let format = $state('pdf');
   let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
-  let totalSeq = manifest.totalSeq;
+  let format = $state('pdf');
 
   let modal = $state();
-  let downloadAttempt = 0;
+  let downloadAttempt = 1;
   let request = new SvelteURL(`${location.protocol}//${HT.service_domain}`)
   let downloadInProgress = $state(false);
   let cancellingDownload = $state(false);
@@ -44,7 +45,6 @@
   let sizeValue = '';
   let sizeAttr;
   let action = $derived(buildAction());
-
   let flattenedSelection = $state([]);
   let clearSelectionLabel = $state('Clear selection');
 
@@ -70,21 +70,19 @@
   let simpleUrl = $derived.by(() => {
     let newAction = buildAction();
 		let params = new SvelteURLSearchParams()
-		if (downloadAttempt == 0) {
-      downloadAttempt = 1;
-    }
+
     params.set('id', manifest.id);
     params.set('attachment', '1');
-    params.set('tracker', downloadAttempt.toString());
+    params.set('tracker', `D${downloadAttempt}`);
 		
 		if (format == 'image-tiff' || format == 'image-jpeg') {
       params.set('format', `image/${format.split('-')[1]}`);
       params.set(sizeAttr, sizeValue);
     }
 	
-			selection.pages.forEach((seq) => {
-	      params.append('seq', seq);
-	    });
+    selection.pages.forEach((seq) => {
+      params.append('seq', seq);
+    });
 		
 		return `${request}${newAction}?${params.toString()}`
 	})
@@ -210,8 +208,7 @@
   function buildAction() {
     $inspect.trace()
     let action = 'cgi/imgsrv/';
-    if (format.startsWith('image-') && (range == $currentSeq)) {
-      console.log('image that is current page')
+    if (format.startsWith('image-') && (range == 'current-page' || range == 'current-page-verso' || range == 'current-page-recto')) {
       action += 'image';
       sizeAttr = 'size';
       sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
@@ -297,7 +294,6 @@
       }
       selection.pages = [page]
     }
-    console.log('view', $state.snapshot($currentView))
   }
 
   function submitDownload(e) {
@@ -307,7 +303,24 @@
     numAttempts = 0;
     numProcessed = 0;
 
-    buildCallbackDownloadUrl(); 
+    if (isSimpleDownload()) {
+      downloadInProgress = true;
+
+      const onReturn = () => {
+        downloadInProgress = false;
+        window.removeEventListener("focus", onReturn);
+        document.removeEventListener("visibilitychange", onReturn);
+      };
+
+      window.addEventListener("focus", onReturn);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) onReturn();
+      });
+      modal.show();
+      downloadAttempt++;
+    } else {
+      buildCallbackDownloadUrl(); 
+    }
   }
 
   function flattenSelection(selected) {
@@ -352,13 +365,11 @@
     emitter.emit('page.goto', { seq: tmp[0] });
   }
 
-
   $effect(() => {
     if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
       range = 'volume';
     }
   });
-
   $effect(() => {
     if (flattenSelection($selected)) {
       clearSelectionLabel = `Clear selected scans: ${flattenedSelection.join(', ')}`;
@@ -369,7 +380,7 @@
 		calculateSelection()
 	})
   $effect(() => {
-    if ((range !== 'volume' && range !== 'selected-pages')||(totalSeq > 10 && format == 'image-tiff' && range == 'volume')) {
+    if (totalSeq > 10 && format == 'image-tiff' && range == 'volume') {
       if ($currentView == '1up') {
         range = 'current-page'
       } else if ($currentView == '2up') {
@@ -377,11 +388,28 @@
         .find(key => $currentLocation[key].seq === $currentSeq); 
       range = `current-page-${viewWithCurrentSeq}` 
       } else if ($currentView == 'thumb') {
-        range = ''
+        range = 'selected-pages'
       }
     }
   })
-  let meta = $derived(manifest.meta($currentSeq));
+  $effect(() => {
+    if($currentView == '1up') {
+      if(range !== 'volume' && range !== 'selected-pages' && range !== 'current-page') {
+        range = 'current-page'
+      }
+    } else if($currentView == '2up') {
+      if (range !== 'volume' && range !== 'selected-pages' && range !== 'current-page-recto' && range !== 'current-page-verso') {
+        if ($currentLocation.verso) {
+          range = 'current-page-verso' 
+        } else if ($currentLocation.recto) {
+          range = 'current-page-recto'
+        }
+      }
+    } else if ($currentView == 'thumb') {
+      range = 'selected-pages'
+    }
+  })
+  
   $effect(() => {
     if (errorMessage) {
       HT.live.announce(errorMessage);
@@ -631,14 +659,6 @@
             {/if}
           </fieldset>
           <p class="mb-3">
-          {#if simpleDownload}
-            {#if buttonDisabled}
-              <span class="btn btn-outline-dark disabled">Just use a link!</span>
-            {:else}
-              <a id="simple-download" class="btn btn-outline-dark" href={simpleUrl} onclick={() => {downloadAttempt = downloadAttempt + 1}}>Just use a link!</a>
-            {/if}
-          {/if}
-          {#if !simpleDownload}
             <button
               type="button"
               class="btn btn-outline-dark"
@@ -652,7 +672,6 @@
                 <span class="visually-hidden">Loading...</span>
               {/if}
             </button>
-          {/if}      
           </p>
           {#if errorMessage}
             <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
@@ -691,37 +710,45 @@
 </Panel>
 <Modal bind:this={modal} onClose={closeDownload} focusDownloadOnClose>
   {#snippet title()}
-    Building your {formatTitle[format]}
-    {#if $selected.size > 0}
-      ({$selected.size} page{$selected.size > 1 ? 's' : ''})
+    {#if simpleDownload}
+      Download your {formatTitle[format]}
+    {:else}
+      Building your {formatTitle[format]}
+      {#if $selected.size > 0}
+        ({$selected.size} page{$selected.size > 1 ? 's' : ''})
+      {/if}
     {/if}
   {/snippet}
   {#snippet body()}
     <div xxstyle="width: 30rem">
       <div>
-        {#if status.percent < 100}
-          <p>Please wait while we build your {formatTitle[format]}.</p>
-          <div
-            class="progress"
-            role="progressbar"
-            aria-label="Download Progress"
-            aria-valuenow={status.percent}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          >
+        {#if simpleDownload}
+          <p>Your download is ready.</p>
+        {:else}
+          {#if status.percent < 100}
+            <p>Please wait while we build your {formatTitle[format]}.</p>
             <div
-              class="progress-bar progress-bar-striped progress-bar-animated"
-              style:width={`${status.percent}%`}
-            ></div>
-          </div>
-          <p class="fs-7 text-body-secondary">
-            <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
-              >What affects the download speed?</a
+              class="progress"
+              role="progressbar"
+              aria-label="Download Progress"
+              aria-valuenow={status.percent}
+              aria-valuemin="0"
+              aria-valuemax="100"
             >
-          </p>
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                style:width={`${status.percent}%`}
+              ></div>
+            </div>
+            <p class="fs-7 text-body-secondary">
+              <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
+                >What affects the download speed?</a
+              >
+            </p>
+          {/if}
         {/if}
       </div>
-      {#if status.done}
+      {#if !simpleDownload && status.done}
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
     </div>
@@ -729,6 +756,7 @@
   {#snippet footer()}
     <div role="status">
       <div class="d-flex gap-1 align-items-center justify-content-end">
+        {#if !simpleDownload}
         <button
           type="button"
           class="btn btn-secondary"
@@ -736,17 +764,18 @@
           disabled={status.done}
           class:disabled={status.done}>Cancel</button
         >
-        {#if downloadInProgress}
+        {/if}
+        {#if !simpleDownload && downloadInProgress}
           <span class="btn btn-primary disabled"> Download </span>
         {:else}
           <a
             class="btn btn-primary"
             onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
-            href={downloadUrl}>Download</a
+            href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
           >
         {/if}
       </div>
-      {#if cancellingDownload}
+      {#if !simpleDownload && cancellingDownload}
         <span class="visually-hidden">Download cancelled</span>
       {/if}
     </div>
