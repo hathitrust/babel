@@ -769,6 +769,7 @@
           <span class="btn btn-primary disabled"> Download </span>
         {:else}
           <a
+            download
             class="btn btn-primary"
             onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
             href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
