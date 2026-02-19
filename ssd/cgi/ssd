@@ -187,6 +187,9 @@ sub ValidityChecks
     $cgi->delete( 'y' );
     $cgi->delete( 'orient' );
 
+    # Remove q1 -- we don't have the Solr config to do this.
+    $cgi->delete( 'q1' );
+
     my $seq = $cgi->param( 'seq' );
     if ( ! $seq  )
     {
