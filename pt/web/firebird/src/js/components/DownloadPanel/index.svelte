@@ -1,6 +1,7 @@
 <script>
   import { onMount, getContext } from 'svelte';
   import {SvelteURL, SvelteURLSearchParams} from 'svelte/reactivity'
+  import { tick } from 'svelte';
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel/index.svelte';
@@ -23,10 +24,14 @@
   let currentLocation = manifest.currentLocation;
   let totalSeq = manifest.totalSeq;
   let meta = $derived(manifest.meta($currentSeq));
-  
+  let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
   let selected = manifest.selected;
-  let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
+  
   let format = $state('pdf');
+  let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
+  let selection = $state({ pages: [] });
+  let action = $derived(buildAction());
+  let targetPPI = $state('300');
 
   let modal = $state();
   let downloadAttempt = 1;
@@ -39,12 +44,9 @@
   let status = $state({ done: false, percent: -1 });
   let numAttempts = 0;
   let numProcessed = 0;
-  let selection = $state({ pages: [] });
   let simpleDownload = $derived(isSimpleDownload());
-  let targetPPI = $state('300');
   let sizeValue = '';
   let sizeAttr;
-  let action = $derived(buildAction());
   let flattenedSelection = $state([]);
   let clearSelectionLabel = $state('Clear selection');
 
@@ -63,7 +65,6 @@
     null
   );
 
-  let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
 
   const _mtm = (window._mtm = window._mtm || []);
 
@@ -92,7 +93,6 @@
     if (downloadInProgress) {
       [progressUrl, downloadUrl, totalPages] = argv;
       if (trackerInterval) {
-        console.log('download: already polling');
         return;
       }
       trackerInterval = setInterval(checkStatusInterval, 2500);
@@ -113,7 +113,6 @@
         return response.json();
       })
       .then((data) => {
-        console.log(data)
         numProcessed += 1;
         updateProgress(data);
         if (status.done) {
@@ -125,7 +124,6 @@
   }
 
   function updateProgress(data) {
-    console.log(data)
     let percent;
     let current = data.status;
     if (current == 'EOT' || current == 'DONE') {
@@ -236,7 +234,6 @@
       switch (format) {
         case 'image-jpeg':
         case 'image-tiff':
-          console.log('made it to format switch')
           params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
           params.set('target_ppi', targetPPI);
           params.set('bundle_format', 'zip');
@@ -281,6 +278,14 @@
       selection.pages = []
     } else {
       let page;
+      //occassionally this switch causes a minor error in the console
+      //because of the verso/recto situation
+      //e.g. the range is set to 'current-page-verso'
+      //but the user has scrolled to a 2-up that doesn't have a verso page in the data
+      //the range update can't just swap to recto because it doesn't know it needs to 
+      //(i tried SO MANY WAYS to make it do it)
+      //but $currentLocation.verso.seq is undefined so this errors
+      //if the user makes a different selection or scrolls, this function fires again without issue
       switch (range) {
         case 'current-page':
           page = $currentSeq;
@@ -376,17 +381,17 @@
       range = 'selected-pages';
     }
   });
-  $effect(() => {
-		calculateSelection()
-	})
+  
   $effect(() => {
     if (totalSeq > 10 && format == 'image-tiff' && range == 'volume') {
       if ($currentView == '1up') {
         range = 'current-page'
       } else if ($currentView == '2up') {
-       const viewWithCurrentSeq = Object.keys($currentLocation)
-        .find(key => $currentLocation[key].seq === $currentSeq); 
-      range = `current-page-${viewWithCurrentSeq}` 
+       if ($currentLocation.verso) {
+          range = 'current-page-verso' 
+        } else if ($currentLocation.recto) {
+          range = 'current-page-recto'
+        }
       } else if ($currentView == 'thumb') {
         range = 'selected-pages'
       }
@@ -398,7 +403,12 @@
         range = 'current-page'
       }
     } else if($currentView == '2up') {
-      if (range !== 'volume' && range !== 'selected-pages' && range !== 'current-page-recto' && range !== 'current-page-verso') {
+      //this is not great
+      //but if the user had previously selected 'current-page' during 1-up view and switches to 2-up view
+      //the range is still set to 'current-page' and needs to be magicked to either recto or verso
+      //frustratingly, at the beginning/end of volumes, sometimes verso or recto don't exist
+      //so we just pick one that's available
+     if (range !== 'volume' && range !== 'selected-pages' && range !== 'current-page-recto' && range !== 'current-page-verso') {
         if ($currentLocation.verso) {
           range = 'current-page-verso' 
         } else if ($currentLocation.recto) {
@@ -409,6 +419,9 @@
       range = 'selected-pages'
     }
   })
+  $effect(() => {
+      calculateSelection()
+	})
   
   $effect(() => {
     if (errorMessage) {
