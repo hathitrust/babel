@@ -82,6 +82,13 @@ services:
     profiles:
       - backend
 
+  composer:
+    build: catalog
+    volumes:
+      - ${BABEL_HOME}/catalog:/app
+    working_dir: /app
+    command: composer install
+
   solr-lss-dev:
     extends:
       file: common/docker/solr.yml
