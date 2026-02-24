@@ -106,9 +106,9 @@ subtest 'get_Solr_query_string' => sub {
 
 # TERMINOLOGY
 # "Invisible" rights are 8, 26, 27 (nobody, pd-pvt, supp) only viewable by HT staff
-# "IC Equivalents" are 2, 3, 4, 5, 16 (ic, op, orph, und, orphcand)
+# "IC Equivalents" are 2, 3, 4, 5, 16 (ic, op, orph, und, orphcand) -- note that orph and orphcand are obsolete
 #     (Note some of these are obsolete)
-# "PD Equivalents" are 1, 6, 7 (pd, umall, ic-world) and all the CC licenses
+# "PD Equivalents" are 1, 6, 7 (pd, umall, ic-world) and all the CC licenses -- note that umall is obsolete
 
 # KNOWN BUGS
 # SSD_USER located in US includes icus
@@ -116,6 +116,11 @@ subtest 'get_Solr_query_string' => sub {
 # EMERGENCY_ACCESS_AFFILIATE located in US includes icus (outside-US not tested)
 # RESOURCE_SHARING_USER located in the US includes icus
 # RESOURCE_SHARING_USER located outside the US includes pdus
+
+# I believe most of these could be fixed if `Access::Rights::_Check_final_access_status`
+# did not bail out when `$id` is unset -- it deprives the caller of geoip status.
+# Instead it should call _resolve_ssd_access_by_held_by_GeoIP (and its ilk) with `$id`
+# undefined and allow it to bail out before checking holdings but after checking geoip.
 
 
 # Swap in user, and make sure the auth system thinks this is actually a user of this type.
