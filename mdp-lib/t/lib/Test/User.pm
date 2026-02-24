@@ -17,74 +17,68 @@ use Session;
 
 use Test::ACL;
 
+my $US_DOMAIN = 'hathitrust.org';
+my $NONUS_DOMAIN = 'ox.ac.uk';
+my $ETAS_DOMAIN = 'etas.example';
+my $US_IDP = 'https://idp.hathitrust.org/entity';
+my $NONUS_IDP = 'https://registry.shibboleth.ox.ac.uk/idp';
+my $ETAS_IDP = 'https://idp.etas.example';
+
 # Map from keywords to ht_users fixtures
-# TODO: make fixtures for the blank userids
+# We may not need the fixtures at all if we can do the ACL override trick
 my $USER_MAP = {
-  $RightsGlobals::HT_TOTAL_USER => 'totaluser@hathitrust.org',
-  $RightsGlobals::ORDINARY_USER => '',
-  $RightsGlobals::SSD_USER => 'ssduser@hathitrust.org',
-  $RightsGlobals::SSD_PROXY_USER => 'ssdproxy@hathitrust.org',
+  $RightsGlobals::HT_TOTAL_USER => 'totaluser',
+  $RightsGlobals::ORDINARY_USER => 'nobody',
+  $RightsGlobals::SSD_USER => 'ssduser',
+  $RightsGlobals::SSD_PROXY_USER => 'ssdproxy',
   $RightsGlobals::LIBRARY_IPADDR_USER => '',
-  $RightsGlobals::HT_AFFILIATE => 'member@hathitrust.org',
-  $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE => 'etasuser@hetas.example',
-  $RightsGlobals::HT_STAFF_USER => 'totaluser@hathitrust.org',
-  $RightsGlobals::RESOURCE_SHARING_USER => 'rsuser@hathitrust.org',
+  $RightsGlobals::HT_AFFILIATE => 'member',
+  $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE => 'etasuser',
+  $RightsGlobals::HT_STAFF_USER => 'totaluser',
+  $RightsGlobals::RESOURCE_SHARING_USER => 'rsuser',
 };
 
 my $USER_ACL_MAP = {
   $RightsGlobals::HT_TOTAL_USER => {
-    userid => 'totaluser@hathitrust.org',
     role => 'crms',
     usertype => 'external',
     access => 'total',
   },
   $RightsGlobals::ORDINARY_USER => {
-    userid => 'nobody@default.invalid',
   },
   $RightsGlobals::SSD_USER => {
-    userid => 'ssduser@hathitrust.org',
     role => 'ssd',
     usertype => 'student',
     access => 'normal',
   },
   $RightsGlobals::SSD_PROXY_USER => {
-    userid => 'ssdproxy@hathitrust.org',
     role => 'ssdproxy',
     usertype => 'external',
     access => 'normal',
   },
   $RightsGlobals::LIBRARY_IPADDR_USER => {
-    userid => 'nobody@default.invalid',
   },
   $RightsGlobals::HT_AFFILIATE => {
-    userid => 'affiliate@hathitrust.org',
     role => '',
     usertype => 'external',
     access => 'normal',
   },
   $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE => {
-    userid => 'etasuser@etas.example',
     role => '',
     usertype => 'external',
     access => 'normal',
   },
   $RightsGlobals::HT_STAFF_USER => {
-    userid => 'totaluser@hathitrust.org',
     role => 'staffdeveloper',
     usertype => 'staff',
     access => 'total',
   },
   $RightsGlobals::RESOURCE_SHARING_USER => {
-    userid => 'rsuser@hathitrust.org',
     role => 'resource_sharing',
     usertype => 'external',
     access => 'normal',
   },
 };
-
-my $US_IDP = 'https://idp.hathitrust.org/entity';
-my $NONUS_IDP = 'https://registry.shibboleth.nonus.ac.uk/idp';
-my $ETAS_IDP = 'https://idp.etas.example';
 
 
 sub new {
@@ -104,6 +98,10 @@ sub new {
     die "TestUser location must be 'US' or 'NONUS', given '$self->{location}'";
   }
   $self->{affiliation} = $params->{affiliation} || $self->_default_affiliation;
+  $self->{userid} = '';
+  if ($USER_MAP->{$self->{type}}) {
+    $self->{userid} = $USER_MAP->{$self->{type}} . '@' . $self->domain;
+  }
   return $self;
 }
 
@@ -146,8 +144,8 @@ sub begin {
   $C->set_object('Session', $ses);
   Test::ACL::mock_acls(new Context, $self->_default_acl);
   $ENV{AUTH_TYPE} = $self->is_not_logged_in ? '' : 'shibboleth';
-  $ENV{REMOTE_USER} = $USER_MAP->{$self->{type}} || '';
-  $ENV{eppn} = $USER_MAP->{$self->{type}} || '';
+  $ENV{REMOTE_USER} = $self->{userid};
+  $ENV{eppn} = $self->{userid};
   $ENV{affiliation} = $self->{affiliation};
   $self->_set_idp;
   $ENV{TEST_GEO_IP_COUNTRY_CODE} = $self->{location};
@@ -174,17 +172,25 @@ sub is_logged_in {
   return $self->{type} != $RightsGlobals::ORDINARY_USER;
 }
 
+sub domain {
+  my $self = shift;
+
+  return $ETAS_DOMAIN if $self->{type} == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE;
+  return $NONUS_DOMAIN if $self->{location} eq 'NONUS';
+  return $US_DOMAIN;
+}
+
 sub _set_idp {
   my $self = shift;
 
   my $idp = '';
   if ($self->is_logged_in) {
     if ($self->{type} == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE) {
-      $idp = 'https://idp.etas.example';
+      $idp = $ETAS_IDP;
     } elsif ($self->{location} eq 'US') {
-      $idp = 'https://idp.hathitrust.org/entity';
+      $idp = $US_IDP;
     } else {
-      $idp = 'https://registry.shibboleth.nonus.ac.uk/idp';
+      $idp = $NONUS_IDP
     }
   }
   $ENV{Shib_Identity_Provider} = $idp;
@@ -193,18 +199,18 @@ sub _set_idp {
 sub _default_affiliation {
   my $self = shift;
 
-  my $affiliation = 'member@hathitrust.org';
+  my $affiliation = 'member';
   if ($self->{type} == $RightsGlobals::ORDINARY_USER) {
-    $affiliation = 'member@default.invalid';
+    #$affiliation = 'member@default.invalid';
+    $affiliation = '';
   } elsif ($self->{type} == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE) {
-    $affiliation = 'member@etas.example';
+    $affiliation = 'member';
   } elsif ($self->{type} == $RightsGlobals::SSD_USER) {
-    $affiliation = 'student@hathitrust.org';
-  #} elsif ($self->{type} == $RightsGlobals::SSD_PROXY_USER) {
-  #  $affiliation = 'student@hathitrust.org';
+    $affiliation = 'student';
   } elsif ($self->is_not_logged_in) {
     $affiliation = '';
   }
+  $affiliation .= '@' . $self->domain if $affiliation;
   return $affiliation;
 }
 
@@ -215,6 +221,7 @@ sub _default_acl {
 
   # Shallow copy to new hashref
   my $acl = { %{$USER_ACL_MAP->{$self->{type}}} };
+  $acl->{userid} = $self->{userid};
   if ($self->{type} == $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE) {
     $acl->{identity_provider} = $ETAS_IDP;
   } elsif ($self->{location} eq 'US') {
