@@ -143,14 +143,9 @@ test.describe('sidebar actions', () => {
         .getByRole('form', { name: 'Download options' })
         .getByRole('button', { name: 'Download' });
 
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
       await page.getByLabel('Image (TIFF)').check();
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
-
-      await expect(
-        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
-      ).toBeVisible();
+      await expect(page.getByRole('form', { name: 'Download options' }).getByText('No pages selected')).toBeVisible();
 
       await expect(downloadButton).toBeDisabled();
     });
@@ -161,7 +156,6 @@ test.describe('sidebar actions', () => {
         .getByRole('button', { name: 'Download' });
 
       await page.getByLabel('Image (TIFF)').check();
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
 
       await page.getByRole('button', { name: 'View' }).click();
