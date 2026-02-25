@@ -531,9 +531,8 @@ sub handle_COMMON_ASSETS_PI
 {
     my ($C, $act, $piParamHashRef) = @_;
 
-    # default to netlify
-    my $stylesheet_link = q{//hathitrust-firebird-common.netlify.app/assets/index.css};
-    my $script_link = q{//hathitrust-firebird-common.netlify.app/assets/index.js};
+    my $stylesheet_link;
+    my $script_link;
 
     my $path = q{/common/firebird};
     my $manifest_filename = qq{$ENV{SDRROOT}/firebird-common/dist/manifest.json};
