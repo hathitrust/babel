@@ -792,7 +792,7 @@ sub __get_scoped_affiliations {
     my %aff_hash = (); my $aff_array = [];
     if (scalar @scoped_affiliations) {
         foreach my $scoped_affiliation (@scoped_affiliations) {
-            next unless ( $scoped_affiliation =~ m,$allowed_affiliations,i );
+            next unless (defined $allowed_affiliations && $scoped_affiliation =~ m,$allowed_affiliations,i );
             my ($affiliation, $security_domain) = split(/@/, $scoped_affiliation);
 
             if ($affiliation && $security_domain) {

@@ -1,20 +1,23 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
 use Encode;
 use Test::More;
 
 use lib "$ENV{SDRROOT}/ls/lib";
 use lib "$ENV{SDRROOT}/slip-lib";
 use lib "$ENV{SDRROOT}/mdp-lib";
+use lib "$ENV{SDRROOT}/mdp-lib/t/lib";
 
 use Auth::Auth;
 use Context;
+use Data::Dumper;
 use Database;
 use LS::PIFiller::Advanced;
 use LS::FacetConfig;
 use LS::Query::Facets;
+use RightsGlobals;
+use Test::User;
 use Utils;
 
 
@@ -96,4 +99,357 @@ subtest 'get_Solr_query_string' => sub {
   };
 };
 
-done_testing;
+### FULLTEXT FACET
+# LIMITATIONS OF TESTING
+# We have not exercised the Facets.pm code adjacent to UNIVERSITY_OF_CALIFORNIA
+# No test run for ETAS outside US
+
+# TERMINOLOGY
+# "Invisible" rights are 8, 26, 27 (nobody, pd-pvt, supp) only viewable by HT staff
+# "IC Equivalents" are 2, 3, 4, 5, 16 (ic, op, orph, und, orphcand) -- note that orph and orphcand are obsolete
+#     (Note some of these are obsolete)
+# "PD Equivalents" are 1, 6, 7 (pd, umall, ic-world) and all the CC licenses -- note that umall is obsolete
+
+# KNOWN BUGS
+# SSD_USER located in US includes icus
+# LIBRARY_IPADDR_USER hard-codes pdus-allowed and icus-disallowed even for non-US (which is impossible? so maybe not a bug)
+# EMERGENCY_ACCESS_AFFILIATE located in US includes icus (outside-US not tested)
+# RESOURCE_SHARING_USER located in the US includes icus
+# RESOURCE_SHARING_USER located outside the US includes pdus
+
+# I believe most of these could be fixed if `Access::Rights::_Check_final_access_status`
+# did not bail out when `$id` is unset -- it deprives the caller of geoip status.
+# Instead it should call _resolve_ssd_access_by_held_by_GeoIP (and its ilk) with `$id`
+# undefined and allow it to bail out before checking holdings but after checking geoip.
+
+
+# Swap in user, and make sure the auth system thinks this is actually a user of this type.
+# When we have more confidence in Test::User.pm we can probably get rid of this.
+sub begin_and_check_user {
+  my $user = shift;
+
+  $user->begin;
+  my $access_type = Access::Rights::get_access_type_determination(new Context);
+  is($access_type, $user->{type});
+}
+
+my $cgi = CGI->new;
+$C->set_object('CGI', $cgi);
+my $facets = LS::Query::Facets->new($C, '');
+
+subtest '__get_Solr_fulltext_filter_query' => sub {
+  subtest 'with CAA user (HT_TOTAL_USER)' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::HT_TOTAL_USER);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+      )
+    FQ
+    is($result, $expected, 'excludes 8, 26, 27 (nobody, pd-pvt, supp)');
+    $test_user->end;
+  };
+
+  subtest 'with ordinary user (ORDINARY_USER)' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::ORDINARY_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows 9 (pdus) but not 19 (icus)');
+      $test_user->end;
+    };
+
+    subtest 'located outside US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::ORDINARY_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows 19 (icus) but not 9 (pdus)');
+      $test_user->end;
+    };
+  };
+
+  subtest 'with SSD user (SSD_USER)' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::SSD_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+          +OR+
+          (
+            (ht_heldby:hathitrust+AND+rights:2)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:3)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:4)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:5)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:16)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows icus and pdus [BUG], requires holdings for ic equivalents');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::SSD_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+          +OR+
+          (
+            (ht_heldby:ox+AND+rights:2)
+            +OR+
+            (ht_heldby:ox+AND+rights:3)
+            +OR+
+            (ht_heldby:ox+AND+rights:4)
+            +OR+
+            (ht_heldby:ox+AND+rights:5)
+            +OR+
+            (ht_heldby:ox+AND+rights:16)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows 19 (icus) but not 9 (pdus), requires holdings for ic equivalents');
+      $test_user->end;
+    };
+  };
+
+  subtest 'with ATRS Provider user (SSD_PROXY_USER)' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::SSD_PROXY_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                  14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+        )
+      FQ
+      is($result, $expected, 'excludes invisible rights');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::SSD_PROXY_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                  14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+        )
+      FQ
+      is($result, $expected, 'excludes invisible rights');
+      $test_user->end;
+    };
+  };
+
+  subtest 'with in-library user (LIBRARY_IPADDR_USER)' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::LIBRARY_IPADDR_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+          )
+          +OR+
+          (
+            (ht_heldby_brlm:hathitrust+AND+rights:3)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows 9 (pdus) but not 19 (icus), 3 (op) allowed if held BRLM');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::LIBRARY_IPADDR_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+          )
+          +OR+
+          (
+            (ht_heldby_brlm:ox+AND+rights:3)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows 9 (pdus) but not 19 (icus) [BUG?], 3 (op) allowed if held BRLM');
+      $test_user->end;
+    };
+  };
+
+  subtest 'with affiliate (HT_AFFILIATE)' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::HT_AFFILIATE);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+          )
+        )
+      FQ
+      is($result, $expected, 'disallows ic equivalents, allows 9 (pdus) but not 19 (icus)');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::HT_AFFILIATE, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25)
+          )
+        )
+      FQ
+      is($result, $expected, 'disallows ic equivalents, allows 19 (icus) but not 9 (pdus)');
+      $test_user->end;
+    };
+  };
+
+  # ETAS located outside the US is an edge case that would require an additional
+  # database fixture and more logic for Test::User to simulate it properly.
+  # Restrict to testing US access for now.
+  subtest 'with ETAS user' => sub {
+    my $test_user = Test::User->new('type' => $RightsGlobals::EMERGENCY_ACCESS_AFFILIATE);
+    begin_and_check_user($test_user);
+    my $result = $facets->__get_Solr_fulltext_filter_query($C);
+    (my $expected = <<~'FQ') =~ s/\s//g;
+      fq=(
+        (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                 14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+        +OR+
+        (
+          (ht_heldby:etas+AND+rights:2)
+          +OR+
+          (ht_heldby:etas+AND+rights:3)
+          +OR+
+          (ht_heldby:etas+AND+rights:4)
+          +OR+
+          (ht_heldby:etas+AND+rights:5)
+          +OR+
+          (ht_heldby:etas+AND+rights:16)
+        )
+      )
+    FQ
+    is($result, $expected, 'allows pd equivalents, allows 9 (pdus) and 19 (icus) [BUG], requires holdings for ic equivalents');
+    $test_user->end;
+  };
+
+  subtest 'with HT_STAFF user' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::HT_STAFF_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+8+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25+OR+26+OR+27)
+        )
+      FQ
+      is($result, $expected, 'allows everything');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::HT_STAFF_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          rights:(1+OR+2+OR+3+OR+4+OR+5+OR+6+OR+7+OR+8+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+16+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25+OR+26+OR+27)
+        )
+      FQ
+      is($result, $expected, 'allows everything');
+      $test_user->end;
+    };
+  };
+
+  subtest 'with RS user' => sub {
+    subtest 'located in US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::RESOURCE_SHARING_USER);
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+          +OR+
+          (
+            (ht_heldby:hathitrust+AND+rights:2)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:3)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:4)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:5)
+            +OR+
+            (ht_heldby:hathitrust+AND+rights:16)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows 9 (pdus) and 19 (icus) [BUG], requires holdings for ic equivalents');
+      $test_user->end;
+    };
+
+    subtest 'located outside the US' => sub {
+      my $test_user = Test::User->new('type' => $RightsGlobals::RESOURCE_SHARING_USER, location => 'NONUS');
+      begin_and_check_user($test_user);
+      my $result = $facets->__get_Solr_fulltext_filter_query($C);
+      (my $expected = <<~'FQ') =~ s/\s//g;
+        fq=(
+          (rights:(1+OR+6+OR+7+OR+9+OR+10+OR+11+OR+12+OR+13+OR+
+                   14+OR+15+OR+17+OR+18+OR+19+OR+20+OR+21+OR+22+OR+23+OR+24+OR+25))
+          +OR+
+          (
+            (ht_heldby:ox+AND+rights:2)
+            +OR+
+            (ht_heldby:ox+AND+rights:3)
+            +OR+
+            (ht_heldby:ox+AND+rights:4)
+            +OR+
+            (ht_heldby:ox+AND+rights:5)
+            +OR+
+            (ht_heldby:ox+AND+rights:16)
+          )
+        )
+      FQ
+      is($result, $expected, 'allows pd equivalents, allows 9 (pdus) and 19 (icus) [BUG], requires holdings for ic equivalents');
+      $test_user->end;
+    };
+  };
+};
+
+done_testing();

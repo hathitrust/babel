@@ -882,7 +882,9 @@ sub _get_final_access_status_attr_list {
         push(@attr_list, $attr)
             if ($final_access_status eq $final_access_status_req);
     }
-
+    # Sort the attributes (which are all strings) numerically for better observability
+    # downstream and in tests,
+    @attr_list = sort { $a <=> $b } @attr_list;
     DEBUG('pt,auth,all',
           sub {
               my $attr_list = join(',', sort {$a <=> $b} @attr_list);

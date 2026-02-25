@@ -19,3 +19,5 @@ REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, a
   VALUES ('hathitrust','HathiTrust','hathitrust.org','1','1','https://idp.hathitrust.org/entity','^(member|alum|faculty|staff|student|employee)@hathitrust.org');
 
 REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations, emergency_status)  VALUES ('etas','ETAS Example Inst','etas.example','1','1','https://idp.etas.example','^(member)@etas.example','^(member)@etas.example');
+
+REPLACE INTO ht.ht_institutions (inst_id, name, domain, us, enabled, entityID, allowed_affiliations)  VALUES ('ox','Non-US Example Inst','ox.ac.uk','0','1','https://registry.shibboleth.ox.ac.uk/idp','^(alum|member|student)@ox.ac.uk');
