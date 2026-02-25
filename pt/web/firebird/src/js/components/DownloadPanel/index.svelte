@@ -51,20 +51,18 @@
   let clearSelectionLabel = $state('Clear selection');
 
   let emptySelection = $derived(range == 'selected-pages' && selection.pages.length == 0);
+  let emptySelectionTIFF = $derived(emptySelection && format == 'image-tiff');
   let tooManyTiffs = $derived(range == 'selected-pages' && format == 'image-tiff' && selection.pages.length > 10);
-  let largeTiffVolume = $derived(range == 'volume' && format == 'image-tiff' && totalSeq > 10);
-
-  let buttonDisabled = $derived(emptySelection || tooManyTiffs || largeTiffVolume);
+  let buttonDisabled = $derived(emptySelection || emptySelectionTIFF || tooManyTiffs );
   let errorMessage = $derived(
-    emptySelection ? `You haven't selected any pages to download.
-        To select pages, use the selection checkbox in the page toolbar.` :
-    tooManyTiffs ? `You have selected ${
-          selection.pages.length
-        } page scans. Please update range to 10 page scans or fewer to proceed with a TIFF download.` :
-    largeTiffVolume ? `This volume has more than 10 pages. Please choose 10 page scans or fewer to proceed with a TIFF download.` :
+    emptySelectionTIFF ? `<p>No pages selected.
+        Use the toolbar to select up to <span class="fw-bold">10 pages</span> to continue your TIFF download.</p>` :
+    emptySelection ? `<p>No pages selected.
+        Use the toolbar to select pages.</p>` :
+    tooManyTiffs ? `<p>Your selection exceeds the TIFF download limit. Select 10 pages or fewer to continue.</p>` :
     null
   );
-
+  let errorCount = 0;
 
   const _mtm = (window._mtm = window._mtm || []);
 
@@ -264,7 +262,7 @@
       scriptEl.onerror = () => {
         document.body.removeChild(scriptEl);
         errorMessage = 'Failed to start download. Please try again.';
-        HT.live.announce(errorMessage);
+        HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         downloadInProgress = false;
         _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
       };
@@ -425,7 +423,11 @@
   
   $effect(() => {
     if (errorMessage) {
-      HT.live.announce(errorMessage);
+      errorCount++;
+      // this is a hacky workaround for aria-live announcements
+      // chrome does not re-announce the last message it announced, even if it left the DOM and re-entered the DOM
+      // this adds a space to the end of the message before sending it to our announcement library
+      HT.live.announce(`${errorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
     }
   });
 
@@ -568,14 +570,6 @@
           <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
           <fieldset class="mb-3" id="download-range">
             <legend class="fs-5">Range</legend>
-            <div aria-live="polite" aria-atomic="true">
-              {#if format == 'image-tiff' && (range == 'selected-pages' || range == 'volume')}
-                <p class="fs-7 mb-3 mt-2 text-cyan-700" tabindex="0" id="tiff-note">
-                  Note: TIFF downloads are limited to <span class="fw-bold">10 page scans</span> at a time, as it is resource-intensive.
-                </p>
-              {/if}
-            </div>
-
             {#if $currentView == '1up'}
               <div class="form-check">
                 <input
@@ -687,9 +681,11 @@
             </button>
           </p>
           {#if errorMessage}
-            <div class="alert alert-warning fs-7 d-flex justify-content-between gap-2 pe-2">
-              <i class="alert-icon fa-solid fa-triangle-exclamation"></i>
-              <p class="py-3">{errorMessage}</p>
+            <div class="alert inline-alert alert-warning fs-7 d-flex gap-2">
+              <div class="icon-wrapper d-flex">
+                <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+              </div>
+              {@html errorMessage}
             </div>
           {/if}
           <p class="fs-7 mb-1">
@@ -798,31 +794,36 @@
 
 <style lang="scss">
   .alert-warning {
-    --bs-alert-color: var(--color-neutral-800);
-    --bs-alert-border-color: #997404;
+    --alert-warning-color: #664D03;
+    --alert-warning-base: #FFF3CD;
+    --alert-warning-border-color: #FFECB5;
+    --bs-alert-color: var(--alert-warning-color);
+    --bs-alert-bg: var(--alert-warning-base);
+    --bs-alert-border-color: var(--alert-warning-border-color);
   }
-  .alert {
-    border: none;
-    border-inline-start: 0.25rem solid var(--bs-alert-border-color);
-    padding: 0;
-    border-radius: 0.25rem;
+  .alert.inline-alert {
+    border: 1px solid var(--bs-alert-border-color);
+    padding-block: 0.75rem;
+    padding-inline: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
     box-shadow: 0px 4px 8px 0px rgba(25, 11, 1, 0.04);
+    line-height: 1.3125rem;
+    letter-spacing: -0.00875rem;
+    color: var(--bs-alert-color);
+    .icon-wrapper {
+      width: 1.5rem;
+      height: 1.5rem;
+      justify-content: center;
+      align-items: center;
+      gap: 0.625rem;
+    }
     i.alert-icon {
-      color: var(--bs-alert-border-color);
+      font-size: 1rem;
       display: flex;
       width: 1.5rem;
-      padding-block-start: 1rem;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      align-self: stretch;
-      margin-inline-start: 0.5rem;
-      line-height: 1.3125rem;
-    }
-    p {
-      line-height: 1.3125rem;
-      letter-spacing: -0.01rem;
-      margin-block-end: 0;
+      opacity: 0.8;
     }
   }
 </style>
