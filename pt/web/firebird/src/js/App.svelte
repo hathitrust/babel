@@ -1,6 +1,7 @@
 <script>
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
+  import {MediaQuery} from 'svelte/reactivity'
   import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
 
   import dialogPolyfill from 'dialog-polyfill';
@@ -113,6 +114,8 @@
   window.manifest = manifest;
   window.emitter = emitter;
 
+  const largeScreen = new MediaQuery('min-width: 768px');
+
   // aside
   let priority = 'min';
   let disabled = false;
@@ -200,7 +203,7 @@
   let optionsToggled = false;
   function toggleOptions() {
     optionsToggled = !optionsToggled;
-    document.body.dataset.optionsToggled = optionsToggled;
+    document.body.dataset.optionsToggled = optionsToggled.toString();
   }
 
   let lightboxModal;
@@ -430,10 +433,12 @@
 <div style="grid-area: options">
   <button
     data-action="toggle-options"
+    id="toggle-options"
     style="grid-area: options"
     class="btn btn-dark shadow rounded-0 w-100 d-flex justify-content-between align-items-center d-md-none"
     class:d-none={$interfaceMode == 'minimal'}
     on:click={toggleOptions}
+    aria-expanded={optionsToggled}
   >
     <span>Options</span>
     <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
@@ -442,8 +447,8 @@
 {#if isReaderView}
   <ViewerToolbar />
 {/if}
-<aside>
-  <div class="inner" class:invisible={!asideExpanded || $interfaceMode == 'minimal'}>
+<aside class:invisible={$interfaceMode == 'minimal' || (largeScreen.current && !asideExpanded) || (!largeScreen.current && !optionsToggled)}>
+  <div class="inner" >
     <div class="accordion">
       <SurveyPanel />
     </div>
@@ -509,7 +514,7 @@
   </div>
 </dialog>
 
-<style>
+<style lang="scss">
   .mousecatcher {
     position: absolute;
     left: 0;
@@ -533,5 +538,14 @@
 
   .lightbox::backdrop {
     background: rgba(0, 0, 0, 0.5);
+  }
+  button#toggle-options {
+    border: 3px solid #0f1010 !important;
+    &:hover {
+      border: 3px solid #333434 !important;
+    }
+    &:focus-visible {
+      border: 3px solid #086ab4 !important;
+    }
   }
 </style>
