@@ -154,57 +154,45 @@ test.describe('imgsrv download', () => {
     );
     expect(initialResponse.status()).toEqual(200);
   });
-
-  test('download single selected page tiff, high resolution', async ({ request, page }) => {
-    //this test fails
-    //single selected page (#2), has the /download path in the URL, uses the form tunnel, no callback
-    // returns 403 restricted
-    // ...what am i missing??
-    const downloadResponse = await request.get(
-      'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&attachment=1&tracker=D1&format=image%2Ftiff&target_ppi=0&seq=2'
-    );
+  test('download single selected page tiff, high resolution', async ({ page }) => {
+    // what fixed this test was to make the request using the page context instead of a fresh context
+    // the cookies are set from the page API/browser context but we were using the request API which has a different context
+    // page.context().request shares the cookie jar with the browser from where the cookie banner was clicked
+    const downloadResponse = await page
+      .context()
+      .request.get(
+        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&attachment=1&tracker=D1&format=image%2Ftiff&target_ppi=0&seq=2'
+      );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
-    // console.log('headers', downloadHeaders, 'body', downloadBody);
-
     expect(downloadResponse.status()).toEqual(200);
-    expect(downloadHeaders['content-disposition']).toContain('attachment; filename=test.pd_open-2');
+    expect(downloadHeaders['content-disposition']).toContain('attachment; filename=test-pd_open-2');
     expect(downloadHeaders['content-type']).toEqual('application/zip');
     expect(downloadBody.length).toBeGreaterThan(1);
   });
   test('download single selected page txt', async ({ request, page }) => {
-    //this test passes
-    //but it has most of the same parameters as the single tiff that doesn't pass:
-    //single selected page (#2), has the /download path in the URL, uses the form tunnel, no callback
     const downloadResponse = await request.get(
       'http://apache:8080/cgi/imgsrv/download/plaintext?id=test.pd_open&attachment=1&tracker=D5&seq=2'
     );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
-    // console.log('headers', downloadHeaders, 'body', downloadBody);
-
     expect(downloadResponse.status()).toEqual(200);
     expect(downloadHeaders['content-disposition']).toContain('attachment; filename=test-pd_open-2');
     expect(downloadHeaders['content-type']).toEqual('text/plain');
     expect(downloadBody.length).toBeGreaterThan(1);
   });
-
-  //more TIFF tests, because I can't figure this out
-  test.skip('download whole item tiff, full resolution', async ({ request, page }) => {
-    //this fails at the callback
-    //initialResponse returns <html><body>Restricted</body></html> instead of JSON
-
+  test('download whole item tiff, full resolution', async ({ page }) => {
     var currentTime = new Date().getTime();
 
-    const initialResponse = await request.get(
-      'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Ftiff&target_ppi=0&bundle_format=zip&callback=tunnelCallback&_=' +
-        currentTime
-    );
+    const initialResponse = await page
+      .context()
+      .request.get(
+        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Ftiff&target_ppi=0&bundle_format=zip&callback=tunnelCallback&_=' +
+          currentTime
+      );
     const initialBody = await initialResponse.text();
-
-    // console.log(initialBody);
 
     // should get a result like:
     // tunnelCallback('/cgi/imgsrv/download-status?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0', '/cgi/imgsrv/download/pdf?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0;attachment=1', 2, '1');
@@ -223,7 +211,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
+      const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -237,28 +225,24 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
+    const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
     expect(downloadResponse.status()).toEqual(200);
-    // expect(downloadHeaders['content-disposition']).toMatch(/^attachment; filename=test-pd_open-\d+.pdf$/);
-    expect(downloadHeaders['content-type']).toEqual('application/javascript');
-    // expect(downloadBody.length).toBeGreaterThan(512 * 1024);
+    expect(downloadHeaders['content-disposition']).toMatch(/^attachment; filename=test-pd_open-\d+.zip$/);
+    expect(downloadHeaders['content-type']).toEqual('application/zip');
   });
-  //maybe a whole item jpeg will work??
-  test.skip('download whole item jpeg, high resolution', async ({ request, page }) => {
-    //nope, this fails, too
-    //Restricted
+  test('download whole item jpeg, high resolution', async ({ page }) => {
     var currentTime = new Date().getTime();
 
-    const initialResponse = await request.get(
-      'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Fjpeg&target_ppi=300&bundle_format=zip&callback=tunnelCallback&_=' +
-        currentTime
-    );
+    const initialResponse = await page
+      .context()
+      .request.get(
+        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Fjpeg&target_ppi=300&bundle_format=zip&callback=tunnelCallback&_=' +
+          currentTime
+      );
     const initialBody = await initialResponse.text();
-
-    // console.log(initialBody);
 
     // should get a result like:
     // tunnelCallback('/cgi/imgsrv/download-status?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0', '/cgi/imgsrv/download/pdf?id=test.pd_open;marker=2K16.11c2110ec3cb660ecda8bd61c5d456b056701b164120987adabc159e0135e0b0a0;attachment=1', 2, '1');
@@ -277,7 +261,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
+      const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -291,13 +275,12 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
+    const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
     expect(downloadResponse.status()).toEqual(200);
-    // expect(downloadHeaders['content-disposition']).toMatch(/^attachment; filename=test-pd_open-\d+.pdf$/);
-    expect(downloadHeaders['content-type']).toEqual('application/javascript');
-    // expect(downloadBody.length).toBeGreaterThan(512 * 1024);
+    expect(downloadHeaders['content-disposition']).toMatch(/^attachment; filename=test-pd_open-\d+.zip$/);
+    expect(downloadHeaders['content-type']).toEqual('application/zip');
   });
 });
