@@ -20,7 +20,10 @@ See coding example in base class PIFiller
 
 use strict;
 
+use Crypt::URandom qw( urandom );
+use Digest::SHA qw(hmac_sha256_base64);
 use List::MoreUtils qw(firstidx);
+use MIME::Base64 qw(encode_base64);
 
 use Utils;
 use Utils::Time;
@@ -38,6 +41,7 @@ use JSON::XS qw(encode_json);
 
 use Utils::Cache::JSON;
 
+my $CSRF_SECRET_KEY = Utils::Settings::load( 'mdp-lib', 'csrf', 0 )->{csrf_secret_key};
 
 # ---------------------------------------------------------------------
 
@@ -211,6 +215,28 @@ sub BuildImageServerImageUrl
 
     my $href = Utils::url_to($tempCgi, $PTGlobals::gImgsrvCgiRoot . "/$action");
     return $href;
+}
+
+sub BuildImageServerToken
+{
+    my ($C) = @_;
+
+    my $mdpItem = $C->get_object('MdpItem');
+    my $ses = $C->get_object('Session');
+
+    # TO TEST: what happens if replication is behind? what happens if we load
+    # a whole bunch of tabs? Do we get different session keys in different
+    # tabs, and some images fail to load?
+
+    my $session_key = $ses->get_persistent('session_key');
+    if (not defined $session_key) {
+      $session_key = encode_base64(urandom(32));
+      $ses->set_persistent('session_key',$session_key);
+    }
+    
+    # hash with ID
+    my $id = $mdpItem->GetId();
+    return hmac_sha256_base64($session_key,$id,$CSRF_SECRET_KEY);
 }
 
 
@@ -997,6 +1023,7 @@ sub handle_SETUP_MANIFEST_PARAMS
     push @$xml, qq{HT.params.versionLabel = } . $json->encode(PT::PIFiller::Common::handle_VERSION_LABEL_PI(@_));
 
     push @$xml, qq{HT.params.messageList = } . PT::PIFiller::Common::handle_APPLICATION_MESSAGES(@_);
+    push @$xml, qq{HT.params.imgsrvToken = } . $json->encode(BuildImageServerToken($C));
 
     ### SHAMELESS GREEN
     my $external_links = [];

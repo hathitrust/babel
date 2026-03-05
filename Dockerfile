@@ -14,11 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libcgi-emulate-psgi-perl \
   libcgi-psgi-perl \
   libconfig-tiny-perl \
+  libcrypt-urandom-perl \
   libdata-page-perl \
   libdate-calc-perl \
   libdate-manip-perl \
   libdbd-mysql-perl \
   libdevel-cover-perl \
+  libdigest-sha-perl \
   libfcgi-perl \
   libfcgi-procmanager-perl \
   libfile-slurp-perl \
