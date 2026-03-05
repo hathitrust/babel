@@ -169,6 +169,7 @@
     if (manifest.debug) {
       req.searchParams.set('debug', manifest.debug);
     }
+    req.searchParams.set('token', manifest.imgsrvToken);
     return req.toString();
   };
 
