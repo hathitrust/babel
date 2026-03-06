@@ -723,7 +723,7 @@
       Download your {formatTitle[format]}
     {:else}
       Building your {formatTitle[format]}
-      {#if $selected.size > 0}
+      {#if range == 'selected-pages' && $selected.size > 0}
         ({$selected.size} page{$selected.size > 1 ? 's' : ''})
       {/if}
     {/if}
