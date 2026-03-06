@@ -63,6 +63,7 @@
     null
   );
   let errorCount = 0;
+  let downloadError = $state('');
 
   const _mtm = (window._mtm = window._mtm || []);
 
@@ -85,6 +86,22 @@
 		
 		return `${request}${newAction}?${params.toString()}`
 	})
+
+  async function checkFetch(url) {
+    const res = await fetch(url, { 
+      method: 'HEAD', 
+      credentials: 'include', 
+    });
+
+    if (!res.ok) {
+      downloadInProgress = false;
+      downloadError = `Download failed. Please try again.`
+      _mtm.push({'event': 'pt-small-download-error', 'downloadUrl': `${simpleUrl.toString()}`});
+      throw new Error(`Download failed: ${res.status}`);
+    } else {
+      downloadInProgress = false;
+    }
+  }
 
   function callback(argv) {
     console.log('-- callback', downloadInProgress, argv);
@@ -309,17 +326,19 @@
     if (isSimpleDownload()) {
       downloadInProgress = true;
 
-      const onReturn = () => {
-        downloadInProgress = false;
-        window.removeEventListener("focus", onReturn);
-        document.removeEventListener("visibilitychange", onReturn);
-      };
+      checkFetch(simpleUrl)
+      // const onReturn = () => {
+      //   downloadInProgress = false;
+      //   window.removeEventListener("focus", onReturn);
+      //   document.removeEventListener("visibilitychange", onReturn);
+      // };
 
-      window.addEventListener("focus", onReturn);
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) onReturn();
-      });
+      // window.addEventListener("focus", onReturn);
+      // document.addEventListener("visibilitychange", () => {
+      //   if (!document.hidden) onReturn();
+      // });
       modal.show();
+
       downloadAttempt++;
     } else {
       buildCallbackDownloadUrl(); 
@@ -679,6 +698,15 @@
                 <span class="visually-hidden">Loading...</span>
               {/if}
             </button>
+<!-- 
+            <button
+              type="button"
+              class="btn btn-outline-dark"
+              disabled={buttonDisabled}
+              onclick={() => {checkFetch(simpleUrl)}}
+              id="submit-download"
+            >i can haz link?
+            </button> -->
           </p>
           {#if errorMessage}
             <div class="alert inline-alert alert-warning fs-7 d-flex gap-2">
@@ -731,7 +759,11 @@
   {#snippet body()}
     <div xxstyle="width: 30rem">
       <div>
-        {#if simpleDownload}
+        {#if simpleDownload && downloadInProgress}
+          <p>Please wait while we build your {formatTitle[format]}.</p>
+        {:else if simpleDownload && downloadError} 
+        <p>{downloadError}</p>
+        {:else if simpleDownload && !downloadInProgress} 
           <p>Your download is ready.</p>
         {:else}
           {#if status.percent < 100}
@@ -774,13 +806,26 @@
           class:disabled={status.done}>Cancel</button
         >
         {/if}
-        {#if !simpleDownload && downloadInProgress}
+        {#if downloadInProgress}
           <span class="btn btn-primary disabled"> Download </span>
+        {:else if simpleDownload && downloadError} 
+          <button
+          type="button"
+          class="btn btn-secondary"
+          onclick={() => modal.hide()}
+          >Cancel</button
+        >
         {:else}
-          <a
+          <!-- <a
             download
             class="btn btn-primary"
             onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
+            href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
+          > -->
+          <a
+            download
+            class="btn btn-primary"
+            onclick={() => modal.hide()}
             href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
           >
         {/if}
