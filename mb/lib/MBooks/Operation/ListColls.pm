@@ -247,18 +247,20 @@ sub execute_operation
     $coll_arr_ref = $tmp;
 
     my $total_records = scalar @$coll_arr_ref;
-    if ( $total_records > 100 && $cgi->param('skin') ne 'alicorn' ) {
-        my $pn = $cgi->param('pn') || 1;
-        my $start = $pn - 1;
-        my $end = $start + 100 - 1;
+    my $pager = $self->do_paging($C, $cgi, $total_records);
+
+    my $config = $C->get_object('MdpConfig');
+    my $records_per_page = $config->get('default_records_per_page');
+
+    if ( $total_records > $records_per_page && $cgi->param('skin') ne 'alicorn' ) {
+        my $start = $pager->first - 1;
+        my $end = $pager->last - 1;
         $coll_arr_ref = [ @$coll_arr_ref[$start .. $end] ];
     }
 
     $act->set_transient_facade_member_data($C, 'list_colls_data', $coll_arr_ref);
     $act->set_transient_facade_member_data($C, 'size_counts', $size_counts);
     $act->set_transient_facade_member_data($C, 'view_counts', $view_counts);
-
-    my $pager = $self->do_paging($C, $cgi, $total_records);
     $act->set_transient_facade_member_data( $C, 'pager', $pager );
     return $ST_OK;
 }
