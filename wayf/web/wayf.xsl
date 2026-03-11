@@ -195,7 +195,7 @@
 
             <div id="no-institution-listed" style="text-align: left; xmargin-top: 0;">
               <p>
-                Still need a way to log in? <a href="https://friend.weblogin.umich.edu/friend/">Create a University of Michigan Friend Account</a>
+                Still need a way to log in? <a href="https://accounts.it.umich.edu/friend/">Create a University of Michigan Friend Account</a>
               </p>
             </div>
 
