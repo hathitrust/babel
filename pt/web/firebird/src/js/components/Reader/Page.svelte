@@ -751,7 +751,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     --defaultPageHeight: calc(var(--vh) - ((var(--stage-header-height) + var(--paddingBottom, 0)) * 1px));
     --actualPageHeight: var(--scanHeight, var(--defaultPageHeight));
     --actualZoom: var(--zoom, 1);
-    height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1));
+    height: calc((clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)) + 8px);
     width: 100%;
     max-width: 100%;
 
