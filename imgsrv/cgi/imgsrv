@@ -9,6 +9,7 @@ use Vendors __FILE__;
 # ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 BEGIN {
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
     # Set the SDRINST and SDRLIB environment variables in auth
     # system absence.
     require Auth::Surrogate;

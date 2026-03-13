@@ -8,7 +8,8 @@ use strict;
 use warnings;
 
 BEGIN {
-   # $ENV{DEBUG_LOCAL} = 1;
+    $ENV{PLACK_ENV} = ( defined $ENV{HT_DEV} ) ? 'development' : 'production';
+    # $ENV{DEBUG_LOCAL} = 1;
 }
 
 use Plack::Util;
