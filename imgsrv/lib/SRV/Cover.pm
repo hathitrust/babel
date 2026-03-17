@@ -59,6 +59,10 @@ sub run {
         $restricted = $$env{'psgix.restricted'};
     }
 
+    if ($$env{REQUEST_METHOD} eq 'HEAD') {
+      return SRV::Utils::head_response($restricted,$env);
+    }
+
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
     my $logfile = SRV::Utils::get_logfile();

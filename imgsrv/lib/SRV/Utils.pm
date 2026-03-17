@@ -568,6 +568,7 @@ sub head_response {
   my $restricted = shift;
   my $env = shift;
 
+  print STDERR "AHOY bailing out for HEAD request\n";
   my $req = Plack::Request->new($env);
   my $res;
   if($restricted) {

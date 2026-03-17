@@ -269,6 +269,10 @@ sub run {
         $self->restricted($restricted);
     }
 
+    if ($$env{REQUEST_METHOD} eq 'HEAD') {
+      return SRV::Utils::head_response($self->restricted,$env);
+    }
+
     my $updater = new SRV::Utils::Progress 
         filepath => $self->progress_filepath, total_pages => $self->total_pages,
         download_url => $self->download_url,

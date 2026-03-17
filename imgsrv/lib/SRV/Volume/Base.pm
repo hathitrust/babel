@@ -128,8 +128,8 @@ sub run {
         $self->_authorize($env);
     }
 
-    if ($$env{REQUEST_METHOD} == 'HEAD') {
-      SRV::Utils::head_response($self->restricted,$env);
+    if ($$env{REQUEST_METHOD} eq 'HEAD') {
+      return SRV::Utils::head_response($self->restricted,$env);
     }
 
     unless ( $self->restricted ) {
