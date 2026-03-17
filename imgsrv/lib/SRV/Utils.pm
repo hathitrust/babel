@@ -562,6 +562,23 @@ sub run_command {
     return $retval;
 }
 
+# Checks if a request was authorized; if so, sends a HEAD response.
+sub head_response {
+
+  my $restricted = shift;
+  my $env = shift;
+
+  my $req = Plack::Request->new($env);
+  my $res;
+  if($restricted) {
+    $res = $req->new_response(403);
+  } else {
+    $res = $req->new_response(200);
+  }
+  return $res->finalize;
+
+}
+
 package SRV::Utils::File;
 
 # clone of Plack::Util::IOWithPath + file removal at end

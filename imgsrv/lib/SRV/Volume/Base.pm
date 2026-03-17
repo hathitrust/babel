@@ -117,6 +117,8 @@ sub run {
     $self->_fill_params(\%args) if ( %args );
     $self->_validate_params();
 
+    print STDERR Dumper($env);
+
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $ar = $C->get_object('Access::Rights');
@@ -124,6 +126,10 @@ sub run {
 
     unless ( defined $self->restricted ) {
         $self->_authorize($env);
+    }
+
+    if ($$env{REQUEST_METHOD} == 'HEAD') {
+      SRV::Utils::head_response($self->restricted,$env);
     }
 
     unless ( $self->restricted ) {
