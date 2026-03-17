@@ -313,6 +313,7 @@
         downloadInProgress = false;
         window.removeEventListener("focus", onReturn);
         document.removeEventListener("visibilitychange", onReturn);
+        document.getElementById('submit-download').focus();
       };
 
       window.addEventListener("focus", onReturn);
@@ -778,7 +779,7 @@
           <span class="btn btn-primary disabled"> Download </span>
         {:else}
           <a
-            download
+            target="_blank"
             class="btn btn-primary"
             onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
             href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
