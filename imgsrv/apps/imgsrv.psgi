@@ -13,7 +13,6 @@ use Utils;
 
 use SRV::Image;
 use SRV::Cover;
-use SRV::Article::HTML;
 use SRV::Metrics;
 use SRV::Utils;
 use SRV::Volume::Metadata;
@@ -150,12 +149,6 @@ builder {
         mount "/metadata" => $metadata_app;
         mount "/meta" => $metadata_app;
         mount "/cover" => $covers_app;
-    };
-    mount "/article" => builder {
-        mount "/image" => SRV::Image->new(watermark => 0);
-        mount "/cover" => $covers_app;
-        mount "/html" => SRV::Article::HTML->new;
-        # mount "/file" => ...;
     };
     mount "/metrics" => sub {
       return $metrics->render;

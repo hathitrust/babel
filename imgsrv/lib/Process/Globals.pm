@@ -61,25 +61,6 @@ $$transforms{'text/abby+html'} = [qq{$static_path/text/abby2xhtml.xsl}];
 $$transforms{'text/html'} = [qq{$static_path/text/abby2xhtml.xsl}];
 $$transforms{'text/plain'} = [];
 
-$$transforms{'application/jats+xml'} = 
-    $$transforms{'http://dtd.nlm.nih.gov/publishing/3.0/journalpublishing3.dtd'} = 
-        $$transforms{'http://dtd.nlm.nih.gov/publishing/3.0/journalpublishing3.dtd'} = 
-        [ 
-            qq{$ENV{SDRROOT}/mpach/JATSPreviewStylesheets/xslt/citations-prep/jats-PMCcit.xsl},
-            qq{$ENV{SDRROOT}/mpach/JATSPreviewStylesheets/xslt/main/jats-mpub.xsl},
-         ];
-
-### Process::Article
-$wkhtmltopdf = qq{$ENV{SDRROOT}/sandbox/bin/wkhtmltopdf};
-$phantomjs = qq{$ENV{SDRROOT}/sandbox/bin/phantomjs};
-$weasyprint = qq{};
-
-$js_css_map = {};
-$$js_css_map{'application/jats+xml'} = $$js_css_map{'http://dtd.nlm.nih.gov/publishing/3.0/journalpublishing3.dtd'} = {
-    '__ROOT__' => '/mpach/',
-    'jats-preview.css' => 'css/jpub-preview.css',
-};
-
 # $jquery_url = q{//ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js};
 # $postmessage_url = q{/pt/vendor/jquery.ba-postmessage.js};
 # $iframe_script_urls = [ q{/imgsrv/vendor/jquery.myhighlight-3.js}, q{/imgsrv/js/iframe_support.js}, q{/imgsrv/js/indexing.js} ];
