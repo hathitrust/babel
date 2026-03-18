@@ -15,6 +15,7 @@ use SRV::Image;
 use SRV::Cover;
 use SRV::Article::HTML;
 use SRV::Metrics;
+use SRV::Utils;
 use SRV::Volume::Metadata;
 use SRV::Volume::HTML;
 
@@ -41,13 +42,9 @@ my $covers_app = SRV::Cover->new(restricted => 0)->to_app;
 
 umask 0002;
 
-sub under_server {
-    return ( ! defined $ENV{PSGI_COMMAND} );
-}
-
 builder {
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
         enable 'URLFixer';
     }
 
@@ -55,17 +52,17 @@ builder {
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { (under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    enable_if { (SRV::Utils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) }
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_500.html";
 
-    enable_if { (under_server()) }
+    enable_if { (SRV::Utils::under_server()) }
         "HTErrorDocument", 404 => "/mdp-web/graphics/404_image.jpg";
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
         # choke policies
         enable 'Choke::Cache::Filesystem';
 

@@ -461,12 +461,8 @@ sub _default_params {
         download_url => undef,
         tracker => undef,
         bundle_format => undef,
+        super => undef,
     );
-
-    unless ( SRV::Utils::under_server() ) {
-        # this can only be passed from the command line
-        $params{super} = undef;
-    }
 
     return %params;
 }
@@ -479,8 +475,6 @@ sub _validate_params {
 sub _authorize {
     my $self = shift;
     my $env = shift;
-
-    $self->restricted(0) unless ( SRV::Utils::under_server() );
 
     unless ( defined $self->restricted ) {
 

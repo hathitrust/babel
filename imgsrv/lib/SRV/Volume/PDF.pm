@@ -60,7 +60,7 @@ sub _generate_coderef {
     return sub {
         my $responder = shift;
 
-        my $status = ( Debug::DUtils::under_server() && $self->restricted ) ? 403 : 200;
+        my $status = ( $self->restricted ) ? 403 : 200;
 
         my $headers = $self->_get_response_headers;
 
@@ -76,13 +76,9 @@ sub _generate_coderef {
 
 
         my $writer = $responder->([$status, $headers]);
-        my $fh;
+        my $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
+        $self->output_filename($fh);
 
-        if ( ! $self->output_filename || Debug::DUtils::under_server() ) {
-            # streaming
-            $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
-            $self->output_filename($fh);
-        }
         $self->run($env);
         $self->_log($env) unless ( $ENV{PSGI_COMMAND} );
     }

@@ -130,7 +130,7 @@ sub run {
         if ( $role ) {
             $output_filename = $self->_build_output_filename_by_role($env, $role, $output_file_type);
             my $test_output_filename = $output_filename;
-            if ( ! -f $output_filename && Debug::DUtils::under_server() ) { $output_filename = undef; }
+            if ( ! -f $output_filename ) { $output_filename = undef; }
         }
     }
     $output_filename = $self->_build_output_filename($env, $restricted, $output_file_type) unless ( $output_filename );

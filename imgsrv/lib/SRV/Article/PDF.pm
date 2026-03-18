@@ -94,13 +94,9 @@ sub call {
         my $responder = shift;
 
         my $writer = $responder->([200, [ "Content-Type", $content_type]]);
-        my $fh;
 
-        if ( ! $self->output_filename || Debug::DUtils::under_server() ) {
-            # streaming
-            $fh = new SRV::Utils::Stream headers => [ 'Content-type', $content_type ], responder => $responder, writer => $writer;
-            $self->output_filename($fh);
-        }
+        my $fh = new SRV::Utils::Stream headers => [ 'Content-type', $content_type ], responder => $responder, writer => $writer;
+        $self->output_filename($fh);
         $self->run($env);
     }
 
@@ -249,8 +245,6 @@ sub run {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
-
-    $self->restricted(0) unless ( Debug::DUtils::under_server() );
 
     # unless ( defined $self->restricted ) {
     #     my $restricted;

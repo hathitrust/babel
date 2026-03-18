@@ -9,6 +9,8 @@ use Plack::Request;
 use Plack::Util;
 use Utils;
 
+use SRV::Utils;
+
 use Utils::Settings;
 our $settings = Utils::Settings::load('imgsrv', 'download');
 
@@ -33,26 +35,22 @@ my $loader = sub {
     }
 };
 
-sub under_server {
-    return ( ! defined $ENV{PSGI_COMMAND} );
-}
-
 builder {
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
         enable 'URLFixer';
     }
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { (under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    enable_if { (SRV::Utils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) }
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_error.html";
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
 
         enable 'Choke::Cache::Filesystem';
 

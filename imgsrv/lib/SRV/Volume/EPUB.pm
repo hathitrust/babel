@@ -254,8 +254,6 @@ sub run {
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
 
-    $self->restricted(0) unless ( Debug::DUtils::under_server() );
-
     unless ( defined $self->restricted ) {
         my $restricted;
         $restricted = $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) ne 'allow';
