@@ -63,6 +63,8 @@
     null
   );
   let errorCount = 0;
+  let downloadError = $state(false);
+  let downloadErrorMessage = $state('');
 
   const _mtm = (window._mtm = window._mtm || []);
 
@@ -106,8 +108,12 @@
   }
 
   function checkStatusInterval() {
-    fetch(progressUrl, { include: 'credentials' })
+    fetch(progressUrl, { credentials: 'include' })
       .then((response) => {
+        if (!response.ok) {
+          _mtm.push({'event': 'pt-large-download-error', 'download fetch failed': `${progressUrl.toString()}`});
+          throw new Error(`Status check failed: ${response.status} ${response.statusText}`);
+        }
         return response.json();
       })
       .then((data) => {
@@ -117,8 +123,22 @@
           clearInterval(trackerInterval);
           trackerInterval = null;
         }
-        // error handling
-      });
+      })
+      .catch((error) => {
+      console.error('Progress check error:', error);
+      numAttempts += 1;
+      
+      // Stop polling after too many failures
+      if (numAttempts > 3) {
+        clearInterval(trackerInterval);
+        trackerInterval = null;
+        downloadInProgress = false;
+        downloadError = true;
+        downloadErrorMessage = 'Download failed. Please try again.';
+        status.error = true;
+        _mtm.push({'event': 'pt-large-download-error', 'downloadStatusUrl': `${progressUrl.toString()}`});
+      }
+    });
   }
 
   function updateProgress(data) {
@@ -302,7 +322,8 @@
   function submitDownload(e) {
     e.preventDefault();
     console.log('-- download.fetchDownload')
-        
+    
+    downloadError = false;
     numAttempts = 0;
     numProcessed = 0;
 
@@ -311,13 +332,13 @@
 
       const onReturn = () => {
         downloadInProgress = false;
-        window.removeEventListener("focus", onReturn);
-        document.removeEventListener("visibilitychange", onReturn);
+        window.removeEventListener('focus', onReturn);
+        document.removeEventListener('visibilitychange', onReturn);
         document.getElementById('submit-download').focus();
       };
 
-      window.addEventListener("focus", onReturn);
-      document.addEventListener("visibilitychange", () => {
+      window.addEventListener('focus', onReturn);
+      document.addEventListener('visibilitychange', () => {
         if (!document.hidden) onReturn();
       });
       modal.show();
@@ -735,7 +756,7 @@
         {#if simpleDownload}
           <p>Your download is ready.</p>
         {:else}
-          {#if status.percent < 100}
+          {#if status.percent < 100 && !downloadError}
             <p>Please wait while we build your {formatTitle[format]}.</p>
             <div
               class="progress"
@@ -758,12 +779,16 @@
           {/if}
         {/if}
       </div>
+      {#if !simpleDownload && downloadError} 
+        <p>{downloadErrorMessage}</p>
+      {/if}
       {#if !simpleDownload && status.done}
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
     </div>
   {/snippet}
   {#snippet footer()}
+  {#if !downloadError}
     <div role="status">
       <div class="d-flex gap-1 align-items-center justify-content-end">
         {#if !simpleDownload}
@@ -775,7 +800,7 @@
           class:disabled={status.done}>Cancel</button
         >
         {/if}
-        {#if !simpleDownload && downloadInProgress}
+        {#if !simpleDownload && downloadInProgress} 
           <span class="btn btn-primary disabled"> Download </span>
         {:else}
           <a
@@ -790,6 +815,7 @@
         <span class="visually-hidden">Download cancelled</span>
       {/if}
     </div>
+    {/if}
   {/snippet}
 </Modal>
 
