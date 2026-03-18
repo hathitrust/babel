@@ -146,4 +146,11 @@ test.describe('imgsrv download', () => {
     expect(downloadHeaders['content-type']).toEqual('image/jpeg');
     expect(downloadBody.length).toBeGreaterThan(1);
   });
+
+  test('download pdf with bogus seq', async ({ request, page }) => {
+    const initialResponse = await request.get(
+      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes'
+    );
+    expect(initialResponse.status()).toEqual(200);
+  });
 });
