@@ -149,7 +149,7 @@ test.describe('imgsrv download', () => {
 
   test('download pdf with bogus seq', async ({ request, page }) => {
     const initialResponse = await request.get(
-      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&seq=mashed_potatoes'
+      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes'
     );
     expect(initialResponse.status()).toEqual(200);
   });
