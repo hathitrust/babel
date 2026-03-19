@@ -134,8 +134,9 @@
         trackerInterval = null;
         downloadInProgress = false;
         downloadError = true;
-        downloadErrorMessage = 'Download failed. Please try again.';
+        downloadErrorMessage = `Please try again. If downloads continue to fail, <a href="mailto:support@hathitrust.org">contact support@hathitrust.org</a>.`;
         status.error = true;
+        // HT.live.announce(downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         _mtm.push({'event': 'pt-large-download-error', 'downloadStatusUrl': `${progressUrl.toString()}`});
       }
     });
@@ -281,7 +282,7 @@
       //handle error if something goes wrong
       scriptEl.onerror = () => {
         document.body.removeChild(scriptEl);
-        errorMessage = 'Failed to start download. Please try again.';
+        errorMessage = 'Please try again. If downloads continue to fail, <a href="mailto:support@hathitrust.org">contact support@hathitrust.org</a>.';
         HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         downloadInProgress = false;
         _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
@@ -743,6 +744,8 @@
   {#snippet title()}
     {#if simpleDownload}
       Download your {formatTitle[format]}
+    {:else if downloadError} 
+      Download failed
     {:else}
       Building your {formatTitle[format]}
       {#if range == 'selected-pages' && $selected.size > 0}
@@ -779,9 +782,18 @@
           {/if}
         {/if}
       </div>
+      <div aria-live="polite">
       {#if !simpleDownload && downloadError} 
-        <p>{downloadErrorMessage}</p>
+        <div style="max-width:25rem;" class="alert inline-alert alert-error fs-7 d-flex gap-2">
+          <div class="icon-wrapper d-flex">
+            <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          </div>
+          <div class="d-flex align-items-center">
+          <p>{@html downloadErrorMessage}</p>
+          </div>
+        </div>
       {/if}
+      </div>
       {#if !simpleDownload && status.done}
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
@@ -820,37 +832,4 @@
 </Modal>
 
 <style lang="scss">
-  .alert-warning {
-    --alert-warning-color: #664D03;
-    --alert-warning-base: #FFF3CD;
-    --alert-warning-border-color: #FFECB5;
-    --bs-alert-color: var(--alert-warning-color);
-    --bs-alert-bg: var(--alert-warning-base);
-    --bs-alert-border-color: var(--alert-warning-border-color);
-  }
-  .alert.inline-alert {
-    border: 1px solid var(--bs-alert-border-color);
-    padding-block: 0.75rem;
-    padding-inline: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    box-shadow: 0px 4px 8px 0px rgba(25, 11, 1, 0.04);
-    line-height: 1.3125rem;
-    letter-spacing: -0.00875rem;
-    color: var(--bs-alert-color);
-    .icon-wrapper {
-      width: 1.5rem;
-      height: 1.5rem;
-      justify-content: center;
-      align-items: center;
-      gap: 0.625rem;
-    }
-    i.alert-icon {
-      font-size: 1rem;
-      display: flex;
-      width: 1.5rem;
-      flex-direction: column;
-      align-items: center;
-      opacity: 0.8;
-    }
-  }
 </style>
