@@ -1,7 +1,6 @@
 <script>
   import { onMount, getContext } from 'svelte';
   import {SvelteURL, SvelteURLSearchParams} from 'svelte/reactivity'
-  import { tick } from 'svelte';
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel/index.svelte';
@@ -55,11 +54,11 @@
   let tooManyTiffs = $derived(range == 'selected-pages' && format == 'image-tiff' && selection.pages.length > 10);
   let buttonDisabled = $derived(emptySelection || emptySelectionTIFF || tooManyTiffs );
   let errorMessage = $derived(
-    emptySelectionTIFF ? `<p>No pages selected.
-        Use the toolbar to select up to <span class="fw-bold">10 pages</span> to continue your TIFF download.</p>` :
-    emptySelection ? `<p>No pages selected.
-        Use the toolbar to select pages.</p>` :
-    tooManyTiffs ? `<p>Your selection exceeds the TIFF download limit. Select 10 pages or fewer to continue.</p>` :
+    emptySelectionTIFF ? `No pages selected.
+        Use the toolbar to select up to <span class="fw-bold">10 pages</span> to continue your TIFF download.` :
+    emptySelection ? `No pages selected.
+        Use the toolbar to select pages.` :
+    tooManyTiffs ? `Your selection exceeds the TIFF download limit. Select 10 pages or fewer to continue.` :
     null
   );
   let errorCount = 0;
@@ -134,9 +133,9 @@
         trackerInterval = null;
         downloadInProgress = false;
         downloadError = true;
-        downloadErrorMessage = `Please try again. If downloads continue to fail, <a href="mailto:support@hathitrust.org">contact support@hathitrust.org</a>.`;
+        downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
+        HT.live.announce(downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         status.error = true;
-        // HT.live.announce(downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         _mtm.push({'event': 'pt-large-download-error', 'downloadStatusUrl': `${progressUrl.toString()}`});
       }
     });
@@ -282,7 +281,7 @@
       //handle error if something goes wrong
       scriptEl.onerror = () => {
         document.body.removeChild(scriptEl);
-        errorMessage = 'Please try again. If downloads continue to fail, <a href="mailto:support@hathitrust.org">contact support@hathitrust.org</a>.';
+        errorMessage = 'Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.';
         HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         downloadInProgress = false;
         _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
@@ -328,25 +327,7 @@
     numAttempts = 0;
     numProcessed = 0;
 
-    if (isSimpleDownload()) {
-      downloadInProgress = true;
-
-      const onReturn = () => {
-        downloadInProgress = false;
-        window.removeEventListener('focus', onReturn);
-        document.removeEventListener('visibilitychange', onReturn);
-        document.getElementById('submit-download').focus();
-      };
-
-      window.addEventListener('focus', onReturn);
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) onReturn();
-      });
-      modal.show();
-      downloadAttempt++;
-    } else {
-      buildCallbackDownloadUrl(); 
-    }
+    buildCallbackDownloadUrl(); 
   }
 
   function flattenSelection(selected) {
@@ -689,6 +670,7 @@
             {/if}
           </fieldset>
           <p class="mb-3">
+          {#if !simpleDownload}
             <button
               type="button"
               class="btn btn-outline-dark"
@@ -702,13 +684,24 @@
                 <span class="visually-hidden">Loading...</span>
               {/if}
             </button>
+            {:else if simpleDownload && buttonDisabled} 
+              <span class="btn btn-outline-dark disabled"> Download </span>
+            {:else}
+              <a
+                target="_blank"
+                id="submit-download"
+                class="btn btn-outline-dark"
+                onclick={() => {downloadAttempt++}}
+                href={simpleUrl}>Download</a
+              >
+            {/if}
           </p>
           {#if errorMessage}
             <div class="alert inline-alert alert-warning fs-7 d-flex gap-2">
               <div class="icon-wrapper d-flex">
                 <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
               </div>
-              {@html errorMessage}
+              <p>{@html errorMessage}</p>
             </div>
           {/if}
           <p class="fs-7 mb-1">
@@ -782,7 +775,9 @@
           {/if}
         {/if}
       </div>
-      <div aria-live="polite">
+      {#if !simpleDownload && status.done}
+        <p>All done! Your {formatTitle[format]} is ready for download.</p>
+      {/if}
       {#if !simpleDownload && downloadError} 
         <div style="max-width:25rem;" class="alert inline-alert alert-error fs-7 d-flex gap-2">
           <div class="icon-wrapper d-flex">
@@ -793,10 +788,7 @@
           </div>
         </div>
       {/if}
-      </div>
-      {#if !simpleDownload && status.done}
-        <p>All done! Your {formatTitle[format]} is ready for download.</p>
-      {/if}
+      
     </div>
   {/snippet}
   {#snippet footer()}
