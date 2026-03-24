@@ -503,9 +503,14 @@ sub parse_env {
             } else {
                 $value = join(',', @values);
             }
-            if ( ( $param eq 'seq' || $param eq 'seq[]' ) && ( $values[0] =~ m,^\d+$, || $values[0] =~ m{^\d+,\d+} || $values[0] =~ m{^\d+\-\d+} ) ) {
-              $value = "seq:" . join(',', sort { int($a) <=> int($b) } @values);
+            if ( $param eq 'seq' || $param eq 'seq[]' ) {
+              if ( $values[0] =~ m,^\d+$, || $values[0] =~ m{^\d+,\d+} || $values[0] =~ m{^\d+\-\d+} ) {
+                $value = "seq:" . join(',', sort { int($a) <=> int($b) } @values);
                 $key = 'file';
+              } else {
+                # Not a valid seq, remove it
+                next;
+              }
             }
             $$params{$key} = $value;
         }
