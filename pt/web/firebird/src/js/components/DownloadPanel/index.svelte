@@ -110,7 +110,6 @@
     fetch(progressUrl, { credentials: 'include' })
       .then((response) => {
         if (!response.ok) {
-          _mtm.push({'event': 'pt-large-download-error', 'download fetch failed': `${progressUrl.toString()}`});
           throw new Error(`Status check failed: ${response.status} ${response.statusText}`);
         }
         return response.json();
@@ -137,7 +136,7 @@
         downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
         HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
         status.error = true;
-        _mtm.push({'event': 'pt-large-download-error', 'downloadStatusUrl': `${progressUrl.toString()}`});
+        _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${progressUrl.toString()}`});
       }
     });
   }
