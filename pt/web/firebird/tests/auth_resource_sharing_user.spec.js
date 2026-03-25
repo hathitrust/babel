@@ -71,14 +71,15 @@ test.describe('resource_sharing_user access to ic material', () => {
     const downloadAccordionButton = downloadAccordion.getByRole('button', { name: 'Download' });
     await downloadAccordionButton.click();
 
-    const downloadButton = page
+    const downloadLink = page
       .getByRole('form', { name: 'Download options' })
-      .getByRole('button', { name: 'Download' });
+      .getByRole('link', { name: 'Download', exact: true });
 
     const downloadPromise = page.waitForEvent('download');
     await page.getByLabel('Image (JPEG)').check();
     await page.getByLabel('Current page scan (#1)').check();
-    await downloadButton.click();
+    await downloadLink.click();
+
     const download = await downloadPromise;
     const downloadPath = await download.path();
 
