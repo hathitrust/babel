@@ -44,15 +44,16 @@ test.describe('sidebar actions', () => {
       await expect(downloadAccordionButton).toHaveAttribute('aria-expanded', 'true');
     });
     test('download current page as pdf', async ({ page }) => {
-      const downloadButton = page
+      const downloadLink = page
         .getByRole('form', { name: 'Download options' })
-        .getByRole('button', { name: 'Download' });
+        .getByRole('link', { name: 'Download', exact: true });
 
       const downloadPromise = page.waitForEvent('download');
       await page.getByLabel('Ebook (PDF)').check();
       await page.getByLabel('Current page scan (#1)').check();
 
-      await downloadButton.click();
+      await downloadLink.click();
+
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
@@ -94,21 +95,15 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
-    test('download selected scans as tiff', async ({ page }) => {
+    test('download selected scan as tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
-      const downloadButton = page
+      const downloadLink = page
         .getByRole('form', { name: 'Download options' })
-        .getByRole('button', { name: 'Download' });
+        .getByRole('link', { name: 'Download', exact: true });
 
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
       await page.getByLabel('Image (TIFF)').check();
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
-
-      await downloadButton.click();
-      await expect(
-        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
-      ).toBeVisible();
+      await expect(page.getByRole('form', { name: 'Download options' }).getByText('No pages selected')).toBeVisible();
 
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
@@ -118,7 +113,8 @@ test.describe('sidebar actions', () => {
       await expect(selectScan).toHaveAttribute('aria-pressed', 'false');
       await selectScan.click();
 
-      await downloadButton.click();
+      await downloadLink.click();
+
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
@@ -127,21 +123,23 @@ test.describe('sidebar actions', () => {
       //expect file to exist before playwright deletes it
       expect(fs.existsSync(downloadPath)).toBeTruthy();
     });
+    test('error for no selection when attempting selection download', async ({ page }) => {
+      const downloadSpan = page.getByRole('form', { name: 'Download options' }).getByText('Download', { exact: true });
+
+      await page.getByLabel('Image (TIFF)').check();
+      await page.getByLabel('Selected page scans').check();
+      await expect(page.getByRole('form', { name: 'Download options' }).getByText('No pages selected')).toBeVisible();
+
+      await expect(downloadSpan).toContainClass('disabled');
+    });
     test('download selected scan as full resolution tiff', async ({ page }) => {
       const downloadPromise = page.waitForEvent('download');
-      const downloadButton = page
+      const downloadLink = page
         .getByRole('form', { name: 'Download options' })
-        .getByRole('button', { name: 'Download' });
+        .getByRole('link', { name: 'Download', exact: true });
 
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible({ visible: false });
       await page.getByLabel('Image (TIFF)').check();
-      await expect(page.getByText('Note: TIFF downloads are limited')).toBeVisible();
       await page.getByLabel('Selected page scans').check();
-
-      await downloadButton.click();
-      await expect(
-        page.getByRole('form', { name: 'Download options' }).getByText("You haven't selected any")
-      ).toBeVisible();
 
       await page.getByRole('button', { name: 'View' }).click();
       await page.getByRole('button', { name: 'Thumbnails' }).click();
@@ -155,11 +153,8 @@ test.describe('sidebar actions', () => {
       await fullResolution.click();
       await expect(fullResolution).toBeChecked();
 
-      // check hidden download form for the correct input value for 'selected scan' full resolution image
-      const hiddenTagetPpiInput = page.locator('input[name="target_ppi"]');
-      await expect(hiddenTagetPpiInput).toHaveAttribute('value', '0');
+      await downloadLink.click();
 
-      await downloadButton.click();
       const download = await downloadPromise;
       const downloadPath = await download.path();
 
