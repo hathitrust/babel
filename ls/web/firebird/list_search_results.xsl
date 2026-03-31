@@ -867,6 +867,7 @@
                 <xsl:if test="//COLL_INFO/COLL_STATUS = 'private'">
                   <span class="badge bg-secondary">Private</span>
                 </xsl:if>
+								<xsl:call-template name="build-collection-manage-action" />
               </div>
             </div>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_DESC)">
