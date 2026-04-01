@@ -165,6 +165,7 @@ sub _run {
     return unless ( scalar @{ $$self{steps} } );
 
     my @commands = ( @{ $$self{steps} }, ">", $self->_target_filename );
+
     if ( $self->logfile ) {
         push @commands, "2>>", $self->logfile;
     }
@@ -445,7 +446,7 @@ sub _process_source {
             $cmd = $Process::Globals::grk_decompress;
             @params = (
                 "-i", $filename,
-                "-o", "$Process::Globals::stdout.bmp",
+                "--out-fmt", "BMP",
                 "-r", $self->output->{metadata}->{r},
                 "-H", "0",
             );
