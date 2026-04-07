@@ -876,7 +876,7 @@
             </xsl:choose>      
           </xsl:attribute>
           <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between gap-2">
+            <div class="card-title d-flex flex-column flex-sm-row align-items-start justify-content-sm-between gap-2">
               <h1 id="skipto" class="card-title d-flex align-items-center gap-2">
                 <xsl:choose>
                   <xsl:when test="//COLL_INFO/COLL_SHARED = 'private'">
@@ -900,7 +900,7 @@
             </xsl:if>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_CONTRIBUTOR_NAME)">
               <p class="card-text mt-0 mb-1">
-                <strong>Contributor Name: </strong><xsl:value-of select="//COLL_INFO/COLL_CONTRIBUTOR_NAME" />
+                <strong>Contributor: </strong><xsl:value-of select="//COLL_INFO/COLL_CONTRIBUTOR_NAME" />
               </p>
             </xsl:if>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_CONTACT_INFO)">
@@ -918,10 +918,10 @@
                 </xsl:choose>
               </p>
             </xsl:if>
+						<xsl:call-template name="build-mondo-collection-search-form" />
           </div>
         </div>
       </div>
-      <xsl:call-template name="build-mondo-collection-search-form" />
     </div>
 
     <xsl:call-template name="build-mondo-collection-status-update" />
@@ -935,17 +935,17 @@
       </xsl:choose>
     </xsl:variable>
 		<button
-			class="btn btn-sm btn-outline-dark"
+			class="btn btn-sm btn-outline-dark mt-1 mt-sm-0"
 			data-action="edit-metadata"
 			>Edit<span class="visually-hidden"> Collection Metadata</span></button>
   </xsl:template>
 
   <xsl:template name="build-mondo-collection-search-form">
     <form method="GET" action="/cgi/ls">
-      <div class="row g-0 p-3 py-0">
-        <div class="col-md-12">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto flex-grow-1 ps-3">
+      <div class="row">
+        <div class="col-md-12 mt-3">
+          <div class="row">
+            <div class="col-auto flex-grow-1 mt-auto">
               <input name="q1" type="text" 
                 id="collection-search" 
                 class="form-control" 
@@ -957,16 +957,16 @@
                 </xsl:attribute>
               </input>
             </div>
-            <div class="col-auto pe-3">
+            <div class="col-auto pe-3 mt-2 mt-sm-auto">
               <button type="submit" class="btn btn-secondary">Search</button>
             </div>
           </div>
-          <div class="d-flex justify-content-between gap-3 mt-2 w-90">
-            <div class="search-help p-3 pt-1 fs-7 fst-italic">
+          <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 gap-sm-3 mt-2 w-90">
+            <div class="search-help pt-1 fs-7 fst-italic">
               <i class="fa-solid fa-circle-info fa-fw" aria-hidden="true"></i>
               Search within this collection.
             </div>
-            <a class="fs-7 display-block px-3 pt-1">
+            <a class="fs-7 display-block pt-1">
               <xsl:attribute name="href">
                 <xsl:text>/cgi/ls?a=page;page=advanced;c=</xsl:text>
                 <xsl:value-of select="$coll_id"/>

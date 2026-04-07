@@ -832,7 +832,7 @@
     </xsl:if>
 
     <div class="card mb-3 shadow">
-      <div class="row g-0 p-3">
+      <div class="row g-0 p-3 pb-0">
         <xsl:if test="normalize-space(//CollectionBranding)">
           <div class="col-md-2 d-flex flex-direction-column align-items-center justify-content-center">
             <img src="{//CollectionBranding}" class="img-fluid rounded" style="height: auto" aria-hidden="true" alt="" />
@@ -846,7 +846,7 @@
             </xsl:choose>      
           </xsl:attribute>
           <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between gap-2">
+            <div class="card-title pb-3 d-flex flex-column flex-sm-row align-items-start justify-content-between gap-2">
               <h1 id="skipto" class="card-title d-flex align-items-center gap-2">
                 <xsl:choose>
                   <xsl:when test="$gIsTemporaryCollection = 'TRUE'">
@@ -897,15 +897,15 @@
                 </xsl:choose>
               </p>
             </xsl:if>
+						<xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
+							<xsl:call-template name="build-mondo-collection-search-form" />
+						</xsl:if>
           </div>
         </div>
       </div>
-      <xsl:if test="/MBooksTop/SearchWidget/NumItemsInCollection > 0">
-        <xsl:call-template name="build-mondo-collection-search-form" />
-      </xsl:if>
     </div>
 
-    <xsl:call-template name="build-mondo-collection-status-update" />
+		<xsl:call-template name="build-mondo-collection-status-update" />
   </xsl:template>
 
   <xsl:template name="build-collection-branding">
@@ -918,10 +918,9 @@
   
   <xsl:template name="build-mondo-collection-search-form">
     <form method="GET" action="/cgi/mb">
-      <div class="row g-0 p-3 py-0">
-        <div class="col-md-12">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto flex-grow-1 ps-3">
+      <div class="row">
+          <div class="row g-3 mt-3">
+            <div class="col-auto flex-grow-1 mt-auto">
               <input name="q1" type="text" 
                 id="collection-search" 
                 class="form-control" 
@@ -933,15 +932,14 @@
                 </xsl:attribute>
               </input>
             </div>
-            <div class="col-auto pe-3">
+            <div class="col-auto pe-3 mt-2 mt-sm-auto">
               <button type="submit" class="btn btn-secondary">Search</button>
             </div>
           </div>
-          <div class="search-help p-3 pt-1 fs-7 fst-italic">
+          <div class="search-help ps-2 mt-2 pt-1 fs-7 fst-italic">
             <i class="fa-solid fa-circle-info fa-fw" aria-hidden="true"></i>
             Search within this collection.
           </div>
-        </div>
       </div>
 
       <xsl:variable name="search-params-tmpl">

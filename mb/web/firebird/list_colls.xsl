@@ -90,7 +90,7 @@
     <div class="card mb-3 shadow">
       <div class="row g-0 p-3 pb-0">
         <div class="card-body">
-          <h1 class="card-title d-flex align-items-center gap-2">
+          <h1 class="card-title d-flex align-items-center gap-2 pb-3">
             <xsl:choose>
               <xsl:when test="$gColltype = 'featured'">
                 Featured Collections
@@ -106,10 +106,10 @@
               </xsl:otherwise>
             </xsl:choose>
           </h1>
+					<xsl:call-template name="build-collection-search-form" />
         </div>
       </div>
 
-      <xsl:call-template name="build-collection-search-form" />
     </div>
 
     <hathi-results-toolbar
@@ -137,24 +137,22 @@
   </xsl:template>
 
   <xsl:template name="build-collection-search-form">
-    <div class="p-3 rounded py-0 ps-3">
+    <div>
       <form method="GET" action="/cgi/mb">
-        <div class="row g-3 align-items-center">
-          <div class="col-auto">
+        <div class="row g-3">
+          <div class="col-12 col-sm-auto flex-sm-grow-1">
             <label class="col-form-label visually-hidden" for="collection-search">Search for collections</label>
-          </div>
-          <div class="col-auto flex-grow-1">
             <input name="q1" type="text" id="collection-search" class="form-control" placeholder="Search using keywords" required="required">
               <xsl:attribute name="value">
                 <xsl:value-of select="/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='q1']"/>
               </xsl:attribute>
             </input>
           </div>
-          <div class="col-auto">
+          <div class="col-12 col-sm-auto mt-2 mt-sm-auto">
             <button type="submit" class="btn btn-secondary">Search</button>
           </div>
         </div>
-        <div class="search-help p-3 pt-1 fs-7 fst-italic mt-2">
+        <div class="search-help pt-1 fs-7 fst-italic mt-2">
           <i class="fa-solid fa-circle-info fa-fw" aria-hidden="true"></i>
           <xsl:text>Find </xsl:text>
           <xsl:call-template name="get-colltype-descriptor" />
@@ -224,7 +222,7 @@
       </div>
       <div class="flex-grow-1 d-flex flex-column justify-content-between">
         <div class="container-fluid p-1">
-          <div class="d-flex flex-row align-items-start justify-content-between">
+          <div class="d-flex flex-column flex-sm-row align-items-start justify-content-between">
             <h3 class="record-title">
               <a href="mb?a=listis;c={CollId}"><xsl:value-of select="CollName" /></a>
             </h3>
