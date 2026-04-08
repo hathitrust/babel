@@ -935,7 +935,7 @@
       </xsl:choose>
     </xsl:variable>
 		<button
-			class="btn btn-sm btn-outline-dark mt-1 mt-sm-0"
+			class="btn btn-sm btn-outline-dark"
 			data-action="edit-metadata"
 			>Edit<span class="visually-hidden"> Collection Metadata</span></button>
   </xsl:template>

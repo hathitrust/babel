@@ -846,7 +846,7 @@
             </xsl:choose>      
           </xsl:attribute>
           <div class="card-body">
-            <div class="card-title pb-3 d-flex flex-column flex-sm-row align-items-start justify-content-between gap-2">
+            <div class="card-title d-flex flex-column flex-sm-row align-items-start justify-content-between gap-2">
               <h1 id="skipto" class="card-title d-flex align-items-center gap-2">
                 <xsl:choose>
                   <xsl:when test="$gIsTemporaryCollection = 'TRUE'">
