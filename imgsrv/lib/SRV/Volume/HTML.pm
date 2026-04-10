@@ -1,11 +1,19 @@
 package SRV::Volume::HTML;
 
+my @persistent_attributes;
+my @transient_attributes;
+
+BEGIN {
+  @persistent_attributes = qw(mode);
+  @transient_attributes = qw(file restricted p output_filename q1);
+}
+
 # use parent qw( SRV::Base );
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor qw( file mode restricted p output_filename q1 );
+use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
 
 use Process::Text;
 
@@ -149,6 +157,8 @@ sub call {
     my ( $self, $env ) = @_;
     my $req = Plack::Request->new($env);
 
+    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+
     $self->_fill_params($env);
     $self->_validate_params($env);
 
@@ -166,6 +176,10 @@ sub call {
     $res->header( 'Content-length', length($contents) );
 
     $res->body($contents);
+
+    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
+    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+
     $res->finalize;
 }
 

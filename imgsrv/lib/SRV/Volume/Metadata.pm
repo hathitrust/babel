@@ -3,17 +3,20 @@ package SRV::Volume::Metadata;
 use strict;
 use warnings;
 
+my @persistent_attributes;
+my @transient_attributes;
+
+BEGIN {
+  @persistent_attributes = qw(format);
+  @transient_attributes = qw(size start limit);
+}
+
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Response;
 use Plack::Util;
-use Plack::Util::Accessor qw( 
-    format
-    size
-    start
-    limit
-);
+use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
 
 use Identifier;
 use Utils;
@@ -53,6 +56,8 @@ sub call {
     my ( $self, $env ) = @_;
     my $req = Plack::Request->new($env);
 
+    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+
     $self->_fill_params($env);
 
     my $C = $$env{'psgix.context'};
@@ -85,6 +90,9 @@ sub call {
         my $fh = new IO::File $output_filename;
         $res->body($fh);
     }
+
+    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
+    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
 
     return $res->finalize;
 

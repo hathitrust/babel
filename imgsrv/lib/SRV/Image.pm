@@ -1,27 +1,37 @@
 package SRV::Image;
 
+# Persistent attributes should be set by the parameters in e.g., imgsrv.psgi
+# and not altered or removed for the life of the application.
+# Alas, we cannot enforce this with the stock `Plack::Util::Accessor`.
+# Transient attributes are per-`call` and should not be allowed to persist across calls.
+
+# Ideally we would have no transient attributes.
+my @persistent_attributes;
+my @transient_attributes;
+
+BEGIN {
+  @persistent_attributes = qw(mode watermark default_watermark quality);
+  @transient_attributes = qw(
+    id
+    file
+    size
+    region
+    rotation
+    format
+    mimetype
+    restricted
+    missing
+    force
+    tracker
+  );
+}
+
 # use parent qw( SRV::Base );
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor qw(
-    id
-    mode
-    file
-    size
-    region
-    rotation
-    quality
-    format
-    mimetype
-    restricted
-    watermark
-    default_watermark
-    missing
-    force
-    tracker
-);
+use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
 
 use Process::Image;
 
@@ -47,11 +57,20 @@ sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
 
+    # Set persistent attributes
+    # May be set by the call to SUPER if the accessor is defined.
+    # This happens with the `thumbnail` entrypoint.
+    #
+    # - `mode` is 'image' or 'thumbnail'
+    # - `watermark` is 0 for thumbnail mode, defaults to 1
+    # - `default_watermark` is just a copy of `watermark` that somehow comes into play
+    #   as an initializer for `watermark` when under `PSGI_COMMAND`
+    # - `quality` can be 'default', 'gray', 'bitonal' in the processor,
+    #   here it functions as a persistent default.
     $self->mode('image') unless ( $self->mode );
     $self->watermark(1) unless ( defined $self->watermark );
     $self->default_watermark($self->watermark);
     $self->quality('default') unless ( defined $self->quality );
-
     $self;
 }
 
@@ -186,6 +205,9 @@ sub run {
 
 sub call {
     my ( $self, $env ) = @_;
+
+    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+
     my $req = Plack::Request->new($env);
 
     my $output = $self->run($env);
@@ -252,6 +274,10 @@ sub call {
     }
 
     $res->body($fh);
+
+    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
+    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+
     $res->finalize;
 }
 
@@ -425,7 +451,13 @@ sub _validate_params_format {
         $self->mimetype($format);
         $self->format($SRV::Globals::gTargetFileTypes{$format});
     } else {
-        $self->mimetype($SRV::Globals::gTargetMimeTypes{$format});
+        # When format is undef, the lookup fails. This is apparently normal.
+        # Process::Image will (presumably) provide the necessary default.
+        # `// undef` is to silence persistent warnings about
+        # "Use of uninitialized value in scalar assignment at /usr/share/perl5/Plack/Util/Accessor.pm line 18."
+        # (The uninitialized value we get from the failed hash lookup is not exactly equivalent
+        # to `undef` from Perl's point of view, so use the latter.)
+        $self->mimetype($SRV::Globals::gTargetMimeTypes{$format} // undef);
     }
 
 }
