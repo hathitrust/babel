@@ -23,7 +23,6 @@ use strict;
 
 use Utils;
 use Utils::Logger;
-use Utils::MonitorRun;
 use Identifier;
 use Debug::DUtils;
 use Metrics;
@@ -325,7 +324,7 @@ sub __run {
 
     my $stderr;
     my $time0 = Time::HiRes::time();
-    my $run_stats = Utils::MonitorRun::run_with_stats( \@yes, '|',  $unzip, ">", "/dev/null", "2>>", \$stderr);
+    IPC::Run::run \@yes, '|',  $unzip, ">", "/dev/null", "2>>", \$stderr;
     my $system_retval = $? >> 8;
 
     my $cmd = join(' ', @$unzip);
@@ -346,16 +345,12 @@ sub __run {
     __extract_report($system_retval, $error_file, $cmd);
 
     my $delta = Time::HiRes::time() - $time0;
-    # TODO: Add io stats to __Log_benchmark output?
     Utils::Logger::__Log_benchmark(undef, [["id", $id],["delta",$delta],["label","__run"],["cmd",$cmd]], 'extract');
     if ($test_filename) {
       my $metrics = Metrics->new;
       $metrics->observe("utils_extract_run_seconds", $delta);
       # TODO add extracted size when extracting more than one file?
       $metrics->add("utils_extract_extracted_size_bytes",(-s $test_filename));
-      while (my ($k, $v) = each %$run_stats) {
-        $metrics->add("utils_extract_io_stats_$k",$v);
-      }
     }
 }
 
