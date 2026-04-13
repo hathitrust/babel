@@ -21,6 +21,7 @@ Coding example
 
 use strict;
 
+use IPC::Run;
 use Utils;
 use Utils::Logger;
 use Identifier;
