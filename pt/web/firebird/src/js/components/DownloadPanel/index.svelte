@@ -64,6 +64,8 @@
   let errorCount = 0;
   let downloadError = $state(false);
   let downloadErrorMessage = $state('');
+	let progressError;
+	let closeDownloadModal = false;
 
   const _mtm = (window._mtm = window._mtm || []);
 
@@ -101,9 +103,10 @@
       console.log('-- download.callback cancel download');
       clearInterval(trackerInterval);
       trackerInterval = null;
-      modal.hide();
+      if (closeDownloadModal) modal.hide();
       document.getElementById('submit-download').focus();
     }
+		closeDownloadModal = false;
   }
 
   function checkStatusInterval() {
@@ -120,12 +123,21 @@
         if (status.done) {
           clearInterval(trackerInterval);
           trackerInterval = null;
-        }
+				}	
       })
       .catch((error) => {
-      console.error('Progress check error:', error);
+      console.error('Error with imgsrv', error);
       numAttempts += 1;
       errorCount++;
+			
+			if (progressError) {
+        clearInterval(trackerInterval);
+        trackerInterval = null;
+        downloadInProgress = false;
+        downloadError = true;
+        downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
+        HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
+			}
       
       // Stop polling after too many failures
       if (numAttempts > 3) {
@@ -135,20 +147,25 @@
         downloadError = true;
         downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
         HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
-        status.error = true;
-        _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${progressUrl.toString()}`});
+        _mtm.push({'event': 'pt-download-error','errorType': 'imgsrv unreachable', 'downloadUrl': `${progressUrl.toString()}`});
       }
     });
   }
 
   function updateProgress(data) {
+		progressError = false;
     let percent;
     let current = data.status;
-    if (current == 'EOT' || current == 'DONE') {
+    if (current == 'EOT' || (current == 'DONE' && data.current_page == -1)) {
       status.done = true;
       percent = 100;
       downloadInProgress = false;
       HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`);
+		} else if (current == 'DONE' && !data.current_page) {
+			console.log('weird progress bug, set downloads to false, throw error')
+			progressError = true;
+			_mtm.push({'event': 'pt-download-error', 'errorType': 'imgsrv: no download found', 'downloadUrl': `${progressUrl.toString()}`});
+			throw new Error(`imgsrv: "No download found"`);
     } else {
       status.done = false;
       current = data.current_page;
@@ -160,8 +177,12 @@
     } else {
       numAttempts += 1;
     }
-    if (numAttempts > 100) {
-      status.error = true;
+    if (numAttempts > 5) {
+			console.log('cancelling from updateProgress');
+			progressError = true;
+			cancelDownload(false);
+			_mtm.push({'event': 'pt-download-error', 'errorType': 'too many attempts to download same page', 'downloadUrl': `${progressUrl.toString()}`});
+			throw new Error(`Too many attempts at the same page.`);
     }
 
     status.percent = percent;
@@ -179,11 +200,15 @@
     // but we are not exiting!!
   }
 
-  function cancelDownload() {
+  function cancelDownload(closeThisModal) {
     if (!downloadInProgress) {
       console.log('-- download.cancelDownload EXITING');
       return;
     }
+
+		if (closeThisModal) {
+			closeDownloadModal = true;
+		}
 
     cancellingDownload = true;
 
@@ -284,7 +309,7 @@
         errorMessage = 'Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.';
         HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
         downloadInProgress = false;
-        _mtm.push({'event': 'pt-large-download-error', 'downloadUrl': `${requestUrl.toString()}`});
+        _mtm.push({'event': 'pt-download-error', 'errorType': 'callback script error', 'downloadUrl': `${requestUrl.toString()}`});
       };
     }
 
