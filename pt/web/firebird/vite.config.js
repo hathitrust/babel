@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import pkg from 'svelte-preprocess';
-const { scss } = pkg;
+import { sveltePreprocess } from 'svelte-preprocess';
 import path from 'node:path';
 import glob from 'fast-glob';
 import fs from 'fs';
@@ -24,9 +23,7 @@ const files = glob.sync(path.resolve(__dirname, 'src') + '/**/*.html').reduce((a
 const scssOptions = {
   quietDeps: true,
 };
-// if (process.env.NODE_ENV == 'development') {
-//   scssOptions.additionalData = `$firebird-font-path: "//localhost:8173"; $fa-font-path: "//localhost:8173/fonts";`;
-// }
+
 let firebird;
 if (process.env.NODE_ENV == 'development') {
   // firebird = path.resolve('/htapps/babel/firebird-common');
@@ -47,7 +44,9 @@ const removeStylesheet = () => {
 export default defineConfig({
   plugins: [
     svelte({
-      preprocess: [scss({})],
+      preprocess: sveltePreprocess({
+        scss: {},
+      }),
     }),
     //custom vite plugin to rewrite the name of the CSS file in manifest.json
     //hopefully temporary workaround until we can upgrade to svelte 5/vite 6
@@ -76,11 +75,9 @@ export default defineConfig({
     cssCodeSplit: false,
     rollupOptions: {
       input: files,
-      //renames the style asset file to index
-      //hopefully temporary workaround until we can upgrade to svelte 5/vite 6
       output: {
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name == 'style.css') {
+          if (assetInfo.names?.some((name) => name.endsWith('.css'))) {
             return `assets/index-[hash].[ext]`;
           }
           return assetInfo;
@@ -90,8 +87,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
-      // "~firebird-common": path.resolve(__dirname, "node_modules/firebird-common"),
       '~firebird-common': firebird,
     },
     extensions: ['.mjs', '.js', '.ts', '.json', '.svelte', '.scss'],
