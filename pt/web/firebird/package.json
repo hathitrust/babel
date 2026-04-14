@@ -19,9 +19,8 @@
   "devDependencies": {
     "@playwright/test": "^1.54.0",
     "@popperjs/core": "^2.11.6",
-    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^22.13.5",
-    "@vitejs/plugin-basic-ssl": "^1.0.1",
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
     "fast-glob": "^3.2.12",
