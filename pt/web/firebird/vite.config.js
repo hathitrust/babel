@@ -1,76 +1,39 @@
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { sveltePreprocess } from 'svelte-preprocess';
+import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import path from 'node:path';
-import glob from 'fast-glob';
-import fs from 'fs';
+import { globSync } from 'node:fs';
 
-// Find all HTML files and build an object of names and paths to work from
-const files = glob.sync(path.resolve(__dirname, 'src') + '/**/*.html').reduce((acc, cur) => {
-  // we want to keep the path
+const files = globSync(path.resolve(import.meta.dirname, 'src') + '/**/*.html').reduce((acc, cur) => {
   let name = cur
-    .replace(path.join(__dirname) + '/src/', '')
+    .replace(path.join(import.meta.dirname) + '/src/', '')
     .replace('.html', '')
     .replace('/', '-');
-
-  // let name = path.basename(cur, '.html');
   console.log(name, '->', cur);
-
   acc[name] = cur;
   return acc;
 }, {});
 
-const scssOptions = {
-  quietDeps: true,
-};
+const firebird =
+  process.env.NODE_ENV === 'development'
+    ? path.resolve(import.meta.dirname, '../../../firebird-common')
+    : path.resolve(import.meta.dirname, 'node_modules/firebird-common');
 
-let firebird;
-if (process.env.NODE_ENV == 'development') {
-  // firebird = path.resolve('/htapps/babel/firebird-common');
-  firebird = path.resolve(__dirname, '../../../firebird-common');
-} else {
-  firebird = path.resolve(__dirname, 'node_modules/firebird-common');
-}
-const removeStylesheet = () => {
-  return {
-    name: 'remove-stylesheet',
-    enforce: 'post',
-    apply: 'build',
-    transformIndexHtml(html) {
-      return html.replaceAll(/<link\s+rel="stylesheet"(\s.*\s)href="(.*)\.css">/gi, '');
-    },
-  };
-};
+const removeStylesheet = () => ({
+  name: 'remove-stylesheet',
+  enforce: 'post',
+  apply: 'build',
+  transformIndexHtml(html) {
+    return html.replaceAll(/<link\s+rel="stylesheet"(\s.*\s)href="(.*)\.css">/gi, '');
+  },
+});
+
 export default defineConfig({
-  plugins: [
-    svelte({
-      preprocess: sveltePreprocess({
-        scss: {},
-      }),
-    }),
-    //custom vite plugin to rewrite the name of the CSS file in manifest.json
-    //hopefully temporary workaround until we can upgrade to svelte 5/vite 6
-    {
-      name: 'postbuild-commands',
-      closeBundle: () => {
-        const path = 'dist/manifest.json';
-        const manifest = JSON.parse(fs.readFileSync(path).toString());
-        if (manifest['style.css']) {
-          const newKey = 'index.css';
-          manifest[newKey] = manifest['style.css'];
-          manifest['index.css'].file = manifest['index.css'].file.replace('style', 'index');
-          delete manifest['style.css'];
-          fs.writeFileSync(path, JSON.stringify(manifest, null, 2));
-        }
-      },
-    },
-    removeStylesheet(),
-  ],
-  root: path.resolve(__dirname, 'src'),
+  plugins: [svelte({ preprocess: vitePreprocess() }), removeStylesheet()],
+  root: path.resolve(import.meta.dirname, 'src'),
   build: {
     manifest: 'manifest.json',
     minify: false,
-    outDir: path.resolve(__dirname, 'dist'),
+    outDir: path.resolve(import.meta.dirname, 'dist'),
     emptyOutDir: true,
     cssCodeSplit: false,
     rollupOptions: {
@@ -86,26 +49,18 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '~firebird-common': firebird,
-    },
+    alias: { '~firebird-common': firebird },
     extensions: ['.mjs', '.js', '.ts', '.json', '.svelte', '.scss'],
   },
   server: {
     proxy: {
-      '^/cgi/imgsrv/*': {
-        target: 'https://babel.hathitrust.org',
-        changeOrigin: true,
-      },
-      '^/cgi/ping': {
-        target: 'https://babel.hathitrust.org',
-        changeOrigin: true,
-      },
+      '^/cgi/imgsrv/*': { target: 'https://babel.hathitrust.org', changeOrigin: true },
+      '^/cgi/ping': { target: 'https://babel.hathitrust.org', changeOrigin: true },
     },
   },
   css: {
     preprocessorOptions: {
-      scss: scssOptions,
+      scss: { quietDeps: true },
     },
   },
 });
