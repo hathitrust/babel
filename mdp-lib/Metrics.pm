@@ -11,7 +11,7 @@ sub new {
     my $self  = {};
 
     $self->{prom} = Prometheus::Tiny::Shared->new(
-      #filename => $self->{file}
+      filename => "/ram/imgsrv-metrics"
     );
     $self->{declared_metrics} = {};
     $singleton = bless($self, $class);
