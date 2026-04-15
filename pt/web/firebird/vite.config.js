@@ -36,7 +36,7 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, 'dist'),
     emptyOutDir: true,
     cssCodeSplit: false,
-    rollupOptions: {
+    rolldownOptions: {
       input: files,
       output: {
         assetFileNames: (assetInfo) => {
