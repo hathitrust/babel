@@ -3,39 +3,42 @@ package SRV::Volume::EPUB;
 use strict;
 use warnings;
 
+my @persistent_attributes;
+my @transient_attributes;
+
+BEGIN {
+  @persistent_attributes = qw(include_images is_partial searchable target_ppi watermark);
+  @transient_attributes = qw(
+    access_stmts
+    attachment_filename
+    cache_dir
+    display_name
+    download_url
+    format
+    file
+    handle
+    id
+    institution
+    limit
+    marker
+    max_dim
+    output_fh
+    output_filename
+    pages
+    progress_filepath
+    proxy
+    restricted
+    rotation
+    total_pages
+  );
+}
+
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Response;
 use Plack::Util;
-use Plack::Util::Accessor qw( 
-    output_fh 
-    access_stmts 
-    display_name 
-    institution 
-    proxy 
-    handle 
-    format 
-    file
-    pages 
-    total_pages
-    searchable 
-    output_filename 
-    progress_filepath 
-    cache_dir
-    download_url
-    marker
-    restricted 
-    rotation 
-    limit 
-    target_ppi 
-    watermark 
-    max_dim
-    is_partial 
-    include_images 
-    attachment_filename
-    id
-);
+use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
 
 use Identifier;
 use Utils;
@@ -45,7 +48,7 @@ use SRV::Globals;
 use SRV::Utils;
 
 use Data::Dumper;
-
+use File::Spec qw();
 use IO::File;
 
 use File::Basename qw(basename dirname fileparse);
@@ -83,28 +86,38 @@ sub new {
 
 sub call {
     my ( $self, $env ) = @_;
+
+    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+
+    # To allow us to clear and restore attributes in one place,
+    # do not do any early returns from this method.
+    my $retval;
+
     my $req = Plack::Request->new($env);
 
     if ( my $num_attempts = $req->param('num_attempts') ) {
         # we are really just logging and leaving
         soft_ASSERT($num_attempts == 0, qq{Downloader lost track of progress: $num_attempts});
-        my $res = $req->new_response(204);
-        return $res->finalize;
+        $retval = $req->new_response(204)->finalize;
+    } else {
+      $self->_fill_params($env);
+
+      if ( $req->param('callback') ) {
+          $retval = $self->_background($env);
+      } else {
+        # EPUBs cannot be streamed; so if we're not backgrounding,
+        if ( ! defined $self->output_filename || ! -s $self->output_filename || $req->param('force') ) {
+            print STDERR "RUNNING\n";
+            $self->run($env);
+        }
+        $retval = $self->_stream($env);
+      }
     }
 
-    $self->_fill_params($env);
+    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
+    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
 
-    if ( $req->param('callback') ) {
-        return $self->_background($env);
-    }
-
-    # EPUBs cannot be streamed; so if we're not backgrounding, 
-    if ( ! defined $self->output_filename || ! -s $self->output_filename || $req->param('force') ) {
-        print STDERR "RUNNING\n";
-        $self->run($env);
-    }
-
-    return $self->_stream($env);
+    return $retval;
 }
 
 sub _background {
@@ -178,7 +191,8 @@ sub _background {
     }
 
     # we're only here _because_ we're in the background, with a callback; fork the child and keep going
-    my @cmd = ( "../bin/start.sh", $$, "epub", $cache_filename );
+    my $start_script = File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'bin', 'start.sh');
+    my @cmd = ( $start_script, $$, "epub", $cache_filename );
     push @cmd, "--id", $id;
     if ( $self->is_partial ) {
         foreach my $seq ( @{ $self->pages } ) {
