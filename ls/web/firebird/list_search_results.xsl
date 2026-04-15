@@ -108,6 +108,12 @@
       <xsl:value-of select="/MBooksTop/SearchResults/COLL_INFO/COLL_NAME"/>
     </xsl:if>
   </xsl:variable>
+	<xsl:variable name="gIsOwnedByUser">
+    <xsl:choose>
+      <xsl:when test="//EditCollectionWidget/OwnedByUser = 'yes'">TRUE</xsl:when>
+      <xsl:otherwise>FALSE</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
 
   <xsl:variable name="gSkin" select="//Param[@name='skin']" />
 
@@ -122,6 +128,22 @@
     </xsl:if>
     <xsl:attribute name="data-ft"><xsl:value-of select="//LimitToFullText/LimitType = 'ft'" /></xsl:attribute>
     <xsl:attribute name="data-use">search</xsl:attribute>
+		 <xsl:attribute name="data-c"><xsl:value-of select="$coll_id" /></xsl:attribute>
+    <xsl:attribute name="data-collname">
+      <xsl:value-of select="//EditCollectionWidget/CollName" />
+    </xsl:attribute>
+    <xsl:attribute name="data-shared">
+      <xsl:choose>
+        <xsl:when test="//EditCollectionWidget/Status = 'private'">0</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
+    <xsl:attribute name="data-contributor-name">
+      <xsl:value-of select="//EditCollectionWidget/ContributorName" />
+    </xsl:attribute>
+    <xsl:attribute name="data-desc">
+      <xsl:value-of select="//EditCollectionWidget/CollDesc" />
+    </xsl:attribute>
     <xsl:attribute name="data-analytics-report-url"><xsl:value-of select="//AnalyticsReportUrl" /></xsl:attribute>
   </xsl:template>
 
@@ -236,8 +258,9 @@
       ></hathi-results-toolbar>
     
     <hathi-collections-toolbar
-      data-prop-editable="{false()}"
+			data-prop-editable="{$gIsOwnedByUser = 'TRUE'}"
       data-prop-user-is-anonymous="{//LoggedIn = 'NO'}"
+			data-prop-collid="{$coll_id}"
     >
         <select data-use="collections" class="d-none" aria-hidden="true">
           <xsl:for-each select="SelectCollectionWidget/Coll">
@@ -853,10 +876,10 @@
             </xsl:choose>      
           </xsl:attribute>
           <div class="card-body">
-            <div class="card-title d-flex align-items-start justify-content-between gap-2">
+            <div class="card-title d-flex flex-column flex-sm-row align-items-start justify-content-sm-between gap-2">
               <h1 id="skipto" class="card-title d-flex align-items-center gap-2">
                 <xsl:choose>
-                  <xsl:when test="//COLL_INFO/COLL_STATUS = 'private'">
+                  <xsl:when test="//COLL_INFO/COLL_SHARED = 'private'">
                     <i class="fa-solid fa-lock" aria-hidden="true"></i>
                   </xsl:when>
                   <xsl:otherwise />
@@ -864,9 +887,12 @@
                 <xsl:value-of select="//COLL_INFO/COLL_NAME" />
               </h1>
               <div class="d-flex align-items-center justify-content-end gap-1">
-                <xsl:if test="//COLL_INFO/COLL_STATUS = 'private'">
+                <xsl:if test="//COLL_INFO/COLL_SHARED = 'private'">
                   <span class="badge bg-secondary">Private</span>
                 </xsl:if>
+								<xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
+									<xsl:call-template name="collection-edit-metadata" />
+								</xsl:if>
               </div>
             </div>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_DESC)">
@@ -874,7 +900,7 @@
             </xsl:if>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_CONTRIBUTOR_NAME)">
               <p class="card-text mt-0 mb-1">
-                <strong>Contributor Name: </strong><xsl:value-of select="//COLL_INFO/COLL_CONTRIBUTOR_NAME" />
+                <strong>Contributor: </strong><xsl:value-of select="//COLL_INFO/COLL_CONTRIBUTOR_NAME" />
               </p>
             </xsl:if>
             <xsl:if test="normalize-space(//COLL_INFO/COLL_CONTACT_INFO)">
@@ -892,38 +918,34 @@
                 </xsl:choose>
               </p>
             </xsl:if>
+						<xsl:call-template name="build-mondo-collection-search-form" />
           </div>
         </div>
       </div>
-      <xsl:call-template name="build-mondo-collection-search-form" />
     </div>
 
     <xsl:call-template name="build-mondo-collection-status-update" />
   </xsl:template>  
 
-  <xsl:template name="build-collection-manage-action">
+	<xsl:template name="collection-edit-metadata">
     <xsl:variable name="shrd">
       <xsl:choose>
-        <xsl:when test="//COLL_INFO/COLL_STATUS = 'private'">0</xsl:when>
+        <xsl:when test="EditCollectionWidget/Status = 'private'">0</xsl:when>
         <xsl:otherwise>1</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:if test="//EditCollectionWidget/OwnedByUser='yes'">
-      <div style="display: flex; align-items: center; position: absolute; right: 0; top: 50%; transform: translateY(-50%)">
-        <a
-          class="btn btn-sm"
-          href="/cgi/mb?c={$coll_id};a=listis;adm=1"
-          >Manage Collection</a>
-      </div>
-    </xsl:if>
+		<button
+			class="btn btn-sm btn-outline-dark"
+			data-action="edit-metadata"
+			>Edit<span class="visually-hidden"> Collection Metadata</span></button>
   </xsl:template>
 
   <xsl:template name="build-mondo-collection-search-form">
     <form method="GET" action="/cgi/ls">
-      <div class="row g-0 p-3 py-0">
-        <div class="col-md-12">
-          <div class="row g-3 align-items-center">
-            <div class="col-auto flex-grow-1 ps-3">
+      <div class="row">
+        <div class="col-md-12 mt-3">
+          <div class="row">
+            <div class="col-auto flex-grow-1 mt-auto">
               <input name="q1" type="text" 
                 id="collection-search" 
                 class="form-control" 
@@ -935,16 +957,16 @@
                 </xsl:attribute>
               </input>
             </div>
-            <div class="col-auto pe-3">
+            <div class="col-auto pe-3 mt-2 mt-sm-auto">
               <button type="submit" class="btn btn-secondary">Search</button>
             </div>
           </div>
-          <div class="d-flex justify-content-between gap-3 mt-2 w-90">
-            <div class="search-help p-3 pt-1 fs-7 fst-italic">
+          <div class="d-flex flex-column flex-sm-row justify-content-sm-between gap-2 gap-sm-3 mt-2 w-90">
+            <div class="search-help pt-1 fs-7 fst-italic">
               <i class="fa-solid fa-circle-info fa-fw" aria-hidden="true"></i>
               Search within this collection.
             </div>
-            <a class="fs-7 display-block px-3 pt-1">
+            <a class="fs-7 display-block pt-1">
               <xsl:attribute name="href">
                 <xsl:text>/cgi/ls?a=page;page=advanced;c=</xsl:text>
                 <xsl:value-of select="$coll_id"/>

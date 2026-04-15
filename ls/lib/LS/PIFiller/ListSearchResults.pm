@@ -1273,6 +1273,10 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
   if (length($coll_desc) > 255) {
       $coll_desc = substr($coll_desc, 0, 255);
   }
+	my $contributor_name = $co->get_contributor_name($coll_id);
+	if ( length($contributor_name) > 255 ) {
+			$contributor_name = substr( $contributor_name, 0, 255 );
+	}
 
   # is this even possible?
   my $is_temporary = 0;
@@ -1282,6 +1286,7 @@ sub handle_EDIT_COLLECTION_WIDGET_PI
   $s .= wrap_string_in_tag($coll_name, 'CollName');
   $s .= wrap_string_in_tag($spaced_coll_name, 'SpacedCollName');
   $s .= wrap_string_in_tag($coll_desc, 'CollDesc');
+	$s .= wrap_string_in_tag($contributor_name, 'ContributorName');
   $s .= wrap_string_in_tag($status, 'Status');
   $s .= wrap_string_in_tag($coll_owned_by_user, 'OwnedByUser');
   $s .= wrap_string_in_tag($status, 'PublicStatus');
