@@ -567,23 +567,29 @@ sub run_command {
     return $retval;
 }
 
-# Save Plack::Component attributes into a hash for restoration at the end of `call`
+# Save Plack::Component attributes into a hash for restoration at the end of `call`.
 # This is a poor substitute for making persistent attributes read-only.
-sub save_persistent_attributes {
+sub save_attributes {
   my $component = shift;
 
   my $saved = {};
-  foreach my $attr (@_) {
+  foreach my $attr (keys %{$component->persistent_attributes}) {
     $saved->{$attr} = $component->$attr();
   }
-  return $saved;
+  $component->{saved_attributes} = $saved;
 }
 
+# Remove all transient fields from this component.
+# Using `delete` is more extreme than calling `$self->$attr(undef)` but closer to the state
+# we want to achieve, i.e., the initial state of the app.
 # Restores, if necessary, persistent attributes that must remain constant across calls
 # just in case one or more got clobbered.
-sub restore_persistent_attributes {
-  my ($component, $saved) = @_;
+# `IMGSRV_CHECK_PERSISTENT_ATTRIBUTES` is for testing only. Look for any persistent
+# attributes that actually got clobbered.
+sub reset_attributes {
+  my $component = shift;
 
+  my $saved = $component->{saved_attributes};
   foreach my $attr (keys %$saved) {
     if ($ENV{IMGSRV_CHECK_PERSISTENT_ATTRIBUTES}) {
       # For testing purposes only, compare saved values (from the start of `call`)
@@ -591,25 +597,34 @@ sub restore_persistent_attributes {
       # Used defined-or operator to avoid warnings -- there's no hard
       # requirement that persistent attributes have to be defined although
       # it would be a bit surprising to find an `undef` here.
-      if (($component->$attr() // "") ne ($saved->{$attr} // "")) {
+      if (($component->$attr() // "<undef>") ne ($saved->{$attr} // "<undef>")) {
         die sprintf(
-          "$attr value changed from '$saved->{$attr}' to '%s'", $component->$attr()
+          "$attr value changed from '$saved->{$attr}' to '%s'", ($component->$attr() // '<undef>')
         );
       }
     }
     $component->$attr($saved->{$attr});
   }
+  # Now aggressively sweep and clear
+  my $keep = $component->persistent_attributes;
+  foreach my $attr (keys %$component) {
+    if (! exists $keep->{$attr}) {
+      delete $component->{$attr};
+    }
+  }
 }
 
-# Remove all transient fields from this component.
-# Using `delete` is more extreme than calling `$self->$attr(undef)` but closer to the state
-# we want to achieve, i.e., the initial state of the app.
+
 sub clear_transient_attributes {
   my $component = shift;
 
   foreach my $attr (@_) {
     delete $component->{$attr};
   }
+  #use Data::Dumper;
+  #foreach my $attr (keys %$component) {
+  #  printf STDERR "$attr: %s\n", $component->{$attr};
+  #}
 }
 
 package SRV::Utils::File;

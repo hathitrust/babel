@@ -89,10 +89,19 @@ subtest "download.psgi" => sub {
 
   my $app = do File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'apps', 'download.psgi');
   my $test = Plack::Test->create($app);
-  # subtest "volume/pdf" => sub {
-#     my $res = $test->request(GET "/pdf?id=test.pd_open");
-#     is $res->message, 'OK';
-#   };
+  subtest "volume/pdf" => sub {
+    subtest "with callback" => sub {
+      my $res = $test->request(GET "/pdf?id=test.pd_open&callback=1");
+      is $res->message, 'OK';
+      is $res->header('Content-Type'), 'application/javascript';
+    };
+
+    subtest "without callback" => sub {
+      my $res = $test->request(GET "/pdf?id=test.pd_open");
+      is $res->message, 'OK';
+      is $res->header('Content-Type'), 'application/pdf';
+    };
+  };
 
   subtest "volume/epub" => sub {
     subtest "with callback" => sub {
@@ -108,20 +117,28 @@ subtest "download.psgi" => sub {
     };
   };
 
-  # subtest "volume/plaintext" => sub {
-#     my $res = $test->request(GET "/plaintext?id=test.pd_open");
-#     is $res->message, 'OK';
-#   };
-#   
-#   subtest "volume/image" => sub {
-#     my $res = $test->request(GET "/image?id=test.pd_open");
-#     is $res->message, 'OK';
-#   };
-#   
-#   subtest "volume/remediated" => sub {
-#     my $res = $test->request(GET "/remediated?id=test.pd_open");
-#     is $res->message, 'OK';
-#   };
+  subtest "volume/plaintext" => sub {
+    my $res = $test->request(GET "/plaintext?id=test.pd_open");
+    is $res->message, 'OK';
+    is $res->header('Content-Type'), 'text/plain';
+  };
+
+  subtest "volume/image" => sub {
+    subtest "with callback" => sub {
+      my $res = $test->request(GET "/image?id=test.pd_open&callback=1");
+      is $res->message, 'Forbidden';
+    };
+
+    subtest "without callback" => sub {
+      my $res = $test->request(GET "/image?id=test.pd_open");
+      is $res->message, 'Forbidden';
+    };
+  };
+
+  subtest "volume/remediated" => sub {
+    my $res = $test->request(GET "/remediated?remediated_item_id=test.pd_open&id=test.pd_open");
+    is $res->code, 404;
+  };
 };
 
 delete $ENV{IMGSRV_CHECK_PERSISTENT_ATTRIBUTES};

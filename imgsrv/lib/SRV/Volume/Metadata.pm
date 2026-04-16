@@ -3,20 +3,17 @@ package SRV::Volume::Metadata;
 use strict;
 use warnings;
 
-my @persistent_attributes;
-my @transient_attributes;
-
-BEGIN {
-  @persistent_attributes = qw(format);
-  @transient_attributes = qw(size start limit);
-}
-
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Response;
 use Plack::Util;
-use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
+use Plack::Util::Accessor qw( 
+    format
+    size
+    start
+    limit
+);
 
 use Identifier;
 use Utils;
@@ -52,11 +49,22 @@ sub new {
     $self;
 }
 
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    format => 1
+  };
+}
+
 sub call {
     my ( $self, $env ) = @_;
     my $req = Plack::Request->new($env);
 
-    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+    SRV::Utils::save_attributes($self);
 
     $self->_fill_params($env);
 
@@ -91,8 +99,7 @@ sub call {
         $res->body($fh);
     }
 
-    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
-    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+    SRV::Utils::reset_attributes($self);
 
     return $res->finalize;
 

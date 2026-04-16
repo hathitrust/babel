@@ -1,37 +1,27 @@
 package SRV::Image;
 
-# Persistent attributes should be set by the parameters in e.g., imgsrv.psgi
-# and not altered or removed for the life of the application.
-# Alas, we cannot enforce this with the stock `Plack::Util::Accessor`.
-# Transient attributes are per-`call` and should not be allowed to persist across calls.
-
-# Ideally we would have no transient attributes.
-my @persistent_attributes;
-my @transient_attributes;
-
-BEGIN {
-  @persistent_attributes = qw(mode watermark default_watermark quality);
-  @transient_attributes = qw(
-    id
-    file
-    size
-    region
-    rotation
-    format
-    mimetype
-    restricted
-    missing
-    force
-    tracker
-  );
-}
-
 # use parent qw( SRV::Base );
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
+use Plack::Util::Accessor qw(
+    id
+    mode
+    file
+    size
+    region
+    rotation
+    quality
+    format
+    mimetype
+    restricted
+    watermark
+    default_watermark
+    missing
+    force
+    tracker
+);
 
 use Process::Image;
 
@@ -72,6 +62,20 @@ sub new {
     $self->default_watermark($self->watermark);
     $self->quality('default') unless ( defined $self->quality );
     $self;
+}
+
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    mode              => 1,
+    watermark         => 1,
+    default_watermark => 1,
+    quality           => 1
+  };
 }
 
 sub run {
@@ -206,7 +210,7 @@ sub run {
 sub call {
     my ( $self, $env ) = @_;
 
-    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+    SRV::Utils::save_attributes($self);
 
     my $req = Plack::Request->new($env);
 
@@ -275,8 +279,7 @@ sub call {
 
     $res->body($fh);
 
-    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
-    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+    SRV::Utils::reset_attributes($self);
 
     $res->finalize;
 }

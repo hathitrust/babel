@@ -1,19 +1,11 @@
 package SRV::Volume::HTML;
 
-my @persistent_attributes;
-my @transient_attributes;
-
-BEGIN {
-  @persistent_attributes = qw(mode);
-  @transient_attributes = qw(file restricted p output_filename q1);
-}
-
 # use parent qw( SRV::Base );
 use parent qw( Plack::Component );
 
 use Plack::Request;
 use Plack::Util;
-use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
+use Plack::Util::Accessor qw( file mode restricted p output_filename q1 );
 
 use Process::Text;
 
@@ -44,6 +36,13 @@ sub new {
     $self->mode('standalone') unless ( $self->mode );
 
     $self;
+}
+
+# Allowed to persist across calls. Everything else gets cleared.
+sub persistent_attributes {
+  my $self = shift;
+
+  return qw(mode);
 }
 
 sub run {
@@ -157,7 +156,7 @@ sub call {
     my ( $self, $env ) = @_;
     my $req = Plack::Request->new($env);
 
-    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+    SRV::Utils::save_attributes($self);
 
     $self->_fill_params($env);
     $self->_validate_params($env);
@@ -177,8 +176,7 @@ sub call {
 
     $res->body($contents);
 
-    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
-    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+    SRV::Utils::reset_attributes($self);
 
     $res->finalize;
 }

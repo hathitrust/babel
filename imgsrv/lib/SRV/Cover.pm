@@ -1,26 +1,21 @@
 package SRV::Cover;
 
-my @persistent_attributes;
-my @transient_attributes;
+# use parent qw( SRV::Base );
+use parent qw( Plack::Component );
 
-BEGIN {
-  @persistent_attributes = qw(mode quality);
-  @transient_attributes = qw(
+use Plack::Request;
+use Plack::Util;
+use Plack::Util::Accessor qw(
     id
     file
     size
     format
     missing
     force
-  );
-}
-
-# use parent qw( SRV::Base );
-use parent qw( Plack::Component );
-
-use Plack::Request;
-use Plack::Util;
-use Plack::Util::Accessor (@persistent_attributes, @transient_attributes);
+    mode
+    quality
+    restricted
+);
 
 use Process::Image;
 
@@ -44,6 +39,19 @@ sub new {
     $self->quality('native') unless ( defined $self->quality );
 
     $self;
+}
+
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    mode       => 1,
+    quality    => 1,
+    restricted => 1
+  };
 }
 
 sub run {
@@ -114,7 +122,7 @@ sub run {
 sub call {
     my ( $self, $env ) = @_;
 
-    my $saved_attributes = SRV::Utils::save_persistent_attributes($self, @persistent_attributes);
+    SRV::Utils::save_attributes($self);
 
     my $req = Plack::Request->new($env);
 
@@ -136,8 +144,7 @@ sub call {
     $res->header('X-HathiTrust-ImageSize' => $$output{metadata}{width} . "x" . $$output{metadata}{height});
     $res->body($fh);
 
-    SRV::Utils::clear_transient_attributes($self, @transient_attributes);
-    SRV::Utils::restore_persistent_attributes($self, $saved_attributes);
+    SRV::Utils::reset_attributes($self);
 
     $res->finalize;
 }
