@@ -614,19 +614,6 @@ sub reset_attributes {
   }
 }
 
-
-sub clear_transient_attributes {
-  my $component = shift;
-
-  foreach my $attr (@_) {
-    delete $component->{$attr};
-  }
-  #use Data::Dumper;
-  #foreach my $attr (keys %$component) {
-  #  printf STDERR "$attr: %s\n", $component->{$attr};
-  #}
-}
-
 package SRV::Utils::File;
 
 # clone of Plack::Util::IOWithPath + file removal at end
