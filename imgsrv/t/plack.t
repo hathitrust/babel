@@ -78,8 +78,6 @@ subtest "imgsrv.psgi" => sub {
   };
 };
 
-# TODO: epub is the only entrypoint in the download ecosystem that has been converted.
-# The others are SRV::Volume::Base subclasses and may be a bit trickier.
 subtest "download.psgi" => sub {
   # Silence uninitialized complaint in lib/SRV/Volume/Base.pm
   $ENV{SERVER_NAME} = 'localhost';
