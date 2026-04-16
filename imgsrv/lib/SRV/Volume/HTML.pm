@@ -38,11 +38,15 @@ sub new {
     $self;
 }
 
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
 # Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
 sub persistent_attributes {
   my $self = shift;
 
-  return qw(mode);
+  return {
+    mode => 1
+  };
 }
 
 sub run {
