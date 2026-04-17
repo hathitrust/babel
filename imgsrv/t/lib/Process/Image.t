@@ -33,6 +33,29 @@ Adapted from feed - HTFeed/Stage/ImageRemediate.pm
 =cut
 
 
+subtest 'jp2 export' => sub {
+  sub processor {
+    my $processor = new Process::Image;
+    $processor->mdpItem($C->get_object('MdpItem'));
+    my $seq = 1;
+    my $source_path = $mdpItem->GetFilePathMaybeExtract($seq, 'imagefile');
+    $processor->source( filename => $source_path);
+    $processor->quality('full');
+    $processor->format('jp2');
+    $processor->watermark(1);
+
+    return $processor;
+  }
+
+  subtest 'works' => sub {
+    my $output_file = '/tmp/t_lib_process_image_full.jp2';
+    my $processor = processor();
+    $processor->output( filename => $output_file);
+    $processor->process();
+    ok(-e $output_file, 'output JPEG2000 file exists');
+  }
+
+};
 
 subtest 'tiff export' => sub {
   sub processor {
