@@ -190,7 +190,7 @@ sub _run {
                 "-o", $jp2_tmpfilename,
                 "-p", "RLCP",
                 "-n", $nlev,
-                "-SOP", "-EPH", "-M", 62, "-I", "-q", 32
+                "-S", "-E", "-M", 62, "-I", "-q", 32
             ])
         } else {
             IPC::Run::run([
