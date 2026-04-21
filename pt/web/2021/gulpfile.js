@@ -2,52 +2,50 @@
 
 const gulp = require('gulp');
 
-const sass = require('gulp-sass')(require('node-sass'));
+const sass = require('gulp-sass')(require('sass'));
 const sourcemaps = require('gulp-sourcemaps');
 const autoprefixer = require('gulp-autoprefixer');
 // var es = require('event-stream');
 
-const concat = require('gulp-concat');  
-// var rename = require('gulp-rename');  
+const concat = require('gulp-concat');
+// var rename = require('gulp-rename');
 const babel = require('gulp-babel');
 
 const compiler = require('webpack');
 const webpack = require('webpack-stream');
 
-const path = require('path');
+const path = require('node:path');
 
 var stylesheets = {};
-stylesheets.input = [ './src/scss/*.scss' ];
-stylesheets.concat = [ './vendor/**/*.css' ];
-stylesheets.watch = [ './vendor/**/*.css', './vendor/**/*.scss', './src/scss/**/*.scss' ];
+stylesheets.input = ['./src/scss/*.scss'];
+stylesheets.concat = ['./vendor/**/*.css'];
+stylesheets.watch = ['./vendor/**/*.css', './vendor/**/*.scss', './src/scss/**/*.scss'];
 stylesheets.output = './dist/css';
 
 var javascripts = {};
 javascripts.input = [];
-javascripts.input.push(`${process.env.SDRROOT}/mdp-web/jquery/jQuery-URL-Parser/purl.js`);
+// 2021 included this SDRROOT env variable that i can't figure out how it was set
+// i seearch github for purl and can't find where this is used, so let's leave it out for now
+// javascripts.input.push(`${process.env.SDRROOT}/mdp-web/jquery/jQuery-URL-Parser/purl.js`);
 javascripts.input.push('node_modules/@popperjs/core/dist/umd/popper.min.js');
 javascripts.input.push('node_modules/tippy.js/dist/tippy-bundle.umd.js');
-javascripts.input.push('./src/js/utils/**/*.js')
+javascripts.input.push('./src/js/utils/**/*.js');
 javascripts.output = './dist/js';
 
 const distFolder = path.resolve(__dirname);
-console.log("AHOY", distFolder);
+console.log('AHOY', distFolder);
 
-var apps = {volume: {}, volume_epub: {}};
+var apps = { volume: {}, volume_epub: {} };
 apps.volume.input = [];
 apps.volume_epub.input = [];
-apps.volume.input.push(
-  './src/js/components/**/*.js', 
-  './src/js/main.js');
-apps.volume_epub.input.push(
-  './src/js/volume_epub/main.js',
-  './src/js/volume_epub/components/**/*.js');
-apps.output = "./js";
+apps.volume.input.push('./src/js/components/**/*.js', './src/js/main.js');
+apps.volume_epub.input.push('./src/js/volume_epub/main.js', './src/js/volume_epub/components/**/*.js');
+apps.output = './js';
 
 stylesheets.options = {
   errLogToConsole: true,
   outputStyle: 'expanded',
-  includePaths: ['node_modules']
+  includePaths: ['node_modules'],
 };
 
 var autoprefixerOptions = {
@@ -56,8 +54,7 @@ var autoprefixerOptions = {
 };
 
 // Compile sass into CSS
-gulp.task('sass', function() {
-
+gulp.task('sass', function () {
   var vendorFiles = gulp.src(stylesheets.concat);
 
   // var localFiles = gulp.src('./src/scss/main.scss')
@@ -69,116 +66,133 @@ gulp.task('sass', function() {
   //   .pipe(sourcemaps.write())
   //   .pipe(gulp.dest(stylesheets.output));
 
-  return gulp.src(stylesheets.input)
+  return gulp
+    .src(stylesheets.input)
     .pipe(sass(stylesheets.options).on('error', sass.logError))
     .pipe(autoprefixer(autoprefixerOptions))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(stylesheets.output));
 });
 
-var presets_v6 = [ '@babel/preset-env' ].map(require.resolve);
-gulp.task('scripts', function() {
-  return gulp.src(javascripts.input)
+var presets_v6 = ['@babel/preset-env'].map(require.resolve);
+gulp.task('scripts', function () {
+  return gulp
+    .src(javascripts.input)
     .pipe(sourcemaps.init())
-    .pipe(babel({
-      babelrc: false,
-      presets: presets_v6
-      // exclude: [ 'node_modules/**' ]
-    }))
+    .pipe(
+      babel({
+        babelrc: false,
+        presets: presets_v6,
+        // exclude: [ 'node_modules/**' ]
+      }),
+    )
     .pipe(concat('utils.js'))
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest(javascripts.output))
-})
+    .pipe(gulp.dest(javascripts.output));
+});
 
-gulp.task('app', function() {
-  return gulp.src('./src/js/main.js')
-    .pipe(webpack({
-      watch: false,
-      devtool: 'source-map', // 'inline-source-map',
-      mode: 'development',
-      entry: {
-        // @babel/polyfill ??
-        main: [ 'intersection-observer', 'whatwg-fetch', './src/js/main.js']
-      },
-      output: {
-        filename: 'js/main.js',
-        environment: {
-          arrowFunction: false
-        }
-      },
-      module: {
-        rules: [
-          { test: /\.js$/, 
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: [[ '@babel/preset-env', 
-                {
-                  "corejs": { "version":3 },
-                  "useBuiltIns": "entry",
-                  "targets": {
-                      "browsers": [
-                        "edge >= 17",
-                        "ie >= 11",
-                        "ios >= 9",
-                        "chrome >= 67",
-                        "safari >= 11.1",
-                        "firefox >= 48"
-                      ]
-                      // "edge": "17",
-                      // "firefox": "48",
-                      // "chrome": "67",
-                      // "safari": "11.1",
-                      // "ie": "11"
-                  }
-                } ]],
-                plugins: [ 
-                  [ '@babel/plugin-proposal-class-properties', { legacy: true } ]
-                ]
-              }
-            }
+gulp.task('app', function () {
+  return gulp
+    .src('./src/js/main.js')
+    .pipe(
+      webpack(
+        {
+          watch: false,
+          devtool: 'source-map', // 'inline-source-map',
+          mode: 'development',
+          entry: {
+            // @babel/polyfill ??
+            main: ['intersection-observer', 'whatwg-fetch', './src/js/main.js'],
           },
-          {
-            test: /\.css$/i,
-            use: [ 'style-loader', 'css-loader' ]
+          output: {
+            filename: 'js/main.js',
+            environment: {
+              arrowFunction: false,
+            },
           },
-        ]
-      },
-      plugins: [
-      ]
-    }, compiler, function(err, stats) {
-
-    }))
+          module: {
+            rules: [
+              {
+                test: /\.js$/,
+                use: {
+                  loader: 'babel-loader',
+                  options: {
+                    presets: [
+                      [
+                        '@babel/preset-env',
+                        {
+                          corejs: { version: 3 },
+                          useBuiltIns: 'entry',
+                          targets: {
+                            browsers: [
+                              'edge >= 17',
+                              'ie >= 11',
+                              'ios >= 9',
+                              'chrome >= 67',
+                              'safari >= 11.1',
+                              'firefox >= 48',
+                            ],
+                            // "edge": "17",
+                            // "firefox": "48",
+                            // "chrome": "67",
+                            // "safari": "11.1",
+                            // "ie": "11"
+                          },
+                        },
+                      ],
+                    ],
+                    plugins: [['@babel/plugin-proposal-class-properties', { legacy: true }]],
+                  },
+                },
+              },
+              {
+                test: /\.css$/i,
+                use: ['style-loader', 'css-loader'],
+              },
+            ],
+          },
+          plugins: [],
+        },
+        compiler,
+        function (err, stats) {},
+      ),
+    )
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('volume_epub', function() {
-  return gulp.src('./src/js/volume_epub/main.js')
-    .pipe(webpack({
-      watch: false,
-      devtool: 'inline-source-map',
-      mode: 'development',
-      entry: {
-        main: [ 'intersection-observer', 'babel-polyfill', 'whatwg-fetch', './src/js/volume_epub/main.js']
-      },
-      output: {
-        filename: 'volume_epub/main.js'
-      },
-      module: {
-        rules: [
-          { test: /\.js$/, 
-            use: {
-              loader: 'babel-loader',
-              options: {
-                presets: [ 'env' ]
-              }
-            }
-          }
-        ]
-      }
-    }, compiler, function(err, stats) {
-
-    }))
+gulp.task('volume_epub', function () {
+  return gulp
+    .src('./src/js/volume_epub/main.js')
+    .pipe(
+      webpack(
+        {
+          watch: false,
+          devtool: 'inline-source-map',
+          mode: 'development',
+          entry: {
+            main: ['intersection-observer', 'babel-polyfill', 'whatwg-fetch', './src/js/volume_epub/main.js'],
+          },
+          output: {
+            filename: 'volume_epub/main.js',
+          },
+          module: {
+            rules: [
+              {
+                test: /\.js$/,
+                use: {
+                  loader: 'babel-loader',
+                  options: {
+                    presets: ['env'],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        compiler,
+        function (err, stats) {},
+      ),
+    )
     .pipe(gulp.dest(javascripts.output));
 });
 

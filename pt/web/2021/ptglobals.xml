@@ -42,8 +42,8 @@
 <ItemHasJP2><?ITEM_CHECK_EXISTENCE mimetype="image/jp2" ?></ItemHasJP2>
 <ItemHasTIFF><?ITEM_CHECK_EXISTENCE mimetype="image/tiff" ?></ItemHasTIFF>
 <Message>AHOY</Message>
-<?CACHE_TIMESTAMP href="/common/alicorn/css/main.201910.css" ?>
-<?CACHE_TIMESTAMP href="/common/alicorn/js/utils.201910.js" ?>
+<!-- <?CACHE_TIMESTAMP href="/pt/2021/common/main.201910.css" ?>
+<?CACHE_TIMESTAMP href="/pt/2021/common/utils.201910.js" ?> -->
 <?CACHE_TIMESTAMP href="/pt/2021/dist/js/main.js" ?>
 <?CACHE_TIMESTAMP href="/pt/2021/dist/css/app.css" ?>
 <?CACHE_TIMESTAMP href="/pt/2021/dist/js/utils.js" ?>
