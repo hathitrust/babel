@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use File::Spec;
+use Test::Exception;
 use Test::More;
 
 use lib File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 't');
@@ -30,6 +31,17 @@ subtest 'persistent_attributes' => sub {
   ok(scalar keys %{$srv->persistent_attributes} > 0, 'persistent_attributes has multiple keys');
 };
 
+sub check_attributes {
+  my $srv = shift;
+
+  foreach my $attr (keys %{$srv->persistent_attributes}) {
+    ok(exists $srv->{$attr}, "$attr attribute is retained");
+  }
+  foreach my $attr (qw(id file size region rotation format mimetype restricted missing force tracker)) {
+    ok(! exists $srv->{$attr}, "$attr attribute is not retained");
+  }
+}
+
 # Test normal mode and thumbnail mode for data retention
 # mount "/thumbnail" => SRV::Image->new(mode => 'thumbnail', watermark => 0)->to_app;
 subtest 'data retention across call' => sub {
@@ -40,13 +52,14 @@ subtest 'data retention across call' => sub {
       'psgix.config' => $C->get_object('MdpConfig'),
       'psgix.context' => $C
     };
+    # HTTP 200
     my $res = $srv->call($env);
-    foreach my $attr (keys %{$srv->persistent_attributes}) {
-      ok(exists $srv->{$attr}, "$attr attribute is retained");
-    }
-    foreach my $attr (qw(id file size region rotation format mimetype restricted missing force tracker)) {
-      ok(! exists $srv->{$attr}, "$attr attribute is not retained");
-    }
+    check_attributes($srv);
+    # HTTP 500
+    dies_ok {
+      $srv->call('BOGUS ENV');
+    };
+    check_attributes($srv);
   };
 
   subtest 'thumbnail mode' => sub {
@@ -56,9 +69,14 @@ subtest 'data retention across call' => sub {
       'psgix.config' => $C->get_object('MdpConfig'),
       'psgix.context' => $C
     };
+    # HTTP 200
     my $res = $srv->call($env);
-    is($srv->mode, 'thumbnail', 'mode `thumbnail` retained');
-    is($srv->watermark, 0, 'watermark `0` retained');
+    check_attributes($srv);
+    # HTTP 500
+    dies_ok {
+      $srv->call('BOGUS ENV');
+    };
+    check_attributes($srv);
   };
 };
 

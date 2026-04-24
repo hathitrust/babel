@@ -38,6 +38,7 @@ use Utils;
 
 use Scalar::Util;
 use Time::HiRes qw();
+use Try::Tiny;
 
 use Metrics;
 
@@ -211,6 +212,17 @@ sub call {
     my ( $self, $env ) = @_;
 
     SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
+    my ( $self, $env ) = @_;
 
     my $req = Plack::Request->new($env);
 
@@ -278,8 +290,6 @@ sub call {
     }
 
     $res->body($fh);
-
-    SRV::Utils::reset_attributes($self);
 
     $res->finalize;
 }

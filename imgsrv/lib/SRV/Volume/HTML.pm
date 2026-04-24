@@ -12,6 +12,7 @@ use Process::Text;
 use Data::Dumper;
 
 use IO::File;
+use Try::Tiny;
 
 use SRV::Globals;
 
@@ -158,9 +159,20 @@ sub run {
 
 sub call {
     my ( $self, $env ) = @_;
-    my $req = Plack::Request->new($env);
 
     SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
+    my ( $self, $env ) = @_;
+    my $req = Plack::Request->new($env);
 
     $self->_fill_params($env);
     $self->_validate_params($env);
@@ -179,8 +191,6 @@ sub call {
     $res->header( 'Content-length', length($contents) );
 
     $res->body($contents);
-
-    SRV::Utils::reset_attributes($self);
 
     $res->finalize;
 }

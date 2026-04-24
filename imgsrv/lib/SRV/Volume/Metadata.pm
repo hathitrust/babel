@@ -24,6 +24,7 @@ use SRV::Globals;
 use SRV::Utils;
 
 use Data::Dumper;
+use Try::Tiny;
 
 use IO::File;
 use File::Slurp qw(read_file);
@@ -62,9 +63,20 @@ sub persistent_attributes {
 
 sub call {
     my ( $self, $env ) = @_;
-    my $req = Plack::Request->new($env);
 
     SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
+    my ( $self, $env ) = @_;
+    my $req = Plack::Request->new($env);
 
     $self->_fill_params($env);
 
@@ -98,8 +110,6 @@ sub call {
         my $fh = new IO::File $output_filename;
         $res->body($fh);
     }
-
-    SRV::Utils::reset_attributes($self);
 
     return $res->finalize;
 
