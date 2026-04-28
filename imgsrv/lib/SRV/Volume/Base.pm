@@ -229,7 +229,8 @@ sub _background {
     }
 
     # we're only here _because_ we're in the background, with a callback; fork the child and keep going
-    my @cmd = ( "../bin/start.sh", $$, $self->_action, $cache_filename );
+    my $start_script = File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'bin', 'start.sh');
+    my @cmd = ( $start_script, $$, $self->_action, $cache_filename );
     push @cmd, "--id", $id;
     if ( my @params = $self->_download_params ) {
         foreach my $p ( @params ) {

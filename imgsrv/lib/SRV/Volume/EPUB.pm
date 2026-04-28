@@ -45,7 +45,7 @@ use SRV::Globals;
 use SRV::Utils;
 
 use Data::Dumper;
-
+use File::Spec;
 use IO::File;
 
 use File::Basename qw(basename dirname fileparse);
@@ -178,7 +178,8 @@ sub _background {
     }
 
     # we're only here _because_ we're in the background, with a callback; fork the child and keep going
-    my @cmd = ( "../bin/start.sh", $$, "epub", $cache_filename );
+    my $start_script = File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'bin', 'start.sh');
+    my @cmd = ( $start_script, $$, "epub", $cache_filename );
     push @cmd, "--id", $id;
     if ( $self->is_partial ) {
         foreach my $seq ( @{ $self->pages } ) {
