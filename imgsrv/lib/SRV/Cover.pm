@@ -22,6 +22,7 @@ use Process::Image;
 use Data::Dumper;
 
 use IO::File;
+use Try::Tiny;
 
 use SRV::Globals;
 
@@ -39,6 +40,19 @@ sub new {
     $self->quality('native') unless ( defined $self->quality );
 
     $self;
+}
+
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    mode       => 1,
+    quality    => 1,
+    restricted => 1
+  };
 }
 
 sub run {
@@ -108,6 +122,20 @@ sub run {
 
 sub call {
     my ( $self, $env ) = @_;
+
+    SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
+    my ( $self, $env ) = @_;
+
     my $req = Plack::Request->new($env);
 
     my $output = $self->run($env);
@@ -127,6 +155,7 @@ sub call {
     $res->content_type($$output{mimetype});
     $res->header('X-HathiTrust-ImageSize' => $$output{metadata}{width} . "x" . $$output{metadata}{height});
     $res->body($fh);
+
     $res->finalize;
 }
 

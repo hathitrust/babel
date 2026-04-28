@@ -38,6 +38,7 @@ use Utils;
 
 use Scalar::Util;
 use Time::HiRes qw();
+use Try::Tiny;
 
 use Metrics;
 
@@ -47,12 +48,35 @@ sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
 
+    # Set persistent attributes
+    # May be set by the call to SUPER if the accessor is defined.
+    # This happens with the `thumbnail` entrypoint.
+    #
+    # - `mode` is 'image' or 'thumbnail'
+    # - `watermark` is 0 for thumbnail mode, defaults to 1
+    # - `default_watermark` is just a copy of `watermark` that somehow comes into play
+    #   as an initializer for `watermark` when under `PSGI_COMMAND`
+    # - `quality` can be 'default', 'gray', 'bitonal' in the processor,
+    #   here it functions as a persistent default.
     $self->mode('image') unless ( $self->mode );
     $self->watermark(1) unless ( defined $self->watermark );
     $self->default_watermark($self->watermark);
     $self->quality('default') unless ( defined $self->quality );
-
     $self;
+}
+
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    mode              => 1,
+    watermark         => 1,
+    default_watermark => 1,
+    quality           => 1
+  };
 }
 
 sub run {
@@ -186,6 +210,20 @@ sub run {
 
 sub call {
     my ( $self, $env ) = @_;
+
+    SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
+    my ( $self, $env ) = @_;
+
     my $req = Plack::Request->new($env);
 
     my $output = $self->run($env);
@@ -252,6 +290,7 @@ sub call {
     }
 
     $res->body($fh);
+
     $res->finalize;
 }
 
@@ -425,7 +464,13 @@ sub _validate_params_format {
         $self->mimetype($format);
         $self->format($SRV::Globals::gTargetFileTypes{$format});
     } else {
-        $self->mimetype($SRV::Globals::gTargetMimeTypes{$format});
+        # When format is undef, the lookup fails. This is apparently normal.
+        # Process::Image will (presumably) provide the necessary default.
+        # `// undef` is to silence persistent warnings about
+        # "Use of uninitialized value in scalar assignment at /usr/share/perl5/Plack/Util/Accessor.pm line 18."
+        # (The uninitialized value we get from the failed hash lookup is not exactly equivalent
+        # to `undef` from Perl's point of view, so use the latter.)
+        $self->mimetype($SRV::Globals::gTargetMimeTypes{$format} // undef);
     }
 
 }

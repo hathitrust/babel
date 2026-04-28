@@ -24,6 +24,7 @@ use SRV::Globals;
 use SRV::Utils;
 
 use Data::Dumper;
+use Try::Tiny;
 
 use IO::File;
 use File::Slurp qw(read_file);
@@ -49,7 +50,31 @@ sub new {
     $self;
 }
 
+# Used by `Plack::Utils::save_attributes` and `Plack::Utils::reset_attributes`.
+# Allowed to persist across calls. Everything else gets cleared.
+# Use a hash for quick lookup.
+sub persistent_attributes {
+  my $self = shift;
+
+  return {
+    format => 1
+  };
+}
+
 sub call {
+    my ( $self, $env ) = @_;
+
+    SRV::Utils::save_attributes($self);
+    return try {
+      $self->call_core($env);
+    } catch {
+      die $_;
+    } finally {
+      SRV::Utils::reset_attributes($self);
+    }
+}
+
+sub call_core {
     my ( $self, $env ) = @_;
     my $req = Plack::Request->new($env);
 

@@ -567,6 +567,53 @@ sub run_command {
     return $retval;
 }
 
+# Save Plack::Component attributes into a hash for restoration at the end of `call`.
+# This is a poor substitute for making persistent attributes read-only.
+sub save_attributes {
+  my $component = shift;
+
+  my $saved = {};
+  foreach my $attr (keys %{$component->persistent_attributes}) {
+    $saved->{$attr} = $component->$attr();
+  }
+  $component->{saved_attributes} = $saved;
+}
+
+# Remove all transient fields from this component.
+# Using `delete` is more extreme than calling `$self->$attr(undef)` but closer to the state
+# we want to achieve, i.e., the initial state of the app.
+# Restores, if necessary, persistent attributes that must remain constant across calls
+# just in case one or more got clobbered.
+# `IMGSRV_CHECK_PERSISTENT_ATTRIBUTES` is for testing only. Look for any persistent
+# attributes that actually got clobbered.
+sub reset_attributes {
+  my $component = shift;
+
+  my $saved = $component->{saved_attributes};
+  foreach my $attr (keys %$saved) {
+    if ($ENV{IMGSRV_CHECK_PERSISTENT_ATTRIBUTES}) {
+      # For testing purposes only, compare saved values (from the start of `call`)
+      # against current values.
+      # Used defined-or operator to avoid warnings -- there's no hard
+      # requirement that persistent attributes have to be defined although
+      # it would be a bit surprising to find an `undef` here.
+      if (($component->$attr() // "<undef>") ne ($saved->{$attr} // "<undef>")) {
+        die sprintf(
+          "$attr value changed from '$saved->{$attr}' to '%s'", ($component->$attr() // '<undef>')
+        );
+      }
+    }
+    $component->$attr($saved->{$attr});
+  }
+  # Now aggressively sweep and clear
+  my $keep = $component->persistent_attributes;
+  foreach my $attr (keys %$component) {
+    if (! exists $keep->{$attr}) {
+      delete $component->{$attr};
+    }
+  }
+}
+
 package SRV::Utils::File;
 
 # clone of Plack::Util::IOWithPath + file removal at end
