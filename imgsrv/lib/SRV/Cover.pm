@@ -275,7 +275,8 @@ sub _build_output_filename {
     my $env = shift;
     my $ext = shift;
     my $output_filename =
-        SRV::Utils::generate_output_filename($env, [ $self->file, $self->mode, 'full', $self->size, '0', $self->quality, 'ZZZ' ], $ext);
+        # The '0' after $self->quality used to be $self->restricted. Retain a 0 there to keep cache keys consistent.
+        SRV::Utils::generate_output_filename($env, [ $self->file, $self->mode, 'full', $self->size, '0', $self->quality, '0', 'ZZZ' ], $ext);
     return $output_filename;
 }
 
