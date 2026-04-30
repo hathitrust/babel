@@ -916,17 +916,19 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     //     max-width: 100%;
     //   }
     // }
-    &:focus-visible {
+    &:focus-visible:not(.format-plaintext) {
       outline:none !important;
       box-shadow:none;
     }
+
     &:focus-within .image {
-          outline: 3px solid #086ab4 !important;
-          box-shadow: 0 0 0 6px #fff;
-          outline-offset: 4px;
-          z-index: 3;
-          transition: unset;
+      outline: 3px solid #086ab4 !important;
+      box-shadow: 0 0 0 6px #fff;
+      outline-offset: 1px;
+      z-index: 3;
+      transition: unset;
     }
+
    
 
     &.pending {
