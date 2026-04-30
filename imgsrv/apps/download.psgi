@@ -1,6 +1,5 @@
 
 umask 0000;
-use Debug::DUtils;
 
 use Plack::Builder;
 use Plack::Builder::Conditionals::Choke;
