@@ -15,7 +15,6 @@ use Plack::Util::Accessor qw(
     quality
     format
     mimetype
-    restricted
     watermark
     default_watermark
     missing
@@ -90,16 +89,7 @@ sub run {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
-
-    ### $self->restricted(0) unless ( Debug::DUtils::under_server() );
-    # my $restricted = $self->restricted;
-
-    my $restricted;
-    unless ( defined $restricted ) {
-        # $restricted = $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) ne 'allow';
-        $restricted = $$env{'psgix.restricted'};
-        ## $self->restricted($restricted);
-    }
+    my $restricted = $$env{'psgix.restricted'};
 
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
