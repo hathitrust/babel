@@ -37,7 +37,7 @@ my $app = sub {
 # for backward compatibility
 my $metadata_app = SRV::Volume::Metadata->new->to_app;
 my $html_app = SRV::Volume::HTML->new->to_app;
-my $covers_app = SRV::Cover->new(restricted => 0)->to_app;
+my $covers_app = SRV::Cover->new->to_app;
 
 umask 0002;
 

@@ -48,9 +48,8 @@ sub persistent_attributes {
   my $self = shift;
 
   return {
-    mode       => 1,
-    quality    => 1,
-    restricted => 1
+    mode    => 1,
+    quality => 1
   };
 }
 
