@@ -612,6 +612,9 @@
   .spread {
     display: contents;
   }
+  .inner {
+    padding: 1rem;
+  }
 
   .inner.view-1up {
     display: flex;

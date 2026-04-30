@@ -765,6 +765,10 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
     position: relative;
 
+    &:focus-visible {
+      outline-offset: 0px;
+    }
+
     // overflow: hidden;
 
     // // -- debug border
@@ -879,15 +883,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       }
     }
 
-    &:focus-visible {
-      outline: 0;
-
-      .frame {
-        --bs-btn-focus-shadow-rgb: 66, 70, 73;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), 0.5);
-      }
-    }
   }
 
   .frame {
@@ -921,6 +916,18 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     //     max-width: 100%;
     //   }
     // }
+    &:focus-visible {
+      outline:none !important;
+      box-shadow:none;
+    }
+    &:focus-within .image {
+          outline: 3px solid #086ab4 !important;
+          box-shadow: 0 0 0 6px #fff;
+          outline-offset: 4px;
+          z-index: 3;
+          transition: unset;
+    }
+   
 
     &.pending {
       .page-loader {
@@ -970,6 +977,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         flex-grow: 0;
 
         transition: opacity 0.125s linear;
+        
       }
     }
 
