@@ -76,9 +76,13 @@ sub _generate_coderef {
 
 
         my $writer = $responder->([$status, $headers]);
-        my $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
-        $self->output_filename($fh);
+        my $fh;
 
+        if ( ! $self->output_filename || SRV::Utils::under_server() ) {
+            # streaming
+            $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
+            $self->output_filename($fh);
+        }
         $self->run($env);
         $self->_log($env) unless ( $ENV{PSGI_COMMAND} );
     }
