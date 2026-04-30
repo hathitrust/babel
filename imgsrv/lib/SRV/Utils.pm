@@ -541,7 +541,7 @@ sub generate_output_filename {
     }
 
     my $cache_dir = get_cachedir($key) . Identifier::id_to_mdp_path($id) . "_" . $mdpItem->get_modtime();
-    Utils::mkdir_path( $cache_dir, $SRV::Globals::gMakeDirOutputLog ) unless ( $role );
+    Utils::mkdir_path( $cache_dir, $SRV::Globals::gMakeDirOutputLog ) unless ( $role && under_server() );
 
     my $filename = File::Pairtree::s2ppchars($id); # the id, so we can find this
     if ( scalar @$options ) {
