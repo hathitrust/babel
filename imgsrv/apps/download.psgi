@@ -45,7 +45,7 @@ builder {
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { (SRV::Utils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    enable_if { $ENV{HT_DEV} } 'StackTrace';
 
     enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_error.html";
