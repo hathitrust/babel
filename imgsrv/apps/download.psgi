@@ -36,6 +36,9 @@ my $loader = sub {
 
 builder {
 
+    # Fix mangled URLs by unescaping `;` and `=` (from `%3B` amd `%3D` respectively)
+    # Must not be enabled when URL has embedded URLs, such as a progress callback.
+    # e.g., download_url parameter will have its escapes unescaped, breaking downloads.
     if ( SRV::Utils::under_server() ) {
         enable 'URLFixer';
     }
