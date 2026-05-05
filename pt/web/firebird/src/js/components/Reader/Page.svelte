@@ -41,7 +41,7 @@
 
   let includePageText = view != 'thumb';
 
-  let focused = false;
+  let focused = view === 'thumb' ? true : false;
   let invoked = false;
   let pageDiv;
 
