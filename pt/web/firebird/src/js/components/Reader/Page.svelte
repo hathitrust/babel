@@ -41,7 +41,7 @@
 
   let includePageText = view != 'thumb';
 
-  let focused = false;
+  let focused = view === 'thumb' ? true : false;
   let invoked = false;
   let pageDiv;
 
@@ -862,6 +862,10 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
       figure {
         --frameHeight: calc(250px * var(--actualZoom));
+      }
+
+      .frame:focus-within .image {
+        outline-offset: -3px;
       }
     }
 
