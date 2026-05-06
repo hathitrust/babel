@@ -65,8 +65,6 @@ sub run {
         return { contents => "<div></div>", mimetype => 'text/html' };
     }
 
-    $self->restricted(0) unless ( Debug::DUtils::under_server() );
-
     my $restricted = $self->restricted;
     unless ( defined $restricted ) {
         # $restricted = $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) ne 'allow';

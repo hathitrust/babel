@@ -14,7 +14,6 @@ use Plack::Util::Accessor qw(
     force
     mode
     quality
-    restricted
 );
 
 use Process::Image;
@@ -49,9 +48,8 @@ sub persistent_attributes {
   my $self = shift;
 
   return {
-    mode       => 1,
-    quality    => 1,
-    restricted => 1
+    mode    => 1,
+    quality => 1
   };
 }
 
@@ -64,14 +62,6 @@ sub run {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
-
-    $self->restricted(0) unless ( Debug::DUtils::under_server() );
-
-    my $restricted = $self->restricted;
-    unless ( defined $restricted ) {
-        # $restricted = $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) ne 'allow';
-        $restricted = $$env{'psgix.restricted'};
-    }
 
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
@@ -110,7 +100,7 @@ sub run {
     $processor->format($content_type);
     $processor->size($self->size);
     $processor->logfile($logfile);
-    $processor->restricted($restricted); # until covers really go live
+    $processor->restricted(0);
     $processor->max_dim($max_dimension) if ( $max_dimension );
     $processor->quality($self->quality);
     $processor->transformers( $$env{'psgix.image.transformers'} ) if ( defined $$env{'psgix.image.transformers'} );
@@ -284,7 +274,8 @@ sub _build_output_filename {
     my $env = shift;
     my $ext = shift;
     my $output_filename =
-        SRV::Utils::generate_output_filename($env, [ $self->file, $self->mode, 'full', $self->size, '0', $self->quality, $self->restricted, 'ZZZ' ], $ext);
+        # The '0' after $self->quality used to be $self->restricted. Retain a 0 there to keep cache keys consistent.
+        SRV::Utils::generate_output_filename($env, [ $self->file, $self->mode, 'full', $self->size, '0', $self->quality, '0', 'ZZZ' ], $ext);
     return $output_filename;
 }
 

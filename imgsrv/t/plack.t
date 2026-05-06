@@ -22,10 +22,18 @@ subtest "imgsrv.psgi" => sub {
   my $app = do File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'apps', 'imgsrv.psgi');
   my $test = Plack::Test->create($app);
   subtest "imgsrv/cover" => sub {
-    my $res = $test->request(GET "/image?id=test.pd_open"); # HTTP::Response
+    my $res = $test->request(GET "/cover?id=test.pd_open"); # HTTP::Response
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'image/jpeg';
+
+    subtest "only serves files up to gMaxThumbnailSize" => sub {
+      my $res = $test->request(GET "/cover?id=test.pd_open&size=400"); # HTTP::Response
+      is $res->code, 200;
+      is $res->message, 'OK';
+      is $res->header('Content-Type'), 'image/jpeg';
+      is $res->header('x-hathitrust-imagesize'), '141x250';
+    };
   };
 
   subtest "imgsrv/html" => sub {

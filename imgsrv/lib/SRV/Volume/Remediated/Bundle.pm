@@ -192,8 +192,6 @@ sub _authorize {
     my $self = shift;
     my $env = shift;
 
-    $self->restricted(0) unless ( SRV::Utils::under_server() );
-
     unless ( defined $self->restricted ) {
 
         my $C = $$env{'psgix.context'};

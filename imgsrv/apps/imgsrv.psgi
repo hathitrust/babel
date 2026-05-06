@@ -1,6 +1,5 @@
 
 umask 0000;
-use Debug::DUtils;
 
 use Process::Image;
 
@@ -13,8 +12,8 @@ use Utils;
 
 use SRV::Image;
 use SRV::Cover;
-use SRV::Article::HTML;
 use SRV::Metrics;
+use SRV::Utils;
 use SRV::Volume::Metadata;
 use SRV::Volume::HTML;
 
@@ -37,17 +36,16 @@ my $app = sub {
 # for backward compatibility
 my $metadata_app = SRV::Volume::Metadata->new->to_app;
 my $html_app = SRV::Volume::HTML->new->to_app;
-my $covers_app = SRV::Cover->new(restricted => 0)->to_app;
+my $covers_app = SRV::Cover->new->to_app;
 
 umask 0002;
 
-sub under_server {
-    return ( ! defined $ENV{PSGI_COMMAND} );
-}
-
 builder {
 
-    if ( under_server() ) {
+    # Fix mangled URLs by unescaping `;` and `=` (from `%3B` amd `%3D` respectively)
+    # Must not be enabled when URL has embedded URLs, such as a progress callback.
+    # e.g., download_url parameter will have its escapes unescaped, breaking downloads.
+    if ( SRV::Utils::under_server() ) {
         enable 'URLFixer';
     }
 
@@ -55,17 +53,17 @@ builder {
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { (under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    enable_if { $ENV{HT_DEV} } 'StackTrace';
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) }
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_500.html";
 
-    enable_if { (under_server()) }
+    enable_if { (SRV::Utils::under_server()) }
         "HTErrorDocument", 404 => "/mdp-web/graphics/404_image.jpg";
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
         # choke policies
         enable 'Choke::Cache::Filesystem';
 
@@ -153,12 +151,6 @@ builder {
         mount "/metadata" => $metadata_app;
         mount "/meta" => $metadata_app;
         mount "/cover" => $covers_app;
-    };
-    mount "/article" => builder {
-        mount "/image" => SRV::Image->new(watermark => 0);
-        mount "/cover" => $covers_app;
-        mount "/html" => SRV::Article::HTML->new;
-        # mount "/file" => ...;
     };
     mount "/metrics" => sub {
       return $metrics->render;
