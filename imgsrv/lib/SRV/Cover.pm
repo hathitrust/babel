@@ -100,7 +100,7 @@ sub run {
     $processor->format($content_type);
     $processor->size($self->size);
     $processor->logfile($logfile);
-    $processor->restricted(0); # until covers really go live
+    $processor->restricted(0);
     $processor->max_dim($max_dimension) if ( $max_dimension );
     $processor->quality($self->quality);
     $processor->transformers( $$env{'psgix.image.transformers'} ) if ( defined $$env{'psgix.image.transformers'} );
