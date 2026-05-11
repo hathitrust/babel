@@ -26,6 +26,7 @@ use URI::Escape;
 use Utils;
 use Utils::Time;
 use Utils::Logger;
+use Debug::DUtils;
 use MdpConfig;
 
 use Db;
@@ -47,6 +48,7 @@ my $HOST = `hostname`; chomp($HOST); $HOST =~ s,\..*$,,;
     use strict;
 
     use Utils;
+    use Debug::DUtils;
 
     use base qw(Search::Query);
 
