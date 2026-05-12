@@ -711,6 +711,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             data-loaded={isLoaded}
             alt=""
             class:zoomed={pageZoom > 1}
+            aria-labelledby="caption{seq}"
             on:load={() => {
               if (orient != 0) {
                 drawRotatedImage();
@@ -726,7 +727,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         {/if}
       </div>
       {#if side != 'thumb'}
-        <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption}></figcaption>
+        <figcaption class="visually-hidden" data-loaded="false" id="caption{seq}" bind:this={figCaption}></figcaption>
       {/if}
     {:else if format == 'plaintext'}
       {#if !isLoaded}
