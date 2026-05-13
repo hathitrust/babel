@@ -770,6 +770,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       outline-offset: 0px;
     }
 
+
     // overflow: hidden;
 
     // // -- debug border
@@ -778,6 +779,11 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     &.view-2up :global {
       margin-bottom: calc(var(--paddingBottom) * 1px);
       height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--zoom, 1));
+
+      &:focus-visible {
+        outline-offset: -4px;
+        z-index: 3 !important;
+      }
 
       &.zoomed {
         overflow: auto;
@@ -799,11 +805,17 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
           max-width: none;
         }
       }
+      &:focus-within .image {
+        outline-offset: -3px;
+      }
+      
     }
 
     &.view-2up.verso :global {
+
       grid-area: verso;
       z-index: 1;
+      padding-inline-end: .25rem;
 
       &.direction-rtl {
         .frame {
@@ -835,6 +847,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
     &.view-2up.recto :global {
       grid-area: recto;
+      padding-inline-start: .25rem;
 
       &.direction-rtl {
         .frame {
@@ -928,6 +941,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       outline-offset: 1px;
       z-index: 3;
       transition: unset;
+      
     }
 
    
