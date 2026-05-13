@@ -12,6 +12,8 @@ babel:
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/download/pdf?id=1;seq=8;seq=9;seq=10;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/image?id=1;seq=7;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/metadata?id=2;start=0;limit=10;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/html?id=1;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/html?id=1;q1=test;__LOCAL__
 
     #whoami:
   - https://__URL_STAGE__.hathitrust.org/cgi/whoami
