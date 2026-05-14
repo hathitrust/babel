@@ -39,7 +39,8 @@
   export let debugChoke = false;
   export let debugLoad = false;
 
-  let includePageText = view != 'thumb';
+  // boolean for excluding the text in captions for thumbnail view
+  // let includePageText = view != 'thumb';
 
   let focused = view === 'thumb' ? true : false;
   let invoked = false;
@@ -327,7 +328,7 @@
 
   let numPageTextLoaded = 0;
   export const loadPageText = function (reload = false) {
-    // console.log("-- page.loadImage", seq, isVisible, isLoaded);
+    console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
     if (debugLoad) {
       clearTimeout(loadPageTextTimeout);
@@ -349,9 +350,10 @@
       return;
     }
 
-    if (!includePageText) {
-      return;
-    }
+    // originally, thumbnail view excluded captions on images
+    // if (!includePageText) {
+    //   return;
+    // }
 
     if (figCaption && figCaption.dataset.loaded == 'true' && !reload) {
       return;
