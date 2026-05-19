@@ -210,6 +210,9 @@ public class Stamper {
             updateFileName = String.format("%04d.js", updater.get("current_page").asInt());
         } else {
             updateFileName = status + ".js";
+            if (status == DONE) {
+                updater.set("current_page", -1);
+            }
         }
         // System.err.println(updater.toString() + "\n");
 
