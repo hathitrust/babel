@@ -10,8 +10,7 @@ test.describe('pt loads', () => {
   });
 
   test('sidebar is visible', async ({ page }) => {
-    const sidebar = page.getByRole('complementary');
-    await expect(sidebar).toBeVisible;
+    await expect(page.locator('aside')).toBeVisible();
   });
 
   test('has main element', async ({ page }) => {

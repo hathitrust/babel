@@ -259,6 +259,34 @@ test.describe('sidebar actions', () => {
       await page.getByRole('button', { name: 'Save Changes' }).click();
     });
   });
+  test.describe('share panel', () => {
+    test.beforeEach(async ({ page }) => {
+      const shareButton = page.getByRole('button', { name: 'Share' });
+      await shareButton.click();
+      await expect(shareButton).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    test('shows permanent link to item', async ({ page }) => {
+      await expect(page.locator('#share-handle')).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open/);
+    });
+
+    test('shows link to current page scan', async ({ page }) => {
+      await expect(page.locator('#share-handle-seq')).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open.*seq=1/);
+    });
+
+    test('page scan link updates when navigating to a different page', async ({ page }) => {
+      await page.getByRole('button', { name: 'Next Page' }).click();
+      await expect(page.locator('#share-handle-seq')).toHaveValue(/seq=2/);
+    });
+
+    test('embed button opens modal with iframe code', async ({ page }) => {
+      await page.getByRole('button', { name: 'Embed this item' }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(page.locator('#embed-codeblock')).toHaveValue(/iframe/);
+      await expect(page.locator('#embed-codeblock')).toHaveValue(/test\.pd_open/);
+    });
+  });
+
   // close and expand sidebar
   test.describe('toggle sidebar visibility', () => {
     test('close sidebar', async ({ page }) => {
