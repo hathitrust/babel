@@ -664,7 +664,7 @@ sub __parse_search_terms {
 
     if (DEBUG('query') || DEBUG('all')) {
         my $s = join(' ', @$parsed_terms_arr_ref);
-        Utils::map_chars_to_cers(\$s, [q{"}, q{'}]) if Debug::DUtils::under_server();;
+        Utils::map_chars_to_cers(\$s, [q{"}, q{'}]);
         DEBUG('query,all',
           sub {
               return qq{<h3>CGI after parsing into separate terms: $s</h3>};

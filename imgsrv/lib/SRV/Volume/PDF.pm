@@ -21,7 +21,6 @@ use Plack::Util::Accessor
     );
 
 use Utils;
-use Debug::DUtils;
 
 use SRV::Globals;
 use SRV::Utils;
@@ -60,7 +59,7 @@ sub _generate_coderef {
     return sub {
         my $responder = shift;
 
-        my $status = ( Debug::DUtils::under_server() && $self->restricted ) ? 403 : 200;
+        my $status = ( $self->restricted ) ? 403 : 200;
 
         my $headers = $self->_get_response_headers;
 
@@ -78,7 +77,7 @@ sub _generate_coderef {
         my $writer = $responder->([$status, $headers]);
         my $fh;
 
-        if ( ! $self->output_filename || Debug::DUtils::under_server() ) {
+        if ( ! $self->output_filename || SRV::Utils::under_server() ) {
             # streaming
             $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
             $self->output_filename($fh);

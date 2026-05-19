@@ -1,6 +1,5 @@
 
 umask 0000;
-use Debug::DUtils;
 
 use Plack::Builder;
 use Plack::Builder::Conditionals::Choke;
@@ -8,6 +7,8 @@ use Plack::Builder::Conditionals::Choke;
 use Plack::Request;
 use Plack::Util;
 use Utils;
+
+use SRV::Utils;
 
 use Utils::Settings;
 our $settings = Utils::Settings::load('imgsrv', 'download');
@@ -33,26 +34,25 @@ my $loader = sub {
     }
 };
 
-sub under_server {
-    return ( ! defined $ENV{PSGI_COMMAND} );
-}
-
 builder {
 
-    if ( under_server() ) {
+    # Fix mangled URLs by unescaping `;` and `=` (from `%3B` amd `%3D` respectively)
+    # Must not be enabled when URL has embedded URLs, such as a progress callback.
+    # e.g., download_url parameter will have its escapes unescaped, breaking downloads.
+    if ( SRV::Utils::under_server() ) {
         enable 'URLFixer';
     }
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { (under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    enable_if { $ENV{HT_DEV} } 'StackTrace';
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) }
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
         "HTErrorDocument", 500 => "/mdp-web/production_error.html";
 
-    enable_if { (under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
 
-    if ( under_server() ) {
+    if ( SRV::Utils::under_server() ) {
 
         enable 'Choke::Cache::Filesystem';
 
@@ -87,9 +87,5 @@ builder {
         mount "/image" => $loader->('SRV::Volume::Image::Bundle');
         mount "/remediated"   => $loader->('SRV::Volume::Remediated::Bundle');
     };
-    mount "/article" => builder {
-        mount "/pdf" => $loader->('SRV::Article::PDF');
-        mount "/epub" => $loader->('SRV::Article::EPUB');
-    }
 
 };

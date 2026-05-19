@@ -39,7 +39,6 @@ use Plack::Util::Accessor qw(
 
 use Identifier;
 use Utils;
-use Debug::DUtils;
 
 use SRV::Globals;
 use SRV::Utils;
@@ -253,8 +252,6 @@ sub run {
     my $C = $$env{'psgix.context'};
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
-
-    $self->restricted(0) unless ( Debug::DUtils::under_server() );
 
     unless ( defined $self->restricted ) {
         my $restricted;
