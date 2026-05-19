@@ -36,7 +36,8 @@
           class="btn btn-outline-dark btn-sm text-nowrap"
           type="button"
           aria-label={message.alert}
-          on:click|stopPropagation={showDetail}><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></button
+          on:click|stopPropagation={showDetail}
+          ><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i></button
         >
       {:else}
         <span>{@html message.alert}</span>

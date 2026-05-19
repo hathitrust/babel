@@ -1,7 +1,7 @@
 <script>
   import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
-	import PlaintextFormat from './PlaintextFormat.svelte'
+  import PlaintextFormat from './PlaintextFormat.svelte';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
@@ -13,8 +13,8 @@
   const currentFormat = manifest.currentFormat;
 
   const formats = {};
-	formats['image'] = ImageFormat;
-	formats['plaintext'] = PlaintextFormat;
+  formats['image'] = ImageFormat;
+  formats['plaintext'] = PlaintextFormat;
 
   let view;
   let isInitialized = true;
@@ -98,7 +98,6 @@
   };
 </script>
 
-
 <!-- <View
   {container}
   {startSeq}
@@ -111,7 +110,17 @@
   bind:this={view}
 /> -->
 
-<svelte:component this={formats[$currentFormat]} {container} {startSeq} {currentLocation} {findTarget} {findFocusItems} {handleClick} {handleKeydown} bind:this={view}></svelte:component>
+<svelte:component
+  this={formats[$currentFormat]}
+  {container}
+  {startSeq}
+  {currentLocation}
+  {findTarget}
+  {findFocusItems}
+  {handleClick}
+  {handleKeydown}
+  bind:this={view}
+></svelte:component>
 
 <style>
 </style>

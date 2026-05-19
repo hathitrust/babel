@@ -13,8 +13,9 @@
       emitter.emit('view.switch', { view: value });
       // $view = value;
     }
-    
-    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
+
+    if (document.activeElement !== document.getElementById('view-button'))
+      document.getElementById('view-button').focus();
   }
 
   function switchFormat(event) {
@@ -24,7 +25,8 @@
       // $format = value;
       emitter.emit('view.switch.format', { format: value });
     }
-    if (document.activeElement !== document.getElementById('view-button')) document.getElementById('view-button').focus();
+    if (document.activeElement !== document.getElementById('view-button'))
+      document.getElementById('view-button').focus();
   }
 </script>
 
@@ -39,10 +41,10 @@
     <i
       class="fa-solid"
       class:fa-up-down={$view == '1up'}
-      class:fa-book-open={$view == '2up'|| manifest.ui == 'embed'}
+      class:fa-book-open={$view == '2up' || manifest.ui == 'embed'}
       class:fa-table-cells={$view == 'thumb'}
       aria-hidden="true"
-   ></i>
+    ></i>
     <span class="d-none d-md-inline">View</span>
   </button>
   <ul class="dropdown-menu">
@@ -83,58 +85,58 @@
       </li>
     </ul>
     {#if manifest.ui !== 'embed'}
-    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
-    <li>
-      <span class="dropdown-header">
-        <span id="view-mode">View Mode</span>
-      </span>
-    </li>
-    <ul class="menu-list-section" role="group" aria-labelledby="view-mode">
+      <li aria-hidden="true"><hr class="dropdown-divider" /></li>
+      <li>
+        <span class="dropdown-header">
+          <span id="view-mode">View Mode</span>
+        </span>
+      </li>
+      <ul class="menu-list-section" role="group" aria-labelledby="view-mode">
+        <li>
+          <button
+            type="button"
+            class="dropdown-item"
+            class:active={$view == '1up'}
+            aria-pressed={$view == '1up'}
+            data-role="view"
+            data-value="1up"
+            on:click={switchView}
+          >
+            <i class="fa-solid fa-up-down" aria-hidden="true"></i>
+            <span>Scroll</span>
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            class="dropdown-item"
+            class:active={$view == '2up'}
+            aria-pressed={$view == '2up'}
+            data-role="view"
+            data-value="2up"
+            disabled={manifest.totalSeq == 1}
+            on:click={switchView}
+          >
+            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+            <span>Flip</span>
+          </button>
+        </li>
+      </ul>
+      <li aria-hidden="true"><hr class="dropdown-divider" /></li>
       <li>
         <button
           type="button"
           class="dropdown-item"
-          class:active={$view == '1up'}
-          aria-pressed={$view == '1up'}
+          class:active={$view == 'thumb'}
+          aria-pressed={$view == 'thumb'}
           data-role="view"
-          data-value="1up"
+          data-value="thumb"
           on:click={switchView}
         >
-          <i class="fa-solid fa-up-down" aria-hidden="true"></i>
-          <span>Scroll</span>
+          <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
+          <span>Thumbnails</span>
         </button>
       </li>
-      <li>
-        <button
-          type="button"
-          class="dropdown-item"
-          class:active={$view == '2up'}
-          aria-pressed={$view == '2up'}
-          data-role="view"
-          data-value="2up"
-          disabled={manifest.totalSeq == 1}
-          on:click={switchView}
-        >
-          <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-          <span>Flip</span>
-        </button>
-      </li>
-    </ul>
-    <li aria-hidden="true"><hr class="dropdown-divider" /></li>
-    <li>
-      <button
-        type="button"
-        class="dropdown-item"
-        class:active={$view == 'thumb'}
-        aria-pressed={$view == 'thumb'}
-        data-role="view"
-        data-value="thumb"
-        on:click={switchView}
-      >
-        <i class="fa-solid fa-table-cells" aria-hidden="true"></i>
-        <span>Thumbnails</span>
-      </button>
-    </li>
     {/if}
   </ul>
 </div>

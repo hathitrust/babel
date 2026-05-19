@@ -420,28 +420,27 @@
     }
   };
 
-  
   const togglePageSelection = function (event) {
-    manifest.select(seq, event)
-  }
+    manifest.select(seq, event);
+  };
 
   const rotateScan = async function () {
     orient = (orient + 90) % 360;
     if (orient == 0) {
-      rotateButtonContent = '90'
+      rotateButtonContent = '90';
       return;
     } else if (orient == 90) {
-      rotateButtonContent = '180'
+      rotateButtonContent = '180';
     } else if (orient == 180) {
-      rotateButtonContent = '270'
-    } else if (orient = 270) {
-      rotateButtonContent = '0'
+      rotateButtonContent = '270';
+    } else if ((orient = 270)) {
+      rotateButtonContent = '0';
     }
 
     if (!rotatedImage) {
       await tick();
     }
-    console.log("-- page.rotateScan", seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
+    console.log('-- page.rotateScan', seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
     drawRotatedImage();
   };
 
@@ -477,7 +476,7 @@
       pageZoom = zoom;
     }
     pageZoom += delta;
-    console.log('zoom: ', delta, pageZoom, zoom)
+    console.log('zoom: ', delta, pageZoom, zoom);
     loadImage(true);
   };
 
@@ -978,7 +977,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       padding: 2rem 1rem;
 
       background: #fff;
-      box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+      box-shadow:
+        0px 10px 13px -7px #000000,
+        0px 6px 15px 5px rgba(0, 0, 0, 0);
       border: 1px solid #ddd;
 
       transition: height 100ms;
@@ -1000,7 +1001,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     height: auto;
 
     background: #f9f8f5;
-    box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+    box-shadow:
+      0px 10px 13px -7px #000000,
+      0px 6px 15px 5px rgba(0, 0, 0, 0);
     border: 1px solid #ddd;
   }
 
