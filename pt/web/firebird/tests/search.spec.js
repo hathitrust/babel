@@ -10,35 +10,33 @@ test.describe('search in this text', () => {
   });
 
   test('search input is visible when panel is open', async ({ page }) => {
-    await expect(page.locator('#input-search-text')).toBeVisible();
+    await expect(page.getByLabel('Search in this text')).toBeVisible();
   });
 
   test('submitting a query updates the URL with q1 param', async ({ page }) => {
-    await page.locator('#input-search-text').fill('the');
+    await page.getByLabel('Search in this text').fill('the');
     await page.getByRole('button', { name: 'Submit search' }).click();
     await expect(page).toHaveURL(/q1=the/);
   });
 
   test('search shows a result count message', async ({ page }) => {
-    await page.locator('#input-search-text').fill('the');
+    await page.getByLabel('Search in this text').fill('the');
     await page.getByRole('button', { name: 'Submit search' }).click();
-    // .alert-primary is the search status div; other .alert elements on the page are -warning/-danger/-light
-    await expect(page.locator('.alert-primary')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('.alert-primary')).toContainText(/results/i);
+    await expect(page.getByText(/results.*for/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test('clearing search removes the q1 param from URL', async ({ page }) => {
-    await page.locator('#input-search-text').fill('the');
+    await page.getByLabel('Search in this text').fill('the');
     await page.getByRole('button', { name: 'Submit search' }).click();
-    await expect(page.locator('.alert-primary')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/results.*for/i)).toBeVisible({ timeout: 10_000 });
 
     await page.getByRole('button', { name: 'Clear search' }).click();
     await expect(page).not.toHaveURL(/q1=the/);
-    await expect(page.locator('#input-search-text')).toHaveValue('');
+    await expect(page.getByLabel('Search in this text')).toHaveValue('');
   });
 
   test('loading the page with q1 param pre-fills the search input', async ({ page }) => {
     await page.goto('/cgi/pt?id=test.pd_open&q1=hello');
-    await expect(page.locator('#input-search-text')).toHaveValue('hello');
+    await expect(page.getByLabel('Search in this text')).toHaveValue('hello');
   });
 });

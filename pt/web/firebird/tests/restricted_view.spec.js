@@ -25,7 +25,7 @@ test.describe('restricted view', () => {
     });
 
     test('shows a search form so users can still search the text', async ({ page }) => {
-      await expect(page.locator('#input-search-text')).toBeVisible();
+      await expect(page.getByLabel('Search in this text')).toBeVisible();
     });
   });
 
