@@ -267,23 +267,24 @@ test.describe('sidebar actions', () => {
     });
 
     test('shows permanent link to item', async ({ page }) => {
-      await expect(page.locator('#share-handle')).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open/);
+      await expect(page.getByLabel('Permanent link to this item')).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open/);
     });
 
     test('shows link to current page scan', async ({ page }) => {
-      await expect(page.locator('#share-handle-seq')).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open.*seq=1/);
+      // getByRole needed because the nearby copy button's aria-label contains the same substring
+      await expect(page.getByRole('textbox', { name: 'Link to this page scan' })).toHaveValue(/hdl\.handle\.net\/2027\/test\.pd_open.*seq=1/);
     });
 
     test('page scan link updates when navigating to a different page', async ({ page }) => {
       await page.getByRole('button', { name: 'Next Page' }).click();
-      await expect(page.locator('#share-handle-seq')).toHaveValue(/seq=2/);
+      await expect(page.getByRole('textbox', { name: 'Link to this page scan' })).toHaveValue(/seq=2/);
     });
 
     test('embed button opens modal with iframe code', async ({ page }) => {
       await page.getByRole('button', { name: 'Embed this item' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
-      await expect(page.locator('#embed-codeblock')).toHaveValue(/iframe/);
-      await expect(page.locator('#embed-codeblock')).toHaveValue(/test\.pd_open/);
+      await expect(page.getByLabel('Code Block')).toHaveValue(/iframe/);
+      await expect(page.getByLabel('Code Block')).toHaveValue(/test\.pd_open/);
     });
   });
 
