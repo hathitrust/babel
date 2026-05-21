@@ -223,6 +223,7 @@
     if (max.seq > 0 && max.seq != $currentSeq) {
       $currentSeq = max.seq;
     } else if (Object.keys(tmpLocation).length > 0) {
+      focus($currentSeq);
       // currentLocation still needs to be set
       return;
     }
@@ -611,6 +612,9 @@
 
   .spread {
     display: contents;
+  }
+  .inner {
+    padding: 1rem;
   }
 
   .inner.view-1up {

@@ -515,6 +515,9 @@
 </dialog>
 
 <style lang="scss">
+  main:focus-visible {
+    outline-offset: -10px;
+  }
   .mousecatcher {
     position: absolute;
     left: 0;
