@@ -77,4 +77,36 @@ test.describe('reader toolbar actions', () => {
     await expect(page.getByRole('button', { name: 'Zoom In', exact: true })).toBeVisible();
     await expect(page.getByLabel('Page scan 1').locator('details')).toBeVisible();
   });
+
+  test.describe('zoom limits', () => {
+    test('zoom-in button is disabled at maximum zoom', async ({ page }) => {
+      const zoomIn = page.getByLabel('Zoom').getByRole('button', { name: 'Zoom In' });
+      for (let i = 0; i < 20; i++) {
+        if (await zoomIn.isDisabled()) break;
+        await zoomIn.click();
+      }
+      await expect(zoomIn).toBeDisabled();
+    });
+
+    test('zoom-out button is disabled at minimum zoom', async ({ page }) => {
+      const zoomOut = page.getByLabel('Zoom').getByRole('button', { name: 'Zoom Out' });
+      for (let i = 0; i < 20; i++) {
+        if (await zoomOut.isDisabled()) break;
+        await zoomOut.click();
+      }
+      await expect(zoomOut).toBeDisabled();
+    });
+
+    test('zoom-out re-enables after zooming back in from minimum', async ({ page }) => {
+      const zoomIn = page.getByLabel('Zoom').getByRole('button', { name: 'Zoom In' });
+      const zoomOut = page.getByLabel('Zoom').getByRole('button', { name: 'Zoom Out' });
+      for (let i = 0; i < 20; i++) {
+        if (await zoomOut.isDisabled()) break;
+        await zoomOut.click();
+      }
+      await expect(zoomOut).toBeDisabled();
+      await zoomIn.click();
+      await expect(zoomOut).toBeEnabled();
+    });
+  });
 });
