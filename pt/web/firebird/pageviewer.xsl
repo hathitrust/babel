@@ -78,8 +78,11 @@
 
       <xsl:text disable-output-escaping="yes">
       window.firebirdErrorHandler = function(event) {
-        event.preventDefault();
-        if ((event.target &amp;&amp; event.target.src &amp;&amp; event.target.src.indexOf('/firebird/dist/') != -1) || (event.filename &amp;&amp; event.filename.indexOf('/firebird/dist/' != -1))) {
+        event.preventDefault();        
+        if (
+          (event.target && event.target.src && event.target.src.indexOf('/firebird/dist/') !== -1) ||
+          (event.filename && event.filename.indexOf('/firebird/dist/') !== -1)
+        ) {          
           if ( ! HT.service_domain ) {
             console.log(event);
             alert("Sorry, this browser version is not supported.");
@@ -109,8 +112,14 @@
       if ( ! Array.prototype.at ) {
         addScript({ href: 'https://polyfill-fastly.io/v3/polyfill.min.js?features=Array.prototype.at' });
       }
-    
-      let firebird_config = localStorage.getItem('firebird-reader') || '';
+          
+      let firebird_config = '';
+      try {
+        firebird_config = localStorage.getItem('firebird-reader') || '';
+      } catch (e) {
+        // storage blocked by browser privacy settings — fall back to default
+      }
+
       if ( firebird_config == 'proxy' ) {
         addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
       } else if ( firebird_config.match('localhost') ) {
