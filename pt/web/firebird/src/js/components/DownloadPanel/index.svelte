@@ -1,6 +1,6 @@
 <script>
   import { onMount, getContext } from 'svelte';
-  import {SvelteURL, SvelteURLSearchParams} from 'svelte/reactivity'
+  import { SvelteURL, SvelteURLSearchParams } from 'svelte/reactivity';
   import { tooltippy } from '../../lib/tippy';
 
   import Panel from '../Panel/index.svelte';
@@ -25,7 +25,7 @@
   let meta = $derived(manifest.meta($currentSeq));
   let allowDownload = manifest.allowSinglePageDownload || manifest.allowFullDownload;
   let selected = manifest.selected;
-  
+
   let format = $state('pdf');
   let range = $state(manifest.allowFullDownload ? 'volume' : 'current-page');
   let selection = $state({ pages: [] });
@@ -34,11 +34,13 @@
 
   let modal = $state();
   let downloadAttempt = 1;
-  let request = new SvelteURL(`${location.protocol}//${HT.service_domain}`)
+  let request = new SvelteURL(`${location.protocol}//${HT.service_domain}`);
   let downloadInProgress = $state(false);
   let cancellingDownload = $state(false);
   let trackerInterval;
-  let progressUrl, downloadUrl = $state(), totalPages;
+  let progressUrl,
+    downloadUrl = $state(),
+    totalPages;
   let lastPercent;
   let status = $state({ done: false, percent: -1 });
   let numAttempts = 0;
@@ -52,42 +54,45 @@
   let emptySelection = $derived(range == 'selected-pages' && selection.pages.length == 0);
   let emptySelectionTIFF = $derived(emptySelection && format == 'image-tiff');
   let tooManyTiffs = $derived(range == 'selected-pages' && format == 'image-tiff' && selection.pages.length > 10);
-  let buttonDisabled = $derived(emptySelection || emptySelectionTIFF || tooManyTiffs );
+  let buttonDisabled = $derived(emptySelection || emptySelectionTIFF || tooManyTiffs);
   let errorMessage = $derived(
-    emptySelectionTIFF ? `No pages selected.
-        Use the toolbar to select up to <span class="fw-bold">10 pages</span> to continue your TIFF download.` :
-    emptySelection ? `No pages selected.
-        Use the toolbar to select pages.` :
-    tooManyTiffs ? `Your selection exceeds the TIFF download limit. Select 10 pages or fewer to continue.` :
-    null
+    emptySelectionTIFF
+      ? `No pages selected.
+        Use the toolbar to select up to <span class="fw-bold">10 pages</span> to continue your TIFF download.`
+      : emptySelection
+        ? `No pages selected.
+        Use the toolbar to select pages.`
+        : tooManyTiffs
+          ? `Your selection exceeds the TIFF download limit. Select 10 pages or fewer to continue.`
+          : null
   );
   let errorCount = 0;
   let downloadError = $state(false);
   let downloadErrorMessage = $state('');
-	let progressError;
-	let closeDownloadModal = false;
+  let progressError;
+  let closeDownloadModal = false;
 
   const _mtm = (window._mtm = window._mtm || []);
 
   let simpleUrl = $derived.by(() => {
     let newAction = buildAction();
-		let params = new SvelteURLSearchParams()
+    let params = new SvelteURLSearchParams();
 
     params.set('id', manifest.id);
     params.set('attachment', '1');
     params.set('tracker', `D${downloadAttempt}`);
-		
-		if (format == 'image-tiff' || format == 'image-jpeg') {
+
+    if (format == 'image-tiff' || format == 'image-jpeg') {
       params.set('format', `image/${format.split('-')[1]}`);
       params.set(sizeAttr, sizeValue);
     }
-	
+
     selection.pages.forEach((seq) => {
       params.append('seq', seq);
     });
-		
-		return `${request}${newAction}?${params.toString()}`
-	})
+
+    return `${request}${newAction}?${params.toString()}`;
+  });
 
   function callback(argv) {
     console.log('-- callback', downloadInProgress, argv);
@@ -106,7 +111,7 @@
       if (closeDownloadModal) modal.hide();
       document.getElementById('submit-download').focus();
     }
-		closeDownloadModal = false;
+    closeDownloadModal = false;
   }
 
   function checkStatusInterval() {
@@ -123,37 +128,41 @@
         if (status.done) {
           clearInterval(trackerInterval);
           trackerInterval = null;
-				}	
+        }
       })
       .catch((error) => {
-      console.error('Error with imgsrv', error);
-      numAttempts += 1;
-      errorCount++;
-			
-			if (progressError) {
-        clearInterval(trackerInterval);
-        trackerInterval = null;
-        downloadInProgress = false;
-        downloadError = true;
-        downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
-        HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
-			}
-      
-      // Stop polling after too many failures
-      if (numAttempts > 3) {
-        clearInterval(trackerInterval);
-        trackerInterval = null;
-        downloadInProgress = false;
-        downloadError = true;
-        downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
-        HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
-        _mtm.push({'event': 'pt-download-error','errorType': 'imgsrv unreachable', 'downloadUrl': `${progressUrl.toString()}`});
-      }
-    });
+        console.error('Error with imgsrv', error);
+        numAttempts += 1;
+        errorCount++;
+
+        if (progressError) {
+          clearInterval(trackerInterval);
+          trackerInterval = null;
+          downloadInProgress = false;
+          downloadError = true;
+          downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
+          HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, '')}${' '.repeat(errorCount)}`);
+        }
+
+        // Stop polling after too many failures
+        if (numAttempts > 3) {
+          clearInterval(trackerInterval);
+          trackerInterval = null;
+          downloadInProgress = false;
+          downloadError = true;
+          downloadErrorMessage = `Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.`;
+          HT.live.announce(`${downloadErrorMessage.replace(/<\/?[^>]+(>|$)/g, '')}${' '.repeat(errorCount)}`);
+          _mtm.push({
+            event: 'pt-download-error',
+            errorType: 'imgsrv unreachable',
+            downloadUrl: `${progressUrl.toString()}`,
+          });
+        }
+      });
   }
 
   function updateProgress(data) {
-		progressError = false;
+    progressError = false;
     let percent;
     let current = data.status;
     if (current == 'EOT' || (current == 'DONE' && data.current_page == -1)) {
@@ -161,11 +170,15 @@
       percent = 100;
       downloadInProgress = false;
       HT.live.announce(`All done! Your ${formatTitle[format]} is ready for download.`);
-		} else if (current == 'DONE' && !data.current_page) {
-			console.log('weird progress bug, set downloads to false, throw error')
-			progressError = true;
-			_mtm.push({'event': 'pt-download-error', 'errorType': 'imgsrv: no download found', 'downloadUrl': `${progressUrl.toString()}`});
-			throw new Error(`imgsrv: "No download found"`);
+    } else if (current == 'DONE' && !data.current_page) {
+      console.log('weird progress bug, set downloads to false, throw error');
+      progressError = true;
+      _mtm.push({
+        event: 'pt-download-error',
+        errorType: 'imgsrv: no download found',
+        downloadUrl: `${progressUrl.toString()}`,
+      });
+      throw new Error(`imgsrv: "No download found"`);
     } else {
       status.done = false;
       current = data.current_page;
@@ -178,11 +191,15 @@
       numAttempts += 1;
     }
     if (numAttempts > 5) {
-			console.log('cancelling from updateProgress');
-			progressError = true;
-			cancelDownload(false);
-			_mtm.push({'event': 'pt-download-error', 'errorType': 'too many attempts to download same page', 'downloadUrl': `${progressUrl.toString()}`});
-			throw new Error(`Too many attempts at the same page.`);
+      console.log('cancelling from updateProgress');
+      progressError = true;
+      cancelDownload(false);
+      _mtm.push({
+        event: 'pt-download-error',
+        errorType: 'too many attempts to download same page',
+        downloadUrl: `${progressUrl.toString()}`,
+      });
+      throw new Error(`Too many attempts at the same page.`);
     }
 
     status.percent = percent;
@@ -206,9 +223,9 @@
       return;
     }
 
-		if (closeThisModal) {
-			closeDownloadModal = true;
-		}
+    if (closeThisModal) {
+      closeDownloadModal = true;
+    }
 
     cancellingDownload = true;
 
@@ -238,18 +255,21 @@
   }
 
   function isSimpleDownload() {
-		let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
-		if((range !== 'volume') && (selection.pages.length <= partialUpperLimit)) {		
-			return true;
-		} else {
-			return false;
-		}
-	}
+    let partialUpperLimit = format == 'image-tiff' ? 1 : 10;
+    if (range !== 'volume' && selection.pages.length <= partialUpperLimit) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   function buildAction() {
-    $inspect.trace()
+    $inspect.trace();
     let action = 'cgi/imgsrv/';
-    if (format.startsWith('image-') && (range == 'current-page' || range == 'current-page-verso' || range == 'current-page-recto')) {
+    if (
+      format.startsWith('image-') &&
+      (range == 'current-page' || range == 'current-page-verso' || range == 'current-page-recto')
+    ) {
       action += 'image';
       sizeAttr = 'size';
       sizeValue = targetPPI == '0' ? 'full' : `ppi:${targetPPI}`;
@@ -265,67 +285,72 @@
     let scriptEl = document.createElement('script');
     scriptEl.type = 'text/javascript';
 
-      let requestUrl = new URL(`${location.protocol}//${HT.service_domain}/${action}`);
-      let params = new URLSearchParams();
-      params.set('id', manifest.id);
+    let requestUrl = new URL(`${location.protocol}//${HT.service_domain}/${action}`);
+    let params = new URLSearchParams();
+    params.set('id', manifest.id);
 
-      if (selection.pages) {
-        selection.pages.forEach((seq) => {
-          params.append('seq', seq);
-        });
-      }
-      switch (format) {
-        case 'image-jpeg':
-        case 'image-tiff':
-          params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
-          params.set('target_ppi', targetPPI);
-          params.set('bundle_format', 'zip');
-          break;
-        case 'plaintext-zip':
-          params.set('bundle_format', 'zip');
-          break;
-        case 'plaintext':
-          params.set('bundle_format', 'text');
-          break;
-      }
-      params.set('callback', 'tunnelCallback');
-      params.set('_', new Date().getTime().toString());
-
-      requestUrl.search = params.toString();
-      scriptEl.src = requestUrl.toString();
-
-      downloadInProgress = true;
-    
-      // inject script
-      document.body.appendChild(scriptEl);
-      
-      // remove script after it loads
-      scriptEl.onload = () => {
-        document.body.removeChild(scriptEl);
-      };
-      //handle error if something goes wrong
-      scriptEl.onerror = () => {
-        document.body.removeChild(scriptEl);
-        errorMessage = 'Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.';
-        HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ""));
-        downloadInProgress = false;
-        _mtm.push({'event': 'pt-download-error', 'errorType': 'callback script error', 'downloadUrl': `${requestUrl.toString()}`});
-      };
+    if (selection.pages) {
+      selection.pages.forEach((seq) => {
+        params.append('seq', seq);
+      });
     }
+    switch (format) {
+      case 'image-jpeg':
+      case 'image-tiff':
+        params.set('format', format == 'image-tiff' ? 'image/tiff' : 'image/jpeg');
+        params.set('target_ppi', targetPPI);
+        params.set('bundle_format', 'zip');
+        break;
+      case 'plaintext-zip':
+        params.set('bundle_format', 'zip');
+        break;
+      case 'plaintext':
+        params.set('bundle_format', 'text');
+        break;
+    }
+    params.set('callback', 'tunnelCallback');
+    params.set('_', new Date().getTime().toString());
+
+    requestUrl.search = params.toString();
+    scriptEl.src = requestUrl.toString();
+
+    downloadInProgress = true;
+
+    // inject script
+    document.body.appendChild(scriptEl);
+
+    // remove script after it loads
+    scriptEl.onload = () => {
+      document.body.removeChild(scriptEl);
+    };
+    //handle error if something goes wrong
+    scriptEl.onerror = () => {
+      document.body.removeChild(scriptEl);
+      errorMessage =
+        'Please try again. If downloads continue to fail, contact <a href="mailto:support@hathitrust.org">support@hathitrust.org</a>.';
+      HT.live.announce(errorMessage.replace(/<\/?[^>]+(>|$)/g, ''));
+      downloadInProgress = false;
+      _mtm.push({
+        event: 'pt-download-error',
+        errorType: 'callback script error',
+        downloadUrl: `${requestUrl.toString()}`,
+      });
+    };
+  }
 
   function calculateSelection() {
-    $inspect.trace()
+    $inspect.trace();
     if (range == 'selected-pages') {
-      selection.pages = Array.from($selected)
+      selection.pages = Array.from($selected);
     } else if (range == 'volume') {
-      selection.pages = []
+      selection.pages = [];
     } else {
       let page;
       //occassionally this switch causes a minor error in the console
       //because of the verso/recto situation
       //e.g. the range is set to 'current-page-verso'
       //but the user has scrolled to a 2-up that doesn't have a verso page in the data
-      //the range update can't just swap to recto because it doesn't know it needs to 
+      //the range update can't just swap to recto because it doesn't know it needs to
       //(i tried SO MANY WAYS to make it do it)
       //but $currentLocation.verso.seq is undefined so this errors
       //if the user makes a different selection or scrolls, this function fires again without issue
@@ -340,19 +365,19 @@
           page = $currentLocation.recto.seq;
           break;
       }
-      selection.pages = [page]
+      selection.pages = [page];
     }
   }
 
   function submitDownload(e) {
     e.preventDefault();
-    console.log('-- download.fetchDownload')
-    
+    console.log('-- download.fetchDownload');
+
     downloadError = false;
     numAttempts = 0;
     numProcessed = 0;
 
-    buildCallbackDownloadUrl(); 
+    buildCallbackDownloadUrl();
   }
 
   function flattenSelection(selected) {
@@ -408,55 +433,60 @@
       range = 'selected-pages';
     }
   });
-  
+
   $effect(() => {
     if (totalSeq > 10 && format == 'image-tiff' && range == 'volume') {
       if ($currentView == '1up') {
-        range = 'current-page'
+        range = 'current-page';
       } else if ($currentView == '2up') {
-       if ($currentLocation.verso) {
-          range = 'current-page-verso' 
+        if ($currentLocation.verso) {
+          range = 'current-page-verso';
         } else if ($currentLocation.recto) {
-          range = 'current-page-recto'
+          range = 'current-page-recto';
         }
       } else if ($currentView == 'thumb') {
-        range = 'selected-pages'
+        range = 'selected-pages';
       }
     }
-  })
+  });
   $effect(() => {
-    if($currentView == '1up') {
-      if(range !== 'volume' && range !== 'selected-pages' && range !== 'current-page') {
-        range = 'current-page'
+    if ($currentView == '1up') {
+      if (range !== 'volume' && range !== 'selected-pages' && range !== 'current-page') {
+        range = 'current-page';
       }
-    } else if($currentView == '2up') {
+    } else if ($currentView == '2up') {
       //this is not great
       //but if the user had previously selected 'current-page' during 1-up view and switches to 2-up view
       //the range is still set to 'current-page' and needs to be magicked to either recto or verso
       //frustratingly, at the beginning/end of volumes, sometimes verso or recto don't exist
       //so we just pick one that's available
-     if (range !== 'volume' && range !== 'selected-pages' && range !== 'current-page-recto' && range !== 'current-page-verso') {
+      if (
+        range !== 'volume' &&
+        range !== 'selected-pages' &&
+        range !== 'current-page-recto' &&
+        range !== 'current-page-verso'
+      ) {
         if ($currentLocation.verso) {
-          range = 'current-page-verso' 
+          range = 'current-page-verso';
         } else if ($currentLocation.recto) {
-          range = 'current-page-recto'
+          range = 'current-page-recto';
         }
       }
     } else if ($currentView == 'thumb') {
-      range = 'selected-pages'
+      range = 'selected-pages';
     }
-  })
+  });
   $effect(() => {
-      calculateSelection()
-	})
-  
+    calculateSelection();
+  });
+
   $effect(() => {
     if (errorMessage) {
       errorCount++;
       // this is a hacky workaround for aria-live announcements
       // chrome does not re-announce the last message it announced, even if it left the DOM and re-entered the DOM
       // this adds a space to the end of the message before sending it to our announcement library
-      HT.live.announce(`${errorMessage.replace(/<\/?[^>]+(>|$)/g, "")}${' '.repeat(errorCount)}`);
+      HT.live.announce(`${errorMessage.replace(/<\/?[^>]+(>|$)/g, '')}${' '.repeat(errorCount)}`);
     }
   });
 
@@ -465,241 +495,240 @@
       return;
     }
     // assign global callback
-     window.tunnelCallback = function () {
+    window.tunnelCallback = function () {
       callback(arguments);
     };
-
   });
 </script>
 
 <Panel parent="#controls">
   {#snippet icon()}
-    <i class="fa-solid fa-download"  aria-hidden="true"></i>
+    <i class="fa-solid fa-download" aria-hidden="true"></i>
   {/snippet}
   {#snippet title()}
     Download
   {/snippet}
   {#snippet body()}
-      {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
-        <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
-      {:else if allowDownload}
-        <form aria-label="Download options">
-          <fieldset class="mb-3">
-            <legend class="fs-5">Format</legend>
+    {#if allowDownload && !manifest.allowFullDownload && $currentView == 'thumb'}
+      <div class="alert alert-secondary">Please choose another view to download individual pages.</div>
+    {:else if allowDownload}
+      <form aria-label="Download options">
+        <fieldset class="mb-3">
+          <legend class="fs-5">Format</legend>
+          <div class="form-check">
+            <input
+              name="format"
+              class="form-check-input"
+              type="radio"
+              value="pdf"
+              id="format-pdf"
+              bind:group={format}
+            />
+            <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
+          </div>
+          {#if manifest.allowFullDownload}
             <div class="form-check">
               <input
                 name="format"
                 class="form-check-input"
                 type="radio"
-                value="pdf"
-                id="format-pdf"
+                value="epub"
+                id="format-epub"
                 bind:group={format}
               />
-              <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
+              <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
             </div>
-            {#if manifest.allowFullDownload}
-              <div class="form-check">
-                <input
-                  name="format"
-                  class="form-check-input"
-                  type="radio"
-                  value="epub"
-                  id="format-epub"
-                  bind:group={format}
-                />
-                <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
-              </div>
-            {/if}
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="plaintext"
-                id="format-plaintext"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
-            </div>
-            {#if manifest.allowFullDownload}
-              <div class="form-check">
-                <input
-                  name="format"
-                  class="form-check-input"
-                  type="radio"
-                  value="plaintext-zip"
-                  id="format-archive"
-                  bind:group={format}
-                />
-                <label class="form-check-label" for="format-archive"> Text (.zip) </label>
-              </div>
-            {/if}
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="image-jpeg"
-                id="format-image-jpeg"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-image-jpeg"> Image (JPEG) </label>
-            </div>
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="image-tiff"
-                id="format-image-tiff"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-image-tiff"> Image (TIFF) </label>
-            </div>
-          </fieldset>
-
-          {#if format.startsWith('image-')}
-            <fieldset class="mb-3">
-              <legend class="fs-5">Image Resolution</legend>
-              <div class="form-check">
-                <input
-                  name="target-ppi"
-                  class="form-check-input"
-                  type="radio"
-                  value="300"
-                  id="image-target-ppi-300"
-                  bind:group={targetPPI}
-                />
-                <label class="form-check-label" for="image-target-ppi-300">
-                  High / 300 dpi
-                  {#if meta.resolution}
-                    ({meta.screenResolution})
-                  {/if}
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  name="target-ppi"
-                  class="form-check-input"
-                  type="radio"
-                  value="0"
-                  id="image-target-ppi-full"
-                  bind:group={targetPPI}
-                />
-                <label class="form-check-label" for="image-target-ppi-full">
-                  Full / 600 dpi
-                  {#if meta.resolution}
-                    ({meta.size.width}x{meta.size.height})
-                  {/if}
-                </label>
-              </div>
-            </fieldset>
           {/if}
+          <div class="form-check">
+            <input
+              name="format"
+              class="form-check-input"
+              type="radio"
+              value="plaintext"
+              id="format-plaintext"
+              bind:group={format}
+            />
+            <label class="form-check-label" for="format-plaintext"> Text (.txt) </label>
+          </div>
+          {#if manifest.allowFullDownload}
+            <div class="form-check">
+              <input
+                name="format"
+                class="form-check-input"
+                type="radio"
+                value="plaintext-zip"
+                id="format-archive"
+                bind:group={format}
+              />
+              <label class="form-check-label" for="format-archive"> Text (.zip) </label>
+            </div>
+          {/if}
+          <div class="form-check">
+            <input
+              name="format"
+              class="form-check-input"
+              type="radio"
+              value="image-jpeg"
+              id="format-image-jpeg"
+              bind:group={format}
+            />
+            <label class="form-check-label" for="format-image-jpeg"> Image (JPEG) </label>
+          </div>
+          <div class="form-check">
+            <input
+              name="format"
+              class="form-check-input"
+              type="radio"
+              value="image-tiff"
+              id="format-image-tiff"
+              bind:group={format}
+            />
+            <label class="form-check-label" for="format-image-tiff"> Image (TIFF) </label>
+          </div>
+        </fieldset>
 
-          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-          <fieldset class="mb-3" id="download-range">
-            <legend class="fs-5">Range</legend>
-            {#if $currentView == '1up'}
+        {#if format.startsWith('image-')}
+          <fieldset class="mb-3">
+            <legend class="fs-5">Image Resolution</legend>
+            <div class="form-check">
+              <input
+                name="target-ppi"
+                class="form-check-input"
+                type="radio"
+                value="300"
+                id="image-target-ppi-300"
+                bind:group={targetPPI}
+              />
+              <label class="form-check-label" for="image-target-ppi-300">
+                High / 300 dpi
+                {#if meta.resolution}
+                  ({meta.screenResolution})
+                {/if}
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                name="target-ppi"
+                class="form-check-input"
+                type="radio"
+                value="0"
+                id="image-target-ppi-full"
+                bind:group={targetPPI}
+              />
+              <label class="form-check-label" for="image-target-ppi-full">
+                Full / 600 dpi
+                {#if meta.resolution}
+                  ({meta.size.width}x{meta.size.height})
+                {/if}
+              </label>
+            </div>
+          </fieldset>
+        {/if}
+
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <fieldset class="mb-3" id="download-range">
+          <legend class="fs-5">Range</legend>
+          {#if $currentView == '1up'}
+            <div class="form-check">
+              <input
+                name="range"
+                class="form-check-input"
+                type="radio"
+                value="current-page"
+                id="range-current-page"
+                disabled={format == 'epub' || format == 'plaintext-zip'}
+                bind:group={range}
+              />
+              <label class="form-check-label" for="range-current-page">
+                Current page scan (#{$currentSeq})
+              </label>
+            </div>
+          {:else if $currentView == '2up'}
+            {#if $currentLocation.verso}
               <div class="form-check">
                 <input
                   name="range"
                   class="form-check-input"
                   type="radio"
-                  value='current-page'
-                  id="range-current-page"
+                  value="current-page-verso"
+                  id="range-current-verso-page"
                   disabled={format == 'epub' || format == 'plaintext-zip'}
                   bind:group={range}
                 />
-                <label class="form-check-label" for="range-current-page">
-                  Current page scan (#{$currentSeq})
+                <label class="form-check-label" for="range-current-verso-page">
+                  Current verso page scan (#{$currentLocation.verso.seq})
                 </label>
               </div>
-            {:else if $currentView == '2up'}
-              {#if $currentLocation.verso}
-                <div class="form-check">
-                  <input
-                    name="range"
-                    class="form-check-input"
-                    type="radio"
-                    value='current-page-verso'
-                    id="range-current-verso-page"
-                    disabled={format == 'epub' || format == 'plaintext-zip'}
-                    bind:group={range}
-                  />
-                  <label class="form-check-label" for="range-current-verso-page">
-                    Current verso page scan (#{$currentLocation.verso.seq})
-                  </label>
-                </div>
-              {/if}
-              {#if $currentLocation.recto}
-                <div class="form-check">
-                  <input
-                    name="range"
-                    class="form-check-input"
-                    type="radio"
-                    value='current-page-recto'
-                    id="range-current-recto-page"
-                    disabled={format == 'epub' || format == 'plaintext-zip'}
-                    bind:group={range}
-                  />
-                  <label class="form-check-label" for="range-current-recto-page">
-                    Current right page scan (#{$currentLocation.recto.seq})
-                  </label>
-                </div>
-              {/if}
             {/if}
-            {#if manifest.allowFullDownload}
+            {#if $currentLocation.recto}
               <div class="form-check">
                 <input
                   name="range"
                   class="form-check-input"
                   type="radio"
-                  value="volume"
-                  id="range-download-volume"
-                  disabled={totalSeq > 10 && format == 'image-tiff'}
-                  bind:group={range}
-                />
-                <label class="form-check-label" for="range-download-volume"> Whole item </label>
-              </div>
-              <div class="form-check">
-                <input
-                  name="range"
-                  class="form-check-input"
-                  type="radio"
-                  value="selected-pages"
-                  id="range-selected-pages"
+                  value="current-page-recto"
+                  id="range-current-recto-page"
                   disabled={format == 'epub' || format == 'plaintext-zip'}
                   bind:group={range}
                 />
-                <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
-              </div>
-
-              <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
-                <ul class="list-unstyled mx-4 mb-1">
-                  {#each flattenedSelection as sel}
-                    <li>
-                      <button type="button" class="btn btn-link py-0" onclick={() => gotoSelection(sel)}>{sel}</button>
-                    </li>
-                  {/each}
-                </ul>
-                <button
-                  class="btn btn-outline-dark align-self-start"
-                  type="button"
-                  aria-label={clearSelectionLabel}
-                  use:tooltippy={{ content: 'Clear selection' }}
-                  onclick={() => manifest.clearSelection()}
-                >
-                  <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
-                </button>
+                <label class="form-check-label" for="range-current-recto-page">
+                  Current right page scan (#{$currentLocation.recto.seq})
+                </label>
               </div>
             {/if}
-          </fieldset>
-          <p class="mb-3">
+          {/if}
+          {#if manifest.allowFullDownload}
+            <div class="form-check">
+              <input
+                name="range"
+                class="form-check-input"
+                type="radio"
+                value="volume"
+                id="range-download-volume"
+                disabled={totalSeq > 10 && format == 'image-tiff'}
+                bind:group={range}
+              />
+              <label class="form-check-label" for="range-download-volume"> Whole item </label>
+            </div>
+            <div class="form-check">
+              <input
+                name="range"
+                class="form-check-input"
+                type="radio"
+                value="selected-pages"
+                id="range-selected-pages"
+                disabled={format == 'epub' || format == 'plaintext-zip'}
+                bind:group={range}
+              />
+              <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
+            </div>
+
+            <div class="d-flex justify-content-between" class:d-none={flattenedSelection.length == 0}>
+              <ul class="list-unstyled mx-4 mb-1">
+                {#each flattenedSelection as sel}
+                  <li>
+                    <button type="button" class="btn btn-link py-0" onclick={() => gotoSelection(sel)}>{sel}</button>
+                  </li>
+                {/each}
+              </ul>
+              <button
+                class="btn btn-outline-dark align-self-start"
+                type="button"
+                aria-label={clearSelectionLabel}
+                use:tooltippy={{ content: 'Clear selection' }}
+                onclick={() => manifest.clearSelection()}
+              >
+                <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i>
+              </button>
+            </div>
+          {/if}
+        </fieldset>
+        <p class="mb-3">
           {#if !simpleDownload}
             <button
               type="button"
               class="btn btn-outline-dark"
-              disabled={downloadInProgress||buttonDisabled}
+              disabled={downloadInProgress || buttonDisabled}
               onclick={submitDownload}
               id="submit-download"
             >
@@ -709,60 +738,61 @@
                 <span class="visually-hidden">Loading...</span>
               {/if}
             </button>
-            {:else if simpleDownload && buttonDisabled} 
-              <span class="btn btn-outline-dark disabled"> Download </span>
-            {:else}
-              <a
-                target="_blank"
-                id="submit-download"
-                class="btn btn-outline-dark"
-                onclick={() => {downloadAttempt++}}
-                href={simpleUrl}>Download</a
-              >
-            {/if}
-          </p>
-          {#if errorMessage}
-            <div class="alert inline-alert alert-warning fs-7 d-flex gap-2">
-              <div class="icon-wrapper d-flex">
-                <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-              </div>
-              <p>{@html errorMessage}</p>
-            </div>
-          {/if}
-          <p class="fs-7 mb-1">
+          {:else if simpleDownload && buttonDisabled}
+            <span class="btn btn-outline-dark disabled"> Download </span>
+          {:else}
             <a
-              class="fs-7"
               target="_blank"
-              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Download Help</a
+              id="submit-download"
+              class="btn btn-outline-dark"
+              onclick={() => {
+                downloadAttempt++;
+              }}
+              href={simpleUrl}>Download</a
             >
-          </p>
-          {#if !manifest.allowFullDownload && !HT.login_status.logged_in}
-            <p class="fs-7 mt-1 mb-1">
-              <strong><a href="/cgi/wayf?target={encodeURIComponent(location.href)}">Log in</a></strong> to your library to
-              download this item.
-            </p>
-            <p class="fs-7 mt-1 fst-italic">
-              If you are not affiliated with a <a
-                target="_blank"
-                href="https://www.hathitrust.org/member-libraries/member-list/">member institution</a
-              >, whole book download is not available. (<a
-                target="_blank"
-                href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Why not?</a
-              >)
-            </p>
           {/if}
-        </form>
-      {:else}
-        <p>This item cannot be downloaded.</p>
-      {/if}
-    
+        </p>
+        {#if errorMessage}
+          <div class="alert inline-alert alert-warning fs-7 d-flex gap-2">
+            <div class="icon-wrapper d-flex">
+              <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            </div>
+            <p>{@html errorMessage}</p>
+          </div>
+        {/if}
+        <p class="fs-7 mb-1">
+          <a
+            class="fs-7"
+            target="_blank"
+            href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Download Help</a
+          >
+        </p>
+        {#if !manifest.allowFullDownload && !HT.login_status.logged_in}
+          <p class="fs-7 mt-1 mb-1">
+            <strong><a href="/cgi/wayf?target={encodeURIComponent(location.href)}">Log in</a></strong> to your library to
+            download this item.
+          </p>
+          <p class="fs-7 mt-1 fst-italic">
+            If you are not affiliated with a <a
+              target="_blank"
+              href="https://www.hathitrust.org/member-libraries/member-list/">member institution</a
+            >, whole book download is not available. (<a
+              target="_blank"
+              href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387247137">Why not?</a
+            >)
+          </p>
+        {/if}
+      </form>
+    {:else}
+      <p>This item cannot be downloaded.</p>
+    {/if}
   {/snippet}
 </Panel>
 <Modal bind:this={modal} onClose={closeDownload} focusDownloadOnClose>
   {#snippet title()}
     {#if simpleDownload}
       Download your {formatTitle[format]}
-    {:else if downloadError} 
+    {:else if downloadError}
       Download failed
     {:else}
       Building your {formatTitle[format]}
@@ -776,74 +806,74 @@
       <div>
         {#if simpleDownload}
           <p>Your download is ready.</p>
-        {:else}
-          {#if status.percent < 100 && !downloadError}
-            <p>Please wait while we build your {formatTitle[format]}.</p>
+        {:else if status.percent < 100 && !downloadError}
+          <p>Please wait while we build your {formatTitle[format]}.</p>
+          <div
+            class="progress"
+            role="progressbar"
+            aria-label="Download Progress"
+            aria-valuenow={status.percent}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
             <div
-              class="progress"
-              role="progressbar"
-              aria-label="Download Progress"
-              aria-valuenow={status.percent}
-              aria-valuemin="0"
-              aria-valuemax="100"
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              style:width={`${status.percent}%`}
+            ></div>
+          </div>
+          <p class="fs-7 text-body-secondary">
+            <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
+              >What affects the download speed?</a
             >
-              <div
-                class="progress-bar progress-bar-striped progress-bar-animated"
-                style:width={`${status.percent}%`}
-              ></div>
-            </div>
-            <p class="fs-7 text-body-secondary">
-              <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
-                >What affects the download speed?</a
-              >
-            </p>
-          {/if}
+          </p>
         {/if}
       </div>
       {#if !simpleDownload && status.done}
         <p>All done! Your {formatTitle[format]} is ready for download.</p>
       {/if}
-      {#if !simpleDownload && downloadError} 
+      {#if !simpleDownload && downloadError}
         <div style="max-width:25rem;" class="alert inline-alert alert-error fs-7 d-flex gap-2">
           <div class="icon-wrapper d-flex">
             <i class="alert-icon fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
           </div>
           <div class="d-flex align-items-center">
-          <p>{@html downloadErrorMessage}</p>
+            <p>{@html downloadErrorMessage}</p>
           </div>
         </div>
       {/if}
-      
     </div>
   {/snippet}
   {#snippet footer()}
-  {#if !downloadError}
-    <div role="status">
-      <div class="d-flex gap-1 align-items-center justify-content-end">
-        {#if !simpleDownload}
-        <button
-          type="button"
-          class="btn btn-secondary"
-          onclick={cancelDownload}
-          disabled={status.done}
-          class:disabled={status.done}>Cancel</button
-        >
-        {/if}
-        {#if !simpleDownload && downloadInProgress} 
-          <span class="btn btn-primary disabled"> Download </span>
-        {:else}
-          <a
-            target="_blank"
-            class="btn btn-primary"
-            onclick={(() => {modal.hide(); () => document.getElementById('submit-download').focus();})}
-            href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
-          >
+    {#if !downloadError}
+      <div role="status">
+        <div class="d-flex gap-1 align-items-center justify-content-end">
+          {#if !simpleDownload}
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick={cancelDownload}
+              disabled={status.done}
+              class:disabled={status.done}>Cancel</button
+            >
+          {/if}
+          {#if !simpleDownload && downloadInProgress}
+            <span class="btn btn-primary disabled"> Download </span>
+          {:else}
+            <a
+              target="_blank"
+              class="btn btn-primary"
+              onclick={() => {
+                modal.hide();
+                () => document.getElementById('submit-download').focus();
+              }}
+              href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
+            >
+          {/if}
+        </div>
+        {#if !simpleDownload && cancellingDownload}
+          <span class="visually-hidden">Download cancelled</span>
         {/if}
       </div>
-      {#if !simpleDownload && cancellingDownload}
-        <span class="visually-hidden">Download cancelled</span>
-      {/if}
-    </div>
     {/if}
   {/snippet}
 </Modal>

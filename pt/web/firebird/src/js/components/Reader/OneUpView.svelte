@@ -1,17 +1,17 @@
 <script>
   import { getContext } from 'svelte';
   import ImageFormat from './ImageFormat.svelte';
-	import PlaintextFormat from './PlaintextFormat.svelte'
+  import PlaintextFormat from './PlaintextFormat.svelte';
 
   const manifest = getContext('manifest');
   let view;
 
   export let container;
-	export let startSeq = 1;
+  export let startSeq = 1;
 
   const formats = {};
-	formats['image'] = ImageFormat;
-	formats['plaintext'] = PlaintextFormat;
+  formats['image'] = ImageFormat;
+  formats['plaintext'] = PlaintextFormat;
 
   const currentSeq = manifest.currentSeq;
   const currentFormat = manifest.currentFormat;
@@ -21,5 +21,5 @@
   };
 </script>
 
- <svelte:component this={formats[$currentFormat]} {startSeq} {currentLocation} {container} bind:this={view}></svelte:component>
-
+<svelte:component this={formats[$currentFormat]} {startSeq} {currentLocation} {container} bind:this={view}
+></svelte:component>

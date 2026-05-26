@@ -22,16 +22,15 @@
 
   let selectedButtonContent;
 
-
-  function scanSelected () {
+  function scanSelected() {
     if (selected) {
-      selectedButtonContent = `Scan #${seq} is selected`
-    } else if(!selected) {
-      selectedButtonContent = `Select scan #${seq}`
+      selectedButtonContent = `Scan #${seq} is selected`;
+    } else if (!selected) {
+      selectedButtonContent = `Select scan #${seq}`;
     }
-  };
+  }
 
-  scanSelected()
+  scanSelected();
 
   // let isOpen = true; // selected || null;
   let isDisabled = view == 'thumb' && !allowFullDownload;
@@ -41,8 +40,6 @@
   export let updateZoom = function () {};
   export let togglePageSelection = function () {};
   export let openLightbox = function () {};
-
-
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -73,7 +70,7 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy={{content: `${selectedButtonContent}`}}
+        use:tooltippy={{ content: `${selectedButtonContent}` }}
         data-tippy-placement="left"
         on:click|stopPropagation={togglePageSelection}
         on:click|stopPropagation={scanSelected}
@@ -104,7 +101,7 @@
       <button
         type="button"
         class="btn btn-light border border-dark"
-        use:tooltippy={{content: `Rotate scan #${seq}, ${rotateButtonContent}°`}}
+        use:tooltippy={{ content: `Rotate scan #${seq}, ${rotateButtonContent}°` }}
         data-tippy-placement="left"
         aria-label="Rotate scan #{seq}, {rotateButtonContent}°"
         aria-hidden={!focused}
@@ -118,9 +115,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 2.5}
-          use:tooltippy={{content: `Zoom in scan #${seq}, ${(pageZoom + 0.5)*100}%`}}
+          use:tooltippy={{ content: `Zoom in scan #${seq}, ${(pageZoom + 0.5) * 100}%` }}
           data-tippy-placement="left"
-          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5)*100}%"
+          aria-label="Zoom in scan #{seq}, {(pageZoom + 0.5) * 100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(0.5)}
@@ -131,9 +128,9 @@
           type="button"
           class="btn btn-light border border-dark"
           disabled={pageZoom == 1}
-          use:tooltippy={{content: `Zoom out scan #${seq}, ${(pageZoom - 0.5)*100}%`}}
+          use:tooltippy={{ content: `Zoom out scan #${seq}, ${(pageZoom - 0.5) * 100}%` }}
           data-tippy-placement="left"
-          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5)*100}%"
+          aria-label="Zoom out scan #{seq}, {(pageZoom - 0.5) * 100}%"
           aria-hidden={!focused}
           tabindex={focused ? 0 : -1}
           on:click|stopPropagation={() => updateZoom(-0.5)}

@@ -383,38 +383,42 @@
         <ul class="list-unstyled d-flex gap-1 m-0">
           <li>
             {#if !hasPreviousItem}
-            <span class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled">
-              <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
-              <span class:visually-hidden={inPanel}>Previous</span>
-            </span>
+              <span
+                class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled"
+              >
+                <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
+                <span class:visually-hidden={inPanel}>Previous</span>
+              </span>
             {:else}
-            <a
-              href={hasPreviousItem ? prevHref : undefined}
-              data-start={payload.prev}
-              on:click|preventDefault={() => gotoPage(payload.prev)}
-              class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
-            >
-              <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
-              <span class:visually-hidden={inPanel}>Previous</span>
-            </a>
+              <a
+                href={hasPreviousItem ? prevHref : undefined}
+                data-start={payload.prev}
+                on:click|preventDefault={() => gotoPage(payload.prev)}
+                class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
+              >
+                <i aria-hidden="true" class="fa-solid fa-chevron-left"></i>
+                <span class:visually-hidden={inPanel}>Previous</span>
+              </a>
             {/if}
           </li>
           <li>
             {#if !hasNextItem}
-            <span class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled">
-              <span class:visually-hidden={inPanel}>Next</span>
-              <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
-            </span>
+              <span
+                class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none disabled"
+              >
+                <span class:visually-hidden={inPanel}>Next</span>
+                <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
+              </span>
             {:else}
-            <a
-              href={hasNextItem ? nextHref : undefined}
-              data-start={payload.next}
-              on:click|preventDefault={() => gotoPage(payload.next)}
-              class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
-            >
-              <span class:visually-hidden={inPanel}>Next</span>
-              <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
-            </a>
+              <a
+                href={hasNextItem ? nextHref : undefined}
+                data-start={payload.next}
+                on:click|preventDefault={() => gotoPage(payload.next)}
+                class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 text-decoration-none"
+              >
+                <span class:visually-hidden={inPanel}>Next</span>
+                <i aria-hidden="true" class="fa-solid fa-chevron-right"></i>
+              </a>
             {/if}
           </li>
         </ul>

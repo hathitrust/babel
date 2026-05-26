@@ -1,7 +1,7 @@
 <script>
   import { onMount, setContext } from 'svelte';
   import { writable, get } from 'svelte/store';
-  import {MediaQuery} from 'svelte/reactivity'
+  import { MediaQuery } from 'svelte/reactivity';
   import { consent } from '~firebird-common/src/js/lib/store.svelte.js';
 
   import dialogPolyfill from 'dialog-polyfill';
@@ -447,8 +447,12 @@
 {#if isReaderView}
   <ViewerToolbar />
 {/if}
-<aside class:invisible={$interfaceMode == 'minimal' || (largeScreen.current && !asideExpanded) || (!largeScreen.current && !optionsToggled)}>
-  <div class="inner" >
+<aside
+  class:invisible={$interfaceMode == 'minimal' ||
+    (largeScreen.current && !asideExpanded) ||
+    (!largeScreen.current && !optionsToggled)}
+>
+  <div class="inner">
     <div class="accordion">
       <SurveyPanel />
     </div>
