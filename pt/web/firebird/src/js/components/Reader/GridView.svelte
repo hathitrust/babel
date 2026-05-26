@@ -1,6 +1,6 @@
 <script>
   import { onMount, afterUpdate, onDestroy, getContext } from 'svelte';
-  import ImageFormat from './ImageFormat.svelte'
+  import ImageFormat from './ImageFormat.svelte';
 
   const emitter = getContext('emitter');
   const manifest = getContext('manifest');
@@ -58,7 +58,17 @@
   {handleClick}
   bind:this={view}
 /> -->
-<ImageFormat {container} {startSeq} {currentLocation} {handleKeydown} format="image" maxHeight={250} zoomScales={[0.5, 0.75, 1.0]} {handleClick} bind:this={view}></ImageFormat>
+<ImageFormat
+  {container}
+  {startSeq}
+  {currentLocation}
+  {handleKeydown}
+  format="image"
+  maxHeight={250}
+  zoomScales={[0.5, 0.75, 1.0]}
+  {handleClick}
+  bind:this={view}
+></ImageFormat>
 
 <style>
 </style>

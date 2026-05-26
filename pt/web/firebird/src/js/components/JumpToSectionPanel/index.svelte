@@ -91,7 +91,7 @@
 <Modal bind:this={modal}>
   {#snippet title()}
     Jump to page scan
-  {/snippet}  
+  {/snippet}
   {#snippet body()}
     <div class="mb-3">
       <p class="fs-7 mb-2">

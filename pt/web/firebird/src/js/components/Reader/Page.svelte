@@ -39,9 +39,10 @@
   export let debugChoke = false;
   export let debugLoad = false;
 
-  let includePageText = view != 'thumb';
+  // boolean for excluding the text in captions for thumbnail view
+  // let includePageText = view != 'thumb';
 
-  let focused = false;
+  let focused = view === 'thumb' ? true : false;
   let invoked = false;
   let pageDiv;
 
@@ -327,7 +328,7 @@
 
   let numPageTextLoaded = 0;
   export const loadPageText = function (reload = false) {
-    // console.log("-- page.loadImage", seq, isVisible, isLoaded);
+    console.log("-- page.loadImage", seq, isVisible, isLoaded);
     // return;
     if (debugLoad) {
       clearTimeout(loadPageTextTimeout);
@@ -349,9 +350,10 @@
       return;
     }
 
-    if (!includePageText) {
-      return;
-    }
+    // originally, thumbnail view excluded captions on images
+    // if (!includePageText) {
+    //   return;
+    // }
 
     if (figCaption && figCaption.dataset.loaded == 'true' && !reload) {
       return;
@@ -420,28 +422,27 @@
     }
   };
 
-  
   const togglePageSelection = function (event) {
-    manifest.select(seq, event)
-  }
+    manifest.select(seq, event);
+  };
 
   const rotateScan = async function () {
     orient = (orient + 90) % 360;
     if (orient == 0) {
-      rotateButtonContent = '90'
+      rotateButtonContent = '90';
       return;
     } else if (orient == 90) {
-      rotateButtonContent = '180'
+      rotateButtonContent = '180';
     } else if (orient == 180) {
-      rotateButtonContent = '270'
-    } else if (orient = 270) {
-      rotateButtonContent = '0'
+      rotateButtonContent = '270';
+    } else if ((orient = 270)) {
+      rotateButtonContent = '0';
     }
 
     if (!rotatedImage) {
       await tick();
     }
-    console.log("-- page.rotateScan", seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
+    console.log('-- page.rotateScan', seq, rotatedImage, orient, `Rorate page, ${rotateButtonContent} degrees`);
     drawRotatedImage();
   };
 
@@ -477,7 +478,7 @@
       pageZoom = zoom;
     }
     pageZoom += delta;
-    console.log('zoom: ', delta, pageZoom, zoom)
+    console.log('zoom: ', delta, pageZoom, zoom);
     loadImage(true);
   };
 
@@ -711,6 +712,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             data-loaded={isLoaded}
             alt=""
             class:zoomed={pageZoom > 1}
+            aria-labelledby="caption{seq}"
             on:load={() => {
               if (orient != 0) {
                 drawRotatedImage();
@@ -726,7 +728,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         {/if}
       </div>
       {#if side != 'thumb'}
-        <figcaption class="visually-hidden" data-loaded="false" bind:this={figCaption}></figcaption>
+        <figcaption class="visually-hidden" data-loaded="false" id="caption{seq}" bind:this={figCaption}></figcaption>
       {/if}
     {:else if format == 'plaintext'}
       {#if !isLoaded}
@@ -751,7 +753,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     --defaultPageHeight: calc(var(--vh) - ((var(--stage-header-height) + var(--paddingBottom, 0)) * 1px));
     --actualPageHeight: var(--scanHeight, var(--defaultPageHeight));
     --actualZoom: var(--zoom, 1);
-    height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1));
+    height: calc((clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)) + 8px);
     width: 100%;
     max-width: 100%;
 
@@ -765,6 +767,11 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
     position: relative;
 
+    &:focus-visible {
+      outline-offset: 0px;
+    }
+
+
     // overflow: hidden;
 
     // // -- debug border
@@ -773,6 +780,11 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     &.view-2up :global {
       margin-bottom: calc(var(--paddingBottom) * 1px);
       height: calc(clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--zoom, 1));
+
+      &:focus-visible {
+        outline-offset: -4px;
+        z-index: 3 !important;
+      }
 
       &.zoomed {
         overflow: auto;
@@ -794,11 +806,17 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
           max-width: none;
         }
       }
+      &:focus-within .image {
+        outline-offset: -3px;
+      }
+      
     }
 
     &.view-2up.verso :global {
+
       grid-area: verso;
       z-index: 1;
+      padding-inline-end: .25rem;
 
       &.direction-rtl {
         .frame {
@@ -830,6 +848,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
     &.view-2up.recto :global {
       grid-area: recto;
+      padding-inline-start: .25rem;
 
       &.direction-rtl {
         .frame {
@@ -863,6 +882,10 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       figure {
         --frameHeight: calc(250px * var(--actualZoom));
       }
+
+      .frame:focus-within .image {
+        outline-offset: -3px;
+      }
     }
 
     &.view-1up {
@@ -875,15 +898,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       }
     }
 
-    &:focus-visible {
-      outline: 0;
-
-      .frame {
-        --bs-btn-focus-shadow-rgb: 66, 70, 73;
-        outline: 0;
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), 0.5);
-      }
-    }
   }
 
   .frame {
@@ -917,6 +931,21 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     //     max-width: 100%;
     //   }
     // }
+    &:focus-visible:not(.format-plaintext) {
+      outline:none !important;
+      box-shadow:none;
+    }
+
+    &:focus-within .image {
+      outline: 3px solid #086ab4 !important;
+      box-shadow: 0 0 0 6px #fff;
+      outline-offset: 1px;
+      z-index: 3;
+      transition: unset;
+      
+    }
+
+   
 
     &.pending {
       .page-loader {
@@ -966,6 +995,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         flex-grow: 0;
 
         transition: opacity 0.125s linear;
+        
       }
     }
 
@@ -978,7 +1008,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       padding: 2rem 1rem;
 
       background: #fff;
-      box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+      box-shadow:
+        0px 10px 13px -7px #000000,
+        0px 6px 15px 5px rgba(0, 0, 0, 0);
       border: 1px solid #ddd;
 
       transition: height 100ms;
@@ -1000,7 +1032,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     height: auto;
 
     background: #f9f8f5;
-    box-shadow: 0px 10px 13px -7px #000000, 0px 6px 15px 5px rgba(0, 0, 0, 0);
+    box-shadow:
+      0px 10px 13px -7px #000000,
+      0px 6px 15px 5px rgba(0, 0, 0, 0);
     border: 1px solid #ddd;
   }
 

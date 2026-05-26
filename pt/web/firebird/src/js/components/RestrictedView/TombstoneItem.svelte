@@ -12,7 +12,10 @@
   </p>
   <ul class="mb-0">
     <li>It was suppressed at the request of the rights holder;</li>
-    <li>There were issues related to contractual, legal, copyright, privacy, or confidentiality (e.g., sensitive archaeological sites, Native American sacred knowledge);</li>
+    <li>
+      There were issues related to contractual, legal, copyright, privacy, or confidentiality (e.g., sensitive
+      archaeological sites, Native American sacred knowledge);
+    </li>
     <li>It was either wholly unusable or a superior copy is available.</li>
   </ul>
 </div>
