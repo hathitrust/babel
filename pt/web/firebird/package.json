@@ -14,7 +14,12 @@
     "test": "playwright test --trace on --grep-invert auth",
     "test-short": "playwright test sidebar --project chromium --trace on --grep-invert auth",
     "test-local": "LOCAL=local playwright test --grep-invert auth",
-    "test-ui": "LOCAL=local playwright test --ui"
+    "test-ui": "LOCAL=local playwright test --ui",
+    "prepare": "cd ../../.. && husky pt/web/firebird/.husky",
+    "format:check": "prettier --check src/"
+  },
+  "lint-staged": {
+    "*.{js,ts,svelte,css,scss,html}": "prettier --write"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.0",
@@ -24,6 +29,8 @@
     "bootstrap": "^5.2.3",
     "emittery": "^1.0.1",
     "fast-glob": "^3.2.12",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
     "p-queue": "^9.0.0",
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.2.6",
