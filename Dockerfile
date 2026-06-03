@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libmime-types-perl \
   libnet-dns-perl \
   libplack-perl \
+  libplack-builder-conditionals-perl \
   libprometheus-tiny-shared-perl \
   libtest-class-perl \
   libtest-lwp-useragent-perl \
@@ -62,7 +63,8 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/mlibrary-archive-keyring.gpg] https:/
 RUN apt-get update && apt-get install -y --no-install-recommends grokj2k
 
 RUN cpanm --notest \
-  File::Pairtree
+  File::Pairtree \
+  Net::CIDR::Lite
 
 WORKDIR /htapps/babel/geoip
 ADD --chmod=644 https://github.com/maxmind/MaxMind-DB/blob/main/test-data/GeoIP2-Country-Test.mmdb?raw=true GeoIP2-Country.mmdb
