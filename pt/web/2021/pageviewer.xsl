@@ -155,7 +155,6 @@
     </script>
     <xsl:call-template name="setup-extra-header--reader" />
 
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=Array.prototype.find,Promise,Object.assign,es2015,MutationObserver,CustomEvent"></script>
     <xsl:call-template name="build-js-link">
       <xsl:with-param name="href">/pt/2021/dist/js/utils.js</xsl:with-param>
     </xsl:call-template>
