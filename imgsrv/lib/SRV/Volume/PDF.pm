@@ -75,13 +75,13 @@ sub _generate_coderef {
 
 
         my $writer = $responder->([$status, $headers]);
-        my $fh;
 
-        if ( ! $self->output_filename || SRV::Utils::under_server() ) {
-            # streaming
-            $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
-            $self->output_filename($fh);
-        }
+        # Always stream: in server mode for real-time delivery; in background
+        # mode so output flows through Plack::App::Command's .download pipe
+        # rather than being written directly to the cache path and then
+        # overwritten when the rename runs.
+        my $fh = new SRV::Utils::Stream responder => $responder, writer => $writer;
+        $self->output_filename($fh);
         $self->run($env);
         $self->_log($env) unless ( $ENV{PSGI_COMMAND} );
     }
