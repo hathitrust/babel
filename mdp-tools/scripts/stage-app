@@ -110,6 +110,8 @@ if ($BRANCH) {
   $STAGE = $opt_s || 'test';
 }
 
+$ENV{HUSKY} = '0';
+
 my $rc = 0;
 
 if ($BRANCH) {
