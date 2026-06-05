@@ -27,10 +27,8 @@ RUN apt-get update && apt-get install -y \
   zip
 
 RUN cpanm --notest \
-  File::Pairtree
-
-RUN cpanm --notest  \
-    Prometheus::Tiny::Shared
+  File::Pairtree \
+  Prometheus::Tiny::Shared
 
 RUN ln -s /tmp /ram
 
