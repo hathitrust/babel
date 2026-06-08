@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('pt loads', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/cgi/pt?id=test.pd_open');
+    await expect(page.locator('#main')).toBeVisible();
   });
 
   test('has title', async ({ page }) => {
