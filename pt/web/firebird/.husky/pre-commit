@@ -1,0 +1,1 @@
+cd pt/web/firebird && npx lint-staged

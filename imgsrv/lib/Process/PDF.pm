@@ -63,7 +63,7 @@ sub process {
     if ( $self->is_partial ) {
         $$config{pages} = [];
         foreach my $seq ( @{ $self->pages } ) {
-            push @$config{pages}, int($seq);
+            push @{$config->{pages}}, int($seq);
         }
     }
 

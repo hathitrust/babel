@@ -143,7 +143,7 @@ sub run {
 
     my $updater = new SRV::Utils::Progress
         filepath => $self->progress_filepath, total_pages => $self->total_pages,
-        download_url => $self->download_url,
+        download_url => SRV::Utils::get_download_url($self, $self->_action),
         type => $self->_type;
 
     if ( $updater->in_progress ) {

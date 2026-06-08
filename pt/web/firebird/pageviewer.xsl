@@ -78,8 +78,11 @@
 
       <xsl:text disable-output-escaping="yes">
       window.firebirdErrorHandler = function(event) {
-        event.preventDefault();
-        if ((event.target &amp;&amp; event.target.src &amp;&amp; event.target.src.indexOf('/firebird/dist/') != -1) || (event.filename &amp;&amp; event.filename.indexOf('/firebird/dist/' != -1))) {
+        event.preventDefault();        
+        if (
+          (event.target &amp;&amp; event.target.src &amp;&amp; event.target.src.indexOf('/firebird/dist/') !== -1) ||
+          (event.filename &amp;&amp; event.filename.indexOf('/firebird/dist/') !== -1)
+        ) {          
           if ( ! HT.service_domain ) {
             console.log(event);
             alert("Sorry, this browser version is not supported.");
@@ -106,23 +109,12 @@
         document.head.appendChild(linkEl);
       }
 
-      if ( ! Array.prototype.at ) {
-        addScript({ href: 'https://polyfill-fastly.io/v3/polyfill.min.js?features=Array.prototype.at' });
-      }
-    
-      let firebird_config = localStorage.getItem('firebird-reader') || '';
-      if ( firebird_config == 'proxy' ) {
-        addScript({ href: `//${location.host}/js/main.js`, type: 'module' });
-      } else if ( firebird_config.match('localhost') ) {
-        addScript({ href: `//${firebird_config}/js/main.js`, type: 'module' });
-      } else {
-        <xsl:for-each select="//ApplicationAssets[@slot='pt']/Stylesheet">
-          addStylesheet({ href: `<xsl:value-of select="." />` });
-        </xsl:for-each>
-        <xsl:for-each select="//ApplicationAssets[@slot='pt']/Script">
-          addScript({ href: `<xsl:value-of select="." />`, type: 'module' });
-        </xsl:for-each>
-      }        
+      <xsl:for-each select="//ApplicationAssets[@slot='pt']/Stylesheet">
+        addStylesheet({ href: `<xsl:value-of select="." />` });
+      </xsl:for-each>
+      <xsl:for-each select="//ApplicationAssets[@slot='pt']/Script">
+        addScript({ href: `<xsl:value-of select="." />`, type: 'module' });
+      </xsl:for-each>
     </script>
   </xsl:template>
 

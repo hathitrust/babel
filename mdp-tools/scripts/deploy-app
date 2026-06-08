@@ -146,6 +146,8 @@ my $test_instance = $ENV{'TEST_INSTANCE'} || 'test';
 my ($repo_root, $app_root) = get_HTDE_roots($test_instance);
 my $default_repo_root = $repo_root;
 
+$ENV{HUSKY} = '0';
+
 my $rc = 0;
 foreach my $app (@apps) {
     my $fail_msg = qq{Failed to deploy application ($app)\n};

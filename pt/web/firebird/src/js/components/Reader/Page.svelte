@@ -328,7 +328,7 @@
 
   let numPageTextLoaded = 0;
   export const loadPageText = function (reload = false) {
-    console.log("-- page.loadImage", seq, isVisible, isLoaded);
+    console.log('-- page.loadImage', seq, isVisible, isLoaded);
     // return;
     if (debugLoad) {
       clearTimeout(loadPageTextTimeout);
@@ -753,7 +753,9 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     --defaultPageHeight: calc(var(--vh) - ((var(--stage-header-height) + var(--paddingBottom, 0)) * 1px));
     --actualPageHeight: var(--scanHeight, var(--defaultPageHeight));
     --actualZoom: var(--zoom, 1);
-    height: calc((clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)) + 8px);
+    height: calc(
+      (clamp(var(--clampHeight), var(--defaultPageHeight), var(--defaultPageHeight)) * var(--actualZoom, 1)) + 8px
+    );
     width: 100%;
     max-width: 100%;
 
@@ -770,7 +772,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     &:focus-visible {
       outline-offset: 0px;
     }
-
 
     // overflow: hidden;
 
@@ -809,14 +810,12 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       &:focus-within .image {
         outline-offset: -3px;
       }
-      
     }
 
     &.view-2up.verso :global {
-
       grid-area: verso;
       z-index: 1;
-      padding-inline-end: .25rem;
+      padding-inline-end: 0.25rem;
 
       &.direction-rtl {
         .frame {
@@ -848,7 +847,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
 
     &.view-2up.recto :global {
       grid-area: recto;
-      padding-inline-start: .25rem;
+      padding-inline-start: 0.25rem;
 
       &.direction-rtl {
         .frame {
@@ -897,7 +896,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         height: auto;
       }
     }
-
   }
 
   .frame {
@@ -932,8 +930,8 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     //   }
     // }
     &:focus-visible:not(.format-plaintext) {
-      outline:none !important;
-      box-shadow:none;
+      outline: none !important;
+      box-shadow: none;
     }
 
     &:focus-within .image {
@@ -942,10 +940,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
       outline-offset: 1px;
       z-index: 3;
       transition: unset;
-      
     }
-
-   
 
     &.pending {
       .page-loader {
@@ -995,7 +990,6 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         flex-grow: 0;
 
         transition: opacity 0.125s linear;
-        
       }
     }
 
