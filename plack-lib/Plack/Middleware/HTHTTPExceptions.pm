@@ -1,7 +1,7 @@
 package Plack::Middleware::HTHTTPExceptions;
 use strict;
 use parent qw(Plack::Middleware::HTTPExceptions);
-use Plack::Util::Accessor qw(rethrow error_pages);
+use Plack::Util::Accessor qw(error_pages);
 
 use Carp ();
 use Try::Tiny;
@@ -22,8 +22,6 @@ sub transform_error {
             $e->can('as_string')       ? $e->as_string :
             overload::Method($e, '""') ? "$e"          : undef;
     } else {
-        die $e if ($self->rethrow);
-
         $code = $self->map_error($e);
         $env->{'psgi.errors'}->print($e);
     }
@@ -31,6 +29,7 @@ sub transform_error {
     if ($code !~ /^[3-5]\d\d$/) {
         die $e; # rethrow
     }
+
 
     if ($self->error_pages->{$code}) {
       return $self->error_page($env, $code, $e)
@@ -126,7 +125,7 @@ Plack::Middleware::HTHTTPExceptions - Catch HTTP exceptions
   };
 
   builder {
-      enable "HTTPExceptions", rethrow => 1;
+      enable "HTHTTPExceptions"
       $app;
   };
 

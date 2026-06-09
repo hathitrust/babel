@@ -57,7 +57,6 @@ builder {
     # enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
     enable_if { SRV::Utils::under_server() } "HTHTTPExceptions",
-      rethrow => 0,
       error_pages => {
         500 => "/mdp-web/production_500.html",
         404 => "/mdp-web/graphics/404_image.jpg"
