@@ -52,16 +52,22 @@ builder {
     enable "SSO";
 
     enable "PopulateENV", app_name => 'imgsrv';
+    
+    # uncomment if needed for debugging purposes
+    # enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { $ENV{HT_DEV} } 'StackTrace';
+    enable_if { SRV::Utils::under_server() } "HTHTTPExceptions",
+      rethrow => 0,
+      error_pages => {
+        500 => "/mdp-web/production_500.html",
+        404 => "/mdp-web/graphics/404_image.jpg"
+      };
 
-    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
+    enable_if { SRV::Utils::under_server() }
         "HTErrorDocument", 500 => "/mdp-web/production_500.html";
 
-    enable_if { (SRV::Utils::under_server()) }
+    enable_if { SRV::Utils::under_server() }
         "HTErrorDocument", 404 => "/mdp-web/graphics/404_image.jpg";
-
-    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", rethrow => 0;
 
     if ( SRV::Utils::under_server() ) {
         # choke policies

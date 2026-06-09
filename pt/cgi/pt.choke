@@ -36,14 +36,22 @@ $app = builder {
 
     enable "PopulateENV", app_name => 'pt';
 
-    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    # uncomment if needed for debugging purposes
+    # enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTHTTPExceptions", 
+    enable_if { Debug::DUtils::under_server() } "HTHTTPExceptions", 
       rethrow => 0, 
       error_pages => {
         500 => "/mdp-web/production_500.html",
         404 => "/mdp-web/production_404.html"
       };
+
+    enable_if { Debug::DUtils::under_server() }
+        "HTErrorDocument", 500 => "/mdp-web/production_500.html";
+
+    enable_if { Debug::DUtils::under_server() }
+        "HTErrorDocument", 404 => "/mdp-web/production_404.html";
+
 
     enable 'Choke::Cache::Filesystem';
 
