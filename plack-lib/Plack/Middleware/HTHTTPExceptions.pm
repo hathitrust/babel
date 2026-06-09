@@ -42,11 +42,15 @@ sub transform_error {
 sub map_error {
   my ($self, $e) = @_;
 
-  return 400 if $e =~ /Action name not set/;
-
   return 404 if $e =~ /id not defined/;
   return 404 if $e =~ /Invalid document id provided/;
   return 404 if $e =~ /namespace not parsed/;
+
+  return 400 if $e =~ /Action name not set/;
+  return 400 if $e =~ /not a legal type of field/;
+  return 400 if $e =~ /parameter missing or invalid/;
+  return 400 if $e =~ /Requested page size.*greater than max/;
+  return 400 if $e =~ /Invalid page view type/;
 
   return 500;
 }
