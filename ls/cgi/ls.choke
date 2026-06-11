@@ -39,12 +39,17 @@ $app = builder {
 
     enable "SSO";
 
-    enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
+    # uncomment if needed for debugging purposes
+    # enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) }
-      "HTErrorDocument", 500 => (defined $ENV{UNAVAILABLE} ? "/ls/web/fulltext_search_unavailable.html" : "/mdp-web/production_error.html");
+    enable_if { Debug::DUtils::under_server() } "HTHTTPExceptions", 
+      error_pages => {
+        500 => "/mdp-web/production_500.html",
+        404 => "/mdp-web/production_404.html"
+      };
 
-    enable_if { (Debug::DUtils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+    enable_if { Debug::DUtils::under_server() }
+        "HTErrorDocument", 500 => "/mdp-web/production_500.html";
 
     enable 'Choke::Cache::Filesystem';
 

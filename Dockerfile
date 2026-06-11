@@ -32,8 +32,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   liblist-moreutils-perl \
   libmailtools-perl \
   libmime-types-perl \
+  libnet-cidr-lite-perl \
   libnet-dns-perl \
   libplack-perl \
+  libplack-builder-conditionals-perl \
   libprometheus-tiny-shared-perl \
   libtest-class-perl \
   libtest-lwp-useragent-perl \

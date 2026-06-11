@@ -165,14 +165,17 @@ sub ASSERT_core
     ASSERT_fail();
 
     my $development = $ENV{'HT_DEV'} || ($ENV{HTTP_HOST} eq 'test.babel.hathitrust.org');
-    if ( $send_email )
-    {
-        if (Debug::DUtils::under_server() && (! $development || $force))
-        {
-            require Debug::Email;
-            Debug::Email::buffer_debug_email($msg);
-        }
-    }
+
+    # No longer sending email for assertions as of 2026-06-09
+    #
+    # if ( $send_email )
+    # {
+    #     if (Debug::DUtils::under_server() && (! $development || $force))
+    #     {
+    #         require Debug::Email;
+    #         Debug::Email::buffer_debug_email($msg);
+    #     }
+    # }
 
     if ($die)
     {
