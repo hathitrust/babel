@@ -45,12 +45,18 @@ builder {
 
     enable "PopulateENV", app_name => 'imgsrv';
 
-    enable_if { $ENV{HT_DEV} } 'StackTrace';
+    # uncomment if needed for debugging purposes
+    # enable_if { (Debug::DUtils::under_server() && $ENV{HT_DEV}) } 'StackTrace';
 
-    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) }
-        "HTErrorDocument", 500 => "/mdp-web/production_error.html";
+    enable_if { SRV::Utils::under_server() } "HTHTTPExceptions",
+      error_pages => {
+        500 => "/mdp-web/production_500.html",
+        404 => "/mdp-web/production_404.html"
+      };
 
-    enable_if { (SRV::Utils::under_server() && ! $ENV{HT_DEV}) } "HTTPExceptions", rethrow => 0;
+    enable_if { SRV::Utils::under_server() }
+      "HTErrorDocument", 500 => "/mdp-web/production_500.html";
+
 
     if ( SRV::Utils::under_server() ) {
 
@@ -69,7 +75,7 @@ builder {
 
         enable
             match_if unchoked(),
-                'Choke::Requests', 
+                'Choke::Requests',
                     %{ $$settings{choke}{'default'} }
                 ;
 

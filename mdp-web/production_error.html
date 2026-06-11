@@ -4,9 +4,51 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta charset="utf-8" />
     <title>Application Error | Hathi Trust Digital Library</title>
+    <script>
+      async function loadFirebirdAssets() {
+        function addScript(options) {
+          let scriptEl = document.createElement('script');
+          if (options.crossOrigin) {
+            scriptEl.crossOrigin = options.crossOrigin;
+          }
+          if (options.type) {
+            scriptEl.type = options.type;
+          }
+          scriptEl.src = options.href;
+          document.head.appendChild(scriptEl);
+        }
 
-    <link rel="stylesheet" href="/common/firebird/dist/assets/index.css" />
-    <script type="module" src="/common/firebird/dist/assets/index.js"></script>
+        function addStylesheet(options) {
+          let linkEl = document.createElement('link');
+          linkEl.rel = 'stylesheet';
+          linkEl.href = options.href;
+          document.head.appendChild(linkEl);
+        }
+
+        try {
+          const response = await fetch('/common/firebird/dist/manifest.json');
+          const manifest = await response.json();
+
+          const assets = {
+            stylesheet: '/common/firebird/dist/' + manifest['index.css'].file,
+            script: '/common/firebird/dist/' + manifest['index.html'].file,
+          };
+
+          addStylesheet({ href: assets.stylesheet });
+          addScript({ href: assets.script, type: 'module' });
+        } catch (err) {
+          console.error('Failed to load firebird assets:', err);
+        }
+      }
+
+      loadFirebirdAssets();
+
+      // in case any of the links and scripts fail
+      setTimeout(function () {
+        document.body.style.visibility = 'visible';
+        document.body.style.opacity = '1';
+      }, 1500);
+    </script>
   </head>
 
   <body class="staticPage apps" style="opacity: 0; visibility: hidden">
