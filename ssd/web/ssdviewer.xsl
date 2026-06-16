@@ -121,15 +121,11 @@
         </title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="stylesheet" href="/common/alicorn/css/main.201910.css" type="text/css" />
-        <link rel="stylesheet" href="/ssd/ssdstyles.css" type="text/css" />
 
-        <script src="/common/alicorn/js/utils.201910.js"></script>
-        <script src="/ssd/access_banner.js"></script>
+        <xsl:call-template name="load-firebird-assets" />
+        <link rel="stylesheet" href="/ssd/ssdstyles.css" type="text/css" />
         <script src="/ssd/toc_links.js"></script>
 
-
-        <!-- <xsl:call-template name="build-hotjar-script" /> -->
       </head>
 
       <body>
@@ -153,7 +149,7 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
 
-    <div id="mdpUberContainer">
+    <div id="mdpUberContainer" class="apps p-3">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
 
@@ -821,6 +817,54 @@
         <xsl:text> How useful is the text-only view of the book?</xsl:text></p>
       <p><a target="_blank" href="https://umich.qualtrics.com/jfe/form/SV_2tA6ksgRjzOYv5Q">Take our 2-question survey</a> (open in a new window)</p>
     </div>
+  </xsl:template>
+
+  <xsl:template name="load-firebird-assets">
+    <script>
+      async function loadFirebirdAssets() {
+          function addScript(options) {
+            let scriptEl = document.createElement('script');
+            if (options.crossOrigin) {
+              scriptEl.crossOrigin = options.crossOrigin;
+            }
+            if (options.type) {
+              scriptEl.type = options.type;
+            }
+            scriptEl.src = options.href;
+            document.head.appendChild(scriptEl);
+          }
+
+          function addStylesheet(options) {
+            let linkEl = document.createElement('link');
+            linkEl.rel = 'stylesheet';
+            linkEl.href = options.href;
+            document.head.appendChild(linkEl);
+          }
+
+          try {
+            const response = await fetch('/common/firebird/dist/manifest.json');
+            const manifest = await response.json();
+
+            const assets = {
+              stylesheet: '/common/firebird/dist/' + manifest['index.css'].file,
+              script: '/common/firebird/dist/' + manifest['index.html'].file,
+            };
+
+            addStylesheet({ href: assets.stylesheet });
+            addScript({ href: assets.script, type: 'module' });
+          } catch (err) {
+            console.error('Failed to load firebird assets:', err);
+          }
+        }
+
+        loadFirebirdAssets();
+
+        // in case any of the links and scripts fail
+        setTimeout(function () {
+          document.body.style.visibility = 'visible';
+          document.body.style.opacity = '1';
+        }, 1500);
+    </script>
   </xsl:template>
 
   <xsl:template name="build-hotjar-script">
