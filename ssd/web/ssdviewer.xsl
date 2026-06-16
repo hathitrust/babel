@@ -697,7 +697,7 @@
 
   <!-- -->
   <xsl:template match="Seq">
-    <div class="Seq">Page Scan <xsl:apply-templates/> </div>
+    <h3 class="Seq">Page Scan <xsl:apply-templates/> </h3>
   </xsl:template>
 
   <xsl:template name="build-extra-header">

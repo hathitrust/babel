@@ -16,6 +16,7 @@ p.Image {
 
 .Section {
   border-bottom: 3px dashed #999;
+  margin-bottom: 1rem;
 }
 
 .Page {
