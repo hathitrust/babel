@@ -14,6 +14,7 @@
     <Filename>ssdviewer.xsl</Filename>
   </XslFileList>
 
+
   <MBooksGlobals>
     <?CHUNK filename="ptglobals.xml"?>   
     <CurrentPageOcr><?CURRENT_PAGE_OCR?></CurrentPageOcr>
@@ -21,7 +22,10 @@
     <CurrentView><?CURRENT_VIEW?></CurrentView>
     <InCopyright><?IN_COPYRIGHT?></InCopyright>
     <LoginLink><?LOGIN_LINK?></LoginLink>
+    <UserAffiliation><?USER_AFFILIATION?></UserAffiliation>
+    <?USER_HAS_ROLE_TOGGLES?>
   </MBooksGlobals>
+
 
   <MdpApp>
     <CurrentPageFeatures><?CURRENT_PAGE_FEATURES?></CurrentPageFeatures>
