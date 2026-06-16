@@ -4,14 +4,14 @@ body {
 }
 
 .PageNum {
-  font-weight:bold;
+  font-weight: bold;
 }
 
 p {
 }
 
 p.Image {
-  font-style:italic;
+  font-style: italic;
 }
 
 .Section {
@@ -28,34 +28,37 @@ p.Image {
   margin-bottom: 1rem;
 }
 
-
-#mdpFlexible_1 {
-}
-
-#mdpContentContainer {
+.mdpContentContainer {
   max-width: 62rem;
   margin-bottom: 6rem;
 }
 
-.mdpMetaDataRow {
-  margin-bottom: 3px;
+#mdpItemMetadata {
+  container-type: inline-size;
+  container-name: metadata;
+  .grid {
+    margin-bottom: 0.25rem;
+  }
 }
 
-.mdpMetaDataRegionHead {
-  float: left;
-  padding-right: 3px;
-  font-weight: bold;
+@container metadata (width < 960px ) {
+  dl .grid {
+    gap: 0;
+  }
 }
 
-.mdpMetaDataRow {
+#mdpItemMetadata dd {
+  margin-bottom: 0;
 }
 
-.mdpMetaText {}
+#mdpContentsList ol {
+  list-style: disc;
+}
 
 /* Hide CC icon */
 img {
-  visibility:hidden;
-  display:none;
+  visibility: hidden;
+  display: none;
   padding: 0;
   margin: 0;
   font-size: 0.1em;
@@ -63,8 +66,8 @@ img {
 
 /* use to hide code from display AND screenreaders */
 .hidden {
-  visibility:hidden;
-  display:none;
+  visibility: hidden;
+  display: none;
   padding: 0;
   margin: 0;
   font-size: 0.1em;
@@ -81,7 +84,7 @@ img {
   margin: 1rem;
 }
 
-.alert--emergency-access[data-initialized="false"] > * {
+.alert--emergency-access[data-initialized='false'] > * {
   opacity: 0;
 }
 
@@ -94,7 +97,6 @@ img {
   color: #333;
 }
 
-
 .alert--emergency-access .alert--emergency-access--options {
   display: flex;
   align-items: center;
@@ -106,7 +108,6 @@ img {
   border-bottom-color: #000;
   border-right-color: #000;
   border-bottom-width: 2px;
-
 }
 
 .alert--emergency-access .alert--emergency-access--options a.button-link {
@@ -122,7 +123,7 @@ img {
   bottom: 1rem;
   right: 1rem;
   padding: 1rem;
-  background: rgb(255,215,0);
+  background: rgb(255, 215, 0);
   min-width: 18rem;
   border: 2px solid darkorange;
   z-index: 1;

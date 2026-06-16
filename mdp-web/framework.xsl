@@ -378,62 +378,62 @@
     <div id="mdpFlexible_1">
 
       <xsl:if test="$gHasMARCAuthor">
-        <div class="mdpMetaDataRow">
-          <div class="mdpMetaDataRegionHead">
+        <div class="grid">
+          <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Author&#xa0;</xsl:text>
-          </div>
-          <div class="mdpMetaText">
+          </dt>
+          <dd class="g-col-lg-10 g-col-12">
             <xsl:call-template name="BuildRDFaWrappedAuthor">
               <xsl:with-param name="visible" select="'visible'"/>
             </xsl:call-template>
-          </div>
+          </dd>
         </div>
       </xsl:if>
 
       <xsl:if test="$gMdpMetadata/datafield[@tag='250']/subfield">
-        <div class="mdpMetaDataRow">
-          <div class="mdpMetaDataRegionHead">
+        <div class="grid">
+          <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Edition&#xa0;</xsl:text>
-          </div>
-          <div class="mdpMetaText">
+          </dt>
+          <dd class="g-col-lg-10 g-col-12">
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='250']/subfield"/>
-          </div>
+          </dd>
         </div>
       </xsl:if>
 
-      <div class="mdpMetaDataRow">
-        <div class="mdpMetaDataRegionHead">
+      <div class="grid">
+        <dt class="g-col-lg-2 g-col-12">
           <xsl:text>Published&#xa0;</xsl:text>
-        </div>
-        <div class="mdpMetaText">
+        </dt>
+        <dd class="g-col-lg-10 g-col-12">
           <xsl:call-template name="BuildRDFaWrappedPublished">
             <xsl:with-param name="visible" select="'visible'"/>
           </xsl:call-template>
-        </div>
+        </dd>
       </div>
 
       <xsl:if test="$gMdpMetadata/datafield[@tag='300']/subfield">
-        <div class="mdpMetaDataRow">
-          <div class="mdpMetaDataRegionHead">
+        <div class="grid">
+          <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Description&#xa0;</xsl:text>
-          </div>
-          <div class="mdpMetaText">
+          </dt>
+          <dd class="g-col-lg-10 g-col-12">
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='a']"/>
             &#x20;
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='b']"/>
             &#x20;
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='c']"/>
-          </div>
+          </dd>
         </div>
       </xsl:if>
 
-      <div class="mdpMetaDataRow">
-        <div class="mdpMetaDataRegionHead">
+      <div class="grid">
+        <dt class="g-col-lg-2 g-col-12">
           <xsl:text>Rights&#xa0;</xsl:text>
-        </div>
-        <div class="mdpMetaText">
+        </dt>
+        <dd class="g-col-lg-10 g-col-12">
           <xsl:call-template name="BuildRDFaCCLicenseMarkup"/>
-        </div>
+        </dd>
       </div>
 
       <!-- allow SSD user to link from SSDviewer to pageturner if desired -->
@@ -453,11 +453,11 @@
 
   <xsl:template name="PermanentURL">
     <xsl:param name="ssd"/>
-    <div class="mdpMetaDataRow">
-      <div class="mdpMetaDataRegionHead">
+    <div class="grid">
+      <dt class="g-col-lg-2 g-col-12">
         <xsl:text>Permanent URL&#xa0;</xsl:text>
-      </div>
-      <div class="mdpMetaText">
+      </dt>
+      <dd class="g-col-lg-10 g-col-12">
         <xsl:choose>
           <xsl:when test="$gItemHandle=''">
             <xsl:text>not available</xsl:text>
@@ -476,7 +476,7 @@
             </xsl:choose>
           </xsl:otherwise>
         </xsl:choose>
-      </div>
+      </dd>
     </div>
   </xsl:template>
 

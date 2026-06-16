@@ -128,7 +128,7 @@
 
       </head>
 
-      <body>
+      <body style="opacity: 0; visibility: none;">
         <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages!=''">
           <div id="DebugMessages">
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
@@ -152,8 +152,6 @@
     <div id="mdpUberContainer" class="apps p-3">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
-
-      <!-- <xsl:call-template name="build-survey-link" /> -->
 
       <div id="ControlContentContainer">
         <xsl:choose>
@@ -241,14 +239,14 @@
                   <!--If using page by page view, skip to current page instead of first -->
                   <xsl:when test="$gSSD_Session='false'">
                     <xsl:element name="a">
-                      <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                      <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
                       <xsl:text>Skip table of contents and go to current page</xsl:text>
                     </xsl:element>
                   </xsl:when>
 
                   <xsl:otherwise>
                     <xsl:element name="a">
-                      <xsl:attribute name="href">#SkipToBookText</xsl:attribute>
+                      <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
                       <xsl:text>Skip table of contents and go to first page</xsl:text>
                     </xsl:element>
                   </xsl:otherwise>
@@ -268,12 +266,13 @@
         <xsl:if test="$gRightsAttribute!='8'">
           <div id="mdpItemMetadata">
             <xsl:element name="h2">
-              <xsl:element name="a"><xsl:attribute name="name">biblio</xsl:attribute></xsl:element>
+              <xsl:attribute name="id">biblio</xsl:attribute>
               <xsl:text>Full Bibliographic Information</xsl:text>
             </xsl:element>
-
-            <xsl:call-template name="FullTitle"/>
-            <xsl:call-template name="BookMetadata"/>
+            <dl>
+              <xsl:call-template name="FullTitle"/>
+              <xsl:call-template name="BookMetadata"/>
+            </dl>
           </div>
         </xsl:if>
       </div>
@@ -290,38 +289,35 @@
 
   <!-- -->
   <xsl:template name="FullTitle">
-    <div class="mdpMetaDataRow">
-      <div class="mdpMetaDataRegionHead">
+    <div class="grid">
+      <dt class="g-col-lg-2 g-col-12">
         <xsl:text>Title</xsl:text>
-      </div>
-      <div class="mdpMetaText">
+      </dt>
+      <dd class="g-col-lg-10 g-col-12">
         <xsl:call-template name="BuildRDFaWrappedTitle">
           <xsl:with-param name="visible_title_string" select="$gSSDFullTitleString"/>
           <xsl:with-param name="hidden_title_string" select="$gSSDFullTitleString"/>
         </xsl:call-template>
-      </div>
+      </dd>
     </div>
   </xsl:template>
 
   <!-- Control Container -->
   <xsl:template name="BuildTOC">
-    <div class="mdpControlContainer">
       <!-- Contents LIST-->
-      <div id="mdpContentsList">
-        <p/>
+      <nav aria-labelledby="toc" id="mdpContentsList">
         <xsl:if test="$gFeatureList/Feature">
           <xsl:call-template name="BuildContentsList"/>
         </xsl:if>
-      </div>
-    </div>
+      </nav>
   </xsl:template>
 
   <!--Book contents -->
   <xsl:template name="ContentContainer">
-    <div id="mdpContentContainer">
-      <xsl:element name="a">
+    <div class="mdpContentContainer" id="skip-to-book-text">
+      <!-- <xsl:element name="a">
         <xsl:attribute name="name">SkipToBookText</xsl:attribute>
-      </xsl:element>
+      </xsl:element> -->
       <xsl:call-template name="Viewport"/>
     </div>
   </xsl:template>
@@ -331,8 +327,8 @@
     <!-- Use page anchors if entire-volume, relative links if page-at-a-time -->
 
     <xsl:if test="$gViewingMode!='no-view'">
-      <h2><a name="toc">Table of Contents</a></h2>
-      <xsl:element name="ul">
+      <h2 id="toc">Table of Contents</h2>
+      <xsl:element name="ol">
         <xsl:for-each select="$gFeatureList/Feature">
           <xsl:element name="li">
             <xsl:attribute name="class">mdpFeatureListItem</xsl:attribute>
@@ -452,35 +448,44 @@
           </xsl:if>
         </xsl:otherwise>
       </xsl:choose>
-      <p>
+      <nav aria-labelledby="pagination">
+        <h2 id="pagination" class="visually-hidden">Pagination</h2>
+        <ul>
         <xsl:choose>
           <xsl:when test="MdpApp/PageLinks/PreviousPageLink !=''">
+          <li>
             <xsl:element name="a">
               <xsl:attribute name="class">navigation</xsl:attribute>
               <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/PreviousPageLink"/></xsl:attribute>
               Previous Page
             </xsl:element>
+            </li>
           </xsl:when>
           <xsl:otherwise>
+          <li>
             This is the first page.
+          </li>
           </xsl:otherwise>
         </xsl:choose>
-        <br/>
         <xsl:choose>
           <xsl:when test="MdpApp/PageLinks/NextPageLink !=''">
+          <li>
             <xsl:element name="a">
               <xsl:attribute name="class">navigation</xsl:attribute>
               <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/NextPageLink"/></xsl:attribute>
               Next Page
             </xsl:element>
+            </li>
           </xsl:when>
           <xsl:otherwise>
+          <li>
             This is the last page.
+            </li>
           </xsl:otherwise>
         </xsl:choose>
-        <br/>
-        Return to <a href="#top">top</a>.
-      </p>
+        <li>Return to <a href="#top">top</a>.</li>
+        </ul>
+      </nav>
     </xsl:element>
   </xsl:template>
 
@@ -807,17 +812,6 @@
     </p>
   </xsl:template>
 
-  <xsl:template name="build-survey-link">
-    <div class="ssd--survey">
-      <p>
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-sunglasses" viewBox="0 0 16 16">
-          <path d="M4.968 9.75a.5.5 0 1 0-.866.5A4.498 4.498 0 0 0 8 12.5a4.5 4.5 0 0 0 3.898-2.25.5.5 0 1 0-.866-.5A3.498 3.498 0 0 1 8 11.5a3.498 3.498 0 0 1-3.032-1.75zM7 5.116V5a1 1 0 0 0-1-1H3.28a1 1 0 0 0-.97 1.243l.311 1.242A2 2 0 0 0 4.561 8H5a2 2 0 0 0 1.994-1.839A2.99 2.99 0 0 1 8 6c.393 0 .74.064 1.006.161A2 2 0 0 0 11 8h.438a2 2 0 0 0 1.94-1.515l.311-1.242A1 1 0 0 0 12.72 4H10a1 1 0 0 0-1 1v.116A4.22 4.22 0 0 0 8 5c-.35 0-.69.04-1 .116z"/>
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-1 0A7 7 0 1 0 1 8a7 7 0 0 0 14 0z"/>
-        </svg>
-        <xsl:text> How useful is the text-only view of the book?</xsl:text></p>
-      <p><a target="_blank" href="https://umich.qualtrics.com/jfe/form/SV_2tA6ksgRjzOYv5Q">Take our 2-question survey</a> (open in a new window)</p>
-    </div>
-  </xsl:template>
 
   <xsl:template name="load-firebird-assets">
     <script>
@@ -864,39 +858,6 @@
           document.body.style.visibility = 'visible';
           document.body.style.opacity = '1';
         }, 1500);
-    </script>
-  </xsl:template>
-
-  <xsl:template name="build-hotjar-script">
-    <script>
-        (function(h,o,t,j,a,r){
-            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-            h._hjSettings={hjid:2109672,hjsv:6};
-            a=o.getElementsByTagName('head')[0];
-            r=o.createElement('script');r.async=1;
-            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-            a.appendChild(r);
-        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-        var __hj; var __hjIdx = 0;
-        __hj = setInterval(function() {
-          if ( ! window.hj || ! HT.login_status ) { 
-            __hjIdx += 1;
-            if ( __hjIdx == 100 ) { clearInterval(__hjIdx); return; }
-            console.log("-- HOTJAR: punting", __hjIdx); 
-            return; 
-          }
-          clearInterval(__hj);
-          var tags = [];
-          if ( HT.login_status ) {
-            tags.push(HT.login_status.affiliation);
-          }
-          <xsl:if test="$gInCopyright = 'true'">
-            if ( HT.login_status.x ) {
-              tags.push('ETAS');
-            }
-          </xsl:if>
-          hj('tagRecording', tags);
-        }, 100);
     </script>
   </xsl:template>
 
