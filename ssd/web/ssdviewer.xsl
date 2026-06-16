@@ -31,6 +31,7 @@
   <xsl:variable name="gSSDFullTitleString">
     <xsl:value-of select="$gFullTitleString"/>
   </xsl:variable>
+  <xsl:variable name="gUserHasRoleToggles" select="/MBooksTop/MBooksGlobals/UserHasRoleToggles"/>
 
   <!-- Handle the view type. There are four (4) cases when
        FinalAccessStatus='allow' where access is either full volume or
@@ -102,6 +103,9 @@
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
       version="XHTML+RDFa 1.0"
       >
+      <xsl:if test="//UserHasRoleToggles/@activated != ''">
+        <xsl:attribute name="data-activated"><xsl:value-of select="//UserHasRoleToggles/@activated" /></xsl:attribute>
+      </xsl:if>
 
       <head profile="http://www.w3.org/1999/xhtml/vocab">
         <!-- RDFa -->
@@ -136,11 +140,6 @@
         </xsl:if>
 
         <xsl:call-template name="UberContainer"/>
-
-        <xsl:if test="$gEnableGoogleAnalytics='true'">
-          <xsl:call-template name="google_analytics" />
-        </xsl:if>
-
       </body>
     </html>
   </xsl:template>
