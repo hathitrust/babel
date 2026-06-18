@@ -82,6 +82,7 @@ sub new {
 
 sub call {
     my ( $self, $env ) = @_;
+    die('epub disabled');
     my $req = Plack::Request->new($env);
 
     if ( my $num_attempts = $req->param('num_attempts') ) {
