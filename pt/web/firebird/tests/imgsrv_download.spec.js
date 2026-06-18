@@ -57,51 +57,51 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(512 * 1024);
   });
 
-  test('download epub', async ({ request, page }) => {
-    var currentTime = new Date().getTime();
-
-    const initialResponse = await request.get(
-      'http://apache:8080/cgi/imgsrv/download/epub?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
-    );
-    const initialBody = await initialResponse.text();
-
-    const callbackParams = JSON.parse(
-      initialBody
-        .replace(/^tunnelCallback\(/, '[')
-        .replace(/\);$/, ']')
-        .replaceAll("'", '"')
-    );
-
-    const callbackUrl = callbackParams[0];
-    const downloadUrl = callbackParams[1];
-
-    // wait until status is done
-    let done = false;
-
-    while (done == false) {
-      const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
-      const callbackJson = await callbackResponse.json();
-
-      if (callbackJson.status == 'DONE') {
-        done = true;
-      } else {
-        // wait for 1 second
-        // await page.waitForTimeout(1000);
-        // yes it's polling and polling is bad but that's the way imgsrv works 😿
-        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-        await delay(1000);
-      }
-    }
-
-    const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
-    const downloadHeaders = downloadResponse.headers();
-    const downloadBody = await downloadResponse.text();
-
-    expect(downloadResponse.status()).toEqual(200);
-    expect(downloadHeaders['content-disposition']).toEqual('attachment; filename=test-pd_open.epub');
-    expect(downloadHeaders['content-type']).toEqual('application/epub+zip');
-    expect(downloadBody.length).toBeGreaterThan(0);
-  });
+  // test('download epub', async ({ request, page }) => {
+//     var currentTime = new Date().getTime();
+// 
+//     const initialResponse = await request.get(
+//       'http://apache:8080/cgi/imgsrv/download/epub?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
+//     );
+//     const initialBody = await initialResponse.text();
+// 
+//     const callbackParams = JSON.parse(
+//       initialBody
+//         .replace(/^tunnelCallback\(/, '[')
+//         .replace(/\);$/, ']')
+//         .replaceAll("'", '"')
+//     );
+// 
+//     const callbackUrl = callbackParams[0];
+//     const downloadUrl = callbackParams[1];
+// 
+//     // wait until status is done
+//     let done = false;
+// 
+//     while (done == false) {
+//       const callbackResponse = await request.get('http://apache:8080' + callbackUrl);
+//       const callbackJson = await callbackResponse.json();
+// 
+//       if (callbackJson.status == 'DONE') {
+//         done = true;
+//       } else {
+//         // wait for 1 second
+//         // await page.waitForTimeout(1000);
+//         // yes it's polling and polling is bad but that's the way imgsrv works 😿
+//         const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+//         await delay(1000);
+//       }
+//     }
+// 
+//     const downloadResponse = await request.get('http://apache:8080' + downloadUrl);
+//     const downloadHeaders = downloadResponse.headers();
+//     const downloadBody = await downloadResponse.text();
+// 
+//     expect(downloadResponse.status()).toEqual(200);
+//     expect(downloadHeaders['content-disposition']).toEqual('attachment; filename=test-pd_open.epub');
+//     expect(downloadHeaders['content-type']).toEqual('application/epub+zip');
+//     expect(downloadBody.length).toBeGreaterThan(0);
+//   });
 
   test('download single tiff current page, full resolution', async ({ request, page }) => {
     // no callback tunnel on single tiff

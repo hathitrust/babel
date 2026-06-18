@@ -88,7 +88,7 @@ builder {
     mount "/" => $app;
     mount "/volume" => builder {
         mount "/pdf" => $loader->('SRV::Volume::PDF');
-        mount "/epub" => $loader->('SRV::Volume::EPUB');
+        #mount "/epub" => $loader->('SRV::Volume::EPUB');
         mount "/plaintext" => $loader->('SRV::Volume::Text::Bundle');
         mount "/image" => $loader->('SRV::Volume::Image::Bundle');
         mount "/remediated"   => $loader->('SRV::Volume::Remediated::Bundle');
