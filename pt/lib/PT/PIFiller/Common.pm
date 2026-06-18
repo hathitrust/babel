@@ -64,8 +64,8 @@ sub BuildViewTypeUrl
 
     if ( $view eq 'fpdf' || $view eq 'pdf' ) {
         return BuildImageServerPDFUrl($cgi, $view);
-    } elsif ( $view eq 'epub' ) {
-        return BuildImageServerPDFUrl($cgi, $view);
+    #} elsif ( $view eq 'epub' ) {
+    #    return BuildImageServerPDFUrl($cgi, $view);
     }
 
     $tempCgi->delete('ui'); # clear ui=embed
@@ -96,8 +96,8 @@ sub BuildImageServerPDFUrl
         $tempCgi->param('num', scalar $cgi->param('num'));
         $tempCgi->param('attachment', 0);
         $action = "download/pdf";
-    } elsif ( $view eq 'epub' ) {
-        $action = 'download/epub';
+    #} elsif ( $view eq 'epub' ) {
+    #    $action = 'download/epub';
     }
 
     if ( $cgi->param('debug') ) {

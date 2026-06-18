@@ -109,19 +109,19 @@ subtest "download.psgi" => sub {
     };
   };
 
-  subtest "volume/epub" => sub {
-    subtest "with callback" => sub {
-      my $res = $test->request(GET "/epub?id=test.pd_open&callback=1");
-      is $res->message, 'OK';
-      is $res->header('Content-Type'), 'application/javascript';
-    };
+  #subtest "volume/epub" => sub {
+  #  subtest "with callback" => sub {
+  #    my $res = $test->request(GET "/epub?id=test.pd_open&callback=1");
+  #    is $res->message, 'OK';
+  #    is $res->header('Content-Type'), 'application/javascript';
+  #  };
 
-    subtest "without callback" => sub {
-      my $res = $test->request(GET "/epub?id=test.pd_open");
-      is $res->message, 'OK';
-      is $res->header('Content-Type'), 'application/epub+zip';
-    };
-  };
+  #  subtest "without callback" => sub {
+  #    my $res = $test->request(GET "/epub?id=test.pd_open");
+  #    is $res->message, 'OK';
+  #    is $res->header('Content-Type'), 'application/epub+zip';
+  #  };
+  #};
 
   subtest "volume/plaintext" => sub {
     my $res = $test->request(GET "/plaintext?id=test.pd_open");

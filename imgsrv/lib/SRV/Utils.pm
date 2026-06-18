@@ -475,7 +475,7 @@ sub parse_env {
             $path_info =~ s,.*/$id/,,;
 
             my $format;
-            if ( $path_info =~ m,\.jpg$|\.tif$|\.png|\.pdf|\.epub$, ) {
+            if ( $path_info =~ m,\.jpg$|\.tif$|\.png|\.pdf$, ) {
                 my $ridx = rindex($path_info, '.');
                 $format = substr($path_info, $ridx + 1);
                 $path_info = substr($path_info, 0, $ridx) . "/$format";
