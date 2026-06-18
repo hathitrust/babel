@@ -12,7 +12,6 @@
 
   const formatTitle = $state({});
   formatTitle['pdf'] = 'PDF';
-  formatTitle['epub'] = 'EPUB';
   formatTitle['plaintext'] = 'Text (.txt)';
   formatTitle['plaintext-zip'] = 'Text (.zip)';
   formatTitle['image-jpeg'] = 'Image (JPEG)';
@@ -423,7 +422,7 @@
   }
 
   $effect(() => {
-    if ((format == 'plaintext-zip' || format == 'epub') && range != 'volume') {
+    if (format == 'plaintext-zip' && range != 'volume') {
       range = 'volume';
     }
   });
@@ -526,19 +525,6 @@
             />
             <label class="form-check-label" for="format-pdf"> Ebook (PDF) </label>
           </div>
-          {#if manifest.allowFullDownload}
-            <div class="form-check">
-              <input
-                name="format"
-                class="form-check-input"
-                type="radio"
-                value="epub"
-                id="format-epub"
-                bind:group={format}
-              />
-              <label class="form-check-label" for="format-epub"> Ebook (EPUB) </label>
-            </div>
-          {/if}
           <div class="form-check">
             <input
               name="format"
@@ -636,7 +622,7 @@
                 type="radio"
                 value="current-page"
                 id="range-current-page"
-                disabled={format == 'epub' || format == 'plaintext-zip'}
+                disabled={format == 'plaintext-zip'}
                 bind:group={range}
               />
               <label class="form-check-label" for="range-current-page">
@@ -652,7 +638,7 @@
                   type="radio"
                   value="current-page-verso"
                   id="range-current-verso-page"
-                  disabled={format == 'epub' || format == 'plaintext-zip'}
+                  disabled={format == 'plaintext-zip'}
                   bind:group={range}
                 />
                 <label class="form-check-label" for="range-current-verso-page">
@@ -668,7 +654,7 @@
                   type="radio"
                   value="current-page-recto"
                   id="range-current-recto-page"
-                  disabled={format == 'epub' || format == 'plaintext-zip'}
+                  disabled={format == 'plaintext-zip'}
                   bind:group={range}
                 />
                 <label class="form-check-label" for="range-current-recto-page">
@@ -697,7 +683,7 @@
                 type="radio"
                 value="selected-pages"
                 id="range-selected-pages"
-                disabled={format == 'epub' || format == 'plaintext-zip'}
+                disabled={format == 'plaintext-zip'}
                 bind:group={range}
               />
               <label class="form-check-label" for="range-selected-pages"> Selected page scans </label>
