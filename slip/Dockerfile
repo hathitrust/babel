@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y \
   libipc-run-perl \
   libjson-xs-perl \
   libmailtools-perl \
-  libprometheus-tiny-shared \
   libtest-class-perl \
   libwww-perl \
   libxml-libxml-perl \
@@ -28,7 +27,8 @@ RUN apt-get update && apt-get install -y \
   zip
 
 RUN cpanm --notest \
-  File::Pairtree
+  File::Pairtree \
+  Prometheus::Tiny::Shared
 
 RUN ln -s /tmp /ram
 

@@ -95,6 +95,7 @@ services:
       service: solr-lss-dev
     profiles:
       - backend
+      - stage_item
 
   solr-ptsearch:
     extends:
@@ -121,6 +122,8 @@ services:
       service: stage-item
     depends_on:
       mysql-sdr:
+        condition: service_healthy
+      solr-lss-dev:
         condition: service_healthy
     profiles:
     - stage_item
