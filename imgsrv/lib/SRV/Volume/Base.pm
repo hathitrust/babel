@@ -477,17 +477,27 @@ sub _authorize {
 
     unless ( defined $self->restricted ) {
 
+
         my $C = $$env{'psgix.context'};
         my $mdpItem = $C->get_object('MdpItem');
         my $ar = $C->get_object('Access::Rights');
         my $gId = $mdpItem->GetId();
+        
+        # require a valid session
+        my $ses = $C->get_object('Session');
+        
+        # limit to users in an existing session
+        if ( $$ses{is_new} ) { 
+          $self->restricted(1);
+        } else {
 
-        my $final_access_status = $ar->assert_final_access_status($C, $gId);
-        my $download_access_status = $ar->get_single_page_PDF_access_status($C, $gId);
+          my $final_access_status = $ar->assert_final_access_status($C, $gId);
+          my $download_access_status = $ar->get_single_page_PDF_access_status($C, $gId);
 
-        my $restricted = ! ( ( $final_access_status eq 'allow' ) && ( $download_access_status eq 'allow' ) );
-            
-        $self->restricted($restricted);
+          my $restricted = ! ( ( $final_access_status eq 'allow' ) && ( $download_access_status eq 'allow' ) );
+              
+          $self->restricted($restricted);
+        }
     }
 }
 

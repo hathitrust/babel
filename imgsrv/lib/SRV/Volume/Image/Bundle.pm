@@ -92,12 +92,11 @@ sub _authorize {
 
     $self->SUPER::_authorize($env);
     unless ( $self->restricted ) {
-        # technically the user has access but we need to 
-        # limit resources for bundling to users in a current session
-        # unless you're using XYZZY=1 on the command line
         my $C = $$env{'psgix.context'};
+        # limit to users in a current session
         my $ses = $C->get_object('Session');
-        if ( $$ses{is_new} && ! $ENV{XYZZY} ) { $self->restricted(1); }
+        if ( $$ses{is_new} ) { $self->restricted(1); }
+        # limit TIFF bundling to 10 pages
         elsif ( $self->format eq 'image/tiff' && $self->total_pages > 10 ) {
             $self->restricted(1);
         }
