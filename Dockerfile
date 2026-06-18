@@ -75,7 +75,7 @@ RUN mkdir -p /l/local/bin
 RUN ln -s /usr/bin/unzip /l/local/bin/unzip
 RUN ln -s /usr/bin/convert /l/local/bin/convert
 RUN ln -s /usr/bin/plackup /l/local/bin/plackup
-RUN /bin/bash -c 'for cmd in pamflip jpegtopnm tifftopnm bmptopnm pngtopam ppmmake pamcomp pnmscalefixed pamscale pnmrotate pnmpad pamtotiff pnmtotiff pnmtojpeg pamrgbatopng ppmtopgm pnmtopng; do ln -s /usr/bin/$cmd /l/local/bin; done'
+RUN /bin/bash -c 'for cmd in pamflip jpegtopnm tifftopnm bmptopnm pngtopam ppmmake pamcomp pnmscalefixed pamscale pnmrotate pnmpad pamtotiff pnmtotiff pnmtojpeg pamrgbatopng ppmtopgm pnmtopng pamthreshold; do ln -s /usr/bin/$cmd /l/local/bin; done'
 
 RUN mkdir /htapps/babel/cache
 RUN chmod 4777 /htapps/babel/cache
