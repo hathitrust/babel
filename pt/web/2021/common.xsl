@@ -1257,12 +1257,6 @@
             <label for="format-pdf">Ebook (PDF)</label>
           </div>
 
-          <xsl:if test="$gFullPdfAccess = 'allow'">
-            <div class="form-control">
-              <input name="download_format" type="radio" id="format-epub" value="epub" /> 
-              <label for="format-epub">Ebook (EPUB)</label>
-            </div>
-          </xsl:if>
 
           <xsl:if test="$gHasOcr = 'YES'">
             <div class="form-control">
