@@ -116,8 +116,10 @@ sub ingest_Solr_search_response
         ($query_time) = ($$Solr_response_ref =~ m,<int name="QTime">(.*?)</int>,);
         $query_time = sprintf("%.3f", $query_time/1000);
 
-        # Max score
+        # Max score: Solr 9+ dropped the maxScore attribute from <result>;
+        # fall back to the first document's score (results are score-sorted)
         ($max_score) = ($$Solr_response_ref =~ m,maxScore="(.*?)",);
+        ($max_score) = ($$Solr_response_ref =~ m,<float name="score">(.*?)</float>,) unless $max_score;
         $max_score = $max_score ? $max_score : 0.0;
 
         # Hits
