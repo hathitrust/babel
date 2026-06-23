@@ -290,7 +290,11 @@ sub __response_handler {
         my $path = Utils::Logger::__Log_simple($s);
         DEBUG('idx', qq{DEBUG: INDEXER: Bad HTTP response: $code status=} . $response->status_line() . qq{ (see $path)} );
 
-        if ($code =~ m,^5\d\d,) {
+        if ($code == 429 || $code == 503) {
+            # Rate-limited or transiently unavailable; caller retries with backoff
+            $index_state = IX_INDEX_TIMEOUT;
+        }
+        elsif ($code =~ m,^5\d\d,) {
             # Some kind of foobar
             if ($status_line =~ m,reset by peer,is) {
                 # Bad data server couldn't process
@@ -360,7 +364,7 @@ sub __update_doc {
             last;
         }
         elsif ($retries < MAX_RETRIES) {
-            sleep 1;
+            sleep(2 ** $retries);
             $retries++;
         }
         else {
