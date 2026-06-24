@@ -9,7 +9,7 @@ x-healthcheck-defaults: &healthcheck-defaults
 services:
   solr-sdr-catalog:
     # This is a core service
-    image: ghcr.io/hathitrust/catalog-solr-sample:v1.0.0
+    image: ghcr.io/hathitrust/catalog-solr-sample-standalone:solr-standalone
     ports:
     - "9033:9033"
     volumes:
