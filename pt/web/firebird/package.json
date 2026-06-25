@@ -24,6 +24,10 @@
   "devDependencies": {
     "@playwright/test": "^1.54.0",
     "@popperjs/core": "^2.11.6",
+    "@storybook/addon-a11y": "^10.4.6",
+    "@storybook/addon-docs": "^10.4.6",
+    "@storybook/addon-links": "^10.4.6",
+    "@storybook/svelte-vite": "^10.4.6",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^22.13.5",
     "bootstrap": "^5.2.3",
@@ -35,6 +39,7 @@
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.2.6",
     "sass": "1.77.6",
+    "storybook": "^10.4.6",
     "svelte": "^5.39.9",
     "svelte-preprocess": "^6.0.0",
     "vite": "^7.3.2"
@@ -50,10 +55,13 @@
     "tippy.js": "^6.3.7"
   },
   "optionalDependencies": {
-    "@esbuild/linux-x64": "0.17.15"
+    "@esbuild/linux-x64": "0.17.15",
+    "@oxc-parser/binding-linux-arm64-gnu": "0.127.0",
+    "@oxc-parser/binding-linux-x64-gnu": "0.127.0"
   },
   "//": [
     "if you have issues with esbuild not installing the correct package for a platform, try updating this to match the version of esbuild that vite installs, npm list --all will help!",
-    "sass version is pinned to 1.77.6 until bootstrap releases a patch for dropping node-sass, see https://github.com/twbs/bootstrap/pull/41112"
+    "sass version is pinned to 1.77.6 until bootstrap releases a patch for dropping node-sass, see https://github.com/twbs/bootstrap/pull/41112",
+    "@oxc-parser binding versions must match the oxc-parser version storybook installs — run npm list oxc-parser to check and update if storybook upgrades it"
   ]
 }

@@ -36,6 +36,16 @@ services:
     profiles:
       - frontend
 
+  storybook:
+    extends:
+      file: common/docker/node.yml
+      service: page-turner
+    command: npm run storybook -- --host 0.0.0.0
+    ports:
+      - "6006:6006"
+    profiles:
+      - storybook
+
 # Backend Services
   apache:
     extends:
