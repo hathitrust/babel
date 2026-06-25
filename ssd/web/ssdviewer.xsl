@@ -128,6 +128,7 @@
 
         <xsl:call-template name="load-firebird-assets" />
         <link rel="stylesheet" href="/ssd/ssdstyles.css" type="text/css" />
+        <script src="/ssd/access_banner.js"></script>
         <script src="/ssd/toc_links.js"></script>
 
       </head>
@@ -148,11 +149,11 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
 
-    <div id="mdpUberContainer" class="apps p-3">
+    <main id="mdpUberContainer" class="apps p-3">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
 
-      <div id="ControlContentContainer">
+      <section id="ControlContentContainer" aria-label="Volume contents">
         <xsl:choose>
           <xsl:when test="$gFinalAccessStatus='allow' and $gHasOcr='YES'">
             <!-- Table of Contents -->
@@ -168,8 +169,8 @@
             </xsl:if>
           </xsl:otherwise>
         </xsl:choose>
-      </div>
-    </div>
+      </section>
+    </main>
   </xsl:template>
 
   <!-- -->
@@ -263,7 +264,7 @@
         </div>
 
         <xsl:if test="$gRightsAttribute!='8'">
-          <div id="mdpItemMetadata">
+          <section id="mdpItemMetadata" aria-labelledby="biblio">
             <xsl:element name="h2">
               <xsl:attribute name="id">biblio</xsl:attribute>
               <xsl:text>Full Bibliographic Information</xsl:text>
@@ -272,7 +273,7 @@
               <xsl:call-template name="FullTitle"/>
               <xsl:call-template name="BookMetadata"/>
             </dl>
-          </div>
+          </section>
         </xsl:if>
       </div>
     </div>
@@ -642,7 +643,7 @@
       </xsl:element>
     </xsl:if> -->
 
-    <div class="Section">
+    <section aria-labelledby="{$feature/Tag}_{$feature/Seq}" class="Section">
       <!-- <h3 id="{$SectionTitleAttr}" class="SectionHeading"><xsl:apply-templates select="SectionTitle"/></h3> -->
       <h2 id="{$feature/Tag}_{$feature/Seq}" class="SectionHeading"><xsl:value-of select="$feature/Label" /></h2>
       <xsl:apply-templates select="Page"/>
@@ -657,7 +658,7 @@
         </xsl:choose>
         <xsl:if test="$gFeatureList/Feature">Continue to next section or <a href="#toc">go to Table of Contents</a></xsl:if>
       </p>
-    </div>
+    </section>
   </xsl:template>
 
   <!-- -->
@@ -716,7 +717,7 @@
 
   <xsl:template name="build-emergency-access-affiliate-header">
     <xsl:variable name="access-type" select="//AccessType" />
-    <xsl:variable name="etas_href">https://www.hathitrust.org/ETAS-User-Information</xsl:variable>
+    <xsl:variable name="etas_href">https://www.hathitrust.org/member-libraries/services-programs/etas/information-users/</xsl:variable>
     <div class="alert alert--emergency-access" data-initialized="false" data-access-expires="{$access-type/Expires}" data-access-expires-seconds="{$access-type/Expires}">
       <xsl:attribute name="id">access-emergency-access</xsl:attribute>
       <xsl:choose>
@@ -733,7 +734,7 @@
           </p>
 
           <div class="alert--emergency-access--options">
-            <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
+            <a class="btn btn-primary" style="white-space: nowrap" href="{$access-type/Action}">Return Early</a>
           </div>
         </xsl:when>
         <xsl:when test="false() and $access-type/Available = 'FALSE'">
@@ -756,7 +757,7 @@
               <xsl:text>.</xsl:text>
             </p>
             <div class="alert--emergency-access--options">
-              <a class="btn btn-default" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
+              <a class="btn btn-primary" style="white-space: nowrap" href="{$access-type/Action}">Check Out</a>
             </div>
           </xsl:if>
         </xsl:otherwise>
