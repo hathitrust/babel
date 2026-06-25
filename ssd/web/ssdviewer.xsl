@@ -139,6 +139,62 @@
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
           </div>
         </xsl:if>
+        <hathi-cookie-consent-banner></hathi-cookie-consent-banner>
+        <div class="visually-hidden-focusable" aria-label="Skip links" role="complementary" id="skiplinks">
+        <ul>
+          <xsl:if test="$gRightsAttribute!='8'">
+            <xsl:element name="a">
+              <xsl:attribute name="href">#biblio</xsl:attribute>
+              <xsl:text>Go to full bibliographic information</xsl:text>
+            </xsl:element>
+            <xsl:element name="br"/>
+          </xsl:if>
+
+          <xsl:if test="$gFinalAccessStatus='allow'">
+            <xsl:choose>
+              <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
+              <xsl:when test="$gFeatureList/Feature">
+              <li>
+                <xsl:element name="a">
+                  <xsl:attribute name="href">#toc</xsl:attribute>
+                  <xsl:text>Go to table of contents</xsl:text>
+                </xsl:element>
+                </li>
+
+                <xsl:choose>
+                  <!--If using page by page view, skip to current page instead of first -->
+                  <xsl:when test="$gSSD_Session='false'">
+                    <li>
+                      <xsl:element name="a">
+                        <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
+                        <xsl:text>Skip table of contents and go to current page</xsl:text>
+                      </xsl:element>
+                    </li>
+                  </xsl:when>
+
+                  <xsl:otherwise>
+                    <li>
+                      <xsl:element name="a">
+                        <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
+                        <xsl:text>Skip table of contents and go to first page</xsl:text>
+                      </xsl:element>
+                    </li>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:when>
+
+              <xsl:otherwise>
+                <li>
+                  <xsl:element name="a">
+                    <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/FirstPageLink"/></xsl:attribute>
+                    <xsl:text>Go to First Page</xsl:text>
+                  </xsl:element>
+                </li>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:if>
+          </ul>
+        </div>
 
         <xsl:call-template name="UberContainer"/>
       </body>
@@ -216,52 +272,7 @@
 
         <xsl:call-template name="Access"/>
 
-        <div id="SSDjumps">
-          <xsl:if test="$gRightsAttribute!='8'">
-            <xsl:element name="a">
-              <xsl:attribute name="href">#biblio</xsl:attribute>
-              <xsl:text>Go to full bibliographic information</xsl:text>
-            </xsl:element>
-            <xsl:element name="br"/>
-          </xsl:if>
-
-          <xsl:if test="$gFinalAccessStatus='allow'">
-            <xsl:choose>
-              <!--If TOC exists, add link to skip TOC and go to first page. If no TOC, just go to first page-->
-              <xsl:when test="$gFeatureList/Feature">
-                <xsl:element name="a">
-                  <xsl:attribute name="href">#toc</xsl:attribute>
-                  <xsl:text>Go to table of contents</xsl:text>
-                </xsl:element>
-                <xsl:element name="br"/>
-
-                <xsl:choose>
-                  <!--If using page by page view, skip to current page instead of first -->
-                  <xsl:when test="$gSSD_Session='false'">
-                    <xsl:element name="a">
-                      <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
-                      <xsl:text>Skip table of contents and go to current page</xsl:text>
-                    </xsl:element>
-                  </xsl:when>
-
-                  <xsl:otherwise>
-                    <xsl:element name="a">
-                      <xsl:attribute name="href">#skip-to-book-text</xsl:attribute>
-                      <xsl:text>Skip table of contents and go to first page</xsl:text>
-                    </xsl:element>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:when>
-
-              <xsl:otherwise>
-                <xsl:element name="a">
-                  <xsl:attribute name="href"><xsl:value-of select="MdpApp/PageLinks/FirstPageLink"/></xsl:attribute>
-                  <xsl:text>Go to First Page</xsl:text>
-                </xsl:element>
-              </xsl:otherwise>
-            </xsl:choose>
-          </xsl:if>
-        </div>
+        
 
         <xsl:if test="$gRightsAttribute!='8'">
           <section id="mdpItemMetadata" aria-labelledby="biblio">
