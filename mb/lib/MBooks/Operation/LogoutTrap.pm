@@ -158,7 +158,7 @@ sub redirect_and_exit {
 
     my $cgi = $C->get_object('CGI');
     my $temp_cgi = new CGI($redir_params);
-    $temp_cgi->param('debug', $cgi->param('debug'));
+    $temp_cgi->param('debug', scalar $cgi->param('debug'));
     
     my $redirect_url = $temp_cgi->self_url();
     MBooks::View::P_redirect_HTTP($C, $redirect_url);
