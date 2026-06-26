@@ -1309,14 +1309,14 @@ sub handle_ANALYTICS_REPORT_URL_PI
     if ( $coll_id ) {
         push @parts, 'listis';
         push @parts, $coll_id;
-        push @parts, $cgi->param('lmt') || 'all';
+        push @parts, (scalar $cgi->param('lmt') || 'all');
     } else {
-        push @parts, $cgi->param('a');
+        push @parts, scalar $cgi->param('a');
     }
 
     foreach my $param ( $cgi->param ) {
         if ( $param =~ m,q[0-9]|field[0-9]|anyall[0-9]|op[0-9]|lmt, ) {
-            $tempCgi->param($param, $cgi->param($param));
+            $tempCgi->param($param, $cgi->multi_param($param));
         }
     }
     my $qs = $tempCgi->query_string;
