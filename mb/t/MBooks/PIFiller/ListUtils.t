@@ -24,33 +24,26 @@ $C->set_object('Database', $db);
 my $dbh = $db->get_DBH;
 $C->set_object('DBI', $dbh);
 
-#my $auth = Auth::Auth->new($C);
-#$C->set_object( 'Auth', $auth );
-
-# Track warnings. We don't want any. They clutter the logs.
-my @warnings;
-local $SIG{__WARN__} = sub {
-  my $message = shift;
-  print STDERR $message;
-  push @warnings, $message;
-};
-
 subtest "handle_ANALYTICS_REPORT_URL_PI" => sub {
   # Given a query a=listis&c=123&sort=title_d
-  # The analytics URL should be /mb/listcs/<COLLID>?q1=something&amp;sort=cn_a
-  # This seems kind of brittle because handle_ANALYTICS_REPORT_URL_PI relies on CGI
-  # for the ordering of parameters when constructing the URL. There's no explicit sorting.
+  # The analytics URL should be /mb/listis/<COLLID>?sort=title_d
+  # Be wary of brittleness if additional parameters are added: order may be random.
+  # Track warnings. We don't want any. They clutter the logs.
+  my @warnings;
+  local $SIG{__WARN__} = sub {
+    my $message = shift;
+    print STDERR $message;
+    push @warnings, $message;
+  };
+
   $cgi->param('a', 'listis');
   $cgi->param('c', '123');
   $cgi->param('sort', 'title_d');  
   my $res = MBooks::PIFiller::ListUtils::handle_ANALYTICS_REPORT_URL_PI($C, '', {});
-  is($res, '/mb/listis/123?sort=title_d');
+  is($res, '/mb/listis/123?sort=title_d', 'expected URL returned');
+  is(scalar @warnings, 0, 'no warnings encountered');
   # Clean up
   $C->set_object('CGI', new CGI);
-};
-
-subtest 'check for accumulated warnings' => sub {
- is(scalar @warnings, 0, 'no warnings encountered');
 };
 
 done_testing();
