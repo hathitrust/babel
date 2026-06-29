@@ -29,6 +29,14 @@ $C->set_object('DBI', $dbh);
 #my $auth = Auth::Auth->new($C);
 #$C->set_object( 'Auth', $auth );
 
+# Track warnings. We don't want any. They clutter the logs.
+my @warnings;
+local $SIG{__WARN__} = sub {
+  my $message = shift;
+  print STDERR $message;
+  push @warnings, $message;
+};
+
 subtest "handle_ANALYTICS_REPORT_URL_PI" => sub {
   # FIXME: find realistic examples of this, not copies of the collection builder tests
   subtest "with a collection ID" => sub {
@@ -63,6 +71,10 @@ subtest "handle_ANALYTICS_REPORT_URL_PI" => sub {
     # Clean up
     $C->set_object('CGI', new CGI);
   };
+};
+
+subtest 'check for accumulated warnings' => sub {
+  is(scalar @warnings, 0, 'no warnings encountered');
 };
 
 done_testing();
