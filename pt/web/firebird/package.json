@@ -8,7 +8,7 @@
     "build": "vite build && node ./build-redirects.js",
     "stage": "NODE_ENV=development vite build && node ./build-redirects.js",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
     "babel": "NODE_ENV=development vite build --watch",
     "test": "playwright test --trace on --grep-invert auth",
