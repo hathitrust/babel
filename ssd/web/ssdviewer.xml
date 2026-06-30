@@ -17,6 +17,7 @@
 
   <MBooksGlobals>
     <?CHUNK filename="ptglobals.xml"?>   
+    <AnalyticsReportUrl><?ANALYTICS_REPORT_URL?></AnalyticsReportUrl>
     <CurrentPageOcr><?CURRENT_PAGE_OCR?></CurrentPageOcr>
     <Ocr><?OCR_DATA?></Ocr>
     <CurrentView><?CURRENT_VIEW?></CurrentView>

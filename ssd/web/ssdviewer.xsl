@@ -106,6 +106,7 @@
       <xsl:if test="//UserHasRoleToggles/@activated != ''">
         <xsl:attribute name="data-activated"><xsl:value-of select="//UserHasRoleToggles/@activated" /></xsl:attribute>
       </xsl:if>
+      <xsl:attribute name="data-analytics-report-url"><xsl:value-of select="//AnalyticsReportUrl" /></xsl:attribute>
 
       <head profile="http://www.w3.org/1999/xhtml/vocab">
         <!-- RDFa -->
