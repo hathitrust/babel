@@ -1122,12 +1122,12 @@ sub handle_ANALYTICS_REPORT_URL_PI
     my @parts   = ('/mb');
     my $tempCgi = new CGI({});
 
-    push @parts, $cgi->param('a');
+    push @parts, scalar $cgi->param('a');
     push @parts, $coll_id;
 
     foreach my $param ( $cgi->param ) {
         if ( $param =~ m,q[0-9]|field[0-9]|anyall[0-9]|op[0-9]|lmt|sort|facet, ) {
-            $tempCgi->param( $param, $cgi->param($param) );
+            $tempCgi->param( $param, $cgi->multi_param($param) );
         }
     }
     my $qs = $tempCgi->query_string;
