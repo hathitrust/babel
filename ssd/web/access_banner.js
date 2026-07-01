@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     var cookieMatch = document.cookie.split('; ').find((row) => row.startsWith('HTexpiration='));
-    var data = cookieMatch ? JSON.parse(decodeURIComponent(cookieMatch.split('=')[1])) : null;
+    var data = cookieMatch ? JSON.parse(decodeURIComponent(cookieMatch.slice('HTexpiration='.length))) : null;
     if (!data) {
       return;
     }
