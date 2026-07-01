@@ -61,7 +61,7 @@ p.Image {
 }
 
 @container metadata (width < 960px ) {
-  dl .grid {
+  dl.grid {
     gap: 0;
   }
 }

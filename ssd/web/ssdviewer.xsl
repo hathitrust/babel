@@ -134,7 +134,7 @@
 
       </head>
 
-      <body style="opacity: 0; visibility: none;">
+      <body style="opacity: 0;">
         <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages!=''">
           <div id="DebugMessages">
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
@@ -281,10 +281,8 @@
               <xsl:attribute name="id">biblio</xsl:attribute>
               <xsl:text>Full Bibliographic Information</xsl:text>
             </xsl:element>
-            <dl>
               <xsl:call-template name="FullTitle"/>
               <xsl:call-template name="BookMetadata"/>
-            </dl>
           </section>
         </xsl:if>
       </div>
@@ -301,7 +299,7 @@
 
   <!-- -->
   <xsl:template name="FullTitle">
-    <div class="grid">
+    <dl class="grid">
       <dt class="g-col-lg-2 g-col-12">
         <xsl:text>Title</xsl:text>
       </dt>
@@ -311,7 +309,7 @@
           <xsl:with-param name="hidden_title_string" select="$gSSDFullTitleString"/>
         </xsl:call-template>
       </dd>
-    </div>
+    </dl>
   </xsl:template>
 
   <!-- Control Container -->
