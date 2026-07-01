@@ -375,10 +375,9 @@
   <!-- METADATA: MDP-style metadata helper -->
   <xsl:template name="MdpMetadataHelper">
     <xsl:param name="ssd"/>
-    <div id="mdpFlexible_1">
 
       <xsl:if test="$gHasMARCAuthor">
-        <dl class="grid">
+        <div class="grid">
           <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Author&#xa0;</xsl:text>
           </dt>
@@ -387,21 +386,21 @@
               <xsl:with-param name="visible" select="'visible'"/>
             </xsl:call-template>
           </dd>
-        </dl>
+        </div>
       </xsl:if>
 
       <xsl:if test="$gMdpMetadata/datafield[@tag='250']/subfield">
-        <dl class="grid">
+        <div class="grid">
           <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Edition&#xa0;</xsl:text>
           </dt>
           <dd class="g-col-lg-10 g-col-12">
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='250']/subfield"/>
           </dd>
-        </dl>
+        </div>
       </xsl:if>
 
-      <dl class="grid">
+      <div class="grid">
         <dt class="g-col-lg-2 g-col-12">
           <xsl:text>Published&#xa0;</xsl:text>
         </dt>
@@ -410,10 +409,10 @@
             <xsl:with-param name="visible" select="'visible'"/>
           </xsl:call-template>
         </dd>
-      </dl>
+      </div>
 
       <xsl:if test="$gMdpMetadata/datafield[@tag='300']/subfield">
-        <dl class="grid">
+        <div class="grid">
           <dt class="g-col-lg-2 g-col-12">
             <xsl:text>Description&#xa0;</xsl:text>
           </dt>
@@ -424,17 +423,17 @@
             &#x20;
             <xsl:value-of select="$gMdpMetadata/datafield[@tag='300']/subfield[@code='c']"/>
           </dd>
-        </dl>
+        </div>
       </xsl:if>
 
-      <dl class="grid">
+      <div class="grid">
         <dt class="g-col-lg-2 g-col-12">
           <xsl:text>Rights&#xa0;</xsl:text>
         </dt>
         <dd class="g-col-lg-10 g-col-12">
           <xsl:call-template name="BuildRDFaCCLicenseMarkup"/>
         </dd>
-      </dl>
+      </div>
 
       <!-- allow SSD user to link from SSDviewer to pageturner if desired -->
       <xsl:choose>
@@ -447,13 +446,12 @@
           <xsl:call-template name="PermanentURL"/>
         </xsl:otherwise>
       </xsl:choose>
-    </div>
   </xsl:template>
 
 
   <xsl:template name="PermanentURL">
     <xsl:param name="ssd"/>
-    <dl class="grid">
+    <div class="grid">
       <dt class="g-col-lg-2 g-col-12">
         <xsl:text>Permanent URL&#xa0;</xsl:text>
       </dt>
@@ -477,7 +475,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </dd>
-    </dl>
+    </div>
   </xsl:template>
 
 

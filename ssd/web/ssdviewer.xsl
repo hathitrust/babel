@@ -281,8 +281,10 @@
               <xsl:attribute name="id">biblio</xsl:attribute>
               <xsl:text>Full Bibliographic Information</xsl:text>
             </xsl:element>
+            <dl>
               <xsl:call-template name="FullTitle"/>
               <xsl:call-template name="BookMetadata"/>
+            </dl>
           </section>
         </xsl:if>
       </div>
@@ -299,7 +301,7 @@
 
   <!-- -->
   <xsl:template name="FullTitle">
-    <dl class="grid">
+    <div class="grid">
       <dt class="g-col-lg-2 g-col-12">
         <xsl:text>Title</xsl:text>
       </dt>
@@ -309,7 +311,7 @@
           <xsl:with-param name="hidden_title_string" select="$gSSDFullTitleString"/>
         </xsl:call-template>
       </dd>
-    </dl>
+    </div>
   </xsl:template>
 
   <!-- Control Container -->
