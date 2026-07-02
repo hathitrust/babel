@@ -29,6 +29,9 @@ use base qw(PIFiller);
 
 use PT::MdpItem;
 
+use URI;
+use URI::Escape;
+
 BEGIN {
     require "PT/PIFiller/Root.pm";
     require "PT/PIFiller/Common.pm";
@@ -197,6 +200,25 @@ sub handle_OCR_DATA_PI
     return $fullTextXML;
 }
 
+# ---------------------------------------------------------------------
+
+sub handle_ANALYTICS_REPORT_URL_PI
+  : PI_handler(ANALYTICS_REPORT_URL) {
+    my ( $C, $act, $piParamHashRef ) = @_;
+
+    my $cgi     = $C->get_object('CGI');
+    my $mdpItem = $C->get_object('MdpItem');
+    
+
+    my @parts   = $cgi->url(-absolute => 1);
+    $parts[0] =~ s,^/cgi,,;
+
+    push @parts, uri_escape($mdpItem->GetId());
+
+    my $url = join('/', @parts);
+
+    return $url;
+}
 
 1;
 
