@@ -29,6 +29,9 @@ services:
     build: ../../ptsearch-solr #TODO: Build from image in ghcr.io
     ports:
     - "8984:8983"
+    environment:
+      SOLR_MODULES: analysis-extras
+    command: solr-foreground --user-managed # Ensures Solr 10 starts in standalone mode, which is required for the way we are mounting cores and configs
     healthcheck:
       <<: *healthcheck-defaults
       test: "curl -f --retry-connrefused http://solr-ptsearch:8983/solr/ptsearch/admin/ping"

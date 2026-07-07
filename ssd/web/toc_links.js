@@ -1,19 +1,20 @@
-head.ready(function () {
-  $("#mdpContentsList").on('click', '.mdpFeatureListItem a[data-section-href]', function(event) {
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('#mdpContentsList').addEventListener('click', function (event) {
+    const link = event.target.closest('.mdpFeatureListItem a[data-section-href]');
+    if (!link) return;
     event.preventDefault();
-    var target = $(this).data('section-href');
-    history.pushState(null, '', $(this).attr('href'));
+    const target = link.dataset.sectionHref;
+    history.pushState(null, '', link.getAttribute('href'));
     document.getElementById(target).scrollIntoView();
-    console.log("--", $(this).attr('href'));
-  })
+    console.log('--', link.getAttribute('href'));
+  });
 
-  if ( window.URL ) {
-    $("#mdpPage a.navigation").each(function(index, link) {
-      let href = link.getAttribute('href');
-      var url = new URL(link.href.replace(/;/g, '&'));
-      var seq = url.searchParams.get('seq');
+  if (window.URL) {
+    document.querySelectorAll('#mdpPage a.navigation').forEach(function (link) {
+      const href = link.getAttribute('href');
+      const url = new URL(link.href.replace(/;/g, '&'));
+      const seq = url.searchParams.get('seq');
       link.setAttribute('href', href + `#seq${seq}`);
     });
   }
-
 });

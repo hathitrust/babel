@@ -131,7 +131,7 @@ sub Run {
             $cgi->param('seq', $ownerid_seq);
         } else {
             # log the ownerid failure to the appropriate seq
-            $ses->set_transient_subkey('messages', $cgi->param('seq'), 'ownerid');
+            $ses->set_transient_subkey('messages', scalar $cgi->param('seq'), 'ownerid');
         }
     }
 
