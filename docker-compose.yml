@@ -99,6 +99,14 @@ services:
     working_dir: /app
     command: composer install
 
+  zoo1:
+    extends:
+      file: common/docker/solr.yml
+      service: zoo1
+    profiles:
+      - backend
+      - stage_item
+
   solr-lss-dev:
     extends:
       file: common/docker/solr.yml
@@ -155,3 +163,5 @@ services:
 
 volumes:
   gem_cache:
+  solr1_data:
+  zoo1_data:
