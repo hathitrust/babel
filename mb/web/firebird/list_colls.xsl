@@ -633,6 +633,22 @@
       </div>
     </div>
   </xsl:template>
+
+  <xsl:template name="escape-json-string">
+    <xsl:param name="text"/>
+    <xsl:choose>
+      <xsl:when test="contains($text, '&quot;')">
+        <xsl:value-of select="substring-before($text, '&quot;')"/>
+        <xsl:text>\"</xsl:text>
+        <xsl:call-template name="escape-json-string">
+          <xsl:with-param name="text" select="substring-after($text, '&quot;')"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$text"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
   
   <xsl:template name="transfer-all-collection">
     <xsl:call-template name="build-accordion-item">
@@ -692,7 +708,9 @@
                   <xsl:text>{"c":"</xsl:text>
                   <xsl:value-of select="Value"/>
                   <xsl:text>","cn":"</xsl:text>
-                  <xsl:value-of select="Label"/>
+                  <xsl:call-template name="escape-json-string">
+                    <xsl:with-param name="text" select="Label"/>
+                  </xsl:call-template>
                   <xsl:text>"}</xsl:text>
                 </xsl:for-each>
                 <xsl:text>]</xsl:text>

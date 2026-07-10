@@ -434,6 +434,22 @@
     </xsl:call-template>
   </xsl:template>
 
+  <xsl:template name="escape-json-string">
+    <xsl:param name="text"/>
+    <xsl:choose>
+      <xsl:when test="contains($text, '&quot;')">
+        <xsl:value-of select="substring-before($text, '&quot;')"/>
+        <xsl:text>\"</xsl:text>
+        <xsl:call-template name="escape-json-string">
+          <xsl:with-param name="text" select="substring-after($text, '&quot;')"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$text"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>  
+
   <xsl:template name="transfer-this-collection">
     <xsl:variable name="transfer-link" select="//EditCollectionWidget/TransferLink" />
     <xsl:if test="$gIsOwnedByUser = 'TRUE' and normalize-space($transfer-link)">
@@ -473,7 +489,9 @@
                     <xsl:text>[{"c":"</xsl:text>
                       <xsl:value-of select="$coll_id"/>
                       <xsl:text>","cn":"</xsl:text>
-                      <xsl:value-of select="$coll_name"/>
+                      <xsl:call-template name="escape-json-string">
+                        <xsl:with-param name="text" select="$coll_name"/>
+                      </xsl:call-template>
                       <xsl:text>"}]</xsl:text>
                   </xsl:attribute> 
                   Transfer
