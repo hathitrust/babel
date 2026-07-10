@@ -114,6 +114,9 @@ services:
     profiles:
       - backend
       - stage_item
+    depends_on:
+      zoo1:
+        condition: service_healthy
 
   solr-ptsearch:
     extends:

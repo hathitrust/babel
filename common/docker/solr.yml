@@ -16,9 +16,6 @@ services:
     environment:
       - ZK_HOST=zoo1:2181
       - SOLR_OPTS=-XX:-UseLargePages
-    depends_on:
-      zoo1:
-        condition: service_healthy
     volumes:
       - solr1_data:/var/solr/data
     command: [ "sh", "-c", 'solr-foreground -c & sleep 150 && export SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:solrRocks && solr create_collection -d /opt/solr/core-x -c core-x -shards 1 -replicationFactor 1 -p 8983 && wait' ]
