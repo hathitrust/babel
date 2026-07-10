@@ -653,7 +653,14 @@
             <ul>
               <xsl:for-each select="//PendingTransfers/Transfer">
                 <li>
-                  <a href="{@href}">
+                  <a role="button" 
+                    class="text-primary-600"
+                    data-hathi-trigger="hathi-collection-transfer-modal"
+                    data-prop-queued="true"
+                    data-prop-step="2"
+                    data-prop-view="cancel-transfer"
+                    data-prop-complete-transfer-link="{@href}"
+                  >
                     <xsl:choose>
                       <xsl:when test="Payload = 'ALL'">
                         My Collections
@@ -670,9 +677,28 @@
             </ul>
           </xsl:when>
           <xsl:otherwise>
-            <form action="/cgi/mb/transfer">
-              <input type="hidden" name="c" value="ALL" />
-              <button class="btn btn-outline-dark">Transfer</button>
+            <form>
+              <button 
+                type="button" 
+                class="btn btn-outline-dark"
+                data-hathi-trigger="hathi-collection-transfer-modal" 
+              >
+              <xsl:attribute name="data-prop-collections">
+                <xsl:text>[</xsl:text>
+                <xsl:for-each select="/MBooksTop/Header/JumpToCollWidget/Option[Value != 'label']">
+                  <xsl:if test="position() > 1">
+                    <xsl:text>,</xsl:text>
+                  </xsl:if>
+                  <xsl:text>{"c":"</xsl:text>
+                  <xsl:value-of select="Value"/>
+                  <xsl:text>","cn":"</xsl:text>
+                  <xsl:value-of select="Label"/>
+                  <xsl:text>"}</xsl:text>
+                </xsl:for-each>
+                <xsl:text>]</xsl:text>
+              </xsl:attribute>
+              Transfer
+              </button>
             </form>
           </xsl:otherwise>
         </xsl:choose>

@@ -125,7 +125,6 @@
           Search Filters
         </span>
       </button>
-
       <div>
         <h2 class="filters-heading fs-3">Collection Tools</h2>
         <div class="accordion" id="accordion-tools">
@@ -445,9 +444,10 @@
         <xsl:with-param name="body">
           <p>Generate a link to transfer this collection to another user.</p>
 
-          <form action="{$transfer-link}">
-            <input type="hidden" name="c"
-              value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}" />
+          <!-- <form action="{$transfer-link}"> -->
+          <form>
+             <!-- <input type="hidden" name="c"
+              value="{/MBooksTop/MBooksGlobals/CurrentCgi/Param[@name='c']}" /> -->
             <xsl:choose>
               <xsl:when test="//EditCollectionWidget/QueuedForTransfer='yes'">
                 <div class="alert alert-info" style="padding-right: 0">
@@ -455,12 +455,29 @@
                 </div>
 
                 <div style="display: flex; gap: 0.25rem;">
-                  <button class="btn">View/Cancel Transfer</button>
+                  <button class="btn btn-outline-dark mb-2" 
+                    data-hathi-trigger="hathi-collection-transfer-modal" 
+                    data-prop-queued="true"
+                    data-prop-step="2"
+                    data-prop-view="cancel-transfer"
+                    data-prop-complete-transfer-link="{//EditCollectionWidget/TransferLink}"
+                  >View/Cancel Transfer</button>
                   <!-- <button class="btn-mini">Cancel Transfer</button> -->
                 </div>
               </xsl:when>
               <xsl:otherwise>
-                <button class="btn btn-outline-dark">Transfer</button>
+                <button type="button" class="btn btn-outline-dark mb-2" 
+                data-hathi-trigger="hathi-collection-transfer-modal" 
+                >
+                  <xsl:attribute name="data-prop-collections">
+                    <xsl:text>[{"c":"</xsl:text>
+                      <xsl:value-of select="$coll_id"/>
+                      <xsl:text>","cn":"</xsl:text>
+                      <xsl:value-of select="$coll_name"/>
+                      <xsl:text>"}]</xsl:text>
+                  </xsl:attribute> 
+                  Transfer
+                </button>
               </xsl:otherwise>
             </xsl:choose>
           </form>

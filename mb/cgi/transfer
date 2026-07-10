@@ -354,9 +354,13 @@ sub _request_configure {
     my $transfer = MBooks::Utils::Transfer->new;
     $transfer->generate($C, $collection_data);
 
-    $cgi->path_info($transfer->token);
-    $cgi->param('ok', '1');
-    return _redirect($C, $cgi->self_url);
+    return _render_json($C, {
+        token => $transfer->token,
+        transfer_link => _generate_transfer_link($C, $transfer),
+    });
+    # $cgi->path_info($transfer->token);
+    # $cgi->param('ok', '1');
+    # return _redirect($C, $cgi->self_url);
 }
 
 sub _request_view {
@@ -433,6 +437,14 @@ sub _redirect {
     my ( $C, $url ) = @_;
     my $response = Plack::Response->new(302);
     $response->redirect($url);
+    return $response->finalize;
+}
+
+sub _render_json {
+    my ( $C, $data ) = @_;
+    my $response = Plack::Response->new(200);
+    $response->content_type('application/json');
+    $response->body( JSON::XS->new->utf8->encode($data) );
     return $response->finalize;
 }
 
