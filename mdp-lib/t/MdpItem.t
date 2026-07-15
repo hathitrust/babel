@@ -7,7 +7,6 @@ use Data::Dumper;
 use File::Slurp;
 use FindBin;
 use Test::More;
-#use File::Spec;
 use XML::LibXML ();
 
 use Context;
