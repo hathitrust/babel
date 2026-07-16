@@ -19,32 +19,27 @@ Extracted from PT::MdpItem; only concerned with $id.mets.xml data.
 =cut
 
 use strict;
+
 use CGI;
-BEGIN {
-    $Date::Manip::Backend = 'DM5';
-}
 use Date::Manip qw( Date_Cmp ParseDate );
+use List::Util qw(first);
+use Time::HiRes qw();
+use XML::LibXML;
 
 # MDP
-use MdpGlobals;
-use Debug::DUtils;
-use Utils;
-use Utils::Extract;
-use Context;
 use Auth::Auth;
+use Context;
+use DataTypes;
+use Debug::DUtils;
 use Identifier;
 use MarcMetadata;
+use MdpGlobals;
 use Metrics;
 use MetsReadingOrder;
-use DataTypes;
-
+use Utils;
 use Utils::Cache::Storable;
-
+use Utils::Extract;
 use Utils::Logger;
-use Time::HiRes qw();
-
-use XML::LibXML;
-use List::Util qw(first);
 
 # Global variables
 
