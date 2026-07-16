@@ -44,3 +44,22 @@ else
 fi
 
 echo "pt/firebird build done"
+
+### stamper JAR download
+
+STAMPER_JAR=$BINPATH/../imgsrv-tools/target/stamper.jar
+STAMPER_URL=https://github.com/hathitrust/imgsrv-tools/releases/latest/download/stamper.jar
+
+mkdir -p $BINPATH/../imgsrv-tools/target
+# Only downloads if the JAR file is missing. To pick up a new release,
+# remove imgsrv-tools/target/stamper.jar from the server and re-run stage-app.
+if [ ! -f $STAMPER_JAR ]; then
+  echo "Downloading stamper JAR..."
+  curl -fsSL $STAMPER_URL -o $STAMPER_JAR
+  errVal=$?
+  if [ $errVal -ne 0 ]; then
+    exit $errVal
+  fi
+fi
+
+echo "stamper JAR ready"
