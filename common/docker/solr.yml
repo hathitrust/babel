@@ -32,13 +32,12 @@ services:
     container_name: zoo1
     restart: always
     hostname: zoo1
-    #ports:
-    #  - 2181:2181
+    ports:
+      - 2181:2181
     environment:
       ZOO_MY_ID: 1
-      # JVMFLAGS: "-XX:-UseContainerSupport"
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181
-      ZOO_4LW_COMMANDS_WHITELIST: mntr, conf, ruok
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
     volumes:
       - zoo1_data:/data
     healthcheck:
