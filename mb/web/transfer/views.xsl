@@ -16,28 +16,10 @@
 
       <head>
         <title>Transfer Collections | HathiTrust Digital Library</title>
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
+        <!-- <link rel="stylesheet" type="text/css" href="/common/firebird/dist/main.201910.css" /> -->
         <meta charset="utf-8" />
-        <style>
-          body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-
-          .alert {
-            border: 1px solid #423c31;
-          }
-
-          .alert-block.alert-warning > * + * {
-            margin-top: 0.5rem;
-          }
-
-          .alert-block .btn {
-            text-shadow: none;
-          }
-        </style>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <xsl:call-template name="load-firebird-assets" />
       </head>
       <body>
         <div class="alert alert-block alert-warning">
@@ -59,96 +41,14 @@
         <title>Transfer Collections | HathiTrust Digital Library</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
         <meta charset="utf-8" />
-        <style>
-          .modal__container {
-            width: 75vw;
-            max-width: 54rem;
-            min-width: 34rem;
-          }
-
-          .modal__container ul {
-            font-size: 95%;
-          }
-
-          .modal__content {
-            padding: 1rem 2rem;
-          }
-
-          .modal__footer {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 0.25rem;
-            border-bottom-left-radius: 6px;
-            border-bottom-right-radius: 6px;
-          }
-
-          .modal__footer .btn.justify-start {
-            margin-right: auto;
-            justify-self: flex-start;
-          }
-
-          .modal__container * + * {
-            margin-top: 1rem;
-          }
-
-          .modal__container li + li {
-            margin-top: 0.25rem;
-          }
-
-          .transfer-link-callout {
-            margin: 1rem auto; 
-            width: 90%; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: flex-start; 
-            gap: 1rem;
-          }
-
-          .transfer-link-callout p {
-          }
-
-          span.transfer-link-span {
-            word-break: break-all;
-            font-size: 90%; 
-            font-family: monospace;
-            display: inline-block;
-          }
-
-          button[data-action="action-copy"] {
-            flex-grow: 0;
-            flex-shrink: 0;
-            display: flex;
-          }
-
-          button[data-action="action-copy"]:hover {
-            fill: #f5f5f5;
-          }
-
-          .modal__content h2 {
-            margin-top: 0;
-            font-size: 1.125rem;
-          }
-
-          .btn.flex {
-            display: flex; 
-            align-items: center; 
-            gap: 0.25rem;
-          }
-
-        </style>
+        <xsl:call-template name="load-firebird-assets" />
       </head>
-      <body data-view="{$view}">
-        <form method="POST" action="{$root/field[@name='action']/value}">
-          <div class="modal is-open" id="modal-1" aria-hidden="false">
-            <div class="modal__overlay" tabindex="-1" data-micromodal-close="">
-              <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+      <body style="opacity: 0;" data-view="{$view}">
+        <form class="p-3" method="POST" action="{$root/field[@name='action']/value}">
+              <div class="">
                 <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
               </div>
-            </div>
-          </div>
           <xsl:apply-templates select="$root/field[@name='referer']" mode="input" />
         </form>
         <script src="/mb/transfer/utils.js"></script>
@@ -232,7 +132,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="modal__content" id="modal-1-content">
+    <div class="">
 
       <h2>Step 1: Review Transfer</h2>
 
@@ -253,8 +153,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="modal__content" id="modal-1-content">
-
+    <div class="">
       <h2>Transfer completed!</h2>
       <p>You now maintain these collections:</p>
 
@@ -270,7 +169,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="modal__content" id="modal-1-content">
+    <div class="">
 
       <h2>Step 0: Please Log In</h2>
       <p>Please log into HathiTrust to accept ownership of these collections:</p>
@@ -278,9 +177,9 @@
       <xsl:call-template name="build-collection-data-list" />
 
     </div>
-    <div class="modal__footer">
-      <button type="button" id="action-modal-button-1-0" class="modal__btn btn-dismiss" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
-      <a class="modal__btn btn btn-primary" href="{$root/field[@name='login-link']/value}">Log In</a>
+    <div class="modal__footer d-flex gap-2">
+      <button type="button" id="action-modal-button-1-0" class="btn btn-outline-dark" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
+      <a class="btn btn-primary" href="{$root/field[@name='login-link']/value}">Log In</a>
     </div>
   </xsl:template>
 
@@ -359,39 +258,38 @@
       <h1 class="modal__title" id="modal-1-title">
         <xsl:value-of select="$title" />
       </h1>
-      <button type="button" class="modal__close" aria-label="Close modal" data-micromodal-close=""></button>
     </div>
   </xsl:template>
 
   <xsl:template name="build-modal-step-footer">
-    <div class="modal__footer">
+    <div class="modal__footer d-flex gap-2">
       <xsl:call-template name="build-modal-step-actions" />
     </div>
   </xsl:template>
 
   <xsl:template name="build-modal-step-actions">
-    <button type="button" id="action-modal-button-1-0" class="modal__btn btn-dismiss" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
-    <button id="action-modal-button-1-1" class="modal__btn btn btn-primary" type="submit" name="action" value="submit">Next</button>
+    <button type="button" id="action-modal-button-1-0" class="btn btn-outline-dark" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
+    <button id="action-modal-button-1-1" class="btn btn-primary" type="submit" name="action" value="submit">Next</button>
   </xsl:template>
 
   <xsl:template name="build-modal-done-footer">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
-    <div class="modal__footer">
-      <a class="modal__btn btn btn-primary" href="{$back-link}">Done</a>
+    <div class="modal__footer d-flex gap-2">
+      <a class="btn btn-primary" href="{$back-link}">Done</a>
     </div>
   </xsl:template>
 
   <xsl:template name="build-modal-done-cancel-footer">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
-    <div class="modal__footer">
-      <button id="action-modal-button-1-1" class="modal__btn btn justify-start flex" type="submit" name="action" value="cancel">
+    <div class="modal__footer d-flex gap-2">
+      <button id="action-modal-button-1-1" class="btn btn-outline-dark justify-start flex" type="submit" name="action" value="cancel">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
           <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
           <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
         </svg>
         <xsl:text> Cancel Transfer</xsl:text>
       </button>
-      <a class="modal__btn btn btn-primary" href="{$back-link}">Done</a>
+      <a class="btn btn-primary" href="{$back-link}">Done</a>
     </div>
   </xsl:template>
 
@@ -412,6 +310,60 @@
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()" />
     </xsl:copy>
+  </xsl:template>
+
+  <xsl:template name="load-firebird-assets">
+    <script>
+      async function loadFirebirdAssets() {
+          function addScript(options) {
+            let scriptEl = document.createElement('script');
+            if (options.crossOrigin) {
+              scriptEl.crossOrigin = options.crossOrigin;
+            }
+            if (options.type) {
+              scriptEl.type = options.type;
+            }
+            scriptEl.src = options.href;
+            document.head.appendChild(scriptEl);
+          }
+
+
+          function addStylesheet(options) {
+            let linkEl = document.createElement('link');
+            linkEl.rel = 'stylesheet';
+            linkEl.href = options.href;
+            document.head.appendChild(linkEl);
+          }
+
+
+          try {
+            const response = await fetch('/common/firebird/dist/manifest.json');
+            const manifest = await response.json();
+
+
+            const assets = {
+              stylesheet: '/common/firebird/dist/' + manifest['index.css'].file,
+              script: '/common/firebird/dist/' + manifest['index.html'].file,
+            };
+
+
+            addStylesheet({ href: assets.stylesheet });
+            addScript({ href: assets.script, type: 'module' });
+          } catch (err) {
+            console.error('Failed to load firebird assets:', err);
+          }
+        }
+
+
+        loadFirebirdAssets();
+
+
+        // in case any of the links and scripts fail
+        setTimeout(function () {
+          document.body.style.visibility = 'visible';
+          document.body.style.opacity = '1';
+        }, 1500);
+    </script>
   </xsl:template>
 
 </xsl:stylesheet>
