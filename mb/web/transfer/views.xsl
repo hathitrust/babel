@@ -16,16 +16,15 @@
 
       <head>
         <title>Transfer Collections | HathiTrust Digital Library</title>
-        <!-- <link rel="stylesheet" type="text/css" href="/common/firebird/dist/main.201910.css" /> -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <xsl:call-template name="load-firebird-assets" />
       </head>
       <body>
-        <div class="alert alert-block alert-warning">
-          <p>There was a problem.</p>
+        <div class="alert alert-block alert-warning m-3">
+          <h1>There was a problem.</h1>
           <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
-          <p style="margin-top: 1rem"><a class="btn btn-primary" href="/cgi/mb?a=listcs;colltype=my-collections">Back to Index</a></p>
+          <p style="margin-top: 1rem"><a class="btn btn-primary" href="/cgi/mb?a=listcs;colltype=my-collections">Back to Collections</a></p>
         </div>
       </body>
     </html>
@@ -132,7 +131,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="">
+    <div>
 
       <h2>Step 1: Review Transfer</h2>
 
@@ -153,7 +152,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="">
+    <div>
       <h2>Transfer completed!</h2>
       <p>You now maintain these collections:</p>
 
@@ -169,7 +168,7 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="">
+    <div>
 
       <h2>Step 0: Please Log In</h2>
       <p>Please log into HathiTrust to accept ownership of these collections:</p>
