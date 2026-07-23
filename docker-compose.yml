@@ -68,7 +68,7 @@ services:
     extends:
       file: common/docker/perl.yml
       service: perl
-    command: "prove -r imgsrv/t ls/t mb/t mdp-lib/t"
+    command: "prove -r -Islip-lib imgsrv/t ls/t mb/t mdp-lib/t"
     profiles:
       - testing
 
