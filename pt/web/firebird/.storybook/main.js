@@ -7,6 +7,10 @@ const config = {
   stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|svelte)'],
   addons: ['@storybook/addon-links', '@storybook/addon-docs', '@storybook/addon-a11y'],
   docs: {},
+  // firebird-common's CSS references font files (Font Awesome, Mulish, Roboto Mono) via
+  // relative `../fonts/...` urls, which resolve to `/fonts/*` at the Storybook site root.
+  // PT has no local src/public/, so serve firebird-common's copy at that path instead.
+  staticDirs: [{ from: '../node_modules/firebird-common/src/public/fonts', to: '/fonts' }],
   async viteFinal(config, { configType }) {
     const { mergeConfig } = await import('vite');
 
