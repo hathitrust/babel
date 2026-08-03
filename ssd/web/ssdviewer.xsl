@@ -134,7 +134,7 @@
 
       </head>
 
-      <body style="opacity: 0;">
+      <body class="apps" style="opacity: 0;">
         <xsl:if test="/MBooksTop/MBooksGlobals/DebugMessages!=''">
           <div id="DebugMessages">
             <xsl:copy-of select="/MBooksTop/MBooksGlobals/DebugMessages"/>
@@ -206,7 +206,7 @@
   <!-- Top Level Container DIV -->
   <xsl:template name="UberContainer">
 
-    <main id="mdpUberContainer" class="apps p-3">
+    <main id="mdpUberContainer" class="p-3">
       <!-- Header -->
       <xsl:call-template name="SSDPageHeader"/>
 
