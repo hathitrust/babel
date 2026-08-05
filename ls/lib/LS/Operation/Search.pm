@@ -305,13 +305,20 @@ sub get_counter_a
 	# been an initial page1 query or session timed out
 	# Do regular query for 0.. $N_interleaved results in order to get
 	# the last A result i.e. $counter_a
+
+	# Note: do_interleaved_query can leave the interleaver debug data uninitialized
+	# when there are no results of the query. This seems to have been the cause of
+	# at least some instances of "no cached counter a found" 500 errors in the wild
+	# (i.e., a query that returns no results [e.g., bogus facet] combined with paging past
+	# the first 200 (interleaved) results. It appears can safely ignore the undefined
+	# counter a and just return a "no results found" page.
+	# This block used end with an ASSERT counter_a but that was removed by ETT-1368.
 	my $i_start = 0;
 	my $i_rows  = $N_Interleaved;
 
 	my $throwaway_result_data=$self->__do_interleave($C,$primary_type,$i_start,$i_rows);
 	
 	$counter_a = get_cached_object($C, $query_md5,'counter_a');
-	ASSERT(defined($counter_a),qq {no cached counter a found} );
     }
     return $counter_a;
 }
