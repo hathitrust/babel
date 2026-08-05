@@ -309,7 +309,7 @@ sub get_counter_a {
         # (i.e., a query that returns no results [e.g., bogus facet] combined with paging past
         # the first 200 (interleaved) results. It appears can safely ignore the undefined
         # counter a and just return a "no results found" page.
-        # This block used end with an ASSERT counter_a but that was removed by ETT-1368.
+        # This block used to end with an ASSERT counter_a but that was removed by ETT-1368.
         my $i_start = 0;
         my $i_rows  = $N_Interleaved;
 
