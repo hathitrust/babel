@@ -16,35 +16,19 @@
 
       <head>
         <title>Transfer Collections | HathiTrust Digital Library</title>
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
+        <xsl:call-template name="load-firebird-assets" />
+        
         <meta charset="utf-8" />
-        <style>
-          body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-
-          .alert {
-            border: 1px solid #423c31;
-          }
-
-          .alert-block.alert-warning > * + * {
-            margin-top: 0.5rem;
-          }
-
-          .alert-block .btn {
-            text-shadow: none;
-          }
-        </style>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body>
+      <body class="apps" style="opacity: 0;">
+        <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
         <div class="alert alert-block alert-warning">
           <p>There was a problem.</p>
           <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
           <p style="margin-top: 1rem"><a class="btn btn-primary" href="/cgi/mb?a=listcs;colltype=my-collections">Back to Index</a></p>
         </div>
+        <hathi-website-footer class="position-absolute bottom-0 w-100"></hathi-website-footer>
       </body>
     </html>
 
@@ -58,143 +42,116 @@
       <head>
         <title>Transfer Collections | HathiTrust Digital Library</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-        <link rel="stylesheet" type="text/css" href="/common/alicorn/css/main.201910.css" />
+        <xsl:call-template name="load-firebird-assets" />
         <meta charset="utf-8" />
         <style>
-          .modal__container {
-            width: 75vw;
-            max-width: 54rem;
-            min-width: 34rem;
-          }
+        [aria-current="step"] {
+          font-weight: 700;
+          span:first-child {
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            padding: 8px;
 
-          .modal__container ul {
-            font-size: 95%;
-          }
-
-          .modal__content {
-            padding: 1rem 2rem;
-          }
-
-          .modal__footer {
+            background: black;
+            border: 2px solid black;
+            color: #fff;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 0.25rem;
-            border-bottom-left-radius: 6px;
-            border-bottom-right-radius: 6px;
+            justify-content: center;
           }
-
-          .modal__footer .btn.justify-start {
-            margin-right: auto;
-            justify-self: flex-start;
-          }
-
-          .modal__container * + * {
-            margin-top: 1rem;
-          }
-
-          .modal__container li + li {
-            margin-top: 0.25rem;
-          }
-
-          .transfer-link-callout {
-            margin: 1rem auto; 
-            width: 90%; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: flex-start; 
-            gap: 1rem;
-          }
-
-          .transfer-link-callout p {
-          }
-
-          span.transfer-link-span {
-            word-break: break-all;
-            font-size: 90%; 
-            font-family: monospace;
-            display: inline-block;
-          }
-
-          button[data-action="action-copy"] {
-            flex-grow: 0;
-            flex-shrink: 0;
-            display: flex;
-          }
-
-          button[data-action="action-copy"]:hover {
-            fill: #f5f5f5;
-          }
-
-          .modal__content h2 {
-            margin-top: 0;
-            font-size: 1.125rem;
-          }
-
-          .btn.flex {
-            display: flex; 
-            align-items: center; 
-            gap: 0.25rem;
-          }
-
-        </style>
+        } 
+        </style> 
       </head>
-      <body data-view="{$view}">
+      <body data-view="{$view}" class="apps" style="opacity: 0;">
+      <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
         <form method="POST" action="{$root/field[@name='action']/value}">
-          <div class="modal is-open" id="modal-1" aria-hidden="false">
-            <div class="modal__overlay" tabindex="-1" data-micromodal-close="">
-              <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <div class="" id="modal-1" aria-hidden="false">
+            <div class="" tabindex="-1" data-micromodal-close="">
+              <div class="" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
                 <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
               </div>
             </div>
           </div>
           <xsl:apply-templates select="$root/field[@name='referer']" mode="input" />
         </form>
+        <hathi-website-footer class="position-absolute bottom-0 w-100"></hathi-website-footer>
         <script src="/mb/transfer/utils.js"></script>
       </body>
     </html>
   </xsl:template>
 
   <xsl:template match="xsl:template[@name='request.confirm']" name="request.confirm">
-    <xsl:call-template name="build-modal-header">
+    <!-- <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections</xsl:with-param>
-    </xsl:call-template>
-    <div class="modal__content" id="modal-1-content">
+    </xsl:call-template> -->
+  <div class="d-block" id="step-1">
+      <div role="region" aria-label="Transfer collections steps">
+      <nav aria-label="Progress">
+        <ol class="d-flex gap-5">
+          <li class="d-flex flex-column align-items-center" aria-current="step"><span>1</span><span>Start transfer</span></li>
+          <li class="d-flex flex-column align-items-center"><span>2</span><span>Select collections</span></li>
+          <li class="d-flex flex-column align-items-center"><span>3</span><span>Review &amp; complete</span></li>
+        </ol>
+        </nav>
 
-      <h2>Step 1: Select collections</h2>
-
-      <p>You've selected these collections to transfer:</p>
-      
-      <xsl:call-template name="build-collection-data-list" />
-
-      <p>
-        The next step will generate a link that can be
-        used to transfer collections to a new owner, or to recover access
-        to collections after logging in with a different method or identity.
-      </p>
-
-      <xsl:apply-templates select="$root/field[@name='collection_data']" mode="input" />
-
+        <h2>Start transfer</h2>
+        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iusto explicabo harum necessitatibus ducimus ad voluptatum consequuntur minima nulla, aliquid similique culpa laboriosam alias, illo, quo quia! Facilis nam laboriosam blanditiis.</p>   
+        <xsl:call-template name="build-modal-step-1-footer" />
+      </div>
     </div>
-    <xsl:call-template name="build-modal-step-footer" />
+    <div id="step-2" class="d-none">
+      <div role="region" aria-label="Transfer collections steps">
+
+      <nav aria-label="Progress">
+      <ol class="d-flex gap-5">
+        <li class="d-flex flex-column align-items-center"><span>1</span><span>Start transfer</span></li>
+        <li class="d-flex flex-column align-items-center" aria-current="step"><span>2</span><span>Select collections</span></li>
+        <li class="d-flex flex-column align-items-center"><span>3</span><span>Review &amp; complete</span></li>
+      </ol>
+      </nav>
+
+        <h2>Review selected collections</h2>
+
+        <p>You've selected these collections to transfer:</p>
+        
+        <xsl:call-template name="build-collection-data-list" />
+
+        <p>
+          The next step will generate a link that can be
+          used to transfer collections to a new owner, or to recover access
+          to collections after logging in with a different method or identity.
+        </p>
+
+        <xsl:apply-templates select="$root/field[@name='collection_data']" mode="input" />
+
+      </div>
+      <xsl:call-template name="build-modal-step-footer" />
+    </div>
   </xsl:template>
 
   <xsl:template match="xsl:template[@name='request.view']" name="request.view">
     <xsl:variable name="transfer-link" select="$root/field[@name='transfer_link']/value" />
     <xsl:variable name="new" select="$root/field[@name='new']/value" />
 
-    <xsl:call-template name="build-modal-header">
+    <!-- <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections</xsl:with-param>
-    </xsl:call-template>
+    </xsl:call-template> -->
 
-    <div class="modal__content" id="modal-1-content">
+    <div role="region" aria-label="Transfer collections steps">
+     <nav aria-label="Progress">
+      <ol class="d-flex gap-5">
+        <li class="d-flex flex-column align-items-center"><span>1</span><span>Start transfer</span></li>
+        <li class="d-flex flex-column align-items-center"><span>2</span><span>Select collections</span></li>
+        <li class="d-flex flex-column align-items-center" aria-current="step"><span>3</span><span>Review &amp; complete</span></li>
+      </ol>
+      </nav>
 
       <h2>
-        <xsl:if test="$new = '1'">
+        <!-- <xsl:if test="$new = '1'">
           <xsl:text>Step 2: </xsl:text>
-        </xsl:if>
-        <xsl:text>Copy Link</xsl:text>
+        </xsl:if> -->
+        <xsl:text>Finalize transfer</xsl:text>
       </h2>
 
       <p>Copy this transfer link and use in a new browser session:</p>
@@ -232,7 +189,14 @@
     <xsl:call-template name="build-modal-header">
       <xsl:with-param name="title">Transfer Collections: Confirm</xsl:with-param>
     </xsl:call-template>
-    <div class="modal__content" id="modal-1-content">
+    <div role="region" aria-label="Transfer collections steps">
+      <nav aria-label="Progress">
+      <ol>
+        <li class="d-flex flex-column" aria-current="step"><span>1</span><span>Start transfer</span></li>
+        <li class="d-flex flex-column"><span>2</span><span>Select collections</span></li>
+        <li class="d-flex flex-column"><span>3</span><span>Review &amp; complete</span></li>
+      </ol>
+      </nav>
 
       <h2>Step 1: Review Transfer</h2>
 
@@ -279,8 +243,8 @@
 
     </div>
     <div class="modal__footer">
-      <button type="button" id="action-modal-button-1-0" class="modal__btn btn-dismiss" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
-      <a class="modal__btn btn btn-primary" href="{$root/field[@name='login-link']/value}">Log In</a>
+      <button type="button" id="action-modal-button-1-0" class="btn btn-outline-dark" name="action" value="cancel">Cancel</button>
+      <a class="btn btn-primary" href="{$root/field[@name='login-link']/value}">Log In</a>
     </div>
   </xsl:template>
 
@@ -359,39 +323,49 @@
       <h1 class="modal__title" id="modal-1-title">
         <xsl:value-of select="$title" />
       </h1>
-      <button type="button" class="modal__close" aria-label="Close modal" data-micromodal-close=""></button>
     </div>
   </xsl:template>
 
   <xsl:template name="build-modal-step-footer">
-    <div class="modal__footer">
+    <div class="d-flex justify-content-between">
       <xsl:call-template name="build-modal-step-actions" />
     </div>
+  </xsl:template>  
+
+  <xsl:template name="build-modal-step-1-footer">
+    <div class="d-flex justify-content-between">
+      <xsl:call-template name="build-modal-step-1-actions" />
+    </div>
+  </xsl:template>  
+  
+  <xsl:template name="build-modal-step-1-actions">
+    <button type="button" id="action-modal-button-0-0" class="btn btn-outline-dark" name="action" value="cancel">Cancel</button>
+    <button id="action-modal-button-0-1" class="btn btn-primary">Next</button>
   </xsl:template>
 
   <xsl:template name="build-modal-step-actions">
-    <button type="button" id="action-modal-button-1-0" class="modal__btn btn-dismiss" data-micromodal-close="true" name="action" value="cancel">Cancel</button>
-    <button id="action-modal-button-1-1" class="modal__btn btn btn-primary" type="submit" name="action" value="submit">Next</button>
+    <button type="button" id="action-modal-button-1-0" class="btn btn-outline-dark" name="action" value="cancel">Cancel</button>
+    <button id="action-modal-button-1-1" class="btn btn-primary" type="submit" name="action" value="submit">Next</button>
   </xsl:template>
 
   <xsl:template name="build-modal-done-footer">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
     <div class="modal__footer">
-      <a class="modal__btn btn btn-primary" href="{$back-link}">Done</a>
+      <a class="btn btn-primary" href="{$back-link}">Done</a>
     </div>
   </xsl:template>
 
   <xsl:template name="build-modal-done-cancel-footer">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
-    <div class="modal__footer">
-      <button id="action-modal-button-1-1" class="modal__btn btn justify-start flex" type="submit" name="action" value="cancel">
+    <div class="d-flex justify-content-between">
+      <button id="action-modal-button-1-1" class="btn btn-outline-dark justify-start flex" type="submit" name="action" value="cancel">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
           <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
           <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
         </svg>
         <xsl:text> Cancel Transfer</xsl:text>
       </button>
-      <a class="modal__btn btn btn-primary" href="{$back-link}">Done</a>
+      <a class="btn btn-primary" href="{$back-link}">Done</a>
     </div>
   </xsl:template>
 
@@ -412,6 +386,54 @@
     <xsl:copy>
       <xsl:apply-templates select="@*|*|text()" />
     </xsl:copy>
+  </xsl:template>
+
+   <xsl:template name="load-firebird-assets">
+    <script>
+      async function loadFirebirdAssets() {
+          function addScript(options) {
+            let scriptEl = document.createElement('script');
+            if (options.crossOrigin) {
+              scriptEl.crossOrigin = options.crossOrigin;
+            }
+            if (options.type) {
+              scriptEl.type = options.type;
+            }
+            scriptEl.src = options.href;
+            document.head.appendChild(scriptEl);
+          }
+
+          function addStylesheet(options) {
+            let linkEl = document.createElement('link');
+            linkEl.rel = 'stylesheet';
+            linkEl.href = options.href;
+            document.head.appendChild(linkEl);
+          }
+
+          try {
+            const response = await fetch('/common/firebird/dist/manifest.json');
+            const manifest = await response.json();
+
+            const assets = {
+              stylesheet: '/common/firebird/dist/' + manifest['index.css'].file,
+              script: '/common/firebird/dist/' + manifest['index.html'].file,
+            };
+
+            addStylesheet({ href: assets.stylesheet });
+            addScript({ href: assets.script, type: 'module' });
+          } catch (err) {
+            console.error('Failed to load firebird assets:', err);
+          }
+        }
+
+        loadFirebirdAssets();
+
+        // in case any of the links and scripts fail
+        setTimeout(function () {
+          document.body.style.visibility = 'visible';
+          document.body.style.opacity = '1';
+        }, 1500);
+    </script>
   </xsl:template>
 
 </xsl:stylesheet>
