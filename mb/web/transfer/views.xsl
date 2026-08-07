@@ -156,10 +156,11 @@
 
       <p>Copy this transfer link and use in a new browser session:</p>
       <div class="transfer-link-callout">
-        <p id="transfer-link">
+        <!-- <p id="transfer-link">
           <xsl:value-of select="$transfer-link" />
-        </p>
-        <xsl:call-template name="build-action-copy" />
+        </p> -->
+        <hathi-copy-snippet data-prop-snippet-link="{$transfer-link}"></hathi-copy-snippet>
+        <!-- <xsl:call-template name="build-action-copy" /> -->
       </div>
 
       <div id="transfer-link-success" style="display: none" class="alert alert-success">Link copied!</div>
