@@ -22,7 +22,7 @@
     "*.{js,ts,svelte,css,scss,html}": "prettier --write"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.0",
+    "@playwright/test": "1.62.1",
     "@popperjs/core": "^2.11.6",
     "@storybook/addon-a11y": "^10.4.6",
     "@storybook/addon-docs": "^10.4.6",
