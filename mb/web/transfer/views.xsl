@@ -24,7 +24,7 @@
       <body class="apps" style="opacity: 0;">
         <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
         <div class="container">
-          <h1 class="mb-3">Transfer collections</h1>
+          <span class="d-flex gap-3 align-items-baseline"><i class="fa-solid fa-exchange-alt fa-flip-horizontal fa-2x text-primary-600" aria-hidden="true"></i><h1 class="mb-3">Transfer collections</h1></span>
           <div class="alert alert-block alert-warning">
             <h2 class="h3">There was a problem.</h2>
             <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
@@ -47,13 +47,18 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <xsl:call-template name="load-firebird-assets" />
         <meta charset="utf-8" />
+        <style>
+          figure { 
+            width: 100%;
+          }
+        </style>
       </head>
       <body data-view="{$view}" class="apps" style="opacity: 0;">
         <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
         <div class="container">
           <form method="POST" action="{$root/field[@name='action']/value}">
             <div class="p-3">
-                <h1 class="mb-3">Transfer collections</h1>
+                <span class="d-flex gap-3 align-items-baseline"><i class="fa-solid fa-exchange-alt fa-flip-horizontal fa-2x text-primary-600" aria-hidden="true"></i><h1 class="mb-3">Transfer collections</h1></span>
                 <div class="d-flex flex-column">
                 <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
                 </div>
@@ -166,7 +171,7 @@
       <xsl:call-template name="build-collection-data-list" />
 
     </div>
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-end gap-2">
       <a id="action-modal-button-1-0" class="btn border-0 shadow-none" href="{$back-link}">Cancel</a>
       <a class="btn btn-primary" href="{$root/field[@name='login-link']/value}">Log In</a>
     </div>
@@ -242,15 +247,13 @@
   </xsl:template>
 
   <xsl:template name="build-modal-step-footer">
-    <div class="d-flex justify-content-between">
       <xsl:call-template name="build-modal-step-actions" />
-    </div>
   </xsl:template>  
 
   <xsl:template name="build-modal-step-actions">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
-    <a id="action-modal-button-1-0" class="btn border-0 shadow-none" href="{$back-link}">Cancel</a>
-    <div class="d-flex gap-2">
+    <div class="d-flex justify-content-end gap-2">
+      <a id="action-modal-button-1-0" class="btn border-0 shadow-none" href="{$back-link}">Cancel</a>
       <button id="action-modal-button-1-1" class="btn btn-primary" type="submit" name="action" value="submit">Continue <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
     </div>
   </xsl:template>
@@ -264,7 +267,7 @@
 
   <xsl:template name="build-modal-done-cancel-footer">
     <xsl:variable name="back-link" select="$root/field[@name='referer']/value" />
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-end gap-2">
       <button id="action-modal-button-1-1" class="btn btn-outline-dark d-flex align-items-center gap-1" type="submit" name="action" value="cancel">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
           <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
