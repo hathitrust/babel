@@ -329,7 +329,7 @@ sub get_idp_list {
         $seen{$$hash_ref{inst_id}} = 1;
 
         my $host = $ENV{'HTTP_HOST'} || 'localhost';
-        my $idp_url = $hash_ref->{template};
+        my $idp_url = $hash_ref->{template} // '';
         $idp_url =~ s,___HOST___,$host,;
         $idp_url =~ s,&amp;,&,;
 

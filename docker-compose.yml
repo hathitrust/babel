@@ -98,15 +98,7 @@ services:
       - ${BABEL_HOME}/catalog:/app
     working_dir: /app
     command: composer install
-
-  zoo1:
-    extends:
-      file: common/docker/solr.yml
-      service: zoo1
-    profiles:
-      - backend
-      - stage_item
-
+  # This is Solr 6
   solr-lss-dev:
     extends:
       file: common/docker/solr.yml
@@ -114,6 +106,20 @@ services:
     profiles:
       - backend
       - stage_item
+
+  zoo1:
+    extends:
+      file: common/docker/solr.yml
+      service: zoo1
+    profiles:
+      - solr9
+
+  solr-lss-dev-solr9:
+    extends:
+      file: common/docker/solr.yml
+      service: solr-lss-dev-solr-solr9
+    profiles:
+      - solr9
     depends_on:
       zoo1:
         condition: service_healthy

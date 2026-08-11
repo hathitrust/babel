@@ -30,6 +30,12 @@ In your workdir:
 docker compose --profile frontend build
 docker compose --profile backend build
 ```
+If you want to build the application with Solr 9, you can use the `solr9` and `backend` profiles:
+
+```
+LSS_SOLR_HOST=solr-lss-dev-solr9 docker compose --profile backend --profile solr9 build
+```
+
 ## Step 4: Build assets
 
 Build the CSS and JavaScript for `firebird-common` and `pt`:
@@ -55,6 +61,12 @@ docker compose --profile frontend up
 
 ```bash
 docker compose --profile backend up
+```
+
+If you want to build the application with Solr 9, you can use the `solr9` and `backend` profiles:
+
+```
+LSS_SOLR_HOST=solr-lss-dev-solr9 docker compose --profile backend --profile solr9 up
 ```
 
 In your browser:

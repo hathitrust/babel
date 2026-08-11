@@ -9,8 +9,23 @@ x-healthcheck-defaults: &healthcheck-defaults
 
 services:
   solr-lss-dev:
+    # This is another core service
+    image: solr:6.6.6-alpine
+    ports:
+      - "8983:8983"
+    user: ${CURRENT_USER}
+    volumes:
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-x:/opt/solr/server/solr/core-x
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-y:/opt/solr/server/solr/core-y
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone:/opt/lss_solr_configs
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lib:/opt/solr/server/solr/lib
+      - ${BABEL_HOME}/logs/solr:/opt/solr/server/logs
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: "ping -c 1 solr-lss-dev:8983"
+  solr-lss-dev-solr-solr9:
     image: ghcr.io/hathitrust/full-text-search-cloud:solr9-shards-docker
-    container_name: solr-lss-dev
+    container_name: solr-lss-dev-solr9
     ports:
      - "8981:8983"
     environment:
@@ -22,7 +37,7 @@ services:
     command: [ "sh", "-c", "solr-foreground & sleep 150 && export SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:solrRocks && solr create_collection -d /opt/solr/core-x -c core-x -shards 1 -replicationFactor 1 -p 8983 && wait" ]
     healthcheck:
       <<: *healthcheck-defaults
-      test: [ "CMD-SHELL", "curl -s -u admin:solrRocks 'http://solr-lss-dev:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=core-x' | grep -q '\"state\":\"active\"'" ]
+      test: [ "CMD-SHELL", "curl -s -u admin:solrRocks 'http://solr-lss-dev-solr9:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=core-x' | grep -q '\"state\":\"active\"'" ]
       interval: 30s
       start_period: 30s
       timeout: 30s
