@@ -18,6 +18,7 @@ services:
     - PERL5LIB=/htapps/babel/mdp-lib
     - LSS_SOLR_ENGINE_URL_A=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/core-x
     - LSS_SOLR_ENGINE_URL_B=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/core-y
+    - LSS_SOLR_BASIC_AUTH=YWRtaW46c29sclJvY2tz
     depends_on:
       mysql-sdr:
         condition: service_healthy
