@@ -99,7 +99,6 @@
           </form>
         </main>
         <hathi-website-footer class="position-absolute bottom-0 w-100"></hathi-website-footer>
-        <script src="/mb/transfer/utils.js"></script>
       </body>
     </html>
   </xsl:template>
