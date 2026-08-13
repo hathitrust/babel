@@ -158,7 +158,7 @@
  
     <div class="d-grid gap-125">
 
-        <div class="d-grid gap-1">
+        <div class="d-grid gap-3">
         <h2 class="h3 mb-0">Review collections</h2>
 
         <p class="mb-0">The following are the collections that are available for import:</p>
