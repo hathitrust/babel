@@ -27,8 +27,15 @@
         </style>
       </head>
       <body class="apps" style="opacity: 0;">
+        <div id="skiplinks" class="visually-hidden-focusable" role="complementary" aria-label="Skip links">
+          <ul>
+            <li>
+              <a href="#main">Skip to main</a>
+            </li>
+          </ul>
+        </div>
         <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
-        <div class="container">
+        <main class="container" id="main">
           <span class="d-flex gap-2 align-items-center">
             <span class="d-flex justify-content-center align-items-center" style="width: 1.5rem;">
               <i class="fa-solid fa-exchange-alt fa-flip-horizontal text-primary-600" style="font-size:1.25rem" aria-hidden="true"></i>
@@ -40,7 +47,7 @@
             <xsl:apply-templates select="document('')//xsl:template[@name=$view]" />
             <p style="margin-top: 1rem"><a class="btn btn-primary" href="/cgi/mb?a=listcs;colltype=my-collections">Back to Collections</a></p>
           </div>
-        </div>
+        </main>
         <hathi-website-footer class="position-absolute bottom-0 w-100"></hathi-website-footer>
       </body>
     </html>
@@ -67,8 +74,15 @@
         </style>
       </head>
       <body data-view="{$view}" class="apps" style="opacity: 0;">
+        <div id="skiplinks" class="visually-hidden-focusable" role="complementary" aria-label="Skip links">
+          <ul>
+            <li>
+              <a href="#main">Skip to main</a>
+            </li>
+          </ul>
+        </div>
         <hathi-website-header data-prop-search-state="toggle"></hathi-website-header>
-        <div class="container">
+        <main class="container" id="main">
           <form method="POST" action="{$root/field[@name='action']/value}">
             <div class="d-grid gap-125">
                 <span class="d-flex gap-2 align-items-center">
@@ -83,7 +97,7 @@
             </div>
             <xsl:apply-templates select="$root/field[@name='referer']" mode="input" />
           </form>
-        </div>
+        </main>
         <hathi-website-footer class="position-absolute bottom-0 w-100"></hathi-website-footer>
         <script src="/mb/transfer/utils.js"></script>
       </body>
