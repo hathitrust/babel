@@ -12,18 +12,56 @@ services:
     # This is another core service
     image: solr:6.6.6-alpine
     ports:
-    - "8983:8983"
+      - "8983:8983"
     user: ${CURRENT_USER}
     volumes:
-    - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-x:/opt/solr/server/solr/core-x
-    - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-y:/opt/solr/server/solr/core-y
-    - ${BABEL_HOME}/lss_solr_configs/solr6_standalone:/opt/lss_solr_configs
-    - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lib:/opt/solr/server/solr/lib
-    - ${BABEL_HOME}/logs/solr:/opt/solr/server/logs
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-x:/opt/solr/server/solr/core-x
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lss-dev/core-y:/opt/solr/server/solr/core-y
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone:/opt/lss_solr_configs
+      - ${BABEL_HOME}/lss_solr_configs/solr6_standalone/lib:/opt/solr/server/solr/lib
+      - ${BABEL_HOME}/logs/solr:/opt/solr/server/logs
     healthcheck:
       <<: *healthcheck-defaults
       test: "ping -c 1 solr-lss-dev:8983"
-
+  solr-lss-dev-solr-solr9:
+    image: ghcr.io/hathitrust/full-text-search-cloud:solr9-shards-docker
+    container_name: solr-lss-dev-solr9
+    ports:
+     - "8981:8983"
+    environment:
+      - ZK_HOST=zoo1:2181
+      - SOLR_OPTS=-XX:-UseLargePages
+      - SOLR_MODULES=analysis-extras
+    volumes:
+      - solr1_data:/var/solr
+    command: [ "sh", "-c", "solr-foreground & sleep 150 && export SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:solrRocks && solr create_collection -d /opt/solr/core-x -c core-x -shards 1 -replicationFactor 1 -p 8983 && wait" ]
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: [ "CMD-SHELL", "curl -s -u admin:solrRocks 'http://solr-lss-dev-solr9:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=core-x' | grep -q '\"state\":\"active\"'" ]
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 10
+  zoo1: # Zookeeper run in standalone mode for development and testing purposes. In production, we would use a Zookeeper ensemble for high availability.
+    image: zookeeper:3.9.0
+    container_name: zoo1
+    restart: always
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+    volumes:
+      - zoo1_data:/data
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: [ "CMD", "nc", "-z", "-w", "2", "localhost", "2181" ] # Check if ZooKeeper is listening on port 2181
+      interval: 30s
+      start_period: 30s
+      timeout: 30s
+      retries: 10
   solr-ptsearch:
     # This is a core service
     build: ../../ptsearch-solr #TODO: Build from image in ghcr.io
@@ -35,3 +73,6 @@ services:
     healthcheck:
       <<: *healthcheck-defaults
       test: "curl -f --retry-connrefused http://solr-ptsearch:8983/solr/ptsearch/admin/ping"
+volumes:
+    solr1_data: null
+    zoo1_data: null
