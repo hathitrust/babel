@@ -57,7 +57,7 @@ sub __Solr_result {
     my ($C, $query_string, $rs, $AB) = @_;
 
     my $url = $self->__get_Solr_select_url($C, $query_string, $AB);
-    my $req = $self->__get_request_object($url);
+    my $req = $self->__get_request_object($url, $C);
     my $ua = $self->__create_user_agent();
 
     if (DEBUG('query')) {
