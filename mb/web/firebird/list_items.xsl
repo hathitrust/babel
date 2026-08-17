@@ -455,7 +455,7 @@
                 </div>
 
                 <div style="display: flex; gap: 0.25rem;">
-                  <button class="btn">View/Cancel Transfer</button>
+                  <button class="btn btn-outline-dark">View/Cancel Transfer</button>
                   <!-- <button class="btn-mini">Cancel Transfer</button> -->
                 </div>
               </xsl:when>
