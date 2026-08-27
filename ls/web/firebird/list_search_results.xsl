@@ -205,9 +205,6 @@
 
     <xsl:call-template name="build-nav-pagination" />
 
-      <!-- <script type="text/javascript">
-        head.js("/ls/alicorn/js/ls_clicklog.js");
-      </script> -->
   </xsl:template>
 
   <xsl:template name="build-noresults-container">
