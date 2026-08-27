@@ -149,8 +149,6 @@ sub execute_operation
         $act->set_transient_facade_member_data($C, 'jsonCallback', $callback);
     }
 
-    $colltype = $list_colls_colltype if ( $cgi->param('skin') eq 'alicorn' );
-
     my $coll_arr_ref;
     eval {
         $coll_arr_ref = $cs->list_colls($list_colls_colltype, $sortkey,$dir );
@@ -252,7 +250,7 @@ sub execute_operation
     my $config = $C->get_object('MdpConfig');
     my $records_per_page = $config->get('default_records_per_page');
 
-    if ( $total_records > $records_per_page && $cgi->param('skin') ne 'alicorn' ) {
+    if ( $total_records > $records_per_page ) {
         my $start = $pager->first - 1;
         my $end = $pager->last - 1;
         $coll_arr_ref = [ @$coll_arr_ref[$start .. $end] ];
