@@ -64,8 +64,6 @@ use Debug::DUtils;
 my %g_skin_map =
     (
      'default'   => '',
-     'alicorn'   => '<firebird',
-     '2021'      => '<firebird',
      'crms'      => '/pt/web/crms',
      'crmsworld' => '/pt/web/crms',
      'firebird'  => '',
@@ -162,9 +160,6 @@ sub get_fallback_path
     # Skin
     my $skin = new View::Skin($C);
     my $skin_name = $skin->get_skin_name($C);
-
-    ## force 2021 -> alicorn
-    $skin_name = 'alicorn' if ( $skin_name eq '2021' );
 
     ## -- if (heaven forbid) you find yourself needing to build a 
     ## -- new theme, uncomment these to change defaults before

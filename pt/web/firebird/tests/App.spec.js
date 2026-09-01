@@ -20,13 +20,9 @@ test.describe('pt loads', () => {
   });
 });
 
-//TODO
+test('request with skin=alicorn load page with firebird elements', async ({ page }) => {
+  await page.goto('/cgi/pt?id=test.pd_open&skin=alicorn');
+  await expect(page.locator('#main')).toBeVisible();
 
-/*
-test.describe('scan/page toolbar actions', () => [
-    // minimize page controls
-    // select scan for download
-    // rotate scan
-    // zoom scan
-])
-*/
+  await expect(page.locator('hathi-website-header')).toBeVisible();
+});
