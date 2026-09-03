@@ -34,7 +34,7 @@ services:
       - SOLR_MODULES=analysis-extras
     volumes:
       - solr1_data:/var/solr
-    command: [ "sh", "-c", "solr-foreground & sleep 150 && export SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:solrRocks && solr create_collection -d /opt/solr/core-x -c core-x -shards 1 -replicationFactor 1 -p 8983 && wait" ]
+    command: [ "sh", "-c", "solr-foreground & sleep 150 && export SOLR_AUTHENTICATION_OPTS=-Dbasicauth=admin:solrRocks && solr create_collection -d /opt/solr/core-x -c core-x -shards 1 --replicationFactor 1 -p 8983 && wait" ]
     healthcheck:
       <<: *healthcheck-defaults
       test: [ "CMD-SHELL", "curl -s -u admin:solrRocks 'http://solr-lss-dev-solr9:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=core-x' | grep -q '\"state\":\"active\"'" ]

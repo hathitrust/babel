@@ -10,14 +10,16 @@ services:
     - ${BABEL_HOME}/sample-data/etc:/htapps/babel/etc
     # Allow tests to modify database
     - ${BABEL_HOME}/logs:/var/log/babel
+    - ${BABEL_HOME}/ls/lib/Config/docker-local.conf:/htapps/babel/ls/lib/Config/local.conf
     environment:
     - SDRROOT=/htapps/babel
     - SDRDATAROOT=/sdr1
     - MARIADB_USER=ht_web
     - HTDEV=test
     - PERL5LIB=/htapps/babel/mdp-lib
-    - LSS_SOLR_ENGINE_URL_A=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/core-x
-    - LSS_SOLR_ENGINE_URL_B=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/core-y
+    - LSS_SOLR_ENGINE_URL_A=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/${LSS_SOLR_CORE_A:-core-x}
+    - LSS_SOLR_ENGINE_URL_B=http://${LSS_SOLR_HOST:-solr-lss-dev}:8983/solr/${LSS_SOLR_CORE_B:-core-y}
+    - LSS_CONFIG_DIR=${LSS_CONFIG_DIR:-ls/lib/Config}
     # This is the basic auth for Solr. The default 'admin:solrRocks' credential
     - LSS_SOLR_BASIC_AUTH=YWRtaW46c29sclJvY2tz
     depends_on:

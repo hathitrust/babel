@@ -33,8 +33,18 @@ docker compose --profile backend build
 If you want to build the application with Solr 9, you can use the `solr9` and `backend` profiles:
 
 ```
-LSS_SOLR_HOST=solr-lss-dev-solr9 docker compose --profile backend --profile solr9 build
+LSS_SOLR_HOST=solr-lss-dev-solr9 LSS_SOLR_CORE_B=core-x LSS_CONFIG_DIR=ls/lib/Config/solr9 docker compose --profile backend --profile solr9 build
 ```
+
+`LSS_SOLR_CORE_B=core-x` routes faceted-search queries (`B_mbooks_solr_engines`) to the
+`core-x` collection that Solr 9 actually creates, avoiding a collection-not-found failure.
+`LSS_CONFIG_DIR=ls/lib/Config/solr9` selects the Solr 9-compatible copy of the facet/relevance
+config, with the fields Solr 9's schema doesn't define (`ctrlnum`, `fullgeographic`,
+`fullgenre`, `hlb3`) removed; without it, `ls` falls back to the Solr 6 config and advanced/
+faceted search fails with a Solr 9 `SyntaxError: Query Field 'X' is not a valid field name`.
+Even with both set, faceted search is not yet guaranteed correct on Solr 9 — the `_query_`
+rewrite (see `ls/LS_Solr6_Solr9_Compatibility_Migration_Plan.md` §D/§G step 5) hasn't landed
+yet. See §H for the full schema-field/config-directory design.
 
 ## Step 4: Build assets
 
@@ -63,10 +73,25 @@ docker compose --profile frontend up
 docker compose --profile backend up
 ```
 
-If you want to build the application with Solr 9, you can use the `solr9` and `backend` profiles:
+If you want to run the application with Solr 9, you can use the `solr9` and `backend` profiles:
+
+```bash
+LSS_SOLR_HOST=solr-lss-dev-solr9 LSS_SOLR_CORE_B=core-x LSS_CONFIG_DIR=ls/lib/Config/solr9 docker compose --profile backend --profile solr9 up
+```
+
+`LSS_SOLR_CORE_B=core-x` is required so faceted-search queries reach the one collection
+Solr 9 creates. `LSS_CONFIG_DIR=ls/lib/Config/solr9` is required so `ls` loads the Solr
+9-compatible facet/relevance config instead of the Solr 6 default. See the Step 3 note for
+the full explanation and the remaining correctness caveat.
+
+If in the service `solr-lss-dev-solr9` (`docker logs solr-lss-dev-solr9`) you see the error `Could not create a new core in /var/solr/data/core-x_shard1_replica_n1` as another core is already defined there. This happens because the persist volumes `babel_solr1_data` and `babel_zoo1_data` exist from a previous run, and the create_collection call collided with the leftover directory. 
+
+Temporary solution: 
 
 ```
-LSS_SOLR_HOST=solr-lss-dev-solr9 docker compose --profile backend --profile solr9 up
+docker compose --profile solr9 rm -f solr-lss-dev-solr-solr9
+docker volume rm babel_solr1_data
+LSS_SOLR_HOST=solr-lss-dev-solr9 LSS_SOLR_CORE_B=core-x LSS_CONFIG_DIR=ls/lib/Config/solr9 docker compose --profile backend --profile solr9 up
 ```
 
 In your browser:
