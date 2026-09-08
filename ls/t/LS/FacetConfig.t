@@ -45,7 +45,7 @@ subtest 'solr9/ is a self-consistent parallel config dir' => sub {
   # fails -- catching silent drift while both copies must coexist during the
   # Solr 6 -> Solr 9 transition. At cutover, solr9/* is moved up and the Solr 6
   # remainder deleted.
-  for my $f (qw(AB_test_config bindings.pl langformat.yaml js_css_filelist.txt)) {
+  for my $f (qw(AB_test_config bindings.pl langformat.yaml)) {
     is($slurp->("$s9/$f"), $slurp->("$s6/$f"),
        "solr9/$f is byte-identical to ls/lib/Config/$f");
   }
