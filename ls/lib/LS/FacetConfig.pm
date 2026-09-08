@@ -76,9 +76,9 @@ sub _initialize
     my $AB_config=$C->get_object('AB_test_config');
     my $A_yaml_file_name = $AB_config->{'_'}->{'A_yaml_file_name'};
     my $B_yaml_file_name = $AB_config->{'_'}->{'B_yaml_file_name'};
-    my $rel_weights_A = get_rel_weights_from_yaml($A_yaml_file_name);
-    my $rel_weights_B = get_rel_weights_from_yaml($B_yaml_file_name);
-    
+    my $rel_weights_A = get_rel_weights_from_yaml($C, $A_yaml_file_name);
+    my $rel_weights_B = get_rel_weights_from_yaml($C, $B_yaml_file_name);
+
     # turn off strict
     do 
     {
@@ -116,8 +116,9 @@ sub _initialize
 # ---------------------------------------------------------------------
 sub get_rel_weights_from_yaml
 {
+    my $C = shift;
     my $yaml_file_name = shift;
-    my $full_path_to_yaml = $ENV{SDRROOT} . '/ls/lib/Config/' . $yaml_file_name;
+    my $full_path_to_yaml = $ENV{SDRROOT} . '/' . $C->get_object('MdpConfig')->get('ls_config_dir') . '/' . $yaml_file_name;
     my $rel_weights= getRelWeights($full_path_to_yaml);
     return $rel_weights;
 }

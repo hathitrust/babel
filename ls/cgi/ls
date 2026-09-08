@@ -151,8 +151,8 @@ if ($AB_test_config->{'_'}->{'debug_AB'} == 1)
 
 
 
-# additional configuration for facets and relevance weighting
-my $facet_config= new LS::FacetConfig($C, $ENV{SDRROOT} . "/ls/lib/Config/facetconfig.pl");
+# additional configuration for facets and relevance weighting. ls_config_dir is set for Solr 6 and Solr 9.
+my $facet_config= new LS::FacetConfig($C, $ENV{SDRROOT} . '/' . $C->get_object('MdpConfig')->get('ls_config_dir') . '/facetconfig.pl');
 $C->set_object('FacetConfig', $facet_config);
 
 
