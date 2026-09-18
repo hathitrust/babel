@@ -268,7 +268,7 @@ sub _stream {
     my $cache_dir = SRV::Utils::get_cachedir('download_cache_dir');
     my $fh;
     if ( $self->output_filename =~ m,^$cache_dir, ) {
-        # make this a vanishing file; only clean up its containiner directory if 
+        # make this a vanishing file; only clean up its containiner directory if
         # it's a new $marker format
         $fh = new SRV::Utils::File $self->output_filename, ( $self->output_filename =~ m,$SRV::Globals::gMarkerPrefix, );
     } else {
@@ -320,7 +320,7 @@ sub _script_content_type {
 }
 
 sub _content_type {
-    # NOOP    
+    # NOOP
 }
 
 sub _action {
@@ -415,7 +415,7 @@ sub _fill_params {
 
         # handle earlier version of $marker
         if ( $marker =~ m,^$SRV::Globals::gMarkerPrefix, ) {
-            $cache_dir = SRV::Utils::get_cachedir('download_cache_dir') . $marker . '/'; 
+            $cache_dir = SRV::Utils::get_cachedir('download_cache_dir') . $marker . '/';
         } else {
             $cache_dir = SRV::Utils::get_cachedir('download_cache_dir') . $volume_identifier . '/';
         }
@@ -437,13 +437,13 @@ sub _fill_params {
 
     } elsif ( ! $self->output_filename && ! $self->can('_generate_coderef') ) {
         # no output_filename was specified and this format cannot stream to STDOUT
-        
+
         $cache_dir = SRV::Utils::get_cachedir('download_cache_dir') . $volume_identifier . '/';
         Utils::mkdir_path( $cache_dir, $SRV::Globals::gMakeDirOutputLog );
-        my ( $fh, $filename ) = tempfile( 
-            DIR => $cache_dir, 
+        my ( $fh, $filename ) = tempfile(
+            DIR => $cache_dir,
             SUFFIX => '.' . $self->_ext,
-            CLEANUP => 0 
+            CLEANUP => 0
         );
         $self->output_filename($filename);
     }
@@ -482,12 +482,12 @@ sub _authorize {
         my $mdpItem = $C->get_object('MdpItem');
         my $ar = $C->get_object('Access::Rights');
         my $gId = $mdpItem->GetId();
-        
+
         # require a valid session
         my $ses = $C->get_object('Session');
-        
+
         # limit to users in an existing session
-        if ( $$ses{is_new} ) { 
+        if ( $$ses{is_new} ) {
           $self->restricted(1);
         } else {
 
@@ -495,7 +495,7 @@ sub _authorize {
           my $download_access_status = $ar->get_single_page_PDF_access_status($C, $gId);
 
           my $restricted = ! ( ( $final_access_status eq 'allow' ) && ( $download_access_status eq 'allow' ) );
-              
+
           $self->restricted($restricted);
         }
     }
@@ -576,7 +576,7 @@ sub _in_progress_alert {
     $download_url = $download_url->as_string;
 
     my $message = '<p>Your download is in progress. Please try again later.</p>';
-    
+
     my $status = $updater->last_progress;
     if ( $$status{current_page} ) {
         $message .= qq{<p>$$status{message}</p>} if ( $$status{message} );
