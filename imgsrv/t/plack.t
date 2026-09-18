@@ -11,12 +11,22 @@ use Plack::Test;
 use Test::More;
 
 use lib File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 't');
-use TestHelper;
+use TestHelper qw(setup_context_session);
 
 $Plack::Test::Impl = 'Server';
 
 $ENV{HT_DEV} = 'placeholder_ht_dev';
 $ENV{IMGSRV_CHECK_PERSISTENT_ATTRIBUTES} = '1';
+
+# Set up a session we can use in each test
+# Session needs a context (but empty should be OK)
+
+my $C = setup_context_session;
+my $session = $C->get_object('Session');
+my $cookie = $session->get_cookie;
+
+use Data::Dumper;
+print Dumper($cookie->name, $cookie->value);
 
 subtest "imgsrv.psgi" => sub {
   my $app = do File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'apps', 'imgsrv.psgi');
@@ -26,21 +36,27 @@ subtest "imgsrv.psgi" => sub {
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'image/jpeg';
+  };
 
-    subtest "only serves files up to gMaxThumbnailSize" => sub {
-      my $res = $test->request(GET "/cover?id=test.pd_open&size=400"); # HTTP::Response
-      is $res->code, 200;
-      is $res->message, 'OK';
-      is $res->header('Content-Type'), 'image/jpeg';
-      is $res->header('x-hathitrust-imagesize'), '141x250';
-    };
+  subtest "imgsrv/cover serves ic covers but restricted to gMaxThumbnailSize" => sub {
+    my $res = $test->request(GET "/cover?id=test.ic_not_held&size=400"); # HTTP::Response
+    is $res->code, 200;
+    is $res->message, 'OK';
+    is $res->header('Content-Type'), 'image/png';
+    is $res->header('x-hathitrust-imagesize'), '156x250';
   };
 
   subtest "imgsrv/html" => sub {
-    my $res = $test->request(GET "/html?id=test.pd_open&seq=1");
+    my $req = GET "/html?id=test.pd_open&seq=1";
+    $req->header("cookie" => $cookie->name . "=" . $cookie->value);
+    $req->header("accept" => '*/*');
+
+    my $res = $test->request($req);
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'text/html;charset=utf-8';
+
+    die;
   };
 
   subtest "imgsrv/image pd access granted" => sub {
@@ -108,20 +124,6 @@ subtest "download.psgi" => sub {
       is $res->header('Content-Type'), 'application/pdf';
     };
   };
-
-  #subtest "volume/epub" => sub {
-  #  subtest "with callback" => sub {
-  #    my $res = $test->request(GET "/epub?id=test.pd_open&callback=1");
-  #    is $res->message, 'OK';
-  #    is $res->header('Content-Type'), 'application/javascript';
-  #  };
-
-  #  subtest "without callback" => sub {
-  #    my $res = $test->request(GET "/epub?id=test.pd_open");
-  #    is $res->message, 'OK';
-  #    is $res->header('Content-Type'), 'application/epub+zip';
-  #  };
-  #};
 
   subtest "volume/plaintext" => sub {
     my $res = $test->request(GET "/plaintext?id=test.pd_open");
