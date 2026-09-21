@@ -29,6 +29,7 @@ use DbUtils;
 use Debug::DUtils;
 use HTTP::Request;
 use Utils::Logger;
+use Utils::Settings;
 
 # Generate a lock id string destined for storage in `ht.pt_exclusivity_ng.lock_id`
 # The lock ID depends on the item format:
@@ -46,6 +47,7 @@ use constant LOCK_ID_MAX_LENGTH => 100;
 use constant LOCK_ID_OCNS_LENGTH => 20;
 our $ITEM_ACCESS_ENDPOINT = '/v1/item_access';
 our $ITEM_HELD_BY_ENDPOINT = '/v1/item_held_by';
+our $HOLDINGS_API_SETTINGS = Utils::Settings::load('mdp-lib','holdings_api');
 
 sub generate_lock_id {
   my $id     = shift;
@@ -85,7 +87,8 @@ sub _query_api {
   foreach my $key (keys %params) {
     delete $params{$key} unless defined $params{$key};
   }
-  my $url_string = $C->get_object('MdpConfig')->get('holdings_api_url') . $endpoint;
+
+  my $url_string = $HOLDINGS_API_SETTINGS->{url} . $endpoint;
   my $uri = URI->new($url_string);
   $uri->query_form(\%params);
   my $req = HTTP::Request->new('GET' => $uri->as_string);
