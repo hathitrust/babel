@@ -47,7 +47,7 @@ sub setup_context_session {
 sub setup_context_for_volume {
   my $htid = shift;
 
-  my $C = setup_session();
+  my $C = setup_context_session();
 
   my $auth = new Auth::Auth($C);
   $C->set_object('Auth', $auth);
