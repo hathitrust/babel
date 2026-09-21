@@ -167,7 +167,7 @@ sub finalize {
     my($self, $env, $res) = @_;
     my $C = $$env{'psgix.context'};
     my $ses = $C->get_object('Session', 1);
-    if ( $ses ) {
+    if ( $ses && !$$ses{is_new}) {
         my $cookie = $ses->get_cookie();
         Plack::Util::header_push($res->[1], 'Set-Cookie', "$cookie");
 

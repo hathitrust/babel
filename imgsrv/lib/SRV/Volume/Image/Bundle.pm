@@ -108,7 +108,7 @@ sub _possible_params {
 
     my %params = $self->_default_params;
     $params{rotation} = '0';
-    $params{target_ppi} = undef;
+    $params{target_ppi} = '0';
     $params{quality} = 'default';
     $params{bundle_format} = 'zip';
     $params{format} = 'image/jpeg';

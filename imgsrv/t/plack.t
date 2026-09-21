@@ -21,17 +21,23 @@ $ENV{IMGSRV_CHECK_PERSISTENT_ATTRIBUTES} = '1';
 # Set up a session we can use in each test
 # Session needs a context (but empty should be OK)
 
-my $C = setup_context_session;
-my $session = $C->get_object('Session');
-my $cookie = $session->get_cookie;
+sub get_req_with_session {
+  my $url = shift;
+  my $C = setup_context_session;
+  my $session = $C->get_object('Session');
+  my $cookie = $session->get_cookie;
 
-use Data::Dumper;
-print Dumper($cookie->name, $cookie->value);
+  my $req = GET $url;
+  $req->header("cookie" => $cookie->name . "=" . $cookie->value);
+
+  return $req;
+}
 
 subtest "imgsrv.psgi" => sub {
+
   my $app = do File::Spec->catdir($ENV{SDRROOT}, 'imgsrv', 'apps', 'imgsrv.psgi');
   my $test = Plack::Test->create($app);
-  subtest "imgsrv/cover" => sub {
+  subtest "imgsrv/cover returns image" => sub {
     my $res = $test->request(GET "/cover?id=test.pd_open"); # HTTP::Response
     is $res->code, 200;
     is $res->message, 'OK';
@@ -46,30 +52,40 @@ subtest "imgsrv.psgi" => sub {
     is $res->header('x-hathitrust-imagesize'), '156x250';
   };
 
+  subtest "imgsrv/cover does not create a session" => sub {
+    my $res = $test->request(GET "/cover?id=test.ic_not_held&size=400"); # HTTP::Response
+    is $res->code, 200;
+    is $res->message, 'OK';
+    is $res->header('Set-Cookie'), undef;
+  };
+
   subtest "imgsrv/html" => sub {
-    my $req = GET "/html?id=test.pd_open&seq=1";
-    $req->header("cookie" => $cookie->name . "=" . $cookie->value);
-    $req->header("accept" => '*/*');
+    my $req = get_req_with_session "/html?id=test.pd_open&seq=1";
 
     my $res = $test->request($req);
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'text/html;charset=utf-8';
+  };
 
-    die;
+  subtest "imgsrv/image pd access rejected w/o session" => sub {
+    my $res = $test->request(GET "/image?id=test.pd_open&seq=1");
+    is $res->code, 403;
+    is $res->message, 'Forbidden';
+    is $res->header('Set-Cookie'), undef;
   };
 
   subtest "imgsrv/image pd access granted" => sub {
-    my $res = $test->request(GET "/image?id=test.pd_open&seq=1");
+    my $res = $test->request(get_req_with_session "/image?id=test.pd_open&seq=1");
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'image/jpeg';
   };
 
-  subtest "imgsrv/image ic access denied" => sub {
-    my $res = $test->request(GET "/volume/thumbnail?id=test.ic_not_held&seq=1");
-    is $res->code, 200;
-    is $res->message, 'OK';
+  subtest "imgsrv/image ic access denied even w session" => sub {
+    my $res = $test->request(get_req_with_session "/volume/thumbnail?id=test.ic_not_held&seq=1");
+    is $res->code, 403;
+    is $res->message, 'Forbidden';
     is $res->header('Content-Type'), 'image/svg+xml';
     is $res->header('x-hathitrust-access'), 'deny';
   };
@@ -77,7 +93,7 @@ subtest "imgsrv.psgi" => sub {
   # imgsrv/info is dev-only, skipping it
 
   subtest "imgsrv/metadata" => sub {
-    my $res = $test->request(GET "/metadata?id=test.pd_open");
+    my $res = $test->request(get_req_with_session "/metadata?id=test.pd_open");
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'application/javascript;charset=utf-8';
@@ -87,14 +103,14 @@ subtest "imgsrv.psgi" => sub {
   };
 
   subtest "imgsrv/ocr" => sub {
-    my $res = $test->request(GET "/ocr?id=test.pd_open&seq=1");
+    my $res = $test->request(get_req_with_session "/ocr?id=test.pd_open&seq=1");
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'text/html;charset=utf-8';
   };
 
   subtest "imgsrv/pdf" => sub {
-    my $res = $test->request(GET "/pdf?id=test.pd_open&seq=1");
+    my $res = $test->request(get_req_with_session "/pdf?id=test.pd_open&seq=1");
     # Redirects to download app
     is $res->code, 302;
     is $res->message, 'Found';
@@ -113,38 +129,47 @@ subtest "download.psgi" => sub {
   my $test = Plack::Test->create($app);
   subtest "volume/pdf" => sub {
     subtest "with callback" => sub {
-      my $res = $test->request(GET "/pdf?id=test.pd_open&callback=1");
+      my $res = $test->request(get_req_with_session "/pdf?id=test.pd_open&callback=1");
       is $res->message, 'OK';
       is $res->header('Content-Type'), 'application/javascript';
     };
 
     subtest "without callback" => sub {
-      my $res = $test->request(GET "/pdf?id=test.pd_open");
+      my $res = $test->request(get_req_with_session "/pdf?id=test.pd_open");
       is $res->message, 'OK';
       is $res->header('Content-Type'), 'application/pdf';
+    };
+
+    subtest "rejected without session and does not create one" => sub {
+      my $res = $test->request(GET "/pdf?id=test.pd_open");
+      is $res->code, 403;
+      is $res->message, 'Forbidden';
+      is $res->header('Set-Cookie'), undef;
     };
   };
 
   subtest "volume/plaintext" => sub {
-    my $res = $test->request(GET "/plaintext?id=test.pd_open");
+    my $res = $test->request(get_req_with_session "/plaintext?id=test.pd_open");
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'text/plain';
   };
 
   subtest "volume/image" => sub {
     subtest "with callback" => sub {
-      my $res = $test->request(GET "/image?id=test.pd_open&callback=1");
-      is $res->message, 'Forbidden';
+      my $res = $test->request(get_req_with_session "/image?id=test.pd_open&callback=1");
+      is $res->message, 'OK';
+      is $res->header('Content-Type'), 'application/javascript';
     };
 
     subtest "without callback" => sub {
-      my $res = $test->request(GET "/image?id=test.pd_open");
-      is $res->message, 'Forbidden';
+      my $res = $test->request(get_req_with_session "/image?id=test.pd_open");
+      is $res->message, 'OK';
+      is $res->header('Content-Type'), 'application/zip';
     };
   };
 
   subtest "volume/remediated" => sub {
-    my $res = $test->request(GET "/remediated?remediated_item_id=test.pd_open&id=test.pd_open");
+    my $res = $test->request(get_req_with_session "/remediated?remediated_item_id=test.pd_open&id=test.pd_open");
     is $res->code, 404;
   };
 };
