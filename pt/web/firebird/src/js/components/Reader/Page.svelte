@@ -700,7 +700,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
         {/if}
         {#if isVisible && (requestStatus == 429 || requestStatus == 403 || requestStatus == 500)}
           <div class="fetch-error">
-            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
+            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
                 <h2 class="fs-2">
                   {#if requestStatus == 429}Image Temporarily Unavailable{:else if requestStatus == 403}Forbidden{:else if requestStatus == 500}Internal
@@ -1130,16 +1130,5 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     display: flex;
     align-items: center;
     justify-content: center;
-
-    h3,
-    h4,
-    p,
-    ul li {
-      font-size: 0.875rem;
-    }
-    p,
-    ul {
-      margin-block-end: 0.5rem;
-    }
   }
 </style>
