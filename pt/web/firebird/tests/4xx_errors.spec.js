@@ -67,19 +67,15 @@ test.describe('4xx errors', () => {
     await expect(page.getByRole('group', { name: 'Page scan 1' })).toContainText('Forbidden');
     await expect(page.locator('.cf-ray').first()).toContainText('a3eb3b119c06bf8e');
   });
-  test.only('500 error', async ({ page }) => {
+  test('500 error', async ({ page }) => {
     await page.route('/cgi/imgsrv/image?*', (route) =>
       route.fulfill({
         status: 500,
-        headers: {
-          'Cf-Ray': 'a3eb3b119c06bf8e-ATL',
-        },
       })
     );
 
     await page.goto('/cgi/pt?id=test.pd_open&seq=1');
 
-    await expect(page.getByRole('group', { name: 'Page scan 1' })).toContainText('Forbidden');
-    await expect(page.locator('.cf-ray').first()).toContainText('a3eb3b119c06bf8e');
+    await expect(page.getByRole('group', { name: 'Page scan 1' })).toContainText('Internal Server Error');
   });
 });

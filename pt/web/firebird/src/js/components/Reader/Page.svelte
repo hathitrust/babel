@@ -698,68 +698,27 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true"></i>
           </div>
         {/if}
-        {#if isVisible && requestStatus == 429}
-          <div class="error-429">
+        {#if isVisible && (requestStatus == 429 || requestStatus == 403 || requestStatus == 500)}
+          <div class="fetch-error">
             <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
-                <h2 class="fs-2">Image Temporarily Unavailable</h2>
+                <h2 class="fs-2">
+                  {#if requestStatus == 429}Image Temporarily Unavailable{:else if requestStatus == 403}Forbidden{:else if requestStatus == 500}Internal
+                    Server Error{/if}
+                </h2>
               </div>
               <div>
-                <h3 class="text-center">Error code: 429</h3>
-                <h4>Why did HathiTrust block my access to this image?</h4>
-                <p>You may have been blocked due to one of several possible reasons:</p>
-                <ul class="ps-3">
-                  <li>Because of your IP address' reputation or location</li>
-                  <li>Some data you submitted may have been flagged as suspicious</li>
-                  <li>
-                    If accessing HathiTrust through a proxy or VPN: There may have been abusive activity from others
-                    using the same proxy server or VPN
-                  </li>
-                </ul>
-                <h4>What can I do to resolve this?</h4>
-                <p>
-                  You may be able to access the page by using a different browser or device, or by trying again later.
-                  If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
-                  the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
-                    href="mailto:support@hathitrust.org">support@hathitrust.org</a
-                  >. Please include what you were doing when this page came up and provide these details:
-                </p>
-                <ul class="ps-3">
-                  <li>Cloudflare Ray ID: <span class="cf-ray">{cfRayID}</span></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        {/if}
-        {#if isVisible && requestStatus == 403}
-          <div class="error-429">
-            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
-              <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
-                <h2 class="fs-2">Forbidden</h2>
-              </div>
-              <div>
-                <h3 class="text-center">Error code: 403</h3>
-                <h4>Why did HathiTrust block my access to this image?</h4>
-                <p>You may have been blocked due to one of several possible reasons:</p>
-                <ul class="ps-3">
-                  <li>Because of your IP address' reputation or location</li>
-                  <li>Some data you submitted may have been flagged as suspicious</li>
-                  <li>
-                    If accessing HathiTrust through a proxy or VPN: There may have been abusive activity from others
-                    using the same proxy server or VPN
-                  </li>
-                </ul>
-                <h4>What can I do to resolve this?</h4>
-                <p>
-                  You may be able to access the page by using a different browser or device, or by trying again later.
-                  If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
-                  the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
-                    href="mailto:support@hathitrust.org">support@hathitrust.org</a
-                  >. Please include what you were doing when this page came up and provide these details:
-                </p>
-                <ul class="ps-3">
-                  <li>Cloudflare Ray ID: <span class="cf-ray">{cfRayID}</span></li>
-                </ul>
+                <h3 class="text-center">Error code: {requestStatus}</h3>
+                {#if requestStatus !== 500}
+                  <p>
+                    You may be able to access the page by using a different browser or device, or by trying again later.
+                    If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
+                    the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
+                      href="mailto:support@hathitrust.org">support@hathitrust.org</a
+                    >.{#if cfRayID}
+                      &nbsp;Please include this Ray ID in your message: <span class="cf-ray">{cfRayID}</span>.{/if}
+                  </p>
+                {/if}
               </div>
             </div>
           </div>
@@ -1159,7 +1118,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     margin: 0 auto;
   }
 
-  .error-429 {
+  .fetch-error {
     position: absolute;
     top: 0;
     left: 0;
