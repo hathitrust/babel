@@ -79,6 +79,9 @@
   let xChokeDelta;
   let xChokeUntil;
 
+  // capture cloudflare ray ID header
+  let cfRayID;
+
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
   export const offsetTop = function () {
@@ -228,6 +231,7 @@
 
         if (!response.ok) {
           requestStatus = response.status;
+          cfRayID = response.headers.get('cf-ray')?.split('-')[0] ?? null;
           return;
         }
 
@@ -698,9 +702,65 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
           <div class="error-429">
             <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
-                Image Temporarily Unavailable
+                <h2 class="fs-2">Image Temporarily Unavailable</h2>
               </div>
-              <p class="fs-7 text-body-secondary text-center">Error code: 429</p>
+              <div>
+                <h3 class="text-center">Error code: 429</h3>
+                <h4>Why did HathiTrust block my access to this image?</h4>
+                <p>You may have been blocked due to one of several possible reasons:</p>
+                <ul class="ps-3">
+                  <li>Because of your IP address' reputation or location</li>
+                  <li>Some data you submitted may have been flagged as suspicious</li>
+                  <li>
+                    If accessing HathiTrust through a proxy or VPN: There may have been abusive activity from others
+                    using the same proxy server or VPN
+                  </li>
+                </ul>
+                <h4>What can I do to resolve this?</h4>
+                <p>
+                  You may be able to access the page by using a different browser or device, or by trying again later.
+                  If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
+                  the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
+                    href="mailto:support@hathitrust.org">support@hathitrust.org</a
+                  >. Please include what you were doing when this page came up and provide these details:
+                </p>
+                <ul class="ps-3">
+                  <li>Cloudflare Ray ID: <span class="cf-ray">{cfRayID}</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        {/if}
+        {#if isVisible && requestStatus == 403}
+          <div class="error-429">
+            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
+              <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
+                <h2 class="fs-2">Forbidden</h2>
+              </div>
+              <div>
+                <h3 class="text-center">Error code: 403</h3>
+                <h4>Why did HathiTrust block my access to this image?</h4>
+                <p>You may have been blocked due to one of several possible reasons:</p>
+                <ul class="ps-3">
+                  <li>Because of your IP address' reputation or location</li>
+                  <li>Some data you submitted may have been flagged as suspicious</li>
+                  <li>
+                    If accessing HathiTrust through a proxy or VPN: There may have been abusive activity from others
+                    using the same proxy server or VPN
+                  </li>
+                </ul>
+                <h4>What can I do to resolve this?</h4>
+                <p>
+                  You may be able to access the page by using a different browser or device, or by trying again later.
+                  If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
+                  the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
+                    href="mailto:support@hathitrust.org">support@hathitrust.org</a
+                  >. Please include what you were doing when this page came up and provide these details:
+                </p>
+                <ul class="ps-3">
+                  <li>Cloudflare Ray ID: <span class="cf-ray">{cfRayID}</span></li>
+                </ul>
+              </div>
             </div>
           </div>
         {/if}
@@ -1111,5 +1171,16 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     display: flex;
     align-items: center;
     justify-content: center;
+
+    h3,
+    h4,
+    p,
+    ul li {
+      font-size: 0.875rem;
+    }
+    p,
+    ul {
+      margin-block-end: 0.5rem;
+    }
   }
 </style>
