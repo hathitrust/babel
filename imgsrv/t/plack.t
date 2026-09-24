@@ -30,6 +30,11 @@ sub get_req_with_session {
   my $req = GET $url;
   $req->header("cookie" => $cookie->name . "=" . $cookie->value);
 
+  # make sure we have a clean context for the real request
+  $cookie = undef;
+  $session = undef;
+  $C->dispose;
+
   return $req;
 }
 

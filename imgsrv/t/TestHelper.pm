@@ -18,6 +18,11 @@ use lib File::Spec->catdir($ENV{SDRROOT}, 'plack-lib');
 # Minimal context setup to get a session
 sub setup_context_session {
   my $C = new Context;
+
+  # make sure we get a clean one every time
+  $C->dispose;
+  $C = new Context;
+
   my $cgi = new CGI;
   $C->set_object('CGI', $cgi);
 
