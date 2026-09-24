@@ -79,6 +79,9 @@
   let xChokeDelta;
   let xChokeUntil;
 
+  // capture cloudflare ray ID header
+  let cfRayID;
+
   let defaultThumbnailSrc = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=`;
 
   export const offsetTop = function () {
@@ -228,6 +231,7 @@
 
         if (!response.ok) {
           requestStatus = response.status;
+          cfRayID = response.headers.get('cf-ray')?.split('-')[0] ?? null;
           return;
         }
 
@@ -694,13 +698,28 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
             <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true"></i>
           </div>
         {/if}
-        {#if isVisible && requestStatus == 429}
-          <div class="error-429">
-            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column justify-content-between">
+        {#if isVisible && (requestStatus == 429 || requestStatus == 403 || requestStatus == 500)}
+          <div class="fetch-error">
+            <div class="w-100 h-100 m-auto mt-3 d-flex flex-column">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
-                Image Temporarily Unavailable
+                <h2 class="fs-2">
+                  {#if requestStatus == 429}Image Temporarily Unavailable{:else if requestStatus == 403}Forbidden{:else if requestStatus == 500}Internal
+                    Server Error{/if}
+                </h2>
               </div>
-              <p class="fs-7 text-body-secondary text-center">Error code: 429</p>
+              <div>
+                <h3 class="text-center">Error code: {requestStatus}</h3>
+                {#if requestStatus !== 500}
+                  <p>
+                    You may be able to access the page by using a different browser or device, or by trying again later.
+                    If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without
+                    the use of the proxy or VPN. If that doesn't resolve the issue, you can email HathiTrust support at <a
+                      href="mailto:support@hathitrust.org">support@hathitrust.org</a
+                    >.{#if cfRayID}
+                      &nbsp;Please include this Ray ID in your message: <span class="cf-ray">{cfRayID}</span>.{/if}
+                  </p>
+                {/if}
+              </div>
             </div>
           </div>
         {/if}
@@ -1099,7 +1118,7 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
     margin: 0 auto;
   }
 
-  .error-429 {
+  .fetch-error {
     position: absolute;
     top: 0;
     left: 0;
