@@ -87,9 +87,14 @@ sub run {
     $self->_validate_params($env);
 
     my $C = $$env{'psgix.context'};
+
     my $mdpItem = $C->get_object('MdpItem');
     my $gId = $mdpItem->GetId();
     my $restricted = $$env{'psgix.restricted'};
+
+    # require an existing session
+    my $ses = $C->get_object('Session');
+    if ( $$ses{is_new} ) { $restricted = 1; }
 
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
@@ -240,7 +245,8 @@ sub call_core {
         Plack::Util::set_io_path($fh, Cwd::realpath($$output{filename}));
     }
 
-    my $res = $req->new_response(200);
+    my $status = ( $$output{restricted} ) ? 403 : 200;
+    my $res = $req->new_response($status);
     $res->content_type($$output{mimetype});
     $res->header('X-HathiTrust-ImageSize' => $$output{metadata}{width} . "x" . $$output{metadata}{height});
 
