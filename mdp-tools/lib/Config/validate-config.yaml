@@ -4,6 +4,15 @@
 # =====================================================================
 
 babel:
+    #mb; also populates session cookie
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?a=listis;c=1276272457;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_a;pn=1;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_d;pn=1;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_d;pn=1;__LOCAL__
+  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1;__LOCAL__
+
     # imgsrv:
   - EMPTY_CACHE
   - https://__URL_STAGE__.hathitrust.org/cgi/imgsrv/download/pdf?id=1;__LOCAL__
@@ -26,15 +35,6 @@ babel:
   - https://__URL_STAGE__.hathitrust.org/cgi/ls?q1=fungible;a=srchls;lmt=all;pn=2;__LOCAL__
   - https://__URL_STAGE__.hathitrust.org/cgi/ls?q1=dog;a=srchls;lmt=ft;__LOCAL__
 
-
-    #mb:
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?a=listis;c=1276272457;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=rel_d;pn=1;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_a;pn=1;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=title_d;pn=1;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_d;pn=1;__LOCAL__
-  - https://__URL_STAGE__.hathitrust.org/cgi/mb?c=1276272457;a=srch;q1=Gettysburg;sort=date_a;pn=1;__LOCAL__
 
     #pt:
   - EMPTY_CACHE

@@ -65,11 +65,18 @@ sub run {
         return { contents => "<div></div>", mimetype => 'text/html' };
     }
 
+    # limit to users in a current session
+    my $ses = $C->get_object('Session');
+    if ( $$ses{is_new} ) { 
+      $self->restricted(1);
+    }
+
     my $restricted = $self->restricted;
     unless ( defined $restricted ) {
         # $restricted = $C->get_object('Access::Rights')->assert_final_access_status($C, $gId) ne 'allow';
         $restricted = $$env{'psgix.restricted'};
     }
+
 
     # now we deal with extracting
     my $cache_dir = SRV::Utils::get_cachedir();
@@ -180,7 +187,8 @@ sub call_core {
     my $max_age = 86400;    # 1 day = 60 * 60 * 24
     my $cache_control = qq{max-age=$max_age};
 
-    my $res = $req->new_response(200);
+    my $status = ( $self->restricted ) ? 403 : 200;
+    my $res = $req->new_response($status);
     $res->content_type($$target{mimetype} . ";charset=utf-8");
 
     my $contents = encode_utf8($$target{contents});
