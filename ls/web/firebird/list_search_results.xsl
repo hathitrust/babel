@@ -317,18 +317,6 @@
 	    </xsl:attribute>
     <xsl:for-each select="//SearchResults//Item[$gLimit != 'ft' or fulltext=1]">
       <xsl:variable name="titleIndex" select="position()" />
-      <xsl:if test="position() mod 25 = 0">
-        <div class="visually-hidden-focusable rounded m-3 border border-4 d-flex gap-4 align-items-center justify-content-center">
-          <ul class="list-group list-group-horizontal w-100 p-3">
-            <li class="list-group-item flex-fill text-center bg-transparent border-0">
-              <a class="btn btn-outline-dark w-100" href="#top">Back to Top</a>
-            </li>
-            <li class="list-group-item flex-fill text-center bg-transparent border-0">
-              <a class="btn btn-outline-dark w-100" href="#pagination">Jump to Pagination</a>
-            </li>
-          </ul>
-        </div>
-      </xsl:if>
 
       <article class="record d-flex gap-3 p-3 mb-3 mt-3 shadow-sm">
         <xsl:variable name="title">
