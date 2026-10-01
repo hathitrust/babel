@@ -11,9 +11,9 @@ test.describe('imgsrv download', () => {
   test('download whole item pdf, full resolution', async ({ request, page }) => {
     var currentTime = new Date().getTime();
 
-    const initialResponse = await request.get(
-      '/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
-    );
+    const initialResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime);
     const initialBody = await initialResponse.text();
 
     // should get a result like:
@@ -33,7 +33,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await request.get(callbackUrl);
+      const callbackResponse = await page.context().request.get(callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -47,7 +47,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await request.get(downloadUrl);
+    const downloadResponse = await page.context().request.get(downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -60,9 +60,9 @@ test.describe('imgsrv download', () => {
   test('download single tiff current page, full resolution', async ({ request, page }) => {
     // no callback tunnel on single tiff
 
-    const downloadResponse = await request.get(
-      '/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -75,9 +75,9 @@ test.describe('imgsrv download', () => {
   test('download single page jpeg, high resolution', async ({ request, page }) => {
     //no callback tunnel on single pages
 
-    const downloadResponse = await request.get(
-      '/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -89,9 +89,11 @@ test.describe('imgsrv download', () => {
   test('download selected pages jpeg, full resolution', async ({ request, page }) => {
     //no callback tunnel on non-tiff selections <11 pages
 
-    const downloadResponse = await request.get(
-      '/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get(
+        '/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
+      );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -103,9 +105,9 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(1);
   });
   test('download pdf with bogus seq', async ({ request, page }) => {
-    const initialResponse = await request.get(
-      '/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes'
-    );
+    const initialResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes');
     expect(initialResponse.status()).toEqual(200);
   });
   test('download single selected page tiff, high resolution', async ({ page }) => {
@@ -126,9 +128,9 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(1);
   });
   test('download single selected page txt', async ({ request, page }) => {
-    const downloadResponse = await request.get(
-      '/cgi/imgsrv/download/plaintext?id=test.pd_open&attachment=1&tracker=D5&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/plaintext?id=test.pd_open&attachment=1&tracker=D5&seq=2');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
