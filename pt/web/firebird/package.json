@@ -45,7 +45,9 @@
     "vite": "^7.3.2"
   },
   "overrides": {
-    "chokidar": "^3.0.0",
+    "sass": {
+      "chokidar": "^4.0.0"
+    },
     "fsevents": "^2.0.0"
   },
   "dependencies": {
