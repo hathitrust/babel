@@ -807,6 +807,9 @@
               style:width={`${status.percent}%`}
             ></div>
           </div>
+          <div aria-live="polite" aria-atomic="true" class="visually-hidden">
+            {status.percent < 100 ? `${Math.round(status.percent)}% complete` : 'Download complete'}
+          </div>
           <p class="fs-7 text-body-secondary">
             <a target="_blank" href="https://hathitrust.atlassian.net/servicedesk/customer/kb/view/2387345411"
               >What affects the download speed?</a
