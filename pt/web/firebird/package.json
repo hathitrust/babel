@@ -16,7 +16,8 @@
     "test-local": "LOCAL=local playwright test --grep-invert auth",
     "test-ui": "LOCAL=local playwright test --ui",
     "prepare": "[ \"${HUSKY}\" = \"0\" ] || (cd ../../.. && husky pt/web/firebird/.husky)",
-    "format:check": "prettier --check src/"
+    "format:check": "prettier --check src/",
+    "format": "prettier --write src/"
   },
   "lint-staged": {
     "*.{js,ts,svelte,css,scss,html}": "prettier --write"

@@ -154,8 +154,7 @@
           bind:this={codeBlock}
           bind:value={codeBlockText[view]}
           on:blur={selectInnerText}
-          on:click={selectInnerText}
-        ></textarea>
+          on:click={selectInnerText}></textarea>
         <button
           class="btn btn-outline-dark"
           aria-label="Copy iframe code"
