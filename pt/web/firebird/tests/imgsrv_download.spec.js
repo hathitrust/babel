@@ -11,9 +11,9 @@ test.describe('imgsrv download', () => {
   test('download whole item pdf, full resolution', async ({ request, page }) => {
     var currentTime = new Date().getTime();
 
-    const initialResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
-    );
+    const initialResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/pdf?id=test.pd_open&callback=tunnelCallback&_=' + currentTime);
     const initialBody = await initialResponse.text();
 
     // should get a result like:
@@ -33,7 +33,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
+      const callbackResponse = await page.context().request.get(callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -47,7 +47,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
+    const downloadResponse = await page.context().request.get(downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -57,58 +57,12 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(512 * 1024);
   });
 
-//   test('download epub', async ({ request, page }) => {
-//     var currentTime = new Date().getTime();
-// 
-//     const initialResponse = await page.context().request.get(
-//       'http://apache:8080/cgi/imgsrv/download/epub?id=test.pd_open&callback=tunnelCallback&_=' + currentTime
-//     );
-//     const initialBody = await initialResponse.text();
-// 
-//     const callbackParams = JSON.parse(
-//       initialBody
-//         .replace(/^tunnelCallback\(/, '[')
-//         .replace(/\);$/, ']')
-//         .replaceAll("'", '"')
-//     );
-// 
-//     const callbackUrl = callbackParams[0];
-//     const downloadUrl = callbackParams[1];
-// 
-//     // wait until status is done
-//     let done = false;
-// 
-//     while (done == false) {
-//       const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
-//       const callbackJson = await callbackResponse.json();
-// 
-//       if (callbackJson.status == 'DONE') {
-//         done = true;
-//       } else {
-//         // wait for 1 second
-//         // await page.waitForTimeout(1000);
-//         // yes it's polling and polling is bad but that's the way imgsrv works 😿
-//         const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-//         await delay(1000);
-//       }
-//     }
-// 
-//     const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
-//     const downloadHeaders = downloadResponse.headers();
-//     const downloadBody = await downloadResponse.text();
-// 
-//     expect(downloadResponse.status()).toEqual(200);
-//     expect(downloadHeaders['content-disposition']).toEqual('attachment; filename=test-pd_open.epub');
-//     expect(downloadHeaders['content-type']).toEqual('application/epub+zip');
-//     expect(downloadBody.length).toBeGreaterThan(0);
-//   });
-
   test('download single tiff current page, full resolution', async ({ request, page }) => {
     // no callback tunnel on single tiff
 
-    const downloadResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/tiff&size=full&seq=1');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -121,9 +75,9 @@ test.describe('imgsrv download', () => {
   test('download single page jpeg, high resolution', async ({ request, page }) => {
     //no callback tunnel on single pages
 
-    const downloadResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&size=ppi:300&seq=2');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -135,9 +89,11 @@ test.describe('imgsrv download', () => {
   test('download selected pages jpeg, full resolution', async ({ request, page }) => {
     //no callback tunnel on non-tiff selections <11 pages
 
-    const downloadResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get(
+        '/cgi/imgsrv/image?id=test.pd_open&attachment=1&tracker=D1&format=image/jpeg&target_ppi=0&seq=1&seq=2'
+      );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -149,9 +105,9 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(1);
   });
   test('download pdf with bogus seq', async ({ request, page }) => {
-    const initialResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes'
-    );
+    const initialResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/pdf?id=test.pd_open&attachment=1&tracker=D1&seq=mashed_potatoes');
     expect(initialResponse.status()).toEqual(200);
   });
   test('download single selected page tiff, high resolution', async ({ page }) => {
@@ -161,7 +117,7 @@ test.describe('imgsrv download', () => {
     const downloadResponse = await page
       .context()
       .request.get(
-        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&attachment=1&tracker=D1&format=image%2Ftiff&target_ppi=0&seq=2'
+        '/cgi/imgsrv/download/image?id=test.pd_open&attachment=1&tracker=D1&format=image%2Ftiff&target_ppi=0&seq=2'
       );
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
@@ -172,9 +128,9 @@ test.describe('imgsrv download', () => {
     expect(downloadBody.length).toBeGreaterThan(1);
   });
   test('download single selected page txt', async ({ request, page }) => {
-    const downloadResponse = await page.context().request.get(
-      'http://apache:8080/cgi/imgsrv/download/plaintext?id=test.pd_open&attachment=1&tracker=D5&seq=2'
-    );
+    const downloadResponse = await page
+      .context()
+      .request.get('/cgi/imgsrv/download/plaintext?id=test.pd_open&attachment=1&tracker=D5&seq=2');
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -189,7 +145,7 @@ test.describe('imgsrv download', () => {
     const initialResponse = await page
       .context()
       .request.get(
-        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Ftiff&target_ppi=0&bundle_format=zip&callback=tunnelCallback&_=' +
+        '/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Ftiff&target_ppi=0&bundle_format=zip&callback=tunnelCallback&_=' +
           currentTime
       );
     const initialBody = await initialResponse.text();
@@ -211,7 +167,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
+      const callbackResponse = await page.context().request.get(callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -225,7 +181,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
+    const downloadResponse = await page.context().request.get(downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
@@ -239,7 +195,7 @@ test.describe('imgsrv download', () => {
     const initialResponse = await page
       .context()
       .request.get(
-        'http://apache:8080/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Fjpeg&target_ppi=300&bundle_format=zip&callback=tunnelCallback&_=' +
+        '/cgi/imgsrv/download/image?id=test.pd_open&format=image%2Fjpeg&target_ppi=300&bundle_format=zip&callback=tunnelCallback&_=' +
           currentTime
       );
     const initialBody = await initialResponse.text();
@@ -261,7 +217,7 @@ test.describe('imgsrv download', () => {
     let done = false;
 
     while (done == false) {
-      const callbackResponse = await page.context().request.get('http://apache:8080' + callbackUrl);
+      const callbackResponse = await page.context().request.get(callbackUrl);
       const callbackJson = await callbackResponse.json();
 
       if (callbackJson.status == 'DONE') {
@@ -275,7 +231,7 @@ test.describe('imgsrv download', () => {
       }
     }
 
-    const downloadResponse = await page.context().request.get('http://apache:8080' + downloadUrl);
+    const downloadResponse = await page.context().request.get(downloadUrl);
     const downloadHeaders = downloadResponse.headers();
     const downloadBody = await downloadResponse.text();
 
