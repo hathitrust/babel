@@ -10,7 +10,7 @@ const config = {
   // firebird-common's CSS references font files (Font Awesome, Mulish, Roboto Mono) via
   // relative `../fonts/...` urls, which resolve to `/fonts/*` at the Storybook site root.
   // PT has no local src/public/, so serve firebird-common's copy at that path instead.
-  staticDirs: [{ from: '../node_modules/firebird-common/src/public/fonts', to: '/fonts' }],
+  staticDirs: [{ from: '../node_modules/firebird-common/src/public/fonts', to: '/fonts' }, '../public'],
   async viteFinal(config, { configType }) {
     const { mergeConfig } = await import('vite');
 
