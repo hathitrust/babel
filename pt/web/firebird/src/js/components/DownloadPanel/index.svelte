@@ -834,33 +834,28 @@
   {/snippet}
   {#snippet footer()}
     {#if !downloadError}
-      <div role="status">
-        <div class="d-flex gap-1 align-items-center justify-content-end">
-          {#if !simpleDownload}
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onclick={cancelDownload}
-              disabled={status.done}
-              class:disabled={status.done}>Cancel</button
-            >
-          {/if}
-          {#if !simpleDownload && downloadInProgress}
-            <span class="btn btn-primary disabled"> Download </span>
-          {:else}
-            <a
-              target="_blank"
-              class="btn btn-primary"
-              onclick={() => {
-                modal.hide();
-                () => document.getElementById('submit-download').focus();
-              }}
-              href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
-            >
-          {/if}
-        </div>
-        {#if !simpleDownload && cancellingDownload}
-          <span class="visually-hidden">Download cancelled</span>
+      <div class="d-flex gap-1 align-items-center justify-content-end">
+        {#if !simpleDownload}
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick={cancelDownload}
+            disabled={status.done}
+            class:disabled={status.done}>Cancel</button
+          >
+        {/if}
+        {#if !simpleDownload && downloadInProgress}
+          <span class="btn btn-primary disabled"> Download </span>
+        {:else}
+          <a
+            target="_blank"
+            class="btn btn-primary"
+            onclick={() => {
+              modal.hide();
+              () => document.getElementById('submit-download').focus();
+            }}
+            href={simpleDownload ? simpleUrl : downloadUrl}>Download</a
+          >
         {/if}
       </div>
     {/if}
