@@ -9,12 +9,15 @@ export default {
   decorators: [() => ({ Component: ManifestDecorator })],
 };
 
-const clickDownload = async ({ canvas, userEvent }) => {
+const clickDownloadForModal = async ({ canvas, userEvent }) => {
   const btn = canvas.getByRole('button', { name: 'Download' });
   await userEvent.click(btn);
 
   const downloadForm = await canvas.findByRole('form', { name: 'Download options' });
   await userEvent.click(within(downloadForm).getByRole('button', { name: 'Download' }));
+
+  const dialog = await screen.findByRole('dialog');
+  await expect(dialog).toBeVisible();
 };
 
 export const NotAllowed = {
@@ -39,23 +42,19 @@ const statusBody = (extra) => ({
 });
 export const FullPDFDownload = {
   beforeEach({ msw }) {
-    console.log('inside beforeEach');
     let poll = 0;
     msw.use(
       //intercepts all requests to this path, which will return the jsonp callback
       http.get(`*/cgi/imgsrv/download/pdf`, ({ request }) => {
-        console.log('inside http.get');
-
         const params = new URL(request.url).searchParams;
         if (params.has('stop')) return new HttpResponse('tunnelCallback();');
-        // if (!params.has('callback')) return;
 
         return new HttpResponse(`tunnelCallback('${statusUrl}', '${downloadUrl}', 5, '1')`);
       }),
       http.get('*/cgi/imgsrv/download-status', () => {
         // if (failStatus) return new HttpResponse(null, { status: 500 });
 
-        let pages = [1, 2, 4];
+        let pages = [1, 3];
         const i = poll++;
         if (i < pages.length) {
           return HttpResponse.json(statusBody({ status: 'RUNNING', current_page: pages[i] }));
@@ -65,5 +64,5 @@ export const FullPDFDownload = {
     );
   },
   args: { allowFullDownload: true, allowSinglePageDownload: true },
-  play: clickDownload,
+  play: clickDownloadForModal,
 };
