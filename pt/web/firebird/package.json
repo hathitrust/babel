@@ -17,7 +17,8 @@
     "test-ui": "LOCAL=local playwright test --ui",
     "prepare": "[ \"${HUSKY}\" = \"0\" ] || (cd ../../.. && husky pt/web/firebird/.husky)",
     "format:check": "prettier --check src/",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "lint-staged": {
     "*.{js,ts,svelte,css,scss,html}": "prettier --write"
@@ -32,9 +33,12 @@
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/node": "^26.6.4",
     "bootstrap": "^5.2.3",
+    "chromatic": "^18.11.0",
     "emittery": "^1.0.1",
     "husky": "^9.0.0",
     "lint-staged": "^16.4.0",
+    "msw": "^3.0.2",
+    "msw-storybook-addon": "^3.0.3",
     "p-queue": "^9.0.0",
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^4.1.1",
@@ -65,5 +69,10 @@
     "if you have issues with esbuild not installing the correct package for a platform, try updating this to match the version of esbuild that vite installs, npm list --all will help!",
     "sass version is pinned to 1.77.6 until bootstrap releases a patch for dropping node-sass, see https://github.com/twbs/bootstrap/pull/41112",
     "@oxc-parser binding versions must match the oxc-parser version storybook installs — run npm list oxc-parser to check and update if storybook upgrades it"
-  ]
+  ],
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
 }
