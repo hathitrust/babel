@@ -24,6 +24,9 @@ export function time2message(seconds) {
   if (hours == 12) {
     ampm = 'PM';
   }
+  if (hours === 0) {
+    hours = 12;
+  }
   var minutes = date.getMinutes();
   if (minutes < 10) {
     minutes = `0${minutes}`;
