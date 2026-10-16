@@ -6,31 +6,12 @@ on:
       - deployment
     tags-ignore:
       - '**'
-
-permissions:
-  contents: read
+    paths:
+      - 'pt/**'
+      - '.github/workflows/chromatic.yml'
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      pt: ${{ steps.filter.outputs.pt }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Check for changes in pt
-        uses: dorny/paths-filter@v4
-        id: filter
-        with:
-          filters: |
-            pt: 
-              - 'pt/**'
-              - '.github/workflows/chromatic.yml'
-
   chromatic:
-    needs: changes
-    if: needs.changes.outputs.pt == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
