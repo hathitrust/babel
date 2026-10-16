@@ -42,7 +42,7 @@
 <Panel {expanded} {onToggle} class="access-panel">
   <i class="fa-solid fa-unlock" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title">
-    Checked out until <span class="expires-display">{expiresDisplay}</span>
+    Checked out until {expiresDisplay}
   </slot:fragment>
   <slot:fragment slot="body">
     {#if isExpired}
@@ -57,8 +57,8 @@
     {:else}
       <p class="fs-7">
         This work is checked out to you until
-        <span class="expires-display">{expiresDisplay}</span>. and may automatically renew. Access to this work is
-        provided through the
+        <span class="fw-bold">{expiresDisplay}</span> and may automatically renew. Access to this work is provided
+        through the
         <a href="//{HT.www_domain}/member-libraries/services-programs/etas/">Emergency Temporary Access Service</a>
       </p>
       <div>

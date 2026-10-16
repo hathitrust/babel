@@ -7,7 +7,8 @@ export default {
   decorators: [() => ({ Component: ManifestDecorator })],
 };
 
-const oneHourFromNow = () => Math.floor(Date.now() / 1000) + 3600;
+//static date for testing UI and consistent chromatic snapshots, but takes in different times for testing that output
+const expiresAt = (hours, minutes) => Math.floor(new Date(2026, 9, 14, hours, minutes).getTime() / 1000);
 
 // one story per key in AccessStatusPanel/index.svelte's `subviews` map
 
@@ -29,23 +30,49 @@ export const EnhancedTextUser = {
   },
 };
 
+// testing a morning (AM) time
 export const EmergencyAccessAffiliate = {
   args: {
     accessType: {
       granted: true,
       name: 'emergency_access_affiliate',
-      expires: oneHourFromNow(),
+      expires: expiresAt(9, 5),
       action: '#',
     },
   },
 };
 
+// testing an afternoon (PM) time
 export const InLibraryUser = {
   args: {
     accessType: {
       granted: true,
       name: 'in_library_user',
-      expires: oneHourFromNow(),
+      expires: expiresAt(15, 45),
+      action: '#',
+    },
+  },
+};
+
+// testing noon
+export const InLibraryUserNoon = {
+  args: {
+    accessType: {
+      granted: true,
+      name: 'in_library_user',
+      expires: expiresAt(12, 30),
+      action: '#',
+    },
+  },
+};
+
+// testing just after midnight
+export const InLibraryUserMidnight = {
+  args: {
+    accessType: {
+      granted: true,
+      name: 'in_library_user',
+      expires: expiresAt(0, 5),
       action: '#',
     },
   },

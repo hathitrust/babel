@@ -41,7 +41,7 @@
 <Panel {expanded} {onToggle} class="access-panel">
   <i class="fa-solid fa-unlock" slot="icon" aria-hidden="true"></i>
   <slot:fragment slot="title">
-    Checked out until <span class="expires-display">{expiresDisplay}</span>
+    Checked out until {expiresDisplay}
   </slot:fragment>
   <slot:fragment slot="body">
     {#if isExpired}
@@ -52,9 +52,9 @@
     {:else}
       <p class="fs-7">
         This work is checked out to you until
-        <span class="expires-display">{expiresDisplay}</span>. You may be able to renew the book. This work may be in
-        copyright. You have full view access to this item based on your affiliation or account privileges. Information
-        about use can be found in the
+        <span class="fw-bold">{expiresDisplay}</span>. You may be able to renew the book. This work may be in copyright.
+        You have full view access to this item based on your affiliation or account privileges. Information about use
+        can be found in the
         <a href="//{HT.www_domain}/the-collection/access-use-policy/">HathiTrust Access and Use Policy</a>.
       </p>
       <div>
@@ -63,9 +63,3 @@
     {/if}
   </slot:fragment>
 </Panel>
-
-<style>
-  .expires-display {
-    font-weight: bold;
-  }
-</style>
