@@ -2,6 +2,8 @@ import '~firebird-common/src/scss/styles.scss';
 import '../src/scss/styles.scss';
 import * as bootstrap from 'bootstrap';
 
+import { mswLoader } from 'msw-storybook-addon/csf3';
+
 const BOOTSTRAP_VIEWPORTS = {
   bsXs: {
     name: 'XS: <576px',
@@ -74,6 +76,7 @@ const preview = {
       isRotated: false,
     },
   },
+  loaders: [mswLoader()],
 };
 
 export default preview;

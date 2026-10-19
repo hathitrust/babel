@@ -144,6 +144,12 @@ sub call_core {
     my $res = $req->new_response(200);
     $res->content_type($$output{mimetype});
     $res->header('X-HathiTrust-ImageSize' => $$output{metadata}{width} . "x" . $$output{metadata}{height});
+
+    unless ( $$env{REMOTE_USER} ) {
+        # add CORS headers to anonymous requests
+        $res->header('Access-Control-Allow-Origin', '*');
+    }
+
     $res->body($fh);
 
     $res->finalize;
