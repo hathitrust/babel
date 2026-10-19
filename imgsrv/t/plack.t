@@ -64,11 +64,12 @@ subtest "imgsrv.psgi" => sub {
     is $res->header('Set-Cookie'), undef;
   };
 
-  subtest "imgsrv/cover sets wildcard 'Access-Control-Allow-Origin' header" => sub {
+  subtest "imgsrv/cover sets 'Access-Control-Allow-Origin' and 'Cross-Origin-Resource-Policy' headers" => sub {
     my $res = $test->request(GET "/cover?id=test.ic_not_held");
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Access-Control-Allow-Origin'), '*';
+    is $res->header('Cross-Origin-Resource-Policy'), 'cross-origin';
   };
 
   subtest "imgsrv/html" => sub {
