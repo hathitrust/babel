@@ -64,6 +64,13 @@ subtest "imgsrv.psgi" => sub {
     is $res->header('Set-Cookie'), undef;
   };
 
+  subtest "imgsrv/cover sets wildcard 'Access-Control-Allow-Origin' header" => sub {
+    my $res = $test->request(GET "/cover?id=test.ic_not_held");
+    is $res->code, 200;
+    is $res->message, 'OK';
+    is $res->header('Access-Control-Allow-Origin'), '*';
+  };
+
   subtest "imgsrv/html" => sub {
     my $req = get_req_with_session "/html?id=test.pd_open&seq=1";
 
