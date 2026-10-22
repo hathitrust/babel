@@ -79,6 +79,8 @@ subtest "imgsrv.psgi" => sub {
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'text/html;charset=utf-8';
+    is $res->header('Cache-Control'), 'max-age=86400, private';
+    ok $res->header('Expires');
   };
 
   subtest "imgsrv/image pd access rejected w/o session" => sub {
@@ -93,6 +95,8 @@ subtest "imgsrv.psgi" => sub {
     is $res->code, 200;
     is $res->message, 'OK';
     is $res->header('Content-Type'), 'image/jpeg';
+    is $res->header('Cache-Control'), 'max-age=86400, private';
+    ok $res->header('Expires');
   };
 
   subtest "imgsrv/image ic access denied even w session" => sub {
