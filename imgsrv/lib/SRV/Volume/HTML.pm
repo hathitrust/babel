@@ -7,6 +7,7 @@ use Plack::Request;
 use Plack::Util;
 use Plack::Util::Accessor qw( file mode restricted p output_filename q1 );
 
+
 use Process::Text;
 
 use Data::Dumper;
@@ -27,6 +28,7 @@ use SRV::SearchUtils;
 
 use utf8;
 use Encode qw(encode_utf8);
+use POSIX qw(strftime);
 
 our $content_type = q{text/html};
 
@@ -186,6 +188,7 @@ sub call_core {
 
     my $max_age = 86400;    # 1 day = 60 * 60 * 24
     my $cache_control = qq{max-age=$max_age};
+    my $expires = strftime('%a, %d %b %Y %H:%M:%S GMT',gmtime(time + $max_age));
 
     my $status = ( $self->restricted ) ? 403 : 200;
     my $res = $req->new_response($status);
@@ -195,6 +198,7 @@ sub call_core {
 
     $res->header( 'Cache-Control', "$cache_control, private" );
     $res->header( 'Content-length', length($contents) );
+    $res->header( 'Expires', $expires );
 
     $res->body($contents);
 

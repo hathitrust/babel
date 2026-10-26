@@ -235,6 +235,7 @@ sub intercept_response {
 
     # don't cache 429 messages
     $self->headers->{'Cache-Control'} = "max-age=0, no-store";
+    $self->headers->{'Expires'} = "0";
 
     $self->headers->{'Content-Type'} = $self->response->{content_type};
     $response->headers($self->headers);

@@ -43,6 +43,8 @@ use Metrics;
 
 use Cwd ();
 
+use POSIX qw(strftime);
+
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
@@ -225,6 +227,7 @@ sub call_core {
 
     my $max_age = 86400;    # 1 day = 60 * 60 * 24
     my $cache_control = qq{max-age=$max_age};
+    my $expires = strftime('%a, %d %b %Y %H:%M:%S GMT',gmtime(time + $max_age));
 
     unless ( $$output{data} || $$output{filename} ) {
         my $res = $req->new_response(404);
@@ -234,6 +237,7 @@ sub call_core {
 
     if ( $$output{restricted} ) {
         $cache_control = 'no-cache';
+        $expires = "0";
     }
 
     # my $fh = $$output{data} || new IO::File $$output{filename};
@@ -263,6 +267,7 @@ sub call_core {
 
     $res->header('Content-length', -s $$output{filename});
     $res->header('Cache-Control', "$cache_control, private");
+    $res->header('Expires', $expires);
 
     unless ( $$env{REMOTE_USER} ) {
         # add CORS headers to anonymous requests
