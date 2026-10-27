@@ -18,6 +18,8 @@
 
   import { extractHighlights } from '../../lib/highlights';
 
+  import { imgsrvFetchError } from '../error.svelte';
+
   const LOAD_DELAY_TIMEOUT = 500;
   const EXAGGERATED_DEBUG_DELAY_TIMEOUT = 5000;
 
@@ -70,7 +72,7 @@
 
   let timeout;
 
-  let requestStatus = 200;
+  let responseStatus = 200;
 
   // capture the x-choke-xyz headers
   let xChokeAllowed = 1;
@@ -230,8 +232,10 @@
         xChokeDelta = response.headers.get('x-choke-delta');
 
         if (!response.ok) {
-          requestStatus = response.status;
+          responseStatus = response.status;
           cfRayID = response.headers.get('cf-ray')?.split('-')[0] ?? null;
+          cfMitigated = response.headers.get('cf-mitigated') === 'challenge';
+          imgsrvFetchError.set(response.status, response.statusText);
           return;
         }
 
@@ -280,7 +284,7 @@
         return response.blob();
       })
       .then((blob) => {
-        if (requestStatus == 429) {
+        if ([403, 429, 500].includes(responseStatus)) {
           return;
         }
 
@@ -693,23 +697,23 @@ Delta: {xChokeDelta}{#if xChokeAllowed == 0}
   >
     {#if format == 'image'}
       <div class="image">
-        {#if !isLoaded && requestStatus == 200}
+        {#if !isLoaded && responseStatus == 200}
           <div class="page-loader">
             <i class="fa-solid fa-stroopwafel fa-2xl opacity-75" class:fa-spin={isVisible} aria-hidden="true"></i>
           </div>
         {/if}
-        {#if isVisible && (requestStatus == 429 || requestStatus == 403 || requestStatus == 500)}
+        {#if isVisible && (responseStatus == 429 || responseStatus == 403 || responseStatus == 500)}
           <div class="fetch-error">
             <div class="w-100 h-100 m-auto mt-3 d-flex flex-column">
               <div class="alert alert-block alert-secondary fs-1 fw-bold text-center text-uppercase">
                 <h2 class="fs-2">
-                  {#if requestStatus == 429}Image Temporarily Unavailable{:else if requestStatus == 403}Forbidden{:else if requestStatus == 500}Internal
+                  {#if responseStatus == 429}Image Temporarily Unavailable{:else if responseStatus == 403}Forbidden{:else if responseStatus == 500}Internal
                     Server Error{/if}
                 </h2>
               </div>
               <div>
-                <h3 class="text-center">Error code: {requestStatus}</h3>
-                {#if requestStatus !== 500}
+                <h3 class="text-center">Error code: {responseStatus}</h3>
+                {#if responseStatus !== 500}
                   <p>
                     You may be able to access the page by using a different browser or device, or by trying again later.
                     If you are attempting to access HathiTrust via a proxy server or VPN, please try connecting without

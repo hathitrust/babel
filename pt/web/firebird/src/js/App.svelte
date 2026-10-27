@@ -39,6 +39,8 @@
   import GridView from './components/Reader/GridView';
   import ConfiguringView from './components/Reader/ConfiguringView';
 
+  import { imgsrvFetchError } from './components/error.svelte';
+
   // set up context
   const emitter = new Emittery();
   setContext('emitter', emitter);
@@ -444,7 +446,7 @@
     <i class="fa-solid fa-angle-down" class:fa-rotate-180={optionsToggled} aria-hidden="true"></i>
   </button>
 </div>
-{#if isReaderView}
+{#if isReaderView && !imgsrvFetchError.current}
   <ViewerToolbar />
 {/if}
 <aside
@@ -486,14 +488,18 @@
   </button>
 </div>
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
-  {#if stage}
-    {#if view == 'search'}
-      <SearchView />
-    {:else if view == 'restricted'}
-      <RestrictedView />
-    {:else}
-      <!-- <ViewerToolbar></ViewerToolbar> -->
-      <svelte:component this={views[$currentView]} {format} startSeq={$currentSeq} container={stage} />
+  {#if imgsrvFetchError.current}
+    <p>Cloudflare says no!</p>
+  {:else}
+    {#if stage}
+      {#if view == 'search'}
+        <SearchView />
+      {:else if view == 'restricted'}
+        <RestrictedView />
+      {:else}
+        <!-- <ViewerToolbar></ViewerToolbar> -->
+        <svelte:component this={views[$currentView]} {format} startSeq={$currentSeq} container={stage} />
+      {/if}
     {/if}
   {/if}
 </main>
