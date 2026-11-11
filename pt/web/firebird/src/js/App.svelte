@@ -30,6 +30,8 @@
   import SearchInItemPanel from './components/SearchInItemPanel';
   import DownloadPanel from './components/DownloadPanel';
 
+  import ErrorMessage from './components/ErrorMessage';
+
   // view components
   import SearchView from './components/SearchView';
   import RestrictedView from './components/RestrictedView';
@@ -489,7 +491,7 @@
 </div>
 <main bind:this={stage} style:--clampHeight={clampHeight} id="main">
   {#if imgsrvFetchError.current}
-    <p>Cloudflare says no!</p>
+    <ErrorMessage status={imgsrvFetchError.current.status} rayID={imgsrvFetchError.current.rayID} />
   {:else}
     {#if stage}
       {#if view == 'search'}

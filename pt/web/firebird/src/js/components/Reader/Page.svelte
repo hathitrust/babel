@@ -234,8 +234,9 @@
         if (!response.ok) {
           responseStatus = response.status;
           cfRayID = response.headers.get('cf-ray')?.split('-')[0] ?? null;
-          cfMitigated = response.headers.get('cf-mitigated') === 'challenge';
-          imgsrvFetchError.set(response.status, response.statusText);
+          // cfMitigated = response.headers.get('cf-mitigated') === 'challenge';
+          imgsrvFetchError.set(response.status, cfRayID);
+          console.log('error?', imgsrvFetchError.current);
           return;
         }
 

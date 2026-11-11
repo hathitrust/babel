@@ -4,8 +4,8 @@ export const imgsrvFetchError = {
   get current() {
     return error;
   },
-  set(status, message) {
-    error ??= { status, message };
+  set(status, rayID) {
+    error ??= { status, rayID };
   },
   clear() {
     error = null;

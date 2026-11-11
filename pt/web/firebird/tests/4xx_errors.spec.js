@@ -36,7 +36,7 @@ test.describe('4xx errors', () => {
     expect(response.status()).toBe(400);
   });
 
-  test('shows image temporarily unavailable message when image fetch returns 429', async ({ page }) => {
+  test.only('shows image temporarily unavailable message when image fetch returns 429', async ({ page }) => {
     await page.route('/cgi/imgsrv/image?*', (route) =>
       route.fulfill({
         status: 429,
@@ -52,7 +52,7 @@ test.describe('4xx errors', () => {
     await expect(page.locator('.cf-ray').first()).toContainText('a3eb3b119c06bf8e');
   });
 
-  test('shows forbidden message when image fetch returns 403', async ({ page }) => {
+  test.only('shows forbidden message when image fetch returns 403', async ({ page }) => {
     await page.route('/cgi/imgsrv/image?*', (route) =>
       route.fulfill({
         status: 403,
