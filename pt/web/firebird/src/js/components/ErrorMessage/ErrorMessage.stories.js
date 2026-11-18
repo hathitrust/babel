@@ -22,6 +22,16 @@ export const Forbidden = {
   },
 };
 
+export const Medium403 = {
+  globals: {
+    viewport: { value: 'bsSm' },
+  },
+  args: {
+    status: '403',
+    rayID: 'a3eb3b119c06bf8e',
+  },
+};
+
 export const Mobile403 = {
   globals: {
     viewport: { value: 'bsXs' },

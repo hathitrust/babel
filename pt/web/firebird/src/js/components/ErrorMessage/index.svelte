@@ -34,38 +34,35 @@
     container-type: inline-size;
   }
   .error-message {
-    --size-0000: -0.01238rem;
-    --size-000: -0.011rem;
-    --size-00: -0.0105rem;
-    --size-0: -0.00931rem;
+    --size-00: -0.011rem;
+    --size-0: 0.015rem;
     --size-1: 0.42381rem;
     --size-2: 0.5rem;
     --size-3: 0.84763rem;
-    --size-4: 0.95356rem;
-    --size-5: 1rem;
-    --size-6: 1.1125rem;
-    --size-7: 1.27144rem;
-    --size-8: 1.43048rem;
-    --size-9: 1.58931rem;
-    --size-10: 1.6875rem;
-    --size-11: 1.69525rem;
-    --size-12: 1.875rem;
-    --size-13: 2rem;
-    --size-14: 2.11906rem;
-    --size-15: 2.5rem;
-    --size-px-1: 2.5px;
+    --size-4: 1rem;
+    --size-5: 1.1125rem;
+    --size-6: 1.25rem;
+    --size-7: 1.3125rem;
+    --size-8: 1.5rem;
+    --size-9: 1.6875rem;
+    --size-10: 1.875rem;
+    --size-11: 2rem;
+    --size-12: 2.11906rem;
+    --size-13: 2.25rem;
+    --size-14: 2.5rem;
 
     max-width: 32.8125rem;
+    min-height: 43rem;
     margin: auto;
-    margin-top: var(--size-14);
-    padding: var(--size-11) var(--size-14);
+    margin-top: var(--size-12);
+    padding: var(--size-6) var(--size-4);
 
     border-radius: 0.5rem;
 
     // dashed border
     --dash: 14px;
     --gap: 10px;
-    --w: var(--size-px-1);
+    --w: 2.5px;
     --c: #cfd0d1;
 
     background:
@@ -82,82 +79,81 @@
     margin: 0;
   }
   h2 {
-    font-size: var(--size-11);
+    font-size: var(--size-9);
     font-weight: 700;
-    line-height: var(--size-14);
+    line-height: var(--size-10);
   }
   .status-code {
     color: var(--color-neutral-600);
     font-family: 'Roboto Mono';
     font-size: var(--size-3);
     font-weight: 400;
-    line-height: var(--size-6);
+    line-height: var(--size-5);
     margin-bottom: 0;
   }
   .subtitle {
-    font-size: 1.27144rem;
+    font-size: var(--size-6);
     font-weight: 500;
-    line-height: 1.58931rem;
+    line-height: var(--size-10);
   }
   .details p {
-    font-size: var(--size-4);
+    font-size: var(--size-5);
     font-weight: 700;
-    line-height: 1.43048rem;
-    letter-spacing: -0.0105rem;
+    line-height: var(--size-9);
   }
   .details ul {
-    font-size: var(--size-3);
-    letter-spacing: -0.00931rem;
-    padding-inline-start: var(--size-5);
+    font-size: var(--size-4);
+    padding-inline-start: var(--size-8);
+    letter-spacing: var(--size-00);
     li {
-      line-height: 1.27144rem;
+      line-height: var(--size-8);
     }
   }
   .gap-smaller {
-    gap: 0.42381rem;
+    gap: var(--size-1);
   }
   .gap-default {
-    gap: 0.84763rem;
+    gap: var(--size-3);
   }
   .gap-larger {
-    gap: 2.11906rem;
+    gap: var(--size-12);
   }
-  @container error (width > 24rem) {
+  @container error (23.75rem <= width <= 32.8125rem) {
     .error-message {
-      padding: var(--size-13) var(--size-15);
+      padding: var(--size-11);
     }
     h2 {
-      font-size: var(--size-13);
-      line-height: 2.5rem;
+      font-size: var(--size-8);
+      line-height: var(--size-13);
+      letter-spacing: var(--size-0);
+    }
+  }
+  @container error (width > 32.8125rem) {
+    .error-message {
+      min-height: 39.375rem;
+      padding: var(--size-11) var(--size-14);
+    }
+    h2 {
+      font-size: var(--size-11);
+      line-height: var(--size-14);
     }
     .status-code {
-      font-size: var(--size-5);
-      line-height: 1.3125rem;
+      font-size: var(--size-4);
+      line-height: var(--size-7);
     }
     .subtitle {
-      font-size: 1.5rem;
-      line-height: 1.875rem;
-    }
-    .details p {
-      font-size: 1.125rem;
-      line-height: 1.6875rem;
-    }
-    .details ul {
-      font-size: 1rem;
-      padding-inline-start: var(--size-8);
-      li {
-        line-height: 1.5rem;
-      }
+      font-size: var(--size-8);
+      line-height: var(--size-10);
     }
 
     .gap-smaller {
-      gap: 0.5rem;
+      gap: var(--size-2);
     }
     .gap-default {
-      gap: 1rem;
+      gap: var(--size-4);
     }
     .gap-larger {
-      gap: 2.5rem;
+      gap: var(--size-14);
     }
   }
 </style>

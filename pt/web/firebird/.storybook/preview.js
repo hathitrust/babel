@@ -13,9 +13,9 @@ const BOOTSTRAP_VIEWPORTS = {
     },
   },
   bsSm: {
-    name: 'SM: 576-767px',
+    name: 'SM: 450-767px',
     styles: {
-      width: '600px',
+      width: '500px',
       height: '1200px',
     },
   },
