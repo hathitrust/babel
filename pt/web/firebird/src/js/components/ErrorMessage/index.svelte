@@ -1,5 +1,11 @@
 <script>
   let { status, rayID } = $props();
+  const _mtm = (window._mtm = window._mtm || []);
+
+  _mtm.push({
+    event: 'pt-imgsrv-error',
+    errorStatus: status,
+  });
 </script>
 
 <div class="message-container">
